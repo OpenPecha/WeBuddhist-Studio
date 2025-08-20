@@ -1,10 +1,15 @@
 
+import { Routes, Route } from "react-router-dom"
+import Homepage from "./components/home/Homepage"
+import Login from "./components/auth/login/Login"
+
 function App() {
 
   return (
-    <div className="flex items-center h-screen w-full justify-center">
-      pecha studio
-    </div>
+   <Routes>
+      <Route path="/" element={<Homepage />} />
+      <Route path="/login" element={<Login />} />
+    </Routes>
   )
 }
 
