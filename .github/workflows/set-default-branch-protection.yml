@@ -1,0 +1,16 @@
+name: Set Default Branch Protection Rules
+
+on:
+  push:
+    branches:
+      - main  # Trigger this workflow on pushes to the main branch
+
+jobs:
+  set-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Main Branch Protection Rule
+        if: ${{ github.run_number == 1 }}
+        run: |
+          git clone https://github.com/OpenPecha/rules.git
+          python rules/set_branch_protection_rules.py $GITHUB_REPOSITORY main ${{ secrets.ADMIN_GITHUB_TOKEN }}
