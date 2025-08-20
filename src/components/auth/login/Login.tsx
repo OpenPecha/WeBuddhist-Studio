@@ -1,7 +1,9 @@
 
 const Login = () => {
   return (
-    <div className='flex items-center h-screen w-full justify-center'>Login</div>
+    <div className="w-full h-full flex items-center justify-center">
+        Login
+    </div>
   )
 }
 

@@ -1,8 +1,10 @@
 
 const Homepage = () => {
-  return (
-    <div className='flex items-center h-screen w-full justify-center'>Homepage ff</div>
-  )
-}
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        Homepage
+      </div>
+    )
+  }
 
 export default Homepage
