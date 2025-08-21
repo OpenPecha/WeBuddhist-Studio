@@ -1,9 +1,11 @@
 
 import { Routes, Route, useLocation } from "react-router-dom"
-import Homepage from "./components/home/Homepage"
 import Login from "./components/auth/login/Login"
 import Navbar from "./components/ui/navbar/Navbar"
 import Signup from "./components/auth/signup/Signup"
+import Dashboard from "./components/home/Dashboard"
+import Createplan from "./components/create-plan/Createplan"
+import Analytics from "./components/analytics/Analytics"
 
 function App() {
   const location = useLocation();
@@ -13,9 +15,13 @@ function App() {
     <div className="flex flex-col h-screen w-full p-2">
       {!hideNavbar && <Navbar />}
       <Routes>
-        <Route path="/" element={<Homepage />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="*" element={<Dashboard />}/>
+        <Route path="/create-plan" element={<Createplan />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Routes>
     </div>
   )

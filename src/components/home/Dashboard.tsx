@@ -1,5 +1,5 @@
 
-const Homepage = () => {
+const Dashboard = () => {
     return (
       <div className="w-full h-full font-inter flex items-center justify-center">
         Homepage
@@ -7,4 +7,4 @@ const Homepage = () => {
     )
   }
 
-export default Homepage
+export default Dashboard
