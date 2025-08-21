@@ -6,12 +6,12 @@ const AuthButton = () => {
     <div className="flex items-center font-inter gap-2">
         <Button onClick={()=>{
             navigate('/login')
-        }} variant="outline" className=' hover:cursor-pointer'>
+        }} variant="outline">
             <span className="text-sm font-medium">Login</span>
         </Button>
         <Button onClick={()=>{
             navigate('/signup')
-        }} variant="secondary" className=' hover:cursor-pointer'>
+        }} variant="secondary">
             <span className="text-sm font-medium">Signup</span>
         </Button>
     </div>

@@ -1,8 +1,10 @@
+import { DashBoardTable } from "@/components/ui/molecules/dashboard-table/DashBoardTable"
 
 const Dashboard = () => {
     return (
-      <div className="w-full h-full font-inter flex items-center justify-center">
-        Homepage
+      <div className="w-full h-full font-inter px-10 pt-10">
+        
+        <DashBoardTable/>
       </div>
     )
   }

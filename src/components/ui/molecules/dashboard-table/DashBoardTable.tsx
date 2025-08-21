@@ -1,88 +1,82 @@
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableFooter,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "../../atoms/table"
-  
-  const invoices = [
-    {
-      invoice: "INV001",
-      paymentStatus: "Paid",
-      totalAmount: "$250.00",
-      paymentMethod: "Credit Card",
-    },
-    {
-      invoice: "INV002",
-      paymentStatus: "Pending",
-      totalAmount: "$150.00",
-      paymentMethod: "PayPal",
-    },
-    {
-      invoice: "INV003",
-      paymentStatus: "Unpaid",
-      totalAmount: "$350.00",
-      paymentMethod: "Bank Transfer",
-    },
-    {
-      invoice: "INV004",
-      paymentStatus: "Paid",
-      totalAmount: "$450.00",
-      paymentMethod: "Credit Card",
-    },
-    {
-      invoice: "INV005",
-      paymentStatus: "Paid",
-      totalAmount: "$550.00",
-      paymentMethod: "PayPal",
-    },
-    {
-      invoice: "INV006",
-      paymentStatus: "Pending",
-      totalAmount: "$200.00",
-      paymentMethod: "Bank Transfer",
-    },
-    {
-      invoice: "INV007",
-      paymentStatus: "Unpaid",
-      totalAmount: "$300.00",
-      paymentMethod: "Credit Card",
-    },
-  ]
-  
-  export function TableDemo() {
-    return (
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../atoms/table"
+import { Input } from "../../atoms/input"
+import { Button } from "../../atoms/button"
+
+const plans = [
+  {
+    id: "1",
+    coverImage: "https://ep-space.nyc3.cdn.digitaloceanspaces.com/app/uploads/2021/03/21161102/4-5dllc1155insidetengboche7-5x5cpywrt-2.jpg",
+    title: "The 7 day buddhist Plan on Compassion",
+    subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand .....",
+    planDay: "7 Days",
+    planUsed: "30 Used",
+  },
+  {
+    id: "2",
+    coverImage: "https://static01.nyt.com/images/2023/09/28/multimedia/00mongolia-lama-explainer-kljz/00mongolia-lama-explainer-kljz-mediumSquareAt3X.jpg",
+    title: "The 7 day buddhist Plan on Meditation",
+    subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand .....",
+    planDay: "7 Days",
+    planUsed: "3 Used",
+  },
+  {
+    id: "3",
+    coverImage: "https://savetibet.org/wp-content/uploads/2019/06/shutterstock_1124150498-1000.jpg",
+    title: "The 12 day buddhist Plan on Studying",
+    subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand .....",
+    planDay: "12 Days",
+    planUsed: "10 Used",
+  },
+  {
+    id: "4",
+    coverImage: "https://tnp.org/wp-content/uploads/046__DHA8571_O_Adam.jpg",
+    title: "The 12 day buddhist Plan on Pecha",
+    subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand .....",
+    planDay: "12 Days",
+    planUsed: "10 Used",
+  },
+]
+
+export function DashBoardTable() {
+
+  return (
+    <div className="w-full">
+      <div className="mb-4">
+        <Input
+          placeholder="Search Plan......"
+          className="w-1/3 rounded-md border px-4 py-2"
+        />
+      </div>
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Invoice</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="w-[160px] font-bold">Cover Image</TableHead>
+            <TableHead className="font-bold">Title</TableHead>
+            <TableHead className="w-[100px] font-bold">Plan Days</TableHead>
+            <TableHead className="w-[150px] font-bold">Plan Used</TableHead>
+            <TableHead className="w-[150px] font-bold">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice}>
-              <TableCell className="font-medium">{invoice.invoice}</TableCell>
-              <TableCell>{invoice.paymentStatus}</TableCell>
-              <TableCell>{invoice.paymentMethod}</TableCell>
-              <TableCell className="text-right">{invoice.totalAmount}</TableCell>
+          {plans.map((plan) => (
+            <TableRow key={plan.id} className=" hover:cursor-pointer">
+              <TableCell>
+                <img src={plan.coverImage} alt="cover" className="w-32 h-20 object-cover rounded-md" />
+              </TableCell>
+              <TableCell>
+                <div className="font-semibold text-base">{plan.title}</div>
+                <div className="text-xs text-muted-foreground max-w-2xl truncate">{plan.subtitle}</div>
+              </TableCell>
+              <TableCell>{plan.planDay}</TableCell>
+              <TableCell>{plan.planUsed}</TableCell>
+              <TableCell>
+                <Button variant="destructive" className="w-20">Delete</Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3}>Total</TableCell>
-            <TableCell className="text-right">$2,500.00</TableCell>
-          </TableRow>
-        </TableFooter>
       </Table>
-    )
-  }
+    </div>
+  )
+}
   
