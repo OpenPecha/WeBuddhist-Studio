@@ -8,8 +8,8 @@ import { Link } from 'react-router-dom';
 const Login = () => {
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className=" rounded-3xl w-full max-w-[460px] border border-gray-200  flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-dots">
+      <div className=" rounded-3xl bg-white w-full max-w-[460px] border border-gray-200  flex flex-col items-center justify-center p-8">
         
         <div className="flex items-center mb-4">
           <div className=" w-[60px] h-[60px] rounded-full flex items-center justify-center">

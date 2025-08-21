@@ -27,7 +27,7 @@ const Navbar = () => {
       <div className="flex items-center space-x-6">
         {
           navItems.map((item,index)=>(  
-            <Link to={item.path} key={index} className={`text-sm font-medium hover:cursor-pointer ${location.pathname === item.path ? "text-zinc-900" : "text-zinc-400"}`}>
+            <Link to={item.path} key={index} className={`text-sm font-medium hover:cursor-pointer ${(location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/')) ? "text-zinc-900" : "text-zinc-400"}`}>
               {item.label}
             </Link>
           ))
