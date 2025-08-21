@@ -9,7 +9,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-dots">
-      <div className=" rounded-3xl bg-white w-full max-w-[460px] border border-gray-200  flex flex-col items-center justify-center p-8">
+      <div className=" rounded-3xl bg-white dark:bg-[#1C1C1C] w-full max-w-[460px] border border-gray-200 dark:border-[#3D3D3D]  flex flex-col items-center justify-center p-8">
         
         <div className="flex items-center mb-4">
           <div className=" w-[60px] h-[60px] rounded-full flex items-center justify-center">
@@ -36,7 +36,7 @@ const Login = () => {
           <div className="text-sm space-y-2">
             <Label 
               htmlFor="email"
-              className="font-medium text-black"
+              className="font-medium"
             >
               Email
             </Label>
@@ -51,7 +51,7 @@ const Login = () => {
           <div className="text-sm space-y-2">
             <Label 
               htmlFor="password"
-              className="font-medium text-black"
+              className="font-medium"
             >
               Password
             </Label>
@@ -67,7 +67,7 @@ const Login = () => {
             <Button
               type="submit"
               variant="outline"
-              className=" text-[#373737] w-full text-sm "
+              className="w-full text-sm "
             >
               Submit
             </Button>

@@ -1,6 +1,7 @@
 import pechaIcon from '../../../assets/icon/pecha_icon.png';
 import { Link, useLocation } from 'react-router-dom';
 import AuthButton from '../authButton/AuthButton';
+import { ModeToggle } from '../modetoggle/modetoggle';
 const navItems=[
   {
     label:'Dashboard',
@@ -27,14 +28,18 @@ const Navbar = () => {
       <div className="flex items-center space-x-6">
         {
           navItems.map((item,index)=>(  
-            <Link to={item.path} key={index} className={`text-sm font-medium hover:cursor-pointer ${(location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/')) ? "text-zinc-900" : "text-zinc-400"}`}>
+            <Link to={item.path} key={index} className={`text-sm font-medium hover:cursor-pointer ${(location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/')) ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-600"}`}>
               {item.label}
             </Link>
           ))
         }
       </div>
       </div>
-        <AuthButton/>
+      <div className="flex items-center space-x-2">
+      <AuthButton/>
+      <ModeToggle/>
+      </div>
+  
     </div>
   )
 }
