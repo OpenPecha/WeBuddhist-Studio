@@ -1,7 +1,7 @@
-import pechaIcon from '../../../assets/icon/pecha_icon.png';
+import pechaIcon from '../../../../assets/icon/pecha_icon.png';
 import { Link, useLocation } from 'react-router-dom';
-import AuthButton from '../authButton/AuthButton';
-import { ModeToggle } from '../modetoggle/modetoggle';
+import AuthButton from '../auth-button/AuthButton';
+import { ModeToggle } from '../mode-toggle/modetoggle';
 const navItems=[
   {
     label:'Dashboard',

@@ -1,4 +1,4 @@
-import { Button } from '../button'
+import { Button } from "../../atoms/button"
 import { useNavigate } from 'react-router-dom'
 const AuthButton = () => {
     const navigate = useNavigate()

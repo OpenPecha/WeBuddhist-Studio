@@ -1,7 +1,7 @@
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/atoms/button";
+import { Input } from "@/components/ui/atoms/input";
+import { Label } from "@/components/ui/atoms/label";
 import pechaIcon from '../../../assets/icon/pecha_icon.png';
 import { Link } from 'react-router-dom';
 

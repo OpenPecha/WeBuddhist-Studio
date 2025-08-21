@@ -1,11 +1,11 @@
 
 import { Routes, Route, useLocation } from "react-router-dom"
 import Login from "./components/auth/login/Login"
-import Navbar from "./components/ui/navbar/Navbar"
+import Navbar from "./components/ui/molecules/nav-bar/Navbar"
 import Signup from "./components/auth/signup/Signup"
-import Dashboard from "./components/home/Dashboard"
-import Createplan from "./components/create-plan/Createplan"
-import Analytics from "./components/analytics/Analytics"
+import Dashboard from "./components/routes/dashboard/Dashboard"
+import Createplan from "./components/routes/create-plan/Createplan"
+import Analytics from "./components/routes/analytics/Analytics"
 
 function App() {
   const location = useLocation();
