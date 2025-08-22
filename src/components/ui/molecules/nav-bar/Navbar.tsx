@@ -2,6 +2,7 @@ import pechaIcon from '../../../../assets/icon/pecha_icon.png';
 import { Link, useLocation } from 'react-router-dom';
 import AuthButton from '../auth-button/AuthButton';
 import { ModeToggle } from '../mode-toggle/modetoggle';
+import { SITE_NAME } from '@/lib/constant';
 const navItems=[
   {
     label:'Dashboard',
@@ -23,7 +24,7 @@ const Navbar = () => {
       <div className="flex items-center space-x-10">
         <div className="flex items-center gap-2">
         <img src={pechaIcon} alt="Pecha Studio Logo" className="w-10 h-10" />
-        <h1 className="font-semibold text-sm">Webuddhist Studio</h1>
+        <h1 className="font-semibold text-sm">{SITE_NAME}</h1>
         </div>
       <div className="flex items-center space-x-6">
         {
