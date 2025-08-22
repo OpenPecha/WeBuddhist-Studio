@@ -3,10 +3,47 @@ import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
 import pechaIcon from '../../../assets/icon/pecha_icon.png';
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
+import { useMutation } from "@tanstack/react-query";
+import axiosInstance from "@/config/axios-config";
+import { BACKEND_BASE_URL } from "@/lib/constant";
+import { useState } from "react";
+import { useAuth } from "@/config/auth-context";
+interface LoginData {
+  email: string;
+  password: string;
+}
 const Login = () => {
+  const navigate=useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{error?: string}>({});
+  const { login } = useAuth();
 
+  const loginMutation = useMutation<any, Error, LoginData>({
+    mutationFn: async (loginData: LoginData) => {
+        const response = await axiosInstance.post(
+            `${BACKEND_BASE_URL}/api/v1/auth/login`,
+            loginData
+        );
+        return response.data;
+    },
+    onSuccess: (data: any) => {
+        const accessToken = data.auth.access_token;
+        const refreshToken = data.auth.refresh_token;
+        login(accessToken, refreshToken);
+        navigate("/dashboard");
+    },
+    onError: (error: any) => {
+        console.error("Login failed", error);
+        const errorMsg = error?.response?.data?.message || error?.response?.data?.detail || "Login failed";
+        setErrors({ error: errorMsg });
+    },
+  });
+  const handleLogin=(e: React.FormEvent)=>{
+    e.preventDefault();
+    loginMutation.mutate({email,password})
+  }
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-dots">
       <div className=" rounded-3xl bg-white dark:bg-[#1C1C1C] w-full max-w-[460px] border border-gray-200 dark:border-[#3D3D3D]  flex flex-col items-center justify-center p-8">
@@ -31,7 +68,7 @@ const Login = () => {
         </div>         
         <div className="text-sm text-gray-400 mb-2.5 text-center w-full">
         Enter your email address and password to login in </div>
-        <form className="w-full font-inter max-w-[425px] space-y-4">
+        <form className="w-full font-inter max-w-[425px] space-y-4" onSubmit={handleLogin}>
           
           <div className="text-sm space-y-2">
             <Label 
@@ -45,6 +82,8 @@ const Login = () => {
               placeholder="Enter your Email"
               className="  placeholder:text-[#b1b1b1]"
               required
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
             />
           </div>
 
@@ -60,9 +99,11 @@ const Login = () => {
               placeholder="Enter your Password"
               className=" placeholder:text-[#b1b1b1]"
               required
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
             />
           </div>
-
+       {errors.error && <div className="text-red-800 dark:text-red-400 flex items-center justify-center text-sm"> {errors.error} </div>}
           <div className="flex mt-4 justify-center ">
             <Button
               type="submit"
