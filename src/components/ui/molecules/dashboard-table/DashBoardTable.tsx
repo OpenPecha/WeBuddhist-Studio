@@ -22,7 +22,7 @@ export function DashBoardTable({ plans,t }: DashBoardTableProps) {
     <div className="w-full h-[600px] overflow-auto">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="fontDynamic">
             <TableHead className="w-[160px] font-bold">{t("studio.dashboard.cover_image")}</TableHead>
             <TableHead className="font-bold">{t("studio.dashboard.title")}</TableHead>
             <TableHead className="w-[100px] font-bold">Plan Days</TableHead>

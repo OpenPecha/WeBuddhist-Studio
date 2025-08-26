@@ -9,13 +9,15 @@ import {
   DropdownMenuTrigger,
 } from "../../atoms/dropdown-menu"
 import { LANGUAGE } from "../../../../lib/constant"
+import { setFontVariables } from "../../../../lib/font-config"
 
 export function LanguageToggle() {
   const tolgee = useTolgee(['language'])
 
-  const setLanguage = (language: string) => {
+  const changeLanguage = (language: string) => {
     tolgee.changeLanguage(language)
     localStorage.setItem(LANGUAGE, language)
+    setFontVariables(language)
   }
 
   return (
@@ -26,10 +28,10 @@ export function LanguageToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setLanguage("en")}>
+        <DropdownMenuItem onClick={() => changeLanguage("en")} className=" font-inter">
           English
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setLanguage("bo-IN")}>
+        <DropdownMenuItem onClick={() => changeLanguage("bo-IN")} className=" font-monlam">
           བོད་ཡིག
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -47,7 +47,7 @@ const Login = () => {
     loginMutation.mutate({email,password})
   }
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-dots">
+    <div className="min-h-screen fontDynamic flex items-center justify-center p-4 bg-dots">
       <div className=" rounded-3xl bg-white dark:bg-[#1C1C1C] w-full max-w-[460px] border border-gray-200 dark:border-[#3D3D3D]  flex flex-col items-center justify-center p-8">
         
         <div className="flex items-center mb-4">
@@ -60,7 +60,7 @@ const Login = () => {
           </div>
           
           <div>
-          <h1 className="font-semibold font-inter text-xl">
+          <h1 className="font-semibold text-xl">
             Webuddhist Studio
           </h1>
           <p className="text-sm text-center">
@@ -70,7 +70,7 @@ const Login = () => {
         </div>         
         <div className="text-sm text-gray-400 mb-2.5 text-center w-full">
         Enter your email address and password to login in </div>
-        <form className="w-full font-inter max-w-[425px] space-y-4" onSubmit={handleLogin}>
+        <form className="w-full  max-w-[425px] space-y-4" onSubmit={handleLogin}>
           
           <div className="text-sm space-y-2">
             <Label 

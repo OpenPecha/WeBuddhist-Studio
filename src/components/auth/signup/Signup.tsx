@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 const Signup = () => {
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-dots">
+    <div className="min-h-screen fontDynamic flex items-center justify-center p-4 bg-dots">
       <div className=" rounded-3xl bg-white dark:bg-[#1C1C1C] w-full max-w-[460px] border border-gray-200 dark:border-[#3D3D3D]  flex flex-col items-center justify-center p-8">
         
         <div className="flex items-center mb-4">
@@ -21,7 +21,7 @@ const Signup = () => {
           </div>
           
           <div>
-          <h1 className="font-semibold font-inter text-xl">
+          <h1 className="font-semibold  text-xl">
             Webuddhist Studio
           </h1>
           <p className="text-sm text-center">
@@ -31,7 +31,7 @@ const Signup = () => {
         </div>         
         <div className="text-sm text-gray-400 mb-2.5 text-center w-full">
         Create your account to get started </div>
-        <form className="w-full font-inter max-w-[425px] space-y-4">
+        <form className="w-full max-w-[425px] space-y-4">
           
           <div className="text-sm space-y-2">
             <Label 

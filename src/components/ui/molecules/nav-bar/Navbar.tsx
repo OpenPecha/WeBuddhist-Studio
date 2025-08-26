@@ -17,7 +17,7 @@ const navItems=[
 const Navbar = () => {
   const location = useLocation()
   return (
-    <div className="font-inter p-2 flex justify-between items-center">
+    <div className="fontDynamic p-2 flex justify-between items-center">
       <div className="flex items-center space-x-10">
         <div className="flex items-center gap-2">
         <img src={pechaIcon} alt="Pecha Studio Logo" className="w-10 h-10" />
@@ -26,7 +26,7 @@ const Navbar = () => {
       <div className="flex items-center space-x-6">
         {
           navItems.map((item,index)=>(  
-            <Link to={item.path} key={index} className={`text-sm font-medium hover:cursor-pointer ${(location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/')) ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-600"}`}>
+            <Link to={item.path} key={index} className={`text-sm hover:cursor-pointer ${(location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/')) ? "text-zinc-900 font-bold dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-600"}`}>
               {item.label}
             </Link>
           ))

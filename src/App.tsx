@@ -7,10 +7,17 @@ import Dashboard from "./components/routes/dashboard/Dashboard"
 import Createplan from "./components/routes/create-plan/Createplan"
 import Analytics from "./components/routes/analytics/Analytics"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
+import { setFontVariables } from "./lib/font-config"
+import { useEffect } from "react"
+import { LANGUAGE } from "./lib/constant"
 
 function App() {
   const location = useLocation();
   const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
+  
+  useEffect(() => {
+    setFontVariables(localStorage.getItem(LANGUAGE) || "en");
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-full p-2">

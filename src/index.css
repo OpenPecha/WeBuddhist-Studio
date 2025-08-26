@@ -170,6 +170,12 @@
   }
 }
 
+@layer utilities {
+  .fontDynamic {
+    font-family: var(--fontDynamic-font-family, 'InterRegular');
+  }
+}
+
 .bg-dots {
   --dots-color: rgba(0, 0, 0, 0.06);
   --dots-size: 1.5px;
