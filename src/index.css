@@ -4,52 +4,52 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-instrument: 'InstrumentSerif-Regular', serif;
-  --font-noto: 'NotoSans-Regular', sans-serif;
-  --font-jetbrains: 'JetBrainsMono-Regular', monospace;
-  --font-monlam: 'MonlamUniOuChan2', sans-serif;
-  --font-inter: 'InterRegular', sans-serif;
+  --font-instrument: "InstrumentSerif-Regular", serif;
+  --font-noto: "NotoSans-Regular", sans-serif;
+  --font-jetbrains: "JetBrainsMono-Regular", monospace;
+  --font-monlam: "MonlamUniOuChan2", sans-serif;
+  --font-inter: "InterRegular", sans-serif;
 }
 
 @font-face {
-  font-family: 'InstrumentSerif-Regular';
-  src: url('./assets/fonts/InstrumentSerif-Regular.ttf') format('truetype');
+  font-family: "InstrumentSerif-Regular";
+  src: url("./assets/fonts/InstrumentSerif-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'InstrumentSerif-Italic';
-  src: url('./assets/fonts/InstrumentSerif-Italic.ttf') format('truetype');
+  font-family: "InstrumentSerif-Italic";
+  src: url("./assets/fonts/InstrumentSerif-Italic.ttf") format("truetype");
   font-weight: normal;
   font-style: italic;
 }
 @font-face {
-  font-family: 'NotoSans-Regular';
-  src: url('./assets/fonts/NotoSans-Regular.ttf') format('truetype');
+  font-family: "NotoSans-Regular";
+  src: url("./assets/fonts/NotoSans-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'JetBrainsMono-Light';
-  src: url('./assets/fonts/JetBrainsMono-Light.ttf') format('truetype');
+  font-family: "JetBrainsMono-Light";
+  src: url("./assets/fonts/JetBrainsMono-Light.ttf") format("truetype");
   font-weight: 300;
   font-style: normal;
 }
 @font-face {
-  font-family: 'JetBrainsMono-Regular';
-  src: url('./assets/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+  font-family: "JetBrainsMono-Regular";
+  src: url("./assets/fonts/JetBrainsMono-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'MonlamUniOuChan2';
-  src: url('./assets/fonts/MonlamUniOuChan2.woff') format('woff');
+  font-family: "MonlamUniOuChan2";
+  src: url("./assets/fonts/MonlamUniOuChan2.woff") format("woff");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'InterRegular';
-  src: url('./assets/fonts/InterRegular.woff') format('woff');
+  font-family: "InterRegular";
+  src: url("./assets/fonts/InterRegular.woff") format("woff");
   font-weight: normal;
   font-style: normal;
 }
@@ -128,7 +128,7 @@
 }
 
 .dark {
-  --background: #18181B;
+  --background: #18181b;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -171,8 +171,8 @@
 }
 
 @layer utilities {
-  .fontDynamic {
-    font-family: var(--fontDynamic-font-family, 'InterRegular');
+  .font-dynamic {
+    font-family: var(--font-dynamic-font-family, "InterRegular");
   }
 }
 

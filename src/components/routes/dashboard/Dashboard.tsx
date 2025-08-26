@@ -28,7 +28,7 @@ const Dashboard = () => {
   )
 
   return (
-    <div className="w-full h-full fontDynamic px-10 pt-10">
+    <div className="w-full h-full font-dynamic px-10 pt-10">
       <div className="mb-4 border w-fit  px-2 rounded-md border-gray-200 dark:border-[#313132] flex items-center ">
         <Search className="w-4 h-4" />
         <Input

@@ -38,7 +38,7 @@ const AuthButton = () => {
 
   if (isLoggedIn) {
     return (
-      <div className="flex items-center fontDynamic gap-2">
+      <div className="flex items-center font-dynamic gap-2">
         <img src={userInfo.avatar_url} alt="user" className="w-8 h-8 rounded-full" />
         <div className="flex flex-col">
           <span className="text-sm font-medium">{userInfo.firstname} {userInfo.lastname}</span>
@@ -52,7 +52,7 @@ const AuthButton = () => {
   }
 
   return (
-    <div className="flex items-center fontDynamic gap-2">
+    <div className="flex items-center font-dynamic gap-2">
       <Button onClick={() => navigate('/login')} variant="outline">
         <span className="text-sm font-medium">Login</span>
       </Button>

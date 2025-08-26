@@ -47,7 +47,7 @@ const Login = () => {
     loginMutation.mutate({email,password})
   }
   return (
-    <div className="min-h-screen fontDynamic flex items-center justify-center p-4 bg-dots">
+    <div className="min-h-screen font-dynamic flex items-center justify-center p-4 bg-dots">
       <div className=" rounded-3xl bg-white dark:bg-[#1C1C1C] w-full max-w-[460px] border border-gray-200 dark:border-[#3D3D3D]  flex flex-col items-center justify-center p-8">
         
         <div className="flex items-center mb-4">

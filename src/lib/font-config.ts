@@ -1,11 +1,11 @@
 const fontConfig = {
   en: {
-    fontDynamic: {
+    "font-dynamic": {
       fontFamily: "InterRegular",
     },
   },
   "bo-IN": {
-    fontDynamic: {
+    "font-dynamic": {
       fontFamily: "MonlamUniOuChan2",
     }
   },

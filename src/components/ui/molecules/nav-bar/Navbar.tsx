@@ -17,7 +17,7 @@ const navItems=[
 const Navbar = () => {
   const location = useLocation()
   return (
-    <div className="fontDynamic p-2 flex justify-between items-center">
+    <div className="font-dynamic p-2 flex justify-between items-center">
       <div className="flex items-center space-x-10">
         <div className="flex items-center gap-2">
         <img src={pechaIcon} alt="Pecha Studio Logo" className="w-10 h-10" />
