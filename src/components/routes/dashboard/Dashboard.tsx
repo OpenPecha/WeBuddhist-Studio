@@ -13,30 +13,6 @@ const plansData= [
     subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand",
     planDay: "7 Days",
     planUsed: "30 Used",
-  },
-  {
-    id: "2",
-    coverImage: "https://static01.nyt.com/images/2023/09/28/multimedia/00mongolia-lama-explainer-kljz/00mongolia-lama-explainer-kljz-mediumSquareAt3X.jpg",
-    title: "The 7 day buddhist Plan on Meditation",
-    subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand ",
-    planDay: "7 Days",
-    planUsed: "3 Used",
-  },
-  {
-    id: "3",
-    coverImage: "https://savetibet.org/wp-content/uploads/2019/06/shutterstock_1124150498-1000.jpg",
-    title: "The 12 day buddhist Plan on Studying",
-    subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand ",
-    planDay: "12 Days",
-    planUsed: "10 Used",
-  },
-  {
-    id: "4",
-    coverImage: "https://tnp.org/wp-content/uploads/046__DHA8571_O_Adam.jpg",
-    title: "The 12 day buddhist Plan on Pecha",
-    subtitle: "this plan is for the people to learn and study about compassion in a boarder context of how we perceive it. the greatest way to do this is to understand .....",
-    planDay: "12 Days",
-    planUsed: "10 Used",
   }
 ]
 

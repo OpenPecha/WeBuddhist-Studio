@@ -9,10 +9,6 @@ const navItems=[
     path:'/dashboard'
   },
   {
-    label:"Create Plan",
-    path:"/create-plan"
-  },
-  {
     label:"Analytics",
     path:"/analytics"
   }

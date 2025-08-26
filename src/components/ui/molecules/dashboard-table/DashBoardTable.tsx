@@ -41,7 +41,7 @@ export function DashBoardTable({ plans }: DashBoardTableProps) {
               </TableCell>
             </TableRow>
           ) : (
-            [...plans, ...plans].map((plan) => (
+            plans.map((plan) => (
               <TableRow key={plan.id} className=" hover:cursor-pointer">
                 <TableCell>
                   <img src={plan.coverImage} alt="cover" className="w-32 h-20 object-cover rounded-md" />
