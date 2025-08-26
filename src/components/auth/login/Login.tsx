@@ -9,11 +9,13 @@ import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useState } from "react";
 import { useAuth } from "@/config/auth-context";
+import { useTranslate } from "@tolgee/react";
 interface LoginData {
   email: string;
   password: string;
 }
 const Login = () => {
+  const {t}=useTranslate()
   const navigate=useNavigate()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,7 +77,7 @@ const Login = () => {
               htmlFor="email"
               className="font-medium"
             >
-              Email
+              {t("common.email")}
             </Label>
             <Input
               type="email"
