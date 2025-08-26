@@ -27,8 +27,8 @@ export const PlanAuthProvider = ({ children }: { children: React.ReactNode }) =>
     };
 
     const logout = () => {
-        sessionStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        sessionStorage.removeItem(ACCESS_TOKEN);
+        localStorage.removeItem(REFRESH_TOKEN);
         setIsLoggedIn(false);
     };
     const contextValue = useMemo(() => ({ isLoggedIn, login, logout, isAuthLoading }), [isLoggedIn, isAuthLoading]);

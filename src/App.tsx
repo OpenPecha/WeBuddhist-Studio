@@ -6,6 +6,7 @@ import Signup from "./components/auth/signup/Signup"
 import Dashboard from "./components/routes/dashboard/Dashboard"
 import Createplan from "./components/routes/create-plan/Createplan"
 import Analytics from "./components/routes/analytics/Analytics"
+import ProtectedRoute from "./components/auth/ProtectedRoute"
 
 function App() {
   const location = useLocation();
@@ -15,13 +16,33 @@ function App() {
     <div className="flex flex-col h-screen w-full p-2">
       {!hideNavbar && <Navbar />}
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="*" element={<Dashboard />}/>
-        <Route path="/create-plan" element={<Createplan />} />
-        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/create-plan" element={
+          <ProtectedRoute>
+            <Createplan />
+          </ProtectedRoute>
+        } />
+        <Route path="/analytics" element={
+          <ProtectedRoute>
+            <Analytics />
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
       </Routes>
     </div>
   )
