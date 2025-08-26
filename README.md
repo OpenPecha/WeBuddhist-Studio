@@ -25,6 +25,11 @@ This is the frontend application for the Pecha Studio platform, designed to mana
    ```bash
    npm install
    ```
+4. Create your environment variables file:
+
+   ```bash
+   cp .env.example .env
+   ```
 
 ## Development
 
