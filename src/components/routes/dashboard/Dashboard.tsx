@@ -4,6 +4,7 @@ import { DashBoardTable } from "@/components/ui/molecules/dashboard-table/DashBo
 import { Search } from "lucide-react"
 import { useState } from "react"
 import { useDebounce } from "use-debounce"
+import { useTranslate } from "@tolgee/react"
 
 const plansData= [
   {
@@ -17,6 +18,7 @@ const plansData= [
 ]
 
 const Dashboard = () => {
+  const {t}=useTranslate()
   const [search, setSearch] = useState("")
   const [debouncedSearch] = useDebounce(search, 500)
 
@@ -36,7 +38,7 @@ const Dashboard = () => {
           onChange={e => setSearch(e.target.value)}
         />
       </div>  
-      <DashBoardTable plans={filteredPlans} />
+      <DashBoardTable plans={filteredPlans} t={t} />
       <Pagination className="mt-4">
         <PaginationPrevious/>
         <PaginationContent>

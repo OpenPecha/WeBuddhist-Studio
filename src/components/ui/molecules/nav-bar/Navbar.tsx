@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import AuthButton from '../auth-button/AuthButton';
 import { ModeToggle } from '../mode-toggle/modetoggle';
 import { SITE_NAME } from '@/lib/constant';
+import { LanguageToggle } from '../language-toggle/languageToggle';
 const navItems=[
   {
     label:'Dashboard',
@@ -35,6 +36,7 @@ const Navbar = () => {
       <div className="flex items-center space-x-2">
       <AuthButton/>
       <ModeToggle/>
+      <LanguageToggle/>
       </div>
   
     </div>

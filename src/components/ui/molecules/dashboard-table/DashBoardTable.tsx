@@ -13,17 +13,18 @@ export interface Plan {
 
 interface DashBoardTableProps {
   plans: Plan[];
+  t: (key: string, parameters?: any) => string;
 }
 
-export function DashBoardTable({ plans }: DashBoardTableProps) {
+export function DashBoardTable({ plans,t }: DashBoardTableProps) {
   const navigate = useNavigate()
   return (
     <div className="w-full h-[600px] overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[160px] font-bold">Cover Image</TableHead>
-            <TableHead className="font-bold">Title</TableHead>
+            <TableHead className="w-[160px] font-bold">{t("studio.dashboard.cover_image")}</TableHead>
+            <TableHead className="font-bold">{t("studio.dashboard.title")}</TableHead>
             <TableHead className="w-[100px] font-bold">Plan Days</TableHead>
             <TableHead className="w-[150px] font-bold">Plan Used</TableHead>
             <TableHead className="w-[150px] font-bold">Actions</TableHead>
