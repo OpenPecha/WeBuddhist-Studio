@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Login from "./components/auth/login/Login";
+import ForgotPassword from "./components/auth/forgot-password/ForgotPassword";
 import Navbar from "./components/ui/molecules/nav-bar/Navbar";
 import Signup from "./components/auth/signup/Signup";
 import Dashboard from "./components/routes/dashboard/Dashboard";
@@ -13,7 +14,7 @@ import { LANGUAGE } from "./lib/constant";
 function App() {
   const location = useLocation();
   const hideNavbar =
-    location.pathname === "/login" || location.pathname === "/signup";
+    location.pathname === "/login" || location.pathname === "/signup" || location.pathname === "/forgot-password";
 
   useEffect(() => {
     setFontVariables(localStorage.getItem(LANGUAGE) || "en");
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
           path="/"
           element={

@@ -116,6 +116,12 @@ const Login = () => {
           </div>
 
           <div className="flex justify-center">
+            <Link to="/forgot-password" className="text-sm">
+            Forgot password?
+            </Link>
+          </div>
+
+          <div className="flex justify-center">
             <Link to="/signup" className="text-sm">
               {t("studio.login.no_account")}
             </Link>

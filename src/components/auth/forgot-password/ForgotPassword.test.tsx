@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Login from "./Login";
+import ForgotPassword from "./ForgotPassword";
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -20,17 +20,16 @@ const renderWithProviders = (component: React.ReactElement) => {
   );
 };
 
-describe("Login Component", () => {
-  it("renders login form with email and password fields", () => {
-    renderWithProviders(<Login />);
-
+describe("ForgotPassword Component", () => {
+  it("renders forgot password form with email field", () => {
+    renderWithProviders(<ForgotPassword />);
+  
     expect(screen.getByPlaceholderText("studio.login.placeholder.email")).toBeDefined();
-    expect(screen.getByPlaceholderText("studio.login.placeholder.password")).toBeDefined();
     expect(screen.getByText("common.button.submit")).toBeDefined();
   });
 
   it("displays the app title and description", () => {
-    renderWithProviders(<Login />);
+    renderWithProviders(<ForgotPassword />);
 
     expect(screen.getByText("Webuddhist Studio")).toBeDefined();
     expect(
@@ -38,9 +37,15 @@ describe("Login Component", () => {
     ).toBeDefined();
   });
 
-  it("shows signup link", () => {
-    renderWithProviders(<Login />);
+  it("shows back to login link", () => {
+    renderWithProviders(<ForgotPassword />);
 
-    expect(screen.getByText("studio.login.no_account")).toBeDefined();
+    expect(screen.getByText("Back to login")).toBeDefined();
+  });
+
+  it("displays forgot password instructions", () => {
+    renderWithProviders(<ForgotPassword />);
+
+    expect(screen.getByText("Enter your email address to reset your password")).toBeDefined();
   });
 });
