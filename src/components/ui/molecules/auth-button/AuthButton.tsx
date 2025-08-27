@@ -6,6 +6,7 @@ import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslate } from "@tolgee/react";
+import { LogOut } from "lucide-react";
 export const fetchUserInfo = async () => {
   const { data } = await axiosInstance.get(
     `${BACKEND_BASE_URL}/api/v1/users/info`,
@@ -46,18 +47,19 @@ const AuthButton = () => {
         <img
           src={userInfo.avatar_url}
           alt="user"
-          className="w-8 h-8 rounded-full"
+          className="w-8 h-8 hidden md:block rounded-full"
         />
-        <div className="flex flex-col">
+        <div className="md:flex hidden flex-col">
           <span className="text-sm font-medium">
             {userInfo.firstname} {userInfo.lastname}
           </span>
           <span className="text-xs text-[#8a8a8a]">{userInfo.email}</span>
         </div>
         <Button onClick={handleLogout} variant="outline">
-          <span className="text-sm font-medium">
+          <span className="text-sm font-medium md:block hidden">
             {t("header.profileMenu.log_out")}
           </span>
+          <span className="md:hidden"><LogOut className="w-4 h-4" /></span>
         </Button>
       </div>
     );
