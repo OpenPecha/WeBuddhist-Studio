@@ -5,6 +5,13 @@ import { ModeToggle } from "../mode-toggle/modetoggle";
 import { SITE_NAME } from "@/lib/constant";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import { useTranslate } from "@tolgee/react";
+import { Menu } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "../../atoms/sheet";
 const navItems = [
   {
     label: "studio.nav.dashboard",
@@ -25,7 +32,7 @@ const Navbar = () => {
           <img src={pechaIcon} alt="Pecha Studio Logo" className="w-10 h-10" />
           <h1 className="font-semibold text-sm font-inter">{SITE_NAME}</h1>
         </div>
-        <div className="flex items-center space-x-6">
+        <div className="hidden md:flex items-center space-x-6">
           {navItems.map((item, index) => (
             <Link
               to={item.path}
@@ -38,7 +45,31 @@ const Navbar = () => {
         </div>
       </div>
       <div className="flex items-center space-x-2">
-        <AuthButton />
+        <Sheet>
+          <SheetTrigger className="md:hidden p-2">
+            <Menu className="h-5 w-5" />
+          </SheetTrigger>
+          <SheetContent side="top" className="h-full">
+            <div className="space-y-4 pt-8">
+              {navItems.map((item, index) => (
+                <SheetClose asChild key={index}>
+                  <Link
+                    to={item.path}
+                    className={`block py-3 text-lg text-center ${location.pathname === item.path || (item.path === "/dashboard" && location.pathname === "/") ? "font-bold" : ""}`}
+                  >
+                    {t(item.label)}
+                  </Link>
+                </SheetClose>
+              ))}
+              <div className="pt-4 border-t">
+                <AuthButton />
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+        <div className="hidden md:block">
+          <AuthButton />
+        </div>
         <ModeToggle />
         <LanguageToggle />
       </div>
