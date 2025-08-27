@@ -45,7 +45,7 @@ const Navbar = () => {
         </div>
       </div>
       <div className="flex items-center space-x-2">
-      <AuthButton />
+        <AuthButton />
         <ModeToggle />
         <LanguageToggle />
         <Sheet>
@@ -64,11 +64,9 @@ const Navbar = () => {
                   </Link>
                 </SheetClose>
               ))}
-
             </div>
           </SheetContent>
         </Sheet>
-
       </div>
     </div>
   );

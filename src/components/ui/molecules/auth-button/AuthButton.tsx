@@ -59,7 +59,9 @@ const AuthButton = () => {
           <span className="text-sm font-medium md:block hidden">
             {t("header.profileMenu.log_out")}
           </span>
-          <span className="md:hidden"><LogOut className="w-4 h-4" /></span>
+          <span className="md:hidden">
+            <LogOut className="w-4 h-4" />
+          </span>
         </Button>
       </div>
     );
