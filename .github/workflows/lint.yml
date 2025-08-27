@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  autofix:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +15,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Format with Prettier
-        run: npm run format
+      - name: Check formatting with Prettier
+        run: npm run format -- --check
 
-      - uses: autofix-ci/action@v3
+      - name: Run ESLint
+        run: npm run lint
