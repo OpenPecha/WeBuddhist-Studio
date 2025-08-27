@@ -28,7 +28,7 @@ const Signup = () => {
     mutationFn: async (signupData: SignupData) => {
       const response = await axiosInstance.post(
         `${BACKEND_BASE_URL}/api/v1/users/signup`,
-        signupData
+        signupData,
       );
       return response.data;
     },
@@ -38,7 +38,8 @@ const Signup = () => {
       }, 2000);
     },
     onError: (error: any) => {
-      const errorMsg = error?.response?.data?.message || "Signup failed. Please try again.";
+      const errorMsg =
+        error?.response?.data?.message || "Signup failed. Please try again.";
       setError(errorMsg);
     },
   });
@@ -47,7 +48,7 @@ const Signup = () => {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
-    
+
     const formDataObj = {
       email: formData.get("email") as string,
       firstname: formData.get("firstname") as string,
@@ -94,7 +95,10 @@ const Signup = () => {
         <div className="text-sm text-gray-400 mb-2.5 text-center w-full">
           {t("studio.signup.title")}
         </div>
-        <form className="w-full max-w-[425px] space-y-4" onSubmit={handleSubmit}>
+        <form
+          className="w-full max-w-[425px] space-y-4"
+          onSubmit={handleSubmit}
+        >
           <div className="text-sm space-y-2">
             <Label htmlFor="email" className="font-medium">
               {t("common.email")}
@@ -163,7 +167,9 @@ const Signup = () => {
               className=" w-full text-sm "
               disabled={signupMutation.isPending}
             >
-              {signupMutation.isPending ? "Signing up..." : t("common.button.submit")}
+              {signupMutation.isPending
+                ? "Signing up..."
+                : t("common.button.submit")}
             </Button>
           </div>
 
@@ -174,11 +180,11 @@ const Signup = () => {
           )}
           {signupMutation.isSuccess && (
             <div className="text-green-600 dark:text-green-400 flex items-center justify-center text-sm mb-2">
-              Signup successful! Check your email to verify your account. Redirecting to login...
+              Signup successful! Check your email to verify your account.
+              Redirecting to login...
             </div>
           )}
           <div className="flex justify-center">
-
             <Link to="/login" className="text-sm">
               {t("sign_up.already_have_account")}
             </Link>
