@@ -3,7 +3,7 @@ name: Set Default Branch Protection Rules
 on:
   push:
     branches:
-      - main  # Trigger this workflow on pushes to the main branch
+      - main # Trigger this workflow on pushes to the main branch
 
 jobs:
   set-protection:

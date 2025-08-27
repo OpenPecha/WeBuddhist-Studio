@@ -1,24 +1,24 @@
-import { Languages } from "lucide-react"
-import { useTolgee } from "@tolgee/react"
+import { Languages } from "lucide-react";
+import { useTolgee } from "@tolgee/react";
 
-import { Button } from "../../atoms/button"
+import { Button } from "../../atoms/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../atoms/dropdown-menu"
-import { LANGUAGE } from "../../../../lib/constant"
-import { setFontVariables } from "../../../../lib/font-config"
+} from "../../atoms/dropdown-menu";
+import { LANGUAGE } from "../../../../lib/constant";
+import { setFontVariables } from "../../../../lib/font-config";
 
 export function LanguageToggle() {
-  const tolgee = useTolgee(['language'])
+  const tolgee = useTolgee(["language"]);
 
   const changeLanguage = (language: string) => {
-    tolgee.changeLanguage(language)
-    localStorage.setItem(LANGUAGE, language)
-    setFontVariables(language)
-  }
+    tolgee.changeLanguage(language);
+    localStorage.setItem(LANGUAGE, language);
+    setFontVariables(language);
+  };
 
   return (
     <DropdownMenu>
@@ -28,13 +28,19 @@ export function LanguageToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => changeLanguage("en")} className=" font-inter">
+        <DropdownMenuItem
+          onClick={() => changeLanguage("en")}
+          className=" font-inter"
+        >
           English
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => changeLanguage("bo-IN")} className=" font-monlam">
+        <DropdownMenuItem
+          onClick={() => changeLanguage("bo-IN")}
+          className=" font-monlam"
+        >
           བོད་ཡིག
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

@@ -1,26 +1,30 @@
-import { useAuth } from "@/config/auth-context"
-import { Button } from "../../atoms/button"
-import { Skeleton } from "../../atoms/skeleton"
-import { useNavigate } from 'react-router-dom'
+import { useAuth } from "@/config/auth-context";
+import { Button } from "../../atoms/button";
+import { Skeleton } from "../../atoms/skeleton";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslate } from "@tolgee/react";
 export const fetchUserInfo = async () => {
-    const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/users/info`);
-    return data;
-  };
+  const { data } = await axiosInstance.get(
+    `${BACKEND_BASE_URL}/api/v1/users/info`,
+  );
+  return data;
+};
 const AuthButton = () => {
-    const navigate = useNavigate()
-    const { isLoggedIn, logout, isAuthLoading } = useAuth();
-    const {data:userInfo, isLoading:isUserInfoLoading}= useQuery({
-        queryKey: ['userInfo'],
-        queryFn: fetchUserInfo
-    })
-    function handleLogout(e: React.MouseEvent<HTMLButtonElement>) {
-        e.preventDefault()
-        logout()
-        navigate('/login');
-      }
+  const navigate = useNavigate();
+  const { t } = useTranslate();
+  const { isLoggedIn, logout, isAuthLoading } = useAuth();
+  const { data: userInfo, isLoading: isUserInfoLoading } = useQuery({
+    queryKey: ["userInfo"],
+    queryFn: fetchUserInfo,
+  });
+  function handleLogout(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    logout();
+    navigate("/login");
+  }
   const isLoading = isAuthLoading || (isLoggedIn && isUserInfoLoading);
 
   if (isLoading) {
@@ -39,13 +43,21 @@ const AuthButton = () => {
   if (isLoggedIn) {
     return (
       <div className="flex items-center font-dynamic gap-2">
-        <img src={userInfo.avatar_url} alt="user" className="w-8 h-8 rounded-full" />
+        <img
+          src={userInfo.avatar_url}
+          alt="user"
+          className="w-8 h-8 rounded-full"
+        />
         <div className="flex flex-col">
-          <span className="text-sm font-medium">{userInfo.firstname} {userInfo.lastname}</span>
+          <span className="text-sm font-medium">
+            {userInfo.firstname} {userInfo.lastname}
+          </span>
           <span className="text-xs text-[#8a8a8a]">{userInfo.email}</span>
         </div>
         <Button onClick={handleLogout} variant="outline">
-          <span className="text-sm font-medium">Logout</span>
+          <span className="text-sm font-medium">
+            {t("header.profileMenu.log_out")}
+          </span>
         </Button>
       </div>
     );
@@ -53,14 +65,16 @@ const AuthButton = () => {
 
   return (
     <div className="flex items-center font-dynamic gap-2">
-      <Button onClick={() => navigate('/login')} variant="outline">
-        <span className="text-sm font-medium">Login</span>
+      <Button onClick={() => navigate("/login")} variant="outline">
+        <span className="text-sm font-medium">
+          {t("login.form.button.login_in")}
+        </span>
       </Button>
-      <Button onClick={() => navigate('/signup')} variant="secondary">
-        <span className="text-sm font-medium">Signup</span>
+      <Button onClick={() => navigate("/signup")} variant="secondary">
+        <span className="text-sm font-medium">{t("common.sign_up")}</span>
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default AuthButton
+export default AuthButton;

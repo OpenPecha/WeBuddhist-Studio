@@ -1,20 +1,20 @@
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
 
-vi.mock('@/config/auth-context', () => ({
+vi.mock("@/config/auth-context", () => ({
   useAuth: () => ({
     login: vi.fn(),
     logout: vi.fn(),
     isLoggedIn: false,
-    isAuthLoading: false
-  })
-}))
+    isAuthLoading: false,
+  }),
+}));
 
-vi.mock('@/config/axios-config', () => ({
+vi.mock("@/config/axios-config", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
-    delete: vi.fn()
-  }
-}))
+    delete: vi.fn(),
+  },
+}));
