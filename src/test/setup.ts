@@ -18,3 +18,9 @@ vi.mock("@/config/axios-config", () => ({
     delete: vi.fn(),
   },
 }));
+
+vi.mock("@tolgee/react", () => ({
+  useTranslate: () => ({
+    t: (key: string) => key,
+  }),
+}));
