@@ -28,7 +28,9 @@ const ForgotPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      setSuccess("Email with reset password link is sent to your email address");
+      setSuccess(
+        "Email with reset password link is sent to your email address",
+      );
       navigate("/");
     },
     onError: (error: any) => {
