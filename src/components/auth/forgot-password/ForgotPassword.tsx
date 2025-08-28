@@ -11,10 +11,9 @@ import { useTranslate } from "@tolgee/react";
 
 const ForgotPassword = () => {
   const { t } = useTranslate();
-  const [email, setEmail] = useState("");
   const navigate = useNavigate();
   const [error, setError] = useState("");
-
+  const [success, setSuccess] = useState("");
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -29,7 +28,7 @@ const ForgotPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      alert("Email with reset password link is sent to your email address");
+      setSuccess("Email with reset password link is sent to your email address");
       navigate("/");
     },
     onError: (error: any) => {
@@ -38,6 +37,8 @@ const ForgotPassword = () => {
   });
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get("email") as string;
     if (!email) {
       setError("Email is required");
     } else if (!validateEmail(email)) {
@@ -83,14 +84,17 @@ const ForgotPassword = () => {
               placeholder={t("studio.login.placeholder.email")}
               className="placeholder:text-[#b1b1b1]"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
             />
           </div>
           {error && (
             <div className="text-red-800 dark:text-red-400 flex items-center justify-center text-sm">
-              {" "}
-              {error}{" "}
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="text-green-800 dark:text-green-400 flex items-center justify-center text-sm">
+              {success}
             </div>
           )}
           <div className="flex mt-4 justify-center">
