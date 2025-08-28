@@ -68,7 +68,7 @@ const ForgotPassword = () => {
           </div>
         </div>
         <div className="text-sm text-gray-400 mb-2.5 text-center w-full">
-          Enter your email address to reset your password
+          {t("studio.reset_password.description")}
         </div>
         <form
           className="w-full max-w-[425px] space-y-4"
@@ -100,7 +100,7 @@ const ForgotPassword = () => {
           </div>
           <div className="flex justify-center">
             <Link to="/login" className="text-sm">
-              Back to login
+              {t("studio.reset_password.back_to_login")}
             </Link>
           </div>
         </form>
