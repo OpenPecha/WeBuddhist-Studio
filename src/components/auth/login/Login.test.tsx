@@ -24,8 +24,12 @@ describe("Login Component", () => {
   it("renders login form with email and password fields", () => {
     renderWithProviders(<Login />);
 
-    expect(screen.getByPlaceholderText("studio.login.placeholder.email")).toBeDefined();
-    expect(screen.getByPlaceholderText("studio.login.placeholder.password")).toBeDefined();
+    expect(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+    ).toBeDefined();
+    expect(
+      screen.getByPlaceholderText("studio.login.placeholder.password"),
+    ).toBeDefined();
     expect(screen.getByText("common.button.submit")).toBeDefined();
   });
 

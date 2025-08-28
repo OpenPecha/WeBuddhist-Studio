@@ -24,10 +24,18 @@ describe("Signup Component", () => {
   it("renders signup form with all required fields", () => {
     renderWithProviders(<Signup />);
 
-    expect(screen.getByPlaceholderText("studio.login.placeholder.email")).toBeDefined();
-    expect(screen.getByPlaceholderText("studio.signup.placeholder.first_name")).toBeDefined();
-    expect(screen.getByPlaceholderText("studio.signup.placeholder.last_name")).toBeDefined();
-    expect(screen.getAllByPlaceholderText("studio.signup.placeholder.password")).toHaveLength(2);
+    expect(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+    ).toBeDefined();
+    expect(
+      screen.getByPlaceholderText("studio.signup.placeholder.first_name"),
+    ).toBeDefined();
+    expect(
+      screen.getByPlaceholderText("studio.signup.placeholder.last_name"),
+    ).toBeDefined();
+    expect(
+      screen.getAllByPlaceholderText("studio.signup.placeholder.password"),
+    ).toHaveLength(2);
     expect(screen.getByText("common.button.submit")).toBeDefined();
   });
 
