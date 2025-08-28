@@ -24,7 +24,7 @@ const ForgotPassword = () => {
     mutationFn: async (emailData: { email: string }) => {
       const response = await axiosInstance.post(
         `${BACKEND_BASE_URL}/api/v1/auth/request-reset-password`,
-        emailData
+        emailData,
       );
       return response.data;
     },
@@ -68,9 +68,12 @@ const ForgotPassword = () => {
           </div>
         </div>
         <div className="text-sm text-gray-400 mb-2.5 text-center w-full">
-        Enter your email address to reset your password
+          Enter your email address to reset your password
         </div>
-        <form className="w-full max-w-[425px] space-y-4" onSubmit={handleForgotPassword}>
+        <form
+          className="w-full max-w-[425px] space-y-4"
+          onSubmit={handleForgotPassword}
+        >
           <div className="text-sm space-y-2">
             <Label htmlFor="email" className="font-medium">
               {t("common.email")}
@@ -91,11 +94,13 @@ const ForgotPassword = () => {
             </div>
           )}
           <div className="flex mt-4 justify-center">
-          <Button type="submit" variant="outline" className="w-full text-sm">{t("common.button.submit")}</Button>
+            <Button type="submit" variant="outline" className="w-full text-sm">
+              {t("common.button.submit")}
+            </Button>
           </div>
           <div className="flex justify-center">
             <Link to="/login" className="text-sm">
-            Back to login
+              Back to login
             </Link>
           </div>
         </form>

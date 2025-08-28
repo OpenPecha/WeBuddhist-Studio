@@ -23,8 +23,10 @@ const renderWithProviders = (component: React.ReactElement) => {
 describe("ForgotPassword Component", () => {
   it("renders forgot password form with email field", () => {
     renderWithProviders(<ForgotPassword />);
-  
-    expect(screen.getByPlaceholderText("studio.login.placeholder.email")).toBeDefined();
+
+    expect(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+    ).toBeDefined();
     expect(screen.getByText("common.button.submit")).toBeDefined();
   });
 
@@ -46,13 +48,17 @@ describe("ForgotPassword Component", () => {
   it("displays forgot password instructions", () => {
     renderWithProviders(<ForgotPassword />);
 
-    expect(screen.getByText("Enter your email address to reset your password")).toBeDefined();
+    expect(
+      screen.getByText("Enter your email address to reset your password"),
+    ).toBeDefined();
   });
 
   it("validates correct email format", () => {
     renderWithProviders(<ForgotPassword />);
 
-    const emailInput = screen.getByPlaceholderText("studio.login.placeholder.email");
+    const emailInput = screen.getByPlaceholderText(
+      "studio.login.placeholder.email",
+    );
     const submitButton = screen.getByText("common.button.submit");
 
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });

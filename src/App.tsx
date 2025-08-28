@@ -14,7 +14,9 @@ import { LANGUAGE } from "./lib/constant";
 function App() {
   const location = useLocation();
   const hideNavbar =
-    location.pathname === "/login" || location.pathname === "/signup" || location.pathname === "/forgot-password";
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/forgot-password";
 
   useEffect(() => {
     setFontVariables(localStorage.getItem(LANGUAGE) || "en");
