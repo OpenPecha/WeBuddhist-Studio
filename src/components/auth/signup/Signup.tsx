@@ -180,8 +180,7 @@ const Signup = () => {
           )}
           {signupMutation.isSuccess && (
             <div className="text-green-600 dark:text-green-400 flex items-center justify-center text-sm mb-2">
-              Signup successful! Check your email to verify your account.
-              Redirecting to login...
+              {t("studio.signup.success_message")}
             </div>
           )}
           <div className="flex justify-center">
