@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ForgotPassword from "./ForgotPassword";
@@ -47,5 +47,17 @@ describe("ForgotPassword Component", () => {
     renderWithProviders(<ForgotPassword />);
 
     expect(screen.getByText("Enter your email address to reset your password")).toBeDefined();
+  });
+
+  it("validates correct email format", () => {
+    renderWithProviders(<ForgotPassword />);
+
+    const emailInput = screen.getByPlaceholderText("studio.login.placeholder.email");
+    const submitButton = screen.getByText("common.button.submit");
+
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.click(submitButton);
+
+    expect(screen.queryByText("Please enter a valid email address")).toBeNull();
   });
 });
