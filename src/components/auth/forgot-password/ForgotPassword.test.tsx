@@ -42,15 +42,15 @@ describe("ForgotPassword Component", () => {
   it("shows back to login link", () => {
     renderWithProviders(<ForgotPassword />);
 
-    expect(screen.getByText("studio.reset_password.back_to_login")).toBeDefined();
+    expect(
+      screen.getByText("studio.reset_password.back_to_login"),
+    ).toBeDefined();
   });
 
   it("displays forgot password instructions", () => {
     renderWithProviders(<ForgotPassword />);
 
-    expect(
-      screen.getByText("studio.reset_password.description"),
-    ).toBeDefined();
+    expect(screen.getByText("studio.reset_password.description")).toBeDefined();
   });
 
   it("validates correct email format", () => {
