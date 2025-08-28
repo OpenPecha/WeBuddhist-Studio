@@ -24,9 +24,13 @@ describe("Login Component", () => {
   it("renders login form with email and password fields", () => {
     renderWithProviders(<Login />);
 
-    expect(screen.getByPlaceholderText("Enter your Email")).toBeDefined();
-    expect(screen.getByPlaceholderText("Enter your Password")).toBeDefined();
-    expect(screen.getByText("Submit")).toBeDefined();
+    expect(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+    ).toBeDefined();
+    expect(
+      screen.getByPlaceholderText("studio.login.placeholder.password"),
+    ).toBeDefined();
+    expect(screen.getByText("common.button.submit")).toBeDefined();
   });
 
   it("displays the app title and description", () => {
@@ -41,6 +45,6 @@ describe("Login Component", () => {
   it("shows signup link", () => {
     renderWithProviders(<Login />);
 
-    expect(screen.getByText("Don't have an account? Signup")).toBeDefined();
+    expect(screen.getByText("studio.login.no_account")).toBeDefined();
   });
 });
