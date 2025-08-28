@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "shad": "npx shadcn@latest add",
     "test": "vitest",
     "coverage": "vitest run --coverage",
