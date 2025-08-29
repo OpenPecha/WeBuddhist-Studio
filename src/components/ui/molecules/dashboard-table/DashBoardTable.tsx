@@ -7,7 +7,8 @@ import {
   TableRow,
 } from "../../atoms/table";
 import { Button } from "../../atoms/button";
-import { Plus } from "lucide-react";
+import { Badge } from "../../atoms/badge";
+import { Pencil, Plus, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 export interface Plan {
   id: string;
@@ -16,6 +17,7 @@ export interface Plan {
   subtitle: string;
   planDay: string;
   planUsed: string;
+  status: string;
 }
 
 interface DashBoardTableProps {
@@ -25,6 +27,29 @@ interface DashBoardTableProps {
 
 export function DashBoardTable({ plans, t }: DashBoardTableProps) {
   const navigate = useNavigate();
+  const getStatusBadge = (status: string) => {
+    if (status === "Published") {
+      return (
+        <Badge className="bg-green-100 text-green-500 px-3 py-1.5 text-base font-medium">
+          <div className="w-3 h-3 rounded-full border-2 border-dashed border-green-500 mr-2"></div>
+          Published
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge
+          className="px-3 py-1.5 text-base font-medium"
+          style={{ color: "#008DFF", backgroundColor: "#E1F0FF" }}
+        >
+          <div
+            className="w-3 h-3 rounded-full border-2 border-dashed mr-2"
+            style={{ borderColor: "#008DFF" }}
+          ></div>
+          In Draft
+        </Badge>
+      );
+    }
+  };
   return (
     <div className="w-full h-[600px] overflow-auto">
       <Table>
@@ -36,12 +61,13 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
             <TableHead className="font-bold">
               {t("studio.dashboard.title")}
             </TableHead>
-            <TableHead className="w-[100px] font-bold">
+            <TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.plan_days")}
             </TableHead>
             <TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.plan_used")}
             </TableHead>
+            <TableHead className="w-[150px] font-bold">Status</TableHead>
             <TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.actions")}
             </TableHead>
@@ -51,7 +77,7 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
           {plans.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className="text-center py-10 text-muted-foreground"
               >
                 <div className="flex flex-col items-center justify-center">
@@ -89,10 +115,24 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
                 </TableCell>
                 <TableCell>{plan.planDay}</TableCell>
                 <TableCell>{plan.planUsed}</TableCell>
+                <TableCell>{getStatusBadge(plan.status)}</TableCell>
                 <TableCell>
-                  <Button variant="destructive" className="w-20">
-                    {t("sheet.sheet_list.delete")}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 w-10"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
