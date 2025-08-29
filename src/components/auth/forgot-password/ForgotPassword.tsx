@@ -8,16 +8,14 @@ import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useState } from "react";
 import { useTranslate } from "@tolgee/react";
+import { forgotPasswordSchema } from "@/schema/ForgotPasswordSchema";
+import { z } from "zod";
 
 const ForgotPassword = () => {
   const { t } = useTranslate();
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const forgotPasswordMutation = useMutation({
     mutationFn: async (emailData: { email: string }) => {
@@ -41,12 +39,13 @@ const ForgotPassword = () => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get("email") as string;
-    if (!email) {
-      setError("Email is required");
-    } else if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-    } else {
-      forgotPasswordMutation.mutate({ email });
+    try {
+      const validatedEmail = forgotPasswordSchema.parse({ email });
+      forgotPasswordMutation.mutate({ email: validatedEmail.email });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setError(error.issues[0].message);
+      }
     }
   };
 
@@ -82,10 +81,9 @@ const ForgotPassword = () => {
               {t("common.email")}
             </Label>
             <Input
-              type="email"
+              type="text"
               placeholder={t("studio.login.placeholder.email")}
               className="placeholder:text-[#b1b1b1]"
-              required
               name="email"
             />
           </div>
