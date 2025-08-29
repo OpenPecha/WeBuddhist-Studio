@@ -37,8 +37,14 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
       );
     } else {
       return (
-        <Badge className="px-3 py-1.5 text-base font-medium" style={{color: '#008DFF', backgroundColor: '#E1F0FF'}}>
-          <div className="w-3 h-3 rounded-full border-2 border-dashed mr-2" style={{borderColor: '#008DFF'}}></div>
+        <Badge
+          className="px-3 py-1.5 text-base font-medium"
+          style={{ color: "#008DFF", backgroundColor: "#E1F0FF" }}
+        >
+          <div
+            className="w-3 h-3 rounded-full border-2 border-dashed mr-2"
+            style={{ borderColor: "#008DFF" }}
+          ></div>
           In Draft
         </Badge>
       );
