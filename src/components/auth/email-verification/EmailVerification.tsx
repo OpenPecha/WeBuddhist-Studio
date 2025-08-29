@@ -11,7 +11,7 @@ interface VerificationState {
 
 const EmailVerification = () => {
   const navigate = useNavigate();
-  const [verificationState, setVerificationState] = useState<VerificationState>(
+  const [verificationState] = useState<VerificationState>(
     {
       status: "success",
       message: "Your email has been successfully verified!",
