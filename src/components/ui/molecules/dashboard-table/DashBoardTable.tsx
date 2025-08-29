@@ -30,15 +30,15 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
   const getStatusBadge = (status: string) => {
     if (status === "Published") {
       return (
-        <Badge className="bg-green-50 text-green-500 px-3 py-1.5 text-sm font-medium">
+        <Badge className="bg-green-100 text-green-500 px-3 py-1.5 text-base font-medium">
           <div className="w-3 h-3 rounded-full border-2 border-dashed border-green-500 mr-2"></div>
           Published
         </Badge>
       );
     } else {
       return (
-        <Badge className="bg-blue-50 text-blue-500 px-3 py-1.5 text-sm font-medium">
-          <div className="w-3 h-3 rounded-full border-2 border-dashed border-blue-500 mr-2"></div>
+        <Badge className="px-3 py-1.5 text-base font-medium" style={{color: '#008DFF', backgroundColor: '#E1F0FF'}}>
+          <div className="w-3 h-3 rounded-full border-2 border-dashed mr-2" style={{borderColor: '#008DFF'}}></div>
           In Draft
         </Badge>
       );
@@ -122,7 +122,7 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 w-10 bg-gray-100 hover:bg-gray-200"
+                      className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
