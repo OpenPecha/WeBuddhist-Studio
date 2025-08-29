@@ -11,12 +11,10 @@ interface VerificationState {
 
 const EmailVerification = () => {
   const navigate = useNavigate();
-  const [verificationState] = useState<VerificationState>(
-    {
-      status: "success",
-      message: "Your email has been successfully verified!",
-    },
-  );
+  const [verificationState] = useState<VerificationState>({
+    status: "success",
+    message: "Your email has been successfully verified!",
+  });
 
   const handleLoginRedirect = () => {
     navigate("/login");
