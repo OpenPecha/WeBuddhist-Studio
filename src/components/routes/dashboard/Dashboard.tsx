@@ -55,10 +55,14 @@ const plansData = [
 const Dashboard = () => {
   const { t } = useTranslate();
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); //current: static
+  const [currentPage] = useState(1); //current: static
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const { data: listPlans, isLoading, error } = useQuery({
+  const {
+    data: listPlans,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["dashboard-plans", currentPage, debouncedSearch],
     queryFn: () => fetchPlans(currentPage, 20, debouncedSearch || undefined),
     refetchOnWindowFocus: false,
@@ -88,7 +92,9 @@ const Dashboard = () => {
     return <div className="text-center py-4">Loading...</div>;
   }
   if (error) {
-    return <div className="text-center text-red-500 py-4">Error fetching plans</div>;
+    return (
+      <div className="text-center text-red-500 py-4">Error fetching plans</div>
+    );
   }
   return (
     <div className="w-full h-full font-dynamic px-10 pt-10">
