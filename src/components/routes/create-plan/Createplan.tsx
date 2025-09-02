@@ -237,7 +237,7 @@ const Createplan = () => {
               <Button
                 type="submit"
                 variant="default"
-                className=" h-12 px-12 font-medium  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
                 onClick={form.handleSubmit(onSubmit)}
               >
                 {t("studio.plan.next_button")}
