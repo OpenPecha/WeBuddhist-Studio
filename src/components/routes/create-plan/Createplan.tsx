@@ -1,11 +1,24 @@
-
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/atoms/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/atoms/form";
 import { Input } from "@/components/ui/atoms/input";
 import { Button } from "@/components/ui/atoms/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/atoms/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/atoms/select";
 import { useForm } from "react-hook-form";
 import { Plus, X } from "lucide-react";
 import { useState, useRef } from "react";
+import { Textarea } from "@/components/ui/atoms/textarea";
 
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -31,8 +44,8 @@ const Createplan = () => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      form.setValue('coverImage', file);
-      
+      form.setValue("coverImage", file);
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -44,9 +57,9 @@ const Createplan = () => {
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    form.setValue('coverImage', null);
+    form.setValue("coverImage", null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -58,7 +71,7 @@ const Createplan = () => {
     <div className="w-full h-full font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
         <h1 className="text-2xl font-bold mb-8">Detail</h1>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -67,10 +80,10 @@ const Createplan = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input 
-                      placeholder="Plan Title" 
+                    <Input
+                      placeholder="Plan Title"
                       className="h-12 text-base"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -84,8 +97,8 @@ const Createplan = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <textarea
-                      placeholder="Description"
+                    <Textarea
+                    placeholder="Description"
                       className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                       {...field}
                     />
@@ -100,15 +113,17 @@ const Createplan = () => {
               name="numberOfDays"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-medium">Number of Day</FormLabel>
+                  <FormLabel className="text-base font-medium">
+                    Number of Day
+                  </FormLabel>
                   <FormControl>
-                    <Input 
+                    <Input
                       type="number"
-                      placeholder="Number of Days..." 
+                      placeholder="Number of Days..."
                       className="h-12 text-base"
                       min="1"
                       max="365"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -118,8 +133,10 @@ const Createplan = () => {
 
             <div className="space-y-2">
               <h3 className="text-base font-medium">Cover Image</h3>
-              <p className="text-sm text-muted-foreground">Set a Cover Image that stands out and draws readers attention.</p>
-              
+              <p className="text-sm text-muted-foreground">
+                Set a Cover Image that stands out and draws readers attention.
+              </p>
+
               <input
                 type="file"
                 ref={fileInputRef}
@@ -127,38 +144,37 @@ const Createplan = () => {
                 accept="image/*"
                 className="hidden"
               />
-              
+
               <div className="flex gap-4 items-start">
-                <button 
+                <button
                   type="button"
                   onClick={handleImageClick}
                   className="border sm:w-1/4 w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
                 >
                   <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 </button>
-                
+
                 {imagePreview && (
                   <div className=" relative">
-                    <img 
-                      src={imagePreview} 
-                      alt="Cover preview" 
+                    <img
+                      src={imagePreview}
+                      alt="Cover preview"
                       className="w-48 h-32 object-cover rounded-lg border"
                     />
                     <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
-                    {selectedImage && (
-                      <p className="text-xs text-white truncate max-w-32">
-                        {selectedImage.name}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleRemoveImage}
-                      className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                      {selectedImage && (
+                        <p className="text-xs text-white truncate max-w-32">
+                          {selectedImage.name}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-
                   </div>
                 )}
               </div>
@@ -175,8 +191,13 @@ const Createplan = () => {
               name="difficulty"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-medium">Difficulty</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel className="text-base font-medium">
+                    Difficulty
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="h-12">
                         <SelectValue placeholder="Select Difficulty" />
@@ -194,10 +215,9 @@ const Createplan = () => {
               )}
             />
 
-
             <div className="pt-8 w-fit">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 variant="default"
                 className=" h-12 px-12 font-medium  bg-[#A51C21] hover:bg-[#A51C21]/90"
                 onClick={form.handleSubmit(onSubmit)}

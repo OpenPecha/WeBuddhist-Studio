@@ -64,9 +64,9 @@ const Dashboard = () => {
           />
         </div>
         <Link to="/create-plan">
-        <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
-          <Plus /> Add Plan
-        </Button>
+          <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
+            <Plus /> Add Plan
+          </Button>
         </Link>
       </div>
       <DashBoardTable plans={filteredPlans} t={t} />
