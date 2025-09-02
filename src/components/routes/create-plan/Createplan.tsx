@@ -4,9 +4,14 @@ import { Input } from "@/components/ui/atoms/input";
 import { Button } from "@/components/ui/atoms/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/atoms/select";
 import { useForm } from "react-hook-form";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import { useState, useRef } from "react";
 
 const Createplan = () => {
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm({
     defaultValues: {
       planTitle: "",
@@ -14,9 +19,36 @@ const Createplan = () => {
       numberOfDays: "",
       difficulty: "",
       tags: "",
-      coverImage: null,
+      coverImage: null as File | null,
     },
   });
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      form.setValue('coverImage', file);
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    form.setValue('coverImage', null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const onSubmit = (data: any) => {
     console.log(data);
@@ -54,7 +86,7 @@ const Createplan = () => {
                   <FormControl>
                     <textarea
                       placeholder="Description"
-                      className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                      className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -87,8 +119,48 @@ const Createplan = () => {
             <div className="space-y-2">
               <h3 className="text-base font-medium">Cover Image</h3>
               <p className="text-sm text-muted-foreground">Set a Cover Image that stands out and draws readers attention.</p>
-              <div className="border sm:w-1/4 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer">
-                <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+              
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+              />
+              
+              <div className="flex gap-4 items-start">
+                <button 
+                  type="button"
+                  onClick={handleImageClick}
+                  className="border sm:w-1/4 w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
+                >
+                  <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                </button>
+                
+                {imagePreview && (
+                  <div className=" relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Cover preview" 
+                      className="w-48 h-32 object-cover rounded-lg border"
+                    />
+                    <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
+                    {selectedImage && (
+                      <p className="text-xs text-white truncate max-w-32">
+                        {selectedImage.name}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    </div>
+
+                  </div>
+                )}
               </div>
             </div>
           </form>
