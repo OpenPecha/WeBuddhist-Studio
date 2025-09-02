@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
+import { Link } from "react-router-dom";
 
 const plansData = [
   {
@@ -62,9 +63,11 @@ const Dashboard = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <Link to="/create-plan">
         <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
           <Plus /> Add Plan
         </Button>
+        </Link>
       </div>
       <DashBoardTable plans={filteredPlans} t={t} />
       <Pagination className="mt-4">
