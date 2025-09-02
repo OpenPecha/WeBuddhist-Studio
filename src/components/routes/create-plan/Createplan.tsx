@@ -23,7 +23,7 @@ const Createplan = () => {
   };
 
   return (
-    <div className="w-full h-full font-dynamic flex">
+    <div className="w-full h-full font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
         <h1 className="text-2xl font-bold mb-8">Detail</h1>
         
@@ -87,7 +87,7 @@ const Createplan = () => {
             <div className="space-y-2">
               <h3 className="text-base font-medium">Cover Image</h3>
               <p className="text-sm text-muted-foreground">Set a Cover Image that stands out and draws readers attention.</p>
-              <div className="border w-1/4 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer">
+              <div className="border sm:w-1/4 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer">
                 <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
               </div>
             </div>
@@ -95,7 +95,7 @@ const Createplan = () => {
         </Form>
       </div>
 
-      <div className="flex-1 p-10 mt-8">
+      <div className="flex-1 p-10 sm:mt-8">
         <Form {...form}>
           <div className="space-y-6">
             <FormField
