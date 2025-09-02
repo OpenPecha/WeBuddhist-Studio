@@ -22,12 +22,14 @@ import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
+import { useTranslate } from "@tolgee/react";
 
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
 
   const form = useForm({
@@ -72,7 +74,9 @@ const Createplan = () => {
   return (
     <div className="w-full h-full font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
-        <h1 className="text-xl font-bold my-4">Detail</h1>
+        <h1 className="text-xl font-bold my-4">
+          {t("studio.plan.form_field.details")}
+        </h1>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -83,7 +87,7 @@ const Createplan = () => {
                 <FormItem>
                   <FormControl>
                     <Input
-                      placeholder="Plan Title"
+                      placeholder={t("studio.plan.form.placeholder.title")}
                       className="h-12 text-base"
                       {...field}
                     />
@@ -100,7 +104,9 @@ const Createplan = () => {
                 <FormItem>
                   <FormControl>
                     <Textarea
-                      placeholder="Description"
+                      placeholder={t(
+                        "studio.plan.form.placeholder.description",
+                      )}
                       className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                       {...field}
                     />
@@ -116,12 +122,14 @@ const Createplan = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-bold">
-                    Number of Day
+                    {t("studio.plan.form_field.number_of_day")}
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Number of Days..."
+                      placeholder={t(
+                        "studio.plan.form.placeholder.number_of_days",
+                      )}
                       className="h-12 text-base"
                       min="1"
                       max="365"
@@ -134,9 +142,11 @@ const Createplan = () => {
             />
 
             <div>
-              <h3 className="text-sm font-bold">Cover Image</h3>
+              <h3 className="text-sm font-bold">
+                {t("studio.dashboard.cover_image")}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                Set a Cover Image that stands out and draws readers attention.
+                {t("studio.plan.cover_image.description")}
               </p>
 
               <input
@@ -196,7 +206,7 @@ const Createplan = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-bold">
-                    Difficulty
+                    {t("studio.plan.form_field.difficulty")}
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -204,7 +214,11 @@ const Createplan = () => {
                   >
                     <FormControl>
                       <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Select Difficulty" />
+                        <SelectValue
+                          placeholder={t(
+                            "studio.plan.form.placeholder.select_difficulty",
+                          )}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -226,7 +240,7 @@ const Createplan = () => {
                 className=" h-12 px-12 font-medium  bg-[#A51C21] hover:bg-[#A51C21]/90"
                 onClick={form.handleSubmit(onSubmit)}
               >
-                Next
+                {t("studio.plan.next_button")}
               </Button>
             </div>
           </div>
