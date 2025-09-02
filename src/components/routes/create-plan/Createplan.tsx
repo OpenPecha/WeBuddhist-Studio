@@ -70,7 +70,7 @@ const Createplan = () => {
   return (
     <div className="w-full h-full font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
-        <h1 className="text-2xl font-bold mb-8">Detail</h1>
+        <h1 className="text-xl font-bold my-4">Detail</h1>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -98,7 +98,7 @@ const Createplan = () => {
                 <FormItem>
                   <FormControl>
                     <Textarea
-                    placeholder="Description"
+                      placeholder="Description"
                       className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                       {...field}
                     />
@@ -113,7 +113,7 @@ const Createplan = () => {
               name="numberOfDays"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-medium">
+                  <FormLabel className="text-sm font-bold">
                     Number of Day
                   </FormLabel>
                   <FormControl>
@@ -131,8 +131,8 @@ const Createplan = () => {
               )}
             />
 
-            <div className="space-y-2">
-              <h3 className="text-base font-medium">Cover Image</h3>
+            <div>
+              <h3 className="text-sm font-bold">Cover Image</h3>
               <p className="text-sm text-muted-foreground">
                 Set a Cover Image that stands out and draws readers attention.
               </p>
@@ -145,7 +145,7 @@ const Createplan = () => {
                 className="hidden"
               />
 
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-4 mt-4 items-start">
                 <button
                   type="button"
                   onClick={handleImageClick}
@@ -183,7 +183,7 @@ const Createplan = () => {
         </Form>
       </div>
 
-      <div className="flex-1 p-10 sm:mt-8">
+      <div className="flex-1 p-10 sm:mt-9">
         <Form {...form}>
           <div className="space-y-6">
             <FormField
@@ -191,7 +191,7 @@ const Createplan = () => {
               name="difficulty"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-medium">
+                  <FormLabel className="text-sm font-bold">
                     Difficulty
                   </FormLabel>
                   <Select
