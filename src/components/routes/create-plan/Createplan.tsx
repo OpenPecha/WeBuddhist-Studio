@@ -16,35 +16,37 @@ import {
   SelectValue,
 } from "@/components/ui/atoms/select";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X } from "lucide-react";
 import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/atoms/textarea";
+import { planSchema } from "@/schema/PlanSchema";
+import { z } from "zod";
 
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  type PlanFormData = z.infer<typeof planSchema>;
+
   const form = useForm({
+    resolver: zodResolver(planSchema),
     defaultValues: {
       planTitle: "",
       description: "",
       numberOfDays: "",
       difficulty: "",
-      tags: "",
-      coverImage: null as File | null,
+      coverImage: "",
     },
   });
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      form.setValue("coverImage", file);
+      console.log(file);
+      form.setValue("coverImage", file.name);
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -57,14 +59,14 @@ const Createplan = () => {
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    form.setValue("coverImage", null);
+    form.setValue("coverImage", "");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = (data: PlanFormData) => {
+    console.log("Form submitted with valid data:", data);
   };
 
   return (
@@ -148,14 +150,16 @@ const Createplan = () => {
               <div className="flex gap-4 mt-4 items-start">
                 <button
                   type="button"
-                  onClick={handleImageClick}
-                  className="border sm:w-1/4 w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
+                  onClick={() => {
+                    fileInputRef.current?.click();
+                  }}
+                  className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
                 >
                   <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 </button>
 
                 {imagePreview && (
-                  <div className=" relative">
+                  <div className="relative">
                     <img
                       src={imagePreview}
                       alt="Cover preview"
