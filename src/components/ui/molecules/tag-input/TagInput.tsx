@@ -32,11 +32,11 @@ const TagInput = () => {
           {tags.map((tag, index) => (
             <div
               key={index}
-              className=" bg-gray-100 space-x-4 w-fit border border-dashed px-4 rounded-full py-2 flex items-center justify-between"
+              className=" bg-gray-100 dark:bg-input/30 space-x-4 w-fit border border-dashed px-4 rounded-full py-2 flex items-center justify-between"
             >
-              <p className="text-sm">{tag}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-100">{tag}</p>
               <X
-                className=" h-5 w-5 text-white rounded-full p-1 border border-dashed  bg-gray-300 hover:bg-gray-400 transition cursor-pointer"
+                className=" h-5 w-5 text-white rounded-full p-1 border border-dashed dark:bg-input/90 hover:bg-gray-400 transition cursor-pointer"
                 onClick={() => removeTag(index)}
               />
             </div>
