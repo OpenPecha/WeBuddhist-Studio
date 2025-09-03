@@ -8,7 +8,7 @@ import {
 } from "../../atoms/table";
 import { Button } from "../../atoms/button";
 import { Badge } from "../../atoms/badge";
-import { Pencil, Plus, Trash } from "lucide-react";
+import { Pencil, Plus, Trash, ChevronUp, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 export interface Plan {
   id: string;
@@ -23,9 +23,12 @@ export interface Plan {
 interface DashBoardTableProps {
   plans: Plan[];
   t: (key: string, parameters?: any) => string;
+  sortBy: string;
+  sortOrder: string;
+  onSort: (column: string) => void;
 }
 
-export function DashBoardTable({ plans, t }: DashBoardTableProps) {
+export function DashBoardTable({ plans, t, sortBy, sortOrder, onSort }: DashBoardTableProps) {
   const navigate = useNavigate();
   const getStatusBadge = (status: string) => {
     if (status === "Published") {
@@ -42,6 +45,14 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
       );
     }
   };
+  const getSortIcon = (column: string) => {
+    if (sortBy === column) {
+      return sortOrder === "asc" ? 
+        <ChevronUp size={18} className="ml-2 text-gray-600 dark:text-gray-400" /> : 
+        <ChevronDown size={18} className="ml-2 text-gray-600 dark:text-gray-400" />;
+    }
+    return <ChevronDown size={18} className="ml-2 text-gray-300 dark:text-gray-400 opacity-50" />;
+  };
   return (
     <div className="w-full h-[600px] overflow-auto">
       <Table>
@@ -50,16 +61,27 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
             <TableHead className="w-[160px] font-bold">
               {t("studio.dashboard.cover_image")}
             </TableHead>
-            <TableHead className="font-bold">
+            <TableHead className="font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => onSort("title")}>
+              <div className="flex items-center">
               {t("studio.dashboard.title")}
+              {getSortIcon("title")}
+              </div>
             </TableHead>
-            <TableHead className="w-[150px] font-bold">
+            <TableHead className="w-[150px] font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => onSort("total_days")}>
+            <div className="flex items-center">
               {t("studio.dashboard.plan_days")}
+              {getSortIcon("total_days")}
+              </div>
             </TableHead>
             <TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.plan_used")}
             </TableHead>
-            <TableHead className="w-[150px] font-bold">Status</TableHead>
+            <TableHead className="w-[150px] font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => onSort("status")}>
+              <div className="flex items-center">
+              Status
+              {getSortIcon("status")}
+              </div>
+            </TableHead>
             <TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.actions")}
             </TableHead>

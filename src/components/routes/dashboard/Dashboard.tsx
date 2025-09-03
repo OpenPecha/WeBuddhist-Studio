@@ -21,18 +21,18 @@ import { Link } from "react-router-dom";
 const fetchPlans = async (
   page: number,
   limit: number,
-  search?: string,
-  sortBy?: string,
-  sortOrder?: string,
+  search: string,
+  sortBy: string,
+  sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
-  const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/plan`, {
+  const { data } = await axiosInstance.get(`http://localhost:8000/plan`, {  //TODO: change to backend base url
     params: {
       skip,
       limit,
       search,
-      ...(sortBy && { sort_by: sortBy }),
-      ...(sortOrder && { sort_order: sortOrder }),
+      sort_by: sortBy,
+      sort_order: sortOrder,
     },
   });
   return data;
@@ -43,14 +43,24 @@ const Dashboard = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
+  const [sortBy, setSortBy] = useState("title");
+  const [sortOrder, setSortOrder] = useState("asc");
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
   const {
     data: planData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["dashboard-plans", currentPage, debouncedSearch],
-    queryFn: () => fetchPlans(currentPage, 20, debouncedSearch),
+    queryKey: ["dashboard-plans", currentPage, debouncedSearch, sortBy, sortOrder],
+    queryFn: () => fetchPlans(currentPage, 20, debouncedSearch, sortBy, sortOrder),
     refetchOnWindowFocus: false,
     enabled: true,
   });
@@ -66,7 +76,7 @@ const Dashboard = () => {
         planUsed: `${plan.subscription_count} Used`,
         status: plan.status,
       }))
-      .filter(
+      .filter(    //TODO: remove this filter since backend will handle the search
         (plan: any) =>
           !debouncedSearch ||
           plan.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -104,7 +114,7 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      <DashBoardTable plans={plans} t={t} />
+      <DashBoardTable plans={plans} t={t} sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
 
       <Pagination className="mt-4">
         <PaginationPrevious
