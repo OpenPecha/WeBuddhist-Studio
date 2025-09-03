@@ -114,8 +114,8 @@ export function DashBoardTable({
             {plan.subtitle}
           </div>
         </TableCell>
-        <TableCell>{plan.planDay}</TableCell>
-        <TableCell>{plan.planUsed}</TableCell>
+        <TableCell>{plan.planDay} Days</TableCell>
+        <TableCell>{plan.planUsed} Used</TableCell>
         <TableCell>{getStatusBadge(plan.status)}</TableCell>
         <TableCell>
           <div className="flex items-center gap-2">

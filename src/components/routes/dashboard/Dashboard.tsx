@@ -56,24 +56,6 @@ const Dashboard = () => {
     retry: false,
   });
 
-  const plans =
-    planData?.plan
-      ?.map((plan: any) => ({
-        id: plan.id,
-        coverImage: plan.image_url,
-        title: plan.title,
-        subtitle: plan.description,
-        planDay: `${plan.total_days} Days`,
-        planUsed: `${plan.subscription_count} Used`,
-        status: plan.status,
-      }))
-      .filter(
-        (plan: any) =>
-          !debouncedSearch ||
-          plan.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          plan.subtitle.toLowerCase().includes(debouncedSearch.toLowerCase()),
-      ) || [];
-
   const totalPages = planData ? Math.ceil(planData.total / 20) : 1;
 
   return (
@@ -95,7 +77,12 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      <DashBoardTable plans={plans} t={t} isLoading={isLoading} error={error} />
+      <DashBoardTable
+        plans={planData?.plan}
+        t={t}
+        isLoading={isLoading}
+        error={error}
+      />
 
       {!error && (
         <div>
