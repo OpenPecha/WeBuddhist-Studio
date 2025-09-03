@@ -33,7 +33,7 @@ const TagInput = ({ value = [], onChange }: TagInputProps) => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap overflow-y-auto h-80 gap-2">
           {value.map((tag, index) => (
             <div
               key={`${tag}-${index}`}
