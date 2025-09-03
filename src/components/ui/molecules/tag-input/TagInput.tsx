@@ -23,6 +23,7 @@ const TagInput = () => {
       <div className=" w-full border p-2 h-100 space-y-4 rounded-md">
         <Input
           placeholder="Add a tag"
+          className=" border-none shadow-none"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -31,11 +32,11 @@ const TagInput = () => {
           {tags.map((tag, index) => (
             <div
               key={index}
-              className="border-[#AE3237] border-2 space-x-4 w-fit  px-2 rounded-md py-2 flex items-center justify-between"
+              className=" bg-gray-100 space-x-4 w-fit border border-dashed px-4 rounded-full py-2 flex items-center justify-between"
             >
               <p className="text-sm">{tag}</p>
               <X
-                className="h-4 w-4 hover:text-[#AE3237] transition cursor-pointer"
+                className=" h-5 w-5 text-white rounded-full p-1 border border-dashed  bg-gray-300 hover:bg-gray-400 transition cursor-pointer"
                 onClick={() => removeTag(index)}
               />
             </div>
