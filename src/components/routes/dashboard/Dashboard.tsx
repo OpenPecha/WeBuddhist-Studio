@@ -13,9 +13,10 @@ import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
+import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
-import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 const fetchPlans = async (page: number, limit: number, search?: string, sortBy?: string, sortOrder?: string) => {
   const skip = (page - 1) * limit;
@@ -30,6 +31,7 @@ const fetchPlans = async (page: number, limit: number, search?: string, sortBy?:
   });
   return data;
 };
+
 
 const Dashboard = () => {
   const { t } = useTranslate();
@@ -80,9 +82,11 @@ const Dashboard = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
-          <Plus /> Add Plan
-        </Button>
+        <Link to="/create-plan">
+          <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
+            <Plus /> Add Plan
+          </Button>
+        </Link>
       </div>
 
       <DashBoardTable plans={plans} t={t} />

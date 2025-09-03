@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { signupSchema } from "@/schema/SignupSchema";
-
+import { createPasswordHash } from "@/lib/utils";
 interface SignupData {
   email: string;
   firstname: string;
@@ -27,7 +27,7 @@ const Signup = () => {
   const signupMutation = useMutation<any, Error, SignupData>({
     mutationFn: async (signupData: SignupData) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/api/v1/users/signup`,
+        `${BACKEND_BASE_URL}/v1/cms/auth/register`,
         signupData,
       );
       return response.data;
@@ -48,22 +48,28 @@ const Signup = () => {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirm-password") as string;
+    const firstname = formData.get("firstname") as string;
+    const lastname = formData.get("lastname") as string;
 
     const formDataObj = {
-      email: formData.get("email") as string,
-      firstname: formData.get("firstname") as string,
-      lastname: formData.get("lastname") as string,
-      password: formData.get("password") as string,
-      confirmPassword: formData.get("confirm-password") as string,
+      email,
+      firstname,
+      lastname,
+      password,
+      confirmPassword,
     };
 
     try {
       const validatedData = signupSchema.parse(formDataObj);
+      const clientPassword = createPasswordHash(email, password);
       signupMutation.mutate({
         email: validatedData.email,
         firstname: validatedData.firstname,
         lastname: validatedData.lastname,
-        password: validatedData.password,
+        password: clientPassword,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
