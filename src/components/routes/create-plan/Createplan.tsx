@@ -41,6 +41,7 @@ const Createplan = () => {
       numberOfDays: "",
       difficulty: "",
       coverImage: "",
+      tags: [],
     },
   });
 
@@ -233,7 +234,18 @@ const Createplan = () => {
                 </FormItem>
               )}
             />
-            <TagInput />
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <TagInput value={field.value} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="pt-8 w-fit">
               <Button
                 type="submit"

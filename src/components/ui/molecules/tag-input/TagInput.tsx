@@ -2,20 +2,25 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Input } from "../../atoms/input";
 
-const TagInput = () => {
-  const [tags, setTags] = useState<string[]>([]);
+interface TagInputProps {
+  value?: string[];
+  onChange?: (tags: string[]) => void;
+}
+
+const TagInput = ({ value = [], onChange }: TagInputProps) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && inputValue.trim()) {
       e.preventDefault();
-      setTags([inputValue.trim(), ...tags]);
+      onChange?.([inputValue.trim(), ...value]);
       setInputValue("");
     }
   };
 
   const removeTag = (indexToRemove: number) => {
-    setTags(tags.filter((_, index) => index !== indexToRemove));
+    const newTags = value.filter((_, index) => index !== indexToRemove);
+    onChange?.(newTags);
   };
   return (
     <div className=" w-full space-y-2 h-full font-dynamic flex flex-col">
@@ -29,9 +34,9 @@ const TagInput = () => {
           onKeyDown={handleKeyDown}
         />
         <div className="flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
+          {value.map((tag, index) => (
             <div
-              key={index}
+              key={`${tag}-${index}`}
               className=" bg-gray-100 dark:bg-input/30 space-x-4 w-fit border border-dashed px-4 rounded-full py-2 flex items-center justify-between"
             >
               <p className="text-sm text-gray-500 dark:text-gray-100">{tag}</p>
