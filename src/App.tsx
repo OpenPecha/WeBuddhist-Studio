@@ -10,7 +10,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { setFontVariables } from "./lib/font-config";
 import { useEffect } from "react";
 import { LANGUAGE } from "./lib/constant";
-import Createplan from "./components/routes/create-plan/Createplan";
+import CreatePlan from "./components/routes/create-plan/CreatePlan";
 
 function App() {
   const location = useLocation();
@@ -52,7 +52,7 @@ function App() {
           path="/create-plan"
           element={
             <ProtectedRoute>
-              <Createplan />
+              <CreatePlan />
             </ProtectedRoute>
           }
         />
