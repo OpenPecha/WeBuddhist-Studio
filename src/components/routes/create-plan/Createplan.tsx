@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/atoms/textarea";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
+import TagInput from "@/components/ui/molecules/tag-input/TagInput";
 
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -40,6 +41,7 @@ const Createplan = () => {
       numberOfDays: "",
       difficulty: "",
       coverImage: "",
+      tags: [],
     },
   });
 
@@ -232,7 +234,18 @@ const Createplan = () => {
                 </FormItem>
               )}
             />
-
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <TagInput value={field.value} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="pt-8 w-fit">
               <Button
                 type="submit"
