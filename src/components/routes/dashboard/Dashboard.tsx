@@ -52,7 +52,7 @@ const Dashboard = () => {
     planDay: `${plan.total_days} Days`,
     planUsed: `${plan.subscription_count} Used`,
     status: plan.status, 
-  })).filter((plan: any) =>   //to be rmeoved once when backend is fixed
+  })).filter((plan: any) =>   
     !debouncedSearch || 
     plan.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
     plan.subtitle.toLowerCase().includes(debouncedSearch.toLowerCase())
