@@ -36,7 +36,7 @@ const TagInput = () => {
             >
               <p className="text-sm text-gray-500 dark:text-gray-100">{tag}</p>
               <X
-                className=" h-5 w-5 text-white rounded-full p-1 border border-dashed dark:bg-input/90 hover:bg-gray-400 transition cursor-pointer"
+                className=" h-5 w-5 text-white rounded-full p-1 border border-dashed dark:bg-input/90 bg-gray-300 hover:bg-gray-400 transition cursor-pointer"
                 onClick={() => removeTag(index)}
               />
             </div>
