@@ -25,7 +25,7 @@ const TagInput = ({ value = [], onChange }: TagInputProps) => {
   return (
     <div className=" w-full space-y-2 h-full font-dynamic flex flex-col">
       <p className="text-sm font-bold">Tags</p>
-      <div className=" w-full border p-2 h-100 space-y-4 rounded-md">
+      <div className=" w-full border p-2 h-100 overflow-auto space-y-4 rounded-md">
         <Input
           placeholder="Add a tag"
           className=" border-none shadow-none"
@@ -33,11 +33,11 @@ const TagInput = ({ value = [], onChange }: TagInputProps) => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <div className="flex flex-wrap overflow-y-auto h-80 gap-2">
+        <div className="flex flex-wrap items-center justify-start h-fit gap-2">
           {value.map((tag, index) => (
             <div
               key={`${tag}-${index}`}
-              className=" bg-gray-100 dark:bg-input/30 space-x-4 w-fit border border-dashed px-4 rounded-full py-2 flex items-center justify-between"
+              className=" bg-gray-100 dark:bg-input/30 space-x-4 h-fit w-fit border border-dashed px-4 rounded-full py-2 flex items-center justify-between"
             >
               <p className="text-sm text-gray-500 dark:text-gray-100">{tag}</p>
               <X
