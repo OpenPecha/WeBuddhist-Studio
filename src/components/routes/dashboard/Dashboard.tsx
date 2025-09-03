@@ -18,20 +18,25 @@ import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { Link } from "react-router-dom";
 
-const fetchPlans = async (page: number, limit: number, search?: string, sortBy?: string, sortOrder?: string) => {
+const fetchPlans = async (
+  page: number,
+  limit: number,
+  search?: string,
+  sortBy?: string,
+  sortOrder?: string,
+) => {
   const skip = (page - 1) * limit;
   const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/plan`, {
-    params: { 
-      skip, 
+    params: {
+      skip,
       limit,
       search,
       ...(sortBy && { sort_by: sortBy }),
-      ...(sortOrder && { sort_order: sortOrder })
+      ...(sortOrder && { sort_order: sortOrder }),
     },
   });
   return data;
 };
-
 
 const Dashboard = () => {
   const { t } = useTranslate();
@@ -39,26 +44,34 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const { data: planData, isLoading, error } = useQuery({
+  const {
+    data: planData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["dashboard-plans", currentPage, debouncedSearch],
     queryFn: () => fetchPlans(currentPage, 20, debouncedSearch),
     refetchOnWindowFocus: false,
     enabled: true,
   });
 
-  const plans = planData?.plan?.map((plan: any) => ({
-    id: plan.id,
-    coverImage: plan.image_url,
-    title: plan.title,
-    subtitle: plan.description,
-    planDay: `${plan.total_days} Days`,
-    planUsed: `${plan.subscription_count} Used`,
-    status: plan.status, 
-  })).filter((plan: any) =>   
-    !debouncedSearch || 
-    plan.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    plan.subtitle.toLowerCase().includes(debouncedSearch.toLowerCase())
-  ) || [];
+  const plans =
+    planData?.plan
+      ?.map((plan: any) => ({
+        id: plan.id,
+        coverImage: plan.image_url,
+        title: plan.title,
+        subtitle: plan.description,
+        planDay: `${plan.total_days} Days`,
+        planUsed: `${plan.subscription_count} Used`,
+        status: plan.status,
+      }))
+      .filter(
+        (plan: any) =>
+          !debouncedSearch ||
+          plan.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          plan.subtitle.toLowerCase().includes(debouncedSearch.toLowerCase()),
+      ) || [];
 
   const totalPages = planData ? Math.ceil(planData.total / 20) : 1;
 
@@ -67,7 +80,9 @@ const Dashboard = () => {
   }
 
   if (error) {
-    return <div className="text-center text-red-500 py-4">Error fetching plans</div>;
+    return (
+      <div className="text-center text-red-500 py-4">Error fetching plans</div>
+    );
   }
 
   return (
@@ -92,25 +107,49 @@ const Dashboard = () => {
       <DashBoardTable plans={plans} t={t} />
 
       <Pagination className="mt-4">
-        <PaginationPrevious 
-          onClick={(e) => {e.preventDefault(); setCurrentPage(prev => Math.max(1, prev - 1))}}
-          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        <PaginationPrevious
+          onClick={(e) => {
+            e.preventDefault();
+            setCurrentPage((prev) => Math.max(1, prev - 1));
+          }}
+          className={
+            currentPage === 1
+              ? "pointer-events-none opacity-50"
+              : "cursor-pointer"
+          }
         />
         <PaginationContent className="mx-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-            <PaginationItem key={pageNum}>
-              <PaginationLink
-                onClick={(e) => {e.preventDefault(); e.stopPropagation(); setCurrentPage(pageNum)}}
-                className={currentPage === pageNum ? "bg-primary text-white" : "cursor-pointer"}
-              >
-                {pageNum}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+            (pageNum) => (
+              <PaginationItem key={pageNum}>
+                <PaginationLink
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCurrentPage(pageNum);
+                  }}
+                  className={
+                    currentPage === pageNum
+                      ? "bg-primary text-white"
+                      : "cursor-pointer"
+                  }
+                >
+                  {pageNum}
+                </PaginationLink>
+              </PaginationItem>
+            ),
+          )}
         </PaginationContent>
-        <PaginationNext 
-          onClick={(e) => {e.preventDefault(); setCurrentPage(prev => Math.min(totalPages, prev + 1))}}
-          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        <PaginationNext
+          onClick={(e) => {
+            e.preventDefault();
+            setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+          }}
+          className={
+            currentPage === totalPages
+              ? "pointer-events-none opacity-50"
+              : "cursor-pointer"
+          }
         />
       </Pagination>
     </div>
