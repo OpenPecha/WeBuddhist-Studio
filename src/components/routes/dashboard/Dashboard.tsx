@@ -53,6 +53,7 @@ const Dashboard = () => {
     queryFn: () => fetchPlans(currentPage, 20, debouncedSearch),
     refetchOnWindowFocus: false,
     enabled: true,
+    retry: false,
   });
 
   const plans =
@@ -75,16 +76,6 @@ const Dashboard = () => {
 
   const totalPages = planData ? Math.ceil(planData.total / 20) : 1;
 
-  if (isLoading) {
-    return <div className="text-center py-4">Loading...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center text-red-500 py-4">Error fetching plans</div>
-    );
-  }
-
   return (
     <div className="w-full h-full font-dynamic px-10 pt-10">
       <div className="mb-4 flex items-center gap-4">
@@ -104,54 +95,58 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      <DashBoardTable plans={plans} t={t} />
+      <DashBoardTable plans={plans} t={t} isLoading={isLoading} error={error} />
 
-      <Pagination className="mt-4">
-        <PaginationPrevious
-          onClick={(e) => {
-            e.preventDefault();
-            setCurrentPage((prev) => Math.max(1, prev - 1));
-          }}
-          className={
-            currentPage === 1
-              ? "pointer-events-none opacity-50"
-              : "cursor-pointer"
-          }
-        />
-        <PaginationContent className="mx-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-            (pageNum) => (
-              <PaginationItem key={pageNum}>
-                <PaginationLink
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setCurrentPage(pageNum);
-                  }}
-                  className={
-                    currentPage === pageNum
-                      ? "bg-primary text-white"
-                      : "cursor-pointer"
-                  }
-                >
-                  {pageNum}
-                </PaginationLink>
-              </PaginationItem>
-            ),
-          )}
-        </PaginationContent>
-        <PaginationNext
-          onClick={(e) => {
-            e.preventDefault();
-            setCurrentPage((prev) => Math.min(totalPages, prev + 1));
-          }}
-          className={
-            currentPage === totalPages
-              ? "pointer-events-none opacity-50"
-              : "cursor-pointer"
-          }
-        />
-      </Pagination>
+      {!error && (
+        <div>
+          <Pagination className="mt-4">
+            <PaginationPrevious
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage((prev) => Math.max(1, prev - 1));
+              }}
+              className={
+                currentPage === 1
+                  ? "pointer-events-none opacity-50"
+                  : "cursor-pointer"
+              }
+            />
+            <PaginationContent className="mx-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentPage(pageNum);
+                      }}
+                      className={
+                        currentPage === pageNum
+                          ? "bg-primary text-white dark:bg-primary/10"
+                          : "cursor-pointer"
+                      }
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
+            </PaginationContent>
+            <PaginationNext
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+              }}
+              className={
+                currentPage === totalPages
+                  ? "pointer-events-none opacity-50"
+                  : "cursor-pointer"
+              }
+            />
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 };

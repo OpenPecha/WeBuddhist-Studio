@@ -23,10 +23,18 @@ export interface Plan {
 interface DashBoardTableProps {
   plans: Plan[];
   t: (key: string, parameters?: any) => string;
+  isLoading?: boolean;
+  error?: any;
 }
 
-export function DashBoardTable({ plans, t }: DashBoardTableProps) {
+export function DashBoardTable({
+  plans,
+  t,
+  isLoading,
+  error,
+}: DashBoardTableProps) {
   const navigate = useNavigate();
+
   const getStatusBadge = (status: string) => {
     if (status === "Published") {
       return (
@@ -41,6 +49,90 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
         </Badge>
       );
     }
+  };
+
+  const renderTableContent = () => {
+    if (isLoading) {
+      return (
+        <TableRow>
+          <TableCell
+            colSpan={6}
+            className="text-center py-10 text-muted-foreground"
+          >
+            Loading...
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (error) {
+      return (
+        <TableRow>
+          <TableCell colSpan={6} className="text-center py-10 text-red-500">
+            {error.message}
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (plans.length === 0) {
+      return (
+        <TableRow>
+          <TableCell
+            colSpan={6}
+            className="text-center py-10 text-muted-foreground"
+          >
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-base text-muted-foreground">
+                {t("studio.dashboard.no_plan_found")}
+              </p>
+              <Button
+                onClick={() => navigate("/create-plan")}
+                variant="outline"
+                className="mt-2"
+              >
+                <Plus /> {t("studio.dashboard.add_plan")}
+              </Button>
+            </div>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return plans.map((plan) => (
+      <TableRow key={plan.id} className="hover:cursor-pointer">
+        <TableCell>
+          <img
+            src={plan.coverImage}
+            alt="cover"
+            className="w-32 h-20 object-cover rounded-md"
+          />
+        </TableCell>
+        <TableCell>
+          <div className="font-semibold text-base">{plan.title}</div>
+          <div className="text-xs text-muted-foreground max-w-2xl truncate">
+            {plan.subtitle}
+          </div>
+        </TableCell>
+        <TableCell>{plan.planDay}</TableCell>
+        <TableCell>{plan.planUsed}</TableCell>
+        <TableCell>{getStatusBadge(plan.status)}</TableCell>
+        <TableCell>
+          <div className="flex items-center gap-2">
+            <Button variant="destructive" size="sm" className="h-8 w-10">
+              <Trash className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ));
   };
   return (
     <div className="w-full h-[600px] overflow-auto">
@@ -65,71 +157,7 @@ export function DashBoardTable({ plans, t }: DashBoardTableProps) {
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {plans.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={6}
-                className="text-center py-10 text-muted-foreground"
-              >
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-base text-muted-foreground">
-                    {t("studio.dashboard.no_plan_found")}
-                  </p>
-                  <Button
-                    onClick={() => {
-                      navigate("/create-plan");
-                    }}
-                    variant="outline"
-                    className=" mt-2"
-                  >
-                    {" "}
-                    <Plus /> {t("studio.dashboard.add_plan")}
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ) : (
-            plans.map((plan) => (
-              <TableRow key={plan.id} className=" hover:cursor-pointer">
-                <TableCell>
-                  <img
-                    src={plan.coverImage}
-                    alt="cover"
-                    className="w-32 h-20 object-cover rounded-md"
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="font-semibold text-base">{plan.title}</div>
-                  <div className="text-xs text-muted-foreground max-w-2xl truncate">
-                    {plan.subtitle}
-                  </div>
-                </TableCell>
-                <TableCell>{plan.planDay}</TableCell>
-                <TableCell>{plan.planUsed}</TableCell>
-                <TableCell>{getStatusBadge(plan.status)}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="h-8 w-10"
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
+        <TableBody>{renderTableContent()}</TableBody>
       </Table>
     </div>
   );
