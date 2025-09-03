@@ -19,7 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const fetchPlans = async (page: number, limit: number, search?: string, sortBy?: string, sortOrder?: string) => {
   const skip = (page - 1) * limit;
-  const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/plan`, {
+  const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/plan`, {
     params: { 
       skip, 
       limit,
