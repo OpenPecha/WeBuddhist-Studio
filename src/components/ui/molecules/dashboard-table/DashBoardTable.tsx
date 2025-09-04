@@ -159,7 +159,7 @@ export function DashBoardTable({
               {t("studio.dashboard.cover_image")}
             </TableHead>
             <TableHead
-              className="font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="font-bold cursor-pointer"
               onClick={() => onSort("title")}
             >
               <div className="flex items-center">
@@ -168,7 +168,7 @@ export function DashBoardTable({
               </div>
             </TableHead>
             <TableHead
-              className="w-[150px] font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="w-[150px] font-bold cursor-pointer"
               onClick={() => onSort("total_days")}
             >
               <div className="flex items-center">
