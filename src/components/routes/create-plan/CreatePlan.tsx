@@ -184,6 +184,7 @@ const Createplan = () => {
                 onChange={handleImageChange}
                 accept="image/*"
                 className="hidden"
+                data-testid="file-input"
               />
 
               <div className="flex gap-4 mt-4 items-start">
@@ -214,6 +215,7 @@ const Createplan = () => {
                         type="button"
                         onClick={handleRemoveImage}
                         className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
+                        data-testid="image-remove"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -242,7 +244,10 @@ const Createplan = () => {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-12">
+                      <SelectTrigger
+                        className="h-12"
+                        data-testid="select-trigger"
+                      >
                         <SelectValue
                           placeholder={t(
                             "studio.plan.form.placeholder.select_difficulty",
