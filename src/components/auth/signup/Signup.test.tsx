@@ -81,10 +81,21 @@ describe("Signup Component", () => {
     const user = userEvent.setup();
     renderWithProviders(<Signup />);
 
-    await user.type(screen.getByPlaceholderText("studio.login.placeholder.email"),"test@example.com");
-    await user.type(screen.getByPlaceholderText("studio.signup.placeholder.first_name"),"fname");
-    await user.type(screen.getByPlaceholderText("studio.signup.placeholder.last_name"),"lname");
-    const passwordFields = screen.getAllByPlaceholderText("studio.signup.placeholder.password");
+    await user.type(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+      "test@example.com",
+    );
+    await user.type(
+      screen.getByPlaceholderText("studio.signup.placeholder.first_name"),
+      "fname",
+    );
+    await user.type(
+      screen.getByPlaceholderText("studio.signup.placeholder.last_name"),
+      "lname",
+    );
+    const passwordFields = screen.getAllByPlaceholderText(
+      "studio.signup.placeholder.password",
+    );
     await user.type(passwordFields[0], "password123");
     await user.type(passwordFields[1], "differentPassword");
     await user.click(screen.getByText("common.button.submit"));
@@ -104,15 +115,28 @@ describe("Signup Component", () => {
     });
     renderWithProviders(<Signup />);
 
-    await user.type(screen.getByPlaceholderText("studio.login.placeholder.email"),"test@example.com");
-    await user.type(screen.getByPlaceholderText("studio.signup.placeholder.first_name"),"fname");
-    await user.type(screen.getByPlaceholderText("studio.signup.placeholder.last_name"),"lname");
-    const passwordFields = screen.getAllByPlaceholderText("studio.signup.placeholder.password");
+    await user.type(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+      "test@example.com",
+    );
+    await user.type(
+      screen.getByPlaceholderText("studio.signup.placeholder.first_name"),
+      "fname",
+    );
+    await user.type(
+      screen.getByPlaceholderText("studio.signup.placeholder.last_name"),
+      "lname",
+    );
+    const passwordFields = screen.getAllByPlaceholderText(
+      "studio.signup.placeholder.password",
+    );
     await user.type(passwordFields[0], "password123");
     await user.type(passwordFields[1], "password123");
     await user.click(screen.getByText("common.button.submit"));
     await waitFor(() => {
-      expect(screen.getByText("Signup failed. Please try again.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Signup failed. Please try again."),
+      ).toBeInTheDocument();
     });
   });
 });

@@ -68,14 +68,23 @@ describe("Login Component", () => {
       },
     });
 
-    await user.type(screen.getByPlaceholderText("studio.login.placeholder.email"),"test@example.com");
-    await user.type(screen.getByPlaceholderText("studio.login.placeholder.password"),"password123");
+    await user.type(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+      "test@example.com",
+    );
+    await user.type(
+      screen.getByPlaceholderText("studio.login.placeholder.password"),
+      "password123",
+    );
     await user.click(screen.getByText("common.button.submit"));
     await waitFor(() => {
-      expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(`${BACKEND_BASE_URL}/api/v1/auth/login`, {
-        email: "test@example.com",
-        password: "password123",
-      });
+      expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
+        `${BACKEND_BASE_URL}/api/v1/auth/login`,
+        {
+          email: "test@example.com",
+          password: "password123",
+        },
+      );
     });
   });
 
@@ -89,8 +98,14 @@ describe("Login Component", () => {
       },
     });
     renderWithProviders(<Login />);
-    await user.type(screen.getByPlaceholderText("studio.login.placeholder.email"),"test@example.com");
-    await user.type(screen.getByPlaceholderText("studio.login.placeholder.password"),"password123");
+    await user.type(
+      screen.getByPlaceholderText("studio.login.placeholder.email"),
+      "test@example.com",
+    );
+    await user.type(
+      screen.getByPlaceholderText("studio.login.placeholder.password"),
+      "password123",
+    );
     await user.click(screen.getByText("common.button.submit"));
     await waitFor(() => {
       expect(screen.getByText("Not Found")).toBeInTheDocument();
