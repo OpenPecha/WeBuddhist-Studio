@@ -8,15 +8,15 @@ import {
 } from "../../atoms/table";
 import { Button } from "../../atoms/button";
 import { Badge } from "../../atoms/badge";
-import { Pencil, Plus, Trash } from "lucide-react";
+import { Pencil, Plus, Trash, ChevronUp, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 export interface Plan {
   id: string;
-  coverImage: string;
+  image_url: string;
   title: string;
-  subtitle: string;
-  planDay: string;
-  planUsed: string;
+  description: string;
+  total_days: string;
+  subscription_count: string;
   status: string;
 }
 
@@ -25,6 +25,9 @@ interface DashBoardTableProps {
   t: (key: string, parameters?: any) => string;
   isLoading?: boolean;
   error?: any;
+  sortBy: string;
+  sortOrder: string;
+  onSort: (column: string) => void;
 }
 
 export function DashBoardTable({
@@ -32,6 +35,9 @@ export function DashBoardTable({
   t,
   isLoading,
   error,
+  sortBy,
+  sortOrder,
+  onSort,
 }: DashBoardTableProps) {
   const navigate = useNavigate();
 
@@ -49,6 +55,16 @@ export function DashBoardTable({
         </Badge>
       );
     }
+  };
+
+  const getSortIcon = (column: string) => {
+    const isActive = sortBy === column;
+    const Icon = isActive && sortOrder === "asc" ? ChevronUp : ChevronDown;
+    const colorClass = isActive
+      ? "text-gray-600 dark:text-gray-400"
+      : "text-gray-300 dark:text-gray-400 opacity-50";
+
+    return <Icon size={18} className={`ml-2 ${colorClass}`} />;
   };
 
   const renderTableContent = () => {
@@ -103,7 +119,7 @@ export function DashBoardTable({
       <TableRow key={plan.id} className="hover:cursor-pointer">
         <TableCell>
           <img
-            src={plan.coverImage}
+            src={plan.image_url}
             alt="cover"
             className="w-32 h-20 object-cover rounded-md"
           />
@@ -111,11 +127,11 @@ export function DashBoardTable({
         <TableCell>
           <div className="font-semibold text-base">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
-            {plan.subtitle}
+            {plan.description}
           </div>
         </TableCell>
-        <TableCell>{plan.planDay} Days</TableCell>
-        <TableCell>{plan.planUsed} Used</TableCell>
+        <TableCell>{plan.total_days} Days</TableCell>
+        <TableCell>{plan.subscription_count} Used</TableCell>
         <TableCell>{getStatusBadge(plan.status)}</TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
@@ -142,11 +158,23 @@ export function DashBoardTable({
             <TableHead className="w-[160px] font-bold">
               {t("studio.dashboard.cover_image")}
             </TableHead>
-            <TableHead className="font-bold">
-              {t("studio.dashboard.title")}
+            <TableHead
+              className="font-bold cursor-pointer"
+              onClick={() => onSort("title")}
+            >
+              <div className="flex items-center">
+                {t("studio.dashboard.title")}
+                {getSortIcon("title")}
+              </div>
             </TableHead>
-            <TableHead className="w-[150px] font-bold">
-              {t("studio.dashboard.plan_days")}
+            <TableHead
+              className="w-[150px] font-bold cursor-pointer"
+              onClick={() => onSort("total_days")}
+            >
+              <div className="flex items-center">
+                {t("studio.dashboard.plan_days")}
+                {getSortIcon("total_days")}
+              </div>
             </TableHead>
             <TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.plan_used")}
