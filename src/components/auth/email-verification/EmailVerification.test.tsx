@@ -93,7 +93,7 @@ describe("EmailVerification Component", () => {
     renderWithProviders(<EmailVerification />);
 
     const loginButton = screen.getByText("Continue to Login");
-    
+
     fireEvent.click(loginButton);
     expect(loginButton).toBeDefined();
   });
@@ -103,7 +103,7 @@ describe("EmailVerification Component", () => {
 
     expect(screen.getByText("Email Verified!")).toBeDefined();
     expect(screen.getByText("Continue to Login")).toBeDefined();
-    
+
     expect(screen.queryByText("Verification Failed")).toBeNull();
   });
 });

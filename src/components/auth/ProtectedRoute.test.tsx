@@ -60,7 +60,10 @@ describe("ProtectedRoute Component", () => {
 
     expect(screen.getByTestId("navigate")).toBeDefined();
     expect(screen.getByTestId("navigate")).toHaveAttribute("data-to", "/login");
-    expect(screen.getByTestId("navigate")).toHaveAttribute("data-replace", "true");
+    expect(screen.getByTestId("navigate")).toHaveAttribute(
+      "data-replace",
+      "true",
+    );
     expect(screen.queryByText("Protected Content")).toBeNull();
     expect(mockNavigate).toHaveBeenCalledWith("/login", true);
   });
@@ -137,7 +140,12 @@ describe("ProtectedRoute Component", () => {
     );
 
     const loadingContainer = screen.getByText("Loading...").parentElement;
-    expect(loadingContainer).toHaveClass("flex", "items-center", "justify-center", "h-full");
+    expect(loadingContainer).toHaveClass(
+      "flex",
+      "items-center",
+      "justify-center",
+      "h-full",
+    );
     expect(screen.getByText("Loading...")).toHaveClass("text-lg");
   });
 });

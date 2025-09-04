@@ -50,8 +50,10 @@ describe("CreatePlan Component", () => {
   it("renders number of days field with label", () => {
     renderWithProviders(<CreatePlan />);
 
-    expect(screen.getByText("studio.plan.form_field.number_of_day")).toBeDefined();
-    
+    expect(
+      screen.getByText("studio.plan.form_field.number_of_day"),
+    ).toBeDefined();
+
     const daysInput = screen.getByPlaceholderText(
       "studio.plan.form.placeholder.number_of_days",
     );
@@ -63,7 +65,9 @@ describe("CreatePlan Component", () => {
     renderWithProviders(<CreatePlan />);
 
     expect(screen.getByText("studio.dashboard.cover_image")).toBeDefined();
-    expect(screen.getByText("studio.plan.cover_image.description")).toBeDefined();
+    expect(
+      screen.getByText("studio.plan.cover_image.description"),
+    ).toBeDefined();
   });
 
   it("renders difficulty level field with label", () => {
@@ -117,7 +121,6 @@ describe("CreatePlan Component", () => {
 
     expect(daysInput.value).toBe("30");
   });
-
 
   it("renders image upload area", () => {
     renderWithProviders(<CreatePlan />);
