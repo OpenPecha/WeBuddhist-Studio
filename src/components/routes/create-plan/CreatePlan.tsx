@@ -24,7 +24,18 @@ import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
 import TagInput from "@/components/ui/molecules/tag-input/TagInput";
+import { DIFFICULTY, BACKEND_BASE_URL } from "@/lib/constant";
+import axiosInstance from "@/config/axios-config";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
+export const callplan = async (formdata: z.infer<typeof planSchema>) => {
+  const { data } = await axiosInstance.post(
+    `${BACKEND_BASE_URL}/api/v1/cms/plans`,
+    formdata,
+  );
+  return data;
+};
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -36,12 +47,28 @@ const Createplan = () => {
   const form = useForm({
     resolver: zodResolver(planSchema),
     defaultValues: {
-      planTitle: "",
+      title: "",
       description: "",
-      numberOfDays: "",
-      difficulty: "",
-      coverImage: "",
+      total_days: "",
+      difficulty_level: "",
+      image_url: "",
       tags: [],
+    },
+  });
+  const createPlanMutation = useMutation({
+    mutationFn: callplan,
+    onSuccess: () => {
+      toast.success("Plan created successfully!", {
+        description: "Your plan has been created and is now available.",
+      });
+      form.reset();
+      setSelectedImage(null);
+      setImagePreview(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to create plan", {
+        description: error.message,
+      });
     },
   });
 
@@ -49,8 +76,7 @@ const Createplan = () => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      console.log(file);
-      form.setValue("coverImage", file.name);
+      form.setValue("image_url", file.name);
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -63,14 +89,15 @@ const Createplan = () => {
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    form.setValue("coverImage", "");
+    form.setValue("image_url", "");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   const onSubmit = (data: PlanFormData) => {
-    console.log("Form submitted with valid data:", data);
+    console.log(data);
+    createPlanMutation.mutate(data);
   };
 
   return (
@@ -84,7 +111,7 @@ const Createplan = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="planTitle"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -120,7 +147,7 @@ const Createplan = () => {
 
             <FormField
               control={form.control}
-              name="numberOfDays"
+              name="total_days"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-bold">
@@ -204,7 +231,7 @@ const Createplan = () => {
           <div className="space-y-6">
             <FormField
               control={form.control}
-              name="difficulty"
+              name="difficulty_level"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-bold">
@@ -224,10 +251,14 @@ const Createplan = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
-                      <SelectItem value="expert">Expert</SelectItem>
+                      {DIFFICULTY.map((difficulty) => (
+                        <SelectItem
+                          key={difficulty.value}
+                          value={difficulty.value}
+                        >
+                          {difficulty.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -252,8 +283,11 @@ const Createplan = () => {
                 variant="default"
                 className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
                 onClick={form.handleSubmit(onSubmit)}
+                disabled={createPlanMutation.isPending}
               >
-                {t("studio.plan.next_button")}
+                {createPlanMutation.isPending
+                  ? "Creating..."
+                  : t("studio.plan.next_button")}
               </Button>
             </div>
           </div>

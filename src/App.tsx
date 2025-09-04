@@ -5,12 +5,12 @@ import EmailVerification from "./components/auth/email-verification/EmailVerific
 import Navbar from "./components/ui/molecules/nav-bar/Navbar";
 import Signup from "./components/auth/signup/Signup";
 import Dashboard from "./components/routes/dashboard/Dashboard";
-import Createplan from "./components/routes/create-plan/Createplan";
 import Analytics from "./components/routes/analytics/Analytics";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { setFontVariables } from "./lib/font-config";
 import { useEffect } from "react";
 import { LANGUAGE } from "./lib/constant";
+import CreatePlan from "./components/routes/create-plan/CreatePlan";
 
 function App() {
   const location = useLocation();
@@ -52,7 +52,7 @@ function App() {
           path="/create-plan"
           element={
             <ProtectedRoute>
-              <Createplan />
+              <CreatePlan />
             </ProtectedRoute>
           }
         />

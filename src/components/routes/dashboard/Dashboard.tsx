@@ -43,8 +43,8 @@ const Dashboard = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
-  const [sortBy, setSortBy] = useState("title");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("");
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -70,37 +70,10 @@ const Dashboard = () => {
       fetchPlans(currentPage, 20, debouncedSearch, sortBy, sortOrder),
     refetchOnWindowFocus: false,
     enabled: true,
+    retry: false,
   });
 
-  const plans =
-    planData?.plan
-      ?.map((plan: any) => ({
-        id: plan.id,
-        coverImage: plan.image_url,
-        title: plan.title,
-        subtitle: plan.description,
-        planDay: `${plan.total_days} Days`,
-        planUsed: `${plan.subscription_count} Used`,
-        status: plan.status,
-      }))
-      .filter(
-        (plan: any) =>
-          !debouncedSearch ||
-          plan.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          plan.subtitle.toLowerCase().includes(debouncedSearch.toLowerCase()),
-      ) || [];
-
   const totalPages = planData ? Math.ceil(planData.total / 20) : 1;
-
-  if (isLoading) {
-    return <div className="text-center py-4">Loading...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center text-red-500 py-4">Error fetching plans</div>
-    );
-  }
 
   return (
     <div className="w-full h-full font-dynamic px-10 pt-10">
@@ -122,59 +95,65 @@ const Dashboard = () => {
       </div>
 
       <DashBoardTable
-        plans={plans}
+        plans={planData?.plan}
         t={t}
+        isLoading={isLoading}
+        error={error}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSort={handleSort}
       />
 
-      <Pagination className="mt-4">
-        <PaginationPrevious
-          onClick={(e) => {
-            e.preventDefault();
-            setCurrentPage((prev) => Math.max(1, prev - 1));
-          }}
-          className={
-            currentPage === 1
-              ? "pointer-events-none opacity-50"
-              : "cursor-pointer"
-          }
-        />
-        <PaginationContent className="mx-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-            (pageNum) => (
-              <PaginationItem key={pageNum}>
-                <PaginationLink
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setCurrentPage(pageNum);
-                  }}
-                  className={
-                    currentPage === pageNum
-                      ? "bg-primary text-white"
-                      : "cursor-pointer"
-                  }
-                >
-                  {pageNum}
-                </PaginationLink>
-              </PaginationItem>
-            ),
-          )}
-        </PaginationContent>
-        <PaginationNext
-          onClick={(e) => {
-            e.preventDefault();
-            setCurrentPage((prev) => Math.min(totalPages, prev + 1));
-          }}
-          className={
-            currentPage === totalPages
-              ? "pointer-events-none opacity-50"
-              : "cursor-pointer"
-          }
-        />
-      </Pagination>
+      {!error && (
+        <div>
+          <Pagination className="mt-4">
+            <PaginationPrevious
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage((prev) => Math.max(1, prev - 1));
+              }}
+              className={
+                currentPage === 1
+                  ? "pointer-events-none opacity-50"
+                  : "cursor-pointer"
+              }
+            />
+            <PaginationContent className="mx-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentPage(pageNum);
+                      }}
+                      className={
+                        currentPage === pageNum
+                          ? "bg-primary text-white dark:bg-primary/10"
+                          : "cursor-pointer"
+                      }
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
+            </PaginationContent>
+            <PaginationNext
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+              }}
+              className={
+                currentPage === totalPages
+                  ? "pointer-events-none opacity-50"
+                  : "cursor-pointer"
+              }
+            />
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 };
