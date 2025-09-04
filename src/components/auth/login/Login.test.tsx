@@ -1,7 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Login from "./Login";
+import userEvent from "@testing-library/user-event";
+import axiosInstance from "@/config/axios-config";
+import { vi } from "vitest";
+import { BACKEND_BASE_URL } from "@/lib/constant";
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -21,6 +25,10 @@ const renderWithProviders = (component: React.ReactElement) => {
 };
 
 describe("Login Component", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders login form with email and password fields", () => {
     renderWithProviders(<Login />);
 
@@ -46,5 +54,46 @@ describe("Login Component", () => {
     renderWithProviders(<Login />);
 
     expect(screen.getByText("studio.login.no_account")).toBeDefined();
+  });
+
+  it("submits login form with valid email and password", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Login />);
+    vi.mocked(axiosInstance.post).mockResolvedValue({
+      data: {
+        auth: {
+          access_token: "test-token",
+          refresh_token: "test-refresh-token",
+        },
+      },
+    });
+
+    await user.type(screen.getByPlaceholderText("studio.login.placeholder.email"),"test@example.com");
+    await user.type(screen.getByPlaceholderText("studio.login.placeholder.password"),"password123");
+    await user.click(screen.getByText("common.button.submit"));
+    await waitFor(() => {
+      expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(`${BACKEND_BASE_URL}/api/v1/auth/login`, {
+        email: "test@example.com",
+        password: "password123",
+      });
+    });
+  });
+
+  it("displays error message when login mutation fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(axiosInstance.post).mockRejectedValue({
+      response: {
+        data: {
+          message: "Not Found",
+        },
+      },
+    });
+    renderWithProviders(<Login />);
+    await user.type(screen.getByPlaceholderText("studio.login.placeholder.email"),"test@example.com");
+    await user.type(screen.getByPlaceholderText("studio.login.placeholder.password"),"password123");
+    await user.click(screen.getByText("common.button.submit"));
+    await waitFor(() => {
+      expect(screen.getByText("Not Found")).toBeInTheDocument();
+    });
   });
 });
