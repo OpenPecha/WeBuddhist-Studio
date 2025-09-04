@@ -28,7 +28,13 @@ interface DashBoardTableProps {
   onSort: (column: string) => void;
 }
 
-export function DashBoardTable({ plans, t, sortBy, sortOrder, onSort }: DashBoardTableProps) {
+export function DashBoardTable({
+  plans,
+  t,
+  sortBy,
+  sortOrder,
+  onSort,
+}: DashBoardTableProps) {
   const navigate = useNavigate();
   const getStatusBadge = (status: string) => {
     if (status === "Published") {
@@ -47,11 +53,24 @@ export function DashBoardTable({ plans, t, sortBy, sortOrder, onSort }: DashBoar
   };
   const getSortIcon = (column: string) => {
     if (sortBy === column) {
-      return sortOrder === "asc" ? 
-        <ChevronUp size={18} className="ml-2 text-gray-600 dark:text-gray-400" /> : 
-        <ChevronDown size={18} className="ml-2 text-gray-600 dark:text-gray-400" />;
+      return sortOrder === "asc" ? (
+        <ChevronUp
+          size={18}
+          className="ml-2 text-gray-600 dark:text-gray-400"
+        />
+      ) : (
+        <ChevronDown
+          size={18}
+          className="ml-2 text-gray-600 dark:text-gray-400"
+        />
+      );
     }
-    return <ChevronDown size={18} className="ml-2 text-gray-300 dark:text-gray-400 opacity-50" />;
+    return (
+      <ChevronDown
+        size={18}
+        className="ml-2 text-gray-300 dark:text-gray-400 opacity-50"
+      />
+    );
   };
   return (
     <div className="w-full h-[600px] overflow-auto">
@@ -61,27 +80,34 @@ export function DashBoardTable({ plans, t, sortBy, sortOrder, onSort }: DashBoar
             <TableHead className="w-[160px] font-bold">
               {t("studio.dashboard.cover_image")}
             </TableHead>
-            <TableHead className="font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => onSort("title")}>
+            <TableHead
+              className="font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => onSort("title")}
+            >
               <div className="flex items-center">
-              {t("studio.dashboard.title")}
-              {getSortIcon("title")}
+                {t("studio.dashboard.title")}
+                {getSortIcon("title")}
               </div>
             </TableHead>
-            <TableHead className="w-[150px] font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => onSort("total_days")}>
-            <div className="flex items-center">
-              {t("studio.dashboard.plan_days")}
-              {getSortIcon("total_days")}
-              </div>
-            </TableHead>
-            <TableHead className="w-[150px] font-bold">
-              {t("studio.dashboard.plan_used")}
-            </TableHead>
-            <TableHead className="w-[150px] font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => onSort("status")}>
+            <TableHead
+              className="w-[150px] font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => onSort("total_days")}
+            >
               <div className="flex items-center">
-              Status
-              {getSortIcon("status")}
+                {t("studio.dashboard.plan_days")}
+                {getSortIcon("total_days")}
               </div>
             </TableHead>
+            <TableHead
+              className="w-[150px] font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => onSort("subscription_count")}
+            >
+              <div className="flex items-center">
+                {t("studio.dashboard.plan_used")}
+                {getSortIcon("subscription_count")}
+              </div>
+            </TableHead>
+            <TableHead className="w-[150px] font-bold">Status</TableHead>
             <TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.actions")}
             </TableHead>

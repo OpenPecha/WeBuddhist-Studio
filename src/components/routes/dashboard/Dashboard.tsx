@@ -26,7 +26,7 @@ const fetchPlans = async (
   sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
-  const { data } = await axiosInstance.get(`http://localhost:8000/plan`, {  //TODO: change to backend base url
+  const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/plan`, {
     params: {
       skip,
       limit,
@@ -59,8 +59,15 @@ const Dashboard = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["dashboard-plans", currentPage, debouncedSearch, sortBy, sortOrder],
-    queryFn: () => fetchPlans(currentPage, 20, debouncedSearch, sortBy, sortOrder),
+    queryKey: [
+      "dashboard-plans",
+      currentPage,
+      debouncedSearch,
+      sortBy,
+      sortOrder,
+    ],
+    queryFn: () =>
+      fetchPlans(currentPage, 20, debouncedSearch, sortBy, sortOrder),
     refetchOnWindowFocus: false,
     enabled: true,
   });
@@ -76,7 +83,7 @@ const Dashboard = () => {
         planUsed: `${plan.subscription_count} Used`,
         status: plan.status,
       }))
-      .filter(    //TODO: remove this filter since backend will handle the search
+      .filter(
         (plan: any) =>
           !debouncedSearch ||
           plan.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -114,7 +121,13 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      <DashBoardTable plans={plans} t={t} sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+      <DashBoardTable
+        plans={plans}
+        t={t}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
+      />
 
       <Pagination className="mt-4">
         <PaginationPrevious
