@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/atoms/button";
 import StudioCard from "@/components/ui/atoms/studio-card";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { UserRoundCheck, UserRoundX } from "lucide-react";
+import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 
 interface VerificationState {
   status: "loading" | "success" | "error" | "invalid";
@@ -24,12 +24,12 @@ const EmailVerification = () => {
     switch (verificationState.status) {
       case "success":
         return (
-          <UserRoundCheck className="w-16 h-16 text-green-600 dark:text-green-400" />
+          <IoMdCheckmarkCircle className="w-16 h-16 text-green-600 dark:text-green-400" />
         );
       case "error":
       case "invalid":
         return (
-          <UserRoundX className="w-16 h-16 text-red-600 dark:text-red-400" />
+          <IoMdCloseCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
         );
       default:
         return null;

@@ -8,8 +8,10 @@ import {
 } from "../../atoms/table";
 import { Button } from "../../atoms/button";
 import { Badge } from "../../atoms/badge";
-import { Pencil, Plus, Trash, ChevronUp, ChevronDown } from "lucide-react";
+import { IoMdAdd, IoMdTrash } from "react-icons/io";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import { FaPen } from "react-icons/fa";
 export interface Plan {
   id: string;
   image_url: string;
@@ -59,7 +61,7 @@ export function DashBoardTable({
 
   const getSortIcon = (column: string) => {
     const isActive = sortBy === column;
-    const Icon = isActive && sortOrder === "asc" ? ChevronUp : ChevronDown;
+    const Icon = isActive && sortOrder === "asc" ? FaChevronUp : FaChevronDown;
     const colorClass = isActive
       ? "text-gray-600 dark:text-gray-400"
       : "text-gray-300 dark:text-gray-400 opacity-50";
@@ -107,7 +109,7 @@ export function DashBoardTable({
                 variant="outline"
                 className="mt-2"
               >
-                <Plus /> {t("studio.dashboard.add_plan")}
+                <IoMdAdd /> {t("studio.dashboard.add_plan")}
               </Button>
             </div>
           </TableCell>
@@ -136,14 +138,14 @@ export function DashBoardTable({
         <TableCell>
           <div className="flex items-center gap-2">
             <Button variant="destructive" size="sm" className="h-8 w-10">
-              <Trash className="h-4 w-4" />
+              <IoMdTrash className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
             >
-              <Pencil className="h-4 w-4" />
+              <FaPen className="h-4 w-4" />
             </Button>
           </div>
         </TableCell>

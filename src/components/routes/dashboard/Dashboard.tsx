@@ -8,7 +8,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/atoms/pagination";
 import { DashBoardTable } from "@/components/ui/molecules/dashboard-table/DashBoardTable";
-import { Plus, Search } from "lucide-react";
+import { IoMdAdd, IoMdSearch } from "react-icons/io";
+
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
@@ -79,7 +80,7 @@ const Dashboard = () => {
     <div className="w-full h-full font-dynamic px-10 pt-10">
       <div className="mb-4 flex items-center gap-4">
         <div className="border w-fit px-2 rounded-md border-gray-200 dark:border-[#313132] flex items-center">
-          <Search className="w-4 h-4" />
+          <IoMdSearch className="w-4 h-4" />
           <Input
             placeholder={t("common.placeholder.search")}
             className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
@@ -89,7 +90,7 @@ const Dashboard = () => {
         </div>
         <Link to="/create-plan">
           <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
-            <Plus /> Add Plan
+            <IoMdAdd /> Add Plan
           </Button>
         </Link>
       </div>

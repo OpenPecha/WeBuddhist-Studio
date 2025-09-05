@@ -5,13 +5,14 @@ import { ModeToggle } from "../mode-toggle/modetoggle";
 import { SITE_NAME } from "@/lib/constant";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import { useTranslate } from "@tolgee/react";
-import { Menu } from "lucide-react";
+
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
   SheetClose,
 } from "../../atoms/sheet";
+import { IoMdMenu } from "react-icons/io";
 const navItems = [
   {
     label: "studio.nav.dashboard",
@@ -50,7 +51,7 @@ const Navbar = () => {
         <LanguageToggle />
         <Sheet>
           <SheetTrigger className="md:hidden p-2">
-            <Menu className="h-5 w-5" />
+            <IoMdMenu className="h-5 w-5" />
           </SheetTrigger>
           <SheetContent side="top" className="h-full">
             <div className="space-y-4 pt-8 border h-screen flex items-center justify-center flex-col">
