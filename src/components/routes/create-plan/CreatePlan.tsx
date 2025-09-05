@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/atoms/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X } from "lucide-react";
+import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { planSchema } from "@/schema/PlanSchema";
@@ -186,7 +186,7 @@ const Createplan = () => {
                   onClick={() => setIsImageDialogOpen(true)}
                   className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
                 >
-                  <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                  <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 </button>
 
                 {imagePreview && (
@@ -208,7 +208,7 @@ const Createplan = () => {
                         className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
                         data-testid="image-remove"
                       >
-                        <X className="h-4 w-4" />
+                        <IoMdClose className="h-4 w-4" />
                       </button>
                     </div>
                   </div>

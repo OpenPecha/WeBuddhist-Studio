@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { IoMdClose } from "react-icons/io";
 import { Input } from "../../atoms/input";
 
 interface TagInputProps {
@@ -40,7 +40,7 @@ const TagInput = ({ value = [], onChange }: TagInputProps) => {
               className=" bg-gray-100 dark:bg-input/30 space-x-4 h-fit w-fit border border-dashed px-4 rounded-full py-2 flex items-center justify-between"
             >
               <p className="text-sm text-gray-500 dark:text-gray-100">{tag}</p>
-              <X
+              <IoMdClose
                 className=" h-5 w-5 text-white rounded-full p-1 border border-dashed dark:bg-input/90 bg-gray-300 hover:bg-gray-400 transition cursor-pointer"
                 onClick={() => removeTag(index)}
               />

@@ -6,7 +6,7 @@ import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslate } from "@tolgee/react";
-import { LogOut } from "lucide-react";
+import { IoIosLogOut } from "react-icons/io";
 export const fetchUserInfo = async () => {
   const { data } = await axiosInstance.get(
     `${BACKEND_BASE_URL}/api/v1/users/info`,
@@ -60,7 +60,7 @@ const AuthButton = () => {
             {t("header.profileMenu.log_out")}
           </span>
           <span className="md:hidden">
-            <LogOut className="w-4 h-4" />
+            <IoIosLogOut className="w-4 h-4" />
           </span>
         </Button>
       </div>

@@ -1,4 +1,4 @@
-import { Languages } from "lucide-react";
+import { IoLanguage } from "react-icons/io5";
 import { useTolgee } from "@tolgee/react";
 
 import { Button } from "../../atoms/button";
@@ -24,7 +24,7 @@ export function LanguageToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
-          <Languages className="h-[1.2rem] w-[1.2rem]" />
+          <IoLanguage className="h-[1.2rem] w-[1.2rem]" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
