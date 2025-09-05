@@ -2,6 +2,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CreatePlan from "./CreatePlan";
+import { vi } from "vitest";
+import axiosInstance from "@/config/axios-config";
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -183,5 +185,88 @@ describe("CreatePlan Component", () => {
     const input = screen.getByTestId("file-input");
     fireEvent.change(input, { target: { files: [file] } });
     expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
+  });
+
+  it("triggers file input when upload button is clicked", () => {
+    renderWithProviders(<CreatePlan />);
+    const fileInput = screen.getByTestId("file-input");
+    const uploadButton = screen.getByRole("button", { name: "" });
+    fireEvent.click(uploadButton);
+    expect(fileInput).toBeInTheDocument();
+  });
+
+  it("handles successful plan creation", async () => {
+    vi.spyOn(axiosInstance, "post").mockResolvedValue({
+      data: {
+        id: "1",
+        title: "Test Plan",
+        description: "Test Plan Description",
+        total_days: 30,
+        difficulty_level: "Beginner",
+      },
+    });
+    renderWithProviders(<CreatePlan />);
+    const file = new File(["sample content"], "cover.png", {
+      type: "image/png",
+    });
+    const fileInput = screen.getByTestId("file-input");
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    await screen.findByAltText("Cover preview");
+    const titleInput = screen.getByPlaceholderText(
+      "studio.plan.form.placeholder.title",
+    );
+    fireEvent.change(titleInput, { target: { value: "Test Plan" } });
+    const descriptionTextarea = screen.getByPlaceholderText(
+      "studio.plan.form.placeholder.description",
+    );
+    fireEvent.change(descriptionTextarea, {
+      target: { value: "Test Plan Description" },
+    });
+    const daysInput = screen.getByPlaceholderText(
+      "studio.plan.form.placeholder.number_of_days",
+    );
+    fireEvent.change(daysInput, { target: { value: "30" } });
+    const difficultyButton = screen.getByTestId("select-trigger");
+    fireEvent.click(difficultyButton);
+    const difficultyOption = screen.getByText("Beginner");
+    fireEvent.click(difficultyOption);
+    const submitButton = screen.getByText("studio.plan.next_button");
+    fireEvent.click(submitButton);
+    await waitFor(() => {
+      expect(titleInput).toHaveValue("");
+      expect(descriptionTextarea).toHaveValue("");
+      expect(daysInput).not.toHaveValue();
+    });
+  });
+
+  it("handles failed plan creation", async () => {
+    vi.spyOn(axiosInstance, "post").mockRejectedValue(new Error("API Error"));
+    renderWithProviders(<CreatePlan />);
+    const titleInput = screen.getByPlaceholderText(
+      "studio.plan.form.placeholder.title",
+    );
+    const descriptionTextarea = screen.getByPlaceholderText(
+      "studio.plan.form.placeholder.description",
+    );
+    const daysInput = screen.getByPlaceholderText(
+      "studio.plan.form.placeholder.number_of_days",
+    );
+    fireEvent.change(titleInput, { target: { value: "Test Plan" } });
+    fireEvent.change(descriptionTextarea, {
+      target: { value: "Test Plan Description" },
+    });
+    fireEvent.change(daysInput, { target: { value: "30" } });
+    const difficultyButton = screen.getByTestId("select-trigger");
+    fireEvent.click(difficultyButton);
+    const difficultyOption = screen.getByText("Beginner");
+    fireEvent.click(difficultyOption);
+    const submitButton = screen.getByText("studio.plan.next_button");
+    fireEvent.click(submitButton);
+    await waitFor(() => {
+      expect(titleInput).toHaveValue("Test Plan");
+      expect(descriptionTextarea).toHaveValue("Test Plan Description");
+      expect(daysInput).toHaveValue(30);
+      expect(submitButton).toBeInTheDocument();
+    });
   });
 });
