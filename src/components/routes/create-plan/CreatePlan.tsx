@@ -282,7 +282,7 @@ const Createplan = () => {
                 </FormItem>
               )}
             />
-            <div className="pt-8 w-fit">
+            <div className="pt-8 w-full flex justify-end">
               <Button
                 type="submit"
                 variant="default"
