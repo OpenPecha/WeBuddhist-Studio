@@ -28,6 +28,13 @@ import { DIFFICULTY, BACKEND_BASE_URL } from "@/lib/constant";
 import axiosInstance from "@/config/axios-config";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/atoms/dialog";
+import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 
 export const callplan = async (formdata: z.infer<typeof planSchema>) => {
   const { data } = await axiosInstance.post(
@@ -40,6 +47,7 @@ const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
@@ -72,20 +80,6 @@ const Createplan = () => {
     },
   });
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      form.setValue("image_url", file.name);
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
@@ -93,6 +87,14 @@ const Createplan = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const handleImageUpload = (file: File) => {
+    const imageUrl = URL.createObjectURL(file);
+    setImagePreview(imageUrl);
+    setSelectedImage(file);
+    form.setValue("image_url", imageUrl);
+    setIsImageDialogOpen(false);
   };
 
   const onSubmit = (data: PlanFormData) => {
@@ -178,21 +180,10 @@ const Createplan = () => {
                 {t("studio.plan.cover_image.description")}
               </p>
 
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-                accept="image/*"
-                className="hidden"
-                data-testid="file-input"
-              />
-
               <div className="flex gap-4 mt-4 items-start">
                 <button
                   type="button"
-                  onClick={() => {
-                    fileInputRef.current?.click();
-                  }}
+                  onClick={() => setIsImageDialogOpen(true)}
                   className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
                 >
                   <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
@@ -224,6 +215,17 @@ const Createplan = () => {
                 )}
               </div>
             </div>
+            <Dialog
+              open={isImageDialogOpen}
+              onOpenChange={setIsImageDialogOpen}
+            >
+              <DialogContent showCloseButton={true}>
+                <DialogHeader>
+                  <DialogTitle>Upload & Crop Image</DialogTitle>
+                </DialogHeader>
+                <ImageContentData onUpload={handleImageUpload} />
+              </DialogContent>
+            </Dialog>
           </form>
         </Form>
       </div>
