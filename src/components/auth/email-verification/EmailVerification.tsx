@@ -1,76 +1,111 @@
 import { Button } from "@/components/ui/atoms/button";
 import StudioCard from "@/components/ui/atoms/studio-card";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
+import axiosInstance from "@/config/axios-config";
+import { BACKEND_BASE_URL } from "@/lib/constant";
+import { useQuery } from "@tanstack/react-query";
 
-interface VerificationState {
-  status: "loading" | "success" | "error" | "invalid";
+const verifyEmail = async (token: string) => {
+  const response = await axiosInstance.get(
+    `${BACKEND_BASE_URL}/api/v1/cms/auth/verify-email`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  return response.data;
+};
+
+interface VerifyEmailResponse {
+  email: string;
+  status: string;
   message: string;
 }
 
-const EmailVerification = ({
-  initialState,
-}: {
-  initialState?: VerificationState;
-}) => {
+const EmailVerification = () => {
   const navigate = useNavigate();
-  const [verificationState] = useState<VerificationState>(
-    initialState || {
-      status: "success",
-      message: "Your email has been successfully verified!",
-    },
-  );
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+
+  const {
+    data: verifyEmailData,
+    isLoading,
+    isError,
+  } = useQuery<VerifyEmailResponse>({
+    queryKey: ["verifyEmail", token],
+    queryFn: () => verifyEmail(token as string),
+    enabled: !!token,
+  });
 
   const handleLoginRedirect = () => {
     navigate("/login");
   };
 
   const getStatusIcon = () => {
-    switch (verificationState.status) {
-      case "success":
-        return (
-          <IoMdCheckmarkCircle className="w-16 h-16 text-green-600 dark:text-green-400" />
-        );
-      case "error":
-      case "invalid":
-        return (
-          <IoMdCloseCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
-        );
-      default:
-        return null;
+    if (isLoading) return null;
+
+    if (isError) {
+      return (
+        <IoMdCloseCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
+      );
     }
+
+    if (verifyEmailData) {
+      return (
+        <IoMdCheckmarkCircle className="w-16 h-16 text-green-600 dark:text-green-400" />
+      );
+    }
+
+    return null;
   };
 
   const getStatusColor = () => {
-    switch (verificationState.status) {
-      case "success":
-        return "text-green-600 dark:text-green-400";
-      case "error":
-      case "invalid":
-        return "text-red-600 dark:text-red-400";
-      default:
-        return "text-gray-600 dark:text-gray-400";
+    if (isError) {
+      return "text-red-600 dark:text-red-400";
     }
+
+    if (verifyEmailData) {
+      return "text-green-600 dark:text-green-400";
+    }
+
+    return "text-gray-600 dark:text-gray-400";
   };
+
+  if (!token) {
+    return (
+      <StudioCard>
+        <div className="mb-6 flex justify-center">
+          <IoMdCloseCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
+        </div>
+        <h2 className="text-xl font-semibold text-center">Invalid Token</h2>
+        <p className="text-center mb-8 text-sm text-red-600 dark:text-red-400">
+          No verification token provided.
+        </p>
+      </StudioCard>
+    );
+  }
 
   return (
     <StudioCard>
       <div className="mb-6 flex justify-center">{getStatusIcon()}</div>
 
       <h2 className="text-xl font-semibold text-center">
-        {verificationState.status === "success" && "Email Verified!"}
-        {(verificationState.status === "error" ||
-          verificationState.status === "invalid") &&
-          "Verification Failed"}
+        {isLoading && "Verifying Email..."}
+        {isError && "Verification Failed"}
+        {verifyEmailData && "Email Verified!"}
       </h2>
 
-      <p className={`text-center mb-8 text-sm  ${getStatusColor()}`}>
-        {verificationState.message}
+      <p className={`text-center mb-8 text-sm ${getStatusColor()}`}>
+        {isLoading && "Please wait while we verify your email address."}
+        {isError &&
+          "There was an error verifying your email. Please try again or contact support."}
+        {verifyEmailData?.message}
       </p>
 
       <div className="w-full space-y-4">
-        {verificationState.status === "success" && (
+        {verifyEmailData && (
           <Button
             onClick={handleLoginRedirect}
             className="w-full"
