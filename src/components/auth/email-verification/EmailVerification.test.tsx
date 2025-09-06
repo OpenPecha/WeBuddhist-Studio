@@ -75,7 +75,7 @@ describe("EmailVerification Component", () => {
     vi.mocked(axiosInstance.get).mockRejectedValue({
       response: {
         data: {
-          message: "Invalid token",
+          detail: "Invalid verification token",
         },
       },
     });
@@ -86,11 +86,7 @@ describe("EmailVerification Component", () => {
       expect(screen.getByText("Verification Failed")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText(
-        "There was an error verifying your email. Please try again or contact support.",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Invalid verification token")).toBeInTheDocument();
     expect(screen.queryByText("Continue to Login")).not.toBeInTheDocument();
   });
 
@@ -162,7 +158,7 @@ describe("EmailVerification Component", () => {
     vi.mocked(axiosInstance.get).mockRejectedValue({
       response: {
         data: {
-          message: "Invalid token",
+          detail: "Invalid verification token",
         },
       },
     });
@@ -173,5 +169,27 @@ describe("EmailVerification Component", () => {
       const errorIcon = document.querySelector(".text-red-600");
       expect(errorIcon).toBeDefined();
     });
+  });
+
+  it("displays fallback error message when backend error structure is unexpected", async () => {
+    vi.mocked(axiosInstance.get).mockRejectedValue({
+      response: {
+        data: {
+          error: "Some other error format",
+        },
+      },
+    });
+
+    renderWithProviders(<EmailVerification />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Verification Failed")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText(
+        "There was an error verifying your email. Please try again or contact support.",
+      ),
+    ).toBeInTheDocument();
   });
 });

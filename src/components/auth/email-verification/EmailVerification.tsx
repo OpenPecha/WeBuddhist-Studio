@@ -33,14 +33,27 @@ const EmailVerification = () => {
     data: verifyEmailData,
     isLoading,
     isError,
+    error,
   } = useQuery<VerifyEmailResponse>({
     queryKey: ["verifyEmail", token],
     queryFn: () => verifyEmail(token as string),
     enabled: !!token,
+    retry: false,
   });
 
   const handleLoginRedirect = () => {
     navigate("/login");
+  };
+
+  const getErrorMessage = () => {
+    if (error) {
+      const axiosError = error as any;
+      if (axiosError.response?.data?.detail) {
+        return axiosError.response.data.detail;
+      }
+    }
+
+    return "There was an error verifying your email. Please try again or contact support.";
   };
 
   const getStatusIcon = () => {
@@ -99,8 +112,7 @@ const EmailVerification = () => {
 
       <p className={`text-center mb-8 text-sm ${getStatusColor()}`}>
         {isLoading && "Please wait while we verify your email address."}
-        {isError &&
-          "There was an error verifying your email. Please try again or contact support."}
+        {isError && getErrorMessage()}
         {verifyEmailData?.message}
       </p>
 

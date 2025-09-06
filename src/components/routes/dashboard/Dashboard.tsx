@@ -27,15 +27,18 @@ const fetchPlans = async (
   sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
-  const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/cms/plan`, {
-    params: {
-      skip,
-      limit,
-      search,
-      sort_by: sortBy,
-      sort_order: sortOrder,
+  const { data } = await axiosInstance.get(
+    `${BACKEND_BASE_URL}/api/v1/cms/plan`,
+    {
+      params: {
+        skip,
+        limit,
+        search,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      },
     },
-  });
+  );
   return data;
 };
 
