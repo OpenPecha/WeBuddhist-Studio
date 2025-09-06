@@ -42,7 +42,9 @@ describe("EmailVerification Component", () => {
     renderWithProviders(<EmailVerification />);
 
     expect(screen.getByText("Verifying Email...")).toBeDefined();
-    expect(screen.getByText("Please wait while we verify your email address.")).toBeDefined();
+    expect(
+      screen.getByText("Please wait while we verify your email address."),
+    ).toBeDefined();
   });
 
   it("renders success state when API call succeeds", async () => {
@@ -50,7 +52,8 @@ describe("EmailVerification Component", () => {
       data: {
         email: "test@example.com",
         status: "INACTIVE",
-        message: "Email verified successfully. Your account is pending admin approval"
+        message:
+          "Email verified successfully. Your account is pending admin approval",
       },
     });
 
@@ -60,7 +63,11 @@ describe("EmailVerification Component", () => {
       expect(screen.getByText("Email Verified!")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Email verified successfully. Your account is pending admin approval")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Email verified successfully. Your account is pending admin approval",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText("Continue to Login")).toBeInTheDocument();
   });
 
@@ -79,7 +86,11 @@ describe("EmailVerification Component", () => {
       expect(screen.getByText("Verification Failed")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("There was an error verifying your email. Please try again or contact support.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "There was an error verifying your email. Please try again or contact support.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Continue to Login")).not.toBeInTheDocument();
   });
 
@@ -88,7 +99,8 @@ describe("EmailVerification Component", () => {
       data: {
         email: "test@example.com",
         status: "INACTIVE",
-        message: "Email verified successfully. Your account is pending admin approval"
+        message:
+          "Email verified successfully. Your account is pending admin approval",
       },
     });
 
@@ -101,7 +113,7 @@ describe("EmailVerification Component", () => {
           headers: {
             Authorization: "Bearer test-token",
           },
-        }
+        },
       );
     });
   });
@@ -111,7 +123,8 @@ describe("EmailVerification Component", () => {
       data: {
         email: "test@example.com",
         status: "INACTIVE",
-        message: "Email verified successfully. Your account is pending admin approval"
+        message:
+          "Email verified successfully. Your account is pending admin approval",
       },
     });
 
@@ -132,7 +145,8 @@ describe("EmailVerification Component", () => {
       data: {
         email: "test@example.com",
         status: "INACTIVE",
-        message: "Email verified successfully. Your account is pending admin approval"
+        message:
+          "Email verified successfully. Your account is pending admin approval",
       },
     });
 
@@ -160,5 +174,4 @@ describe("EmailVerification Component", () => {
       expect(errorIcon).toBeDefined();
     });
   });
-
 });
