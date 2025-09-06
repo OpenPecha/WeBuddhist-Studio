@@ -124,7 +124,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
@@ -136,7 +136,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
@@ -148,7 +148,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
@@ -172,7 +172,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(pagelink3);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             skip: 40,
@@ -184,7 +184,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(previousButton);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             skip: 20,
@@ -206,7 +206,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(nextButton);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             skip: 20,

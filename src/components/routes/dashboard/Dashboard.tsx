@@ -27,7 +27,7 @@ const fetchPlans = async (
   sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
-  const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/plan`, {
+  const { data } = await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/cms/plan`, {
     params: {
       skip,
       limit,

@@ -79,7 +79,7 @@ describe("Login Component", () => {
     await user.click(screen.getByText("common.button.submit"));
     await waitFor(() => {
       expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
-        `${BACKEND_BASE_URL}/api/v1/auth/login`,
+        `${BACKEND_BASE_URL}/api/v1/cms/auth/login`,
         {
           email: "test@example.com",
           password: "password123",
