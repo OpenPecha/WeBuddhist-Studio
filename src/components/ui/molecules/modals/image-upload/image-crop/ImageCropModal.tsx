@@ -69,7 +69,7 @@ const CropContainer = ({
   onZoomChange: (zoom: number) => void;
   isProfilePage?: boolean;
 }) => (
-  <div className="relative w-full h-96 bg-[#dddddd] rounded-sm">
+  <div className="relative w-full h-96 bg-[#b23434] dark:bg-[#c44848]">
     <Cropper
       image={imageSrc}
       crop={crop}
@@ -90,9 +90,9 @@ const CropControls = ({
   zoom: number;
   onZoomChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => (
-  <div className="p-4 border-t border-[#eee] bg-[#fafafa]">
+  <div className="p-4 border-t border-[#eee] dark:bg-[#111111] dark:border-[#222222] bg-[#fafafa]">
     <div className="mb-4 last:mb-0">
-      <label className="block text-sm mb-2 text-[#666] font-bold">
+      <label className="block text-sm mb-2 text-[#666] dark:text-[#d4d4d4] font-bold">
         Zoom: {Math.round(zoom * 100)}%
       </label>
       <Input
@@ -117,7 +117,7 @@ const CropActions = ({
   onCropConfirm: () => void;
   disabled: boolean;
 }) => (
-  <div className="flex float-end gap-4 p-4 border-t border-[#eee]">
+  <div className="flex float-end gap-4 p-4 border-t border-[#eee] dark:border-[#222222]">
     <Button className="flex-1" variant="outline" onClick={onBack}>
       Back
     </Button>
@@ -160,7 +160,7 @@ const ImageCropContent = ({
   };
 
   return (
-    <div className="flex flex-col border flex-1 ">
+    <div className="flex flex-col flex-1 ">
       <CropContainer
         imageSrc={imageSrc}
         crop={crop}

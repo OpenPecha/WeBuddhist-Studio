@@ -66,7 +66,7 @@ export function DashBoardTable({
       ? "text-gray-600 dark:text-gray-400"
       : "text-gray-300 dark:text-gray-400 opacity-50";
 
-    return <Icon size={18} className={`ml-2 ${colorClass}`} />;
+    return <Icon size={12} className={`ml-2 ${colorClass}`} />;
   };
 
   const renderTableContent = () => {
