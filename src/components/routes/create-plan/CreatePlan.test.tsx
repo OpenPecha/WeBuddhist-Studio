@@ -5,6 +5,14 @@ import CreatePlan from "./CreatePlan";
 import { vi } from "vitest";
 import axiosInstance from "@/config/axios-config";
 
+Object.defineProperty(global, "URL", {
+  value: {
+    createObjectURL: vi.fn(() => "mock-blob-url"),
+    revokeObjectURL: vi.fn(),
+  },
+  writable: true,
+});
+
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -22,11 +30,34 @@ const renderWithProviders = (component: React.ReactElement) => {
   );
 };
 
+vi.mock(
+  "@/components/ui/molecules/modals/image-upload/ImageContentData",
+  () => ({
+    default: ({ onUpload }: { onUpload: (file: File) => void }) => (
+      <div>
+        <button
+          onClick={() => {
+            const mockFile = new File(["sample file"], "sample.jpg", {
+              type: "image/jpeg",
+            });
+            onUpload(mockFile);
+          }}
+          data-testid="mock-upload-trigger"
+        >
+          Upload
+        </button>
+      </div>
+    ),
+  }),
+);
+
 describe("CreatePlan Component", () => {
   it("renders create plan form with main heading", () => {
     renderWithProviders(<CreatePlan />);
 
-    expect(screen.getByText("studio.plan.form_field.details")).toBeDefined();
+    expect(
+      screen.getByText("studio.plan.form_field.details"),
+    ).toBeInTheDocument();
   });
 
   it("renders title input field", () => {
@@ -35,7 +66,7 @@ describe("CreatePlan Component", () => {
     const titleInput = screen.getByPlaceholderText(
       "studio.plan.form.placeholder.title",
     );
-    expect(titleInput).toBeDefined();
+    expect(titleInput).toBeInTheDocument();
     expect(titleInput.tagName).toBe("INPUT");
   });
 
@@ -45,7 +76,7 @@ describe("CreatePlan Component", () => {
     const descriptionTextarea = screen.getByPlaceholderText(
       "studio.plan.form.placeholder.description",
     );
-    expect(descriptionTextarea).toBeDefined();
+    expect(descriptionTextarea).toBeInTheDocument();
     expect(descriptionTextarea.tagName).toBe("TEXTAREA");
   });
 
@@ -54,35 +85,39 @@ describe("CreatePlan Component", () => {
 
     expect(
       screen.getByText("studio.plan.form_field.number_of_day"),
-    ).toBeDefined();
+    ).toBeInTheDocument();
 
     const daysInput = screen.getByPlaceholderText(
       "studio.plan.form.placeholder.number_of_days",
     );
-    expect(daysInput).toBeDefined();
+    expect(daysInput).toBeInTheDocument();
     expect(daysInput.getAttribute("type")).toBe("number");
   });
 
   it("renders cover image section", () => {
     renderWithProviders(<CreatePlan />);
 
-    expect(screen.getByText("studio.dashboard.cover_image")).toBeDefined();
+    expect(
+      screen.getByText("studio.dashboard.cover_image"),
+    ).toBeInTheDocument();
     expect(
       screen.getByText("studio.plan.cover_image.description"),
-    ).toBeDefined();
+    ).toBeInTheDocument();
   });
 
   it("renders difficulty level field with label", () => {
     renderWithProviders(<CreatePlan />);
 
-    expect(screen.getByText("studio.plan.form_field.difficulty")).toBeDefined();
+    expect(
+      screen.getByText("studio.plan.form_field.difficulty"),
+    ).toBeInTheDocument();
   });
 
   it("renders submit button", () => {
     renderWithProviders(<CreatePlan />);
 
     const submitButton = screen.getByText("studio.plan.next_button");
-    expect(submitButton).toBeDefined();
+    expect(submitButton).toBeInTheDocument();
     expect(submitButton.tagName).toBe("BUTTON");
   });
 
@@ -128,37 +163,55 @@ describe("CreatePlan Component", () => {
 
   it("renders image upload area", () => {
     renderWithProviders(<CreatePlan />);
-
-    const uploadButton = screen.getByRole("button", { name: "" });
-    expect(uploadButton).toBeDefined();
+    expect(
+      screen.getByText("studio.dashboard.cover_image"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("studio.plan.cover_image.description"),
+    ).toBeInTheDocument();
+    const uploadButton = screen.getByLabelText("Upload cover image");
+    expect(uploadButton).toBeInTheDocument();
   });
 
-  it("handles image upload and preview", async () => {
+  it("displays image preview after upload", async () => {
     renderWithProviders(<CreatePlan />);
-    const file = new File(["dummy content"], "cover.png", {
-      type: "image/png",
+    const uploadButton = screen.getByLabelText("Upload cover image");
+    fireEvent.click(uploadButton);
+    await waitFor(() => {
+      expect(screen.getByText("Upload & Crop Image")).toBeInTheDocument();
     });
-    const input = screen.getByTestId("file-input");
-    fireEvent.change(input, { target: { files: [file] } });
-    const preview = await screen.findByAltText("Cover preview");
-    expect(preview).toBeInTheDocument();
-    expect(screen.getByText("cover.png")).toBeInTheDocument();
+    const mockUploadButton = screen.getByTestId("mock-upload-trigger");
+    fireEvent.click(mockUploadButton);
+    expect(screen.getByAltText("Cover preview")).toBeInTheDocument();
+    expect(screen.getByTestId("image-remove")).toBeInTheDocument();
+    expect(screen.getByText("sample.jpg")).toBeInTheDocument();
+    expect(screen.queryByText("Upload & Crop Image")).not.toBeInTheDocument();
   });
 
   it("removes image preview when remove button is clicked", async () => {
     renderWithProviders(<CreatePlan />);
-    const file = new File(["dummy content"], "cover.png", {
-      type: "image/png",
-    });
-    const input = screen.getByTestId("file-input");
-    fireEvent.change(input, { target: { files: [file] } });
-    const preview = await screen.findByAltText("Cover preview");
-    expect(preview).toBeInTheDocument();
-    const removeBtn = screen.getByTestId("image-remove");
-    fireEvent.click(removeBtn);
+    const uploadButton = screen.getByLabelText("Upload cover image");
+    fireEvent.click(uploadButton);
     await waitFor(() => {
-      expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
-      expect(screen.queryByText("cover.png")).not.toBeInTheDocument();
+      expect(screen.getByTestId("mock-upload-trigger")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("mock-upload-trigger"));
+    expect(screen.getByAltText("Cover preview")).toBeInTheDocument();
+    const removeButton = screen.getByTestId("image-remove");
+    expect(removeButton).toBeInTheDocument();
+    fireEvent.click(removeButton);
+    expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("image-remove")).not.toBeInTheDocument();
+    expect(screen.queryByText("sample.jpg")).not.toBeInTheDocument();
+  });
+
+  it("opens image upload dialog when upload button is clicked", async () => {
+    renderWithProviders(<CreatePlan />);
+    const uploadButton = screen.getByLabelText("Upload cover image");
+    fireEvent.click(uploadButton);
+    await waitFor(() => {
+      expect(screen.getByText("Upload & Crop Image")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
   });
 
@@ -177,22 +230,9 @@ describe("CreatePlan Component", () => {
     expect(screen.getByText("tag1")).toBeInTheDocument();
   });
 
-  it("does not set preview for non-image file", async () => {
+  it("shows no image preview initially", () => {
     renderWithProviders(<CreatePlan />);
-    const file = new File(["dummy content"], "file.txt", {
-      type: "text/plain",
-    });
-    const input = screen.getByTestId("file-input");
-    fireEvent.change(input, { target: { files: [file] } });
     expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
-  });
-
-  it("triggers file input when upload button is clicked", () => {
-    renderWithProviders(<CreatePlan />);
-    const fileInput = screen.getByTestId("file-input");
-    const uploadButton = screen.getByRole("button", { name: "" });
-    fireEvent.click(uploadButton);
-    expect(fileInput).toBeInTheDocument();
   });
 
   it("handles successful plan creation", async () => {
@@ -206,12 +246,7 @@ describe("CreatePlan Component", () => {
       },
     });
     renderWithProviders(<CreatePlan />);
-    const file = new File(["sample content"], "cover.png", {
-      type: "image/png",
-    });
-    const fileInput = screen.getByTestId("file-input");
-    fireEvent.change(fileInput, { target: { files: [file] } });
-    await screen.findByAltText("Cover preview");
+
     const titleInput = screen.getByPlaceholderText(
       "studio.plan.form.placeholder.title",
     );
