@@ -106,4 +106,16 @@ describe("EmailVerification Component", () => {
 
     expect(screen.queryByText("Verification Failed")).toBeNull();
   });
+
+  it("renders error state with red styling", () => {
+    const errorState = {
+      status: "error" as const,
+      message: "Verification failed. Please try again.",
+    };
+    renderWithProviders(<EmailVerification initialState={errorState} />);
+    expect(screen.getByText("Verification Failed")).toBeInTheDocument();
+    const message = screen.getByText("Verification failed. Please try again.");
+    expect(message.className).toContain("text-red-600");
+    expect(screen.queryByText("Continue to Login")).not.toBeInTheDocument();
+  });
 });

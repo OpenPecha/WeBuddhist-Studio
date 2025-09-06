@@ -9,12 +9,18 @@ interface VerificationState {
   message: string;
 }
 
-const EmailVerification = () => {
+const EmailVerification = ({
+  initialState,
+}: {
+  initialState?: VerificationState;
+}) => {
   const navigate = useNavigate();
-  const [verificationState] = useState<VerificationState>({
-    status: "success",
-    message: "Your email has been successfully verified!",
-  });
+  const [verificationState] = useState<VerificationState>(
+    initialState || {
+      status: "success",
+      message: "Your email has been successfully verified!",
+    },
+  );
 
   const handleLoginRedirect = () => {
     navigate("/login");

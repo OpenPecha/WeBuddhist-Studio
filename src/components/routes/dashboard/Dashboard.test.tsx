@@ -1,7 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Dashboard from "./Dashboard";
+import axiosInstance from "@/config/axios-config";
+import { vi } from "vitest";
+import { BACKEND_BASE_URL } from "@/lib/constant";
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -98,5 +101,118 @@ describe("Dashboard Component", () => {
       name: "pagination",
     });
     expect(paginationNav).toBeDefined();
+  });
+
+  it("fetches plans correctly and returns the correct data", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: { plan: [], total: 0 },
+    });
+
+    renderWithProviders(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should toggle sort order when clicking column header multiple times", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: { plan: [], total: 0 },
+    });
+
+    renderWithProviders(<Dashboard />);
+    const titleHeader = screen.getByText("studio.dashboard.title");
+    fireEvent.click(titleHeader);
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.objectContaining({
+          params: expect.objectContaining({
+            sort_by: "title",
+            sort_order: "asc",
+          }),
+        }),
+      );
+    });
+    fireEvent.click(titleHeader);
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.objectContaining({
+          params: expect.objectContaining({
+            sort_by: "title",
+            sort_order: "desc",
+          }),
+        }),
+      );
+    });
+    fireEvent.click(titleHeader);
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.objectContaining({
+          params: expect.objectContaining({
+            sort_by: "title",
+            sort_order: "asc",
+          }),
+        }),
+      );
+    });
+  });
+
+  it("should handle previous button", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: { plan: [], total: 200 },
+    });
+
+    renderWithProviders(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
+    const pagelink3 = screen.getByText("3");
+    fireEvent.click(pagelink3);
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.objectContaining({
+          params: expect.objectContaining({
+            skip: 40,
+          }),
+        }),
+      );
+    });
+    const previousButton = screen.getByText("Previous");
+    fireEvent.click(previousButton);
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.objectContaining({
+          params: expect.objectContaining({
+            skip: 20,
+          }),
+        }),
+      );
+    });
+  });
+
+  it("should handle next button", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: { plan: [], total: 200 },
+    });
+    renderWithProviders(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
+    const nextButton = screen.getByText("Next");
+    fireEvent.click(nextButton);
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/plan`),
+        expect.objectContaining({
+          params: expect.objectContaining({
+            skip: 20,
+          }),
+        }),
+      );
+    });
   });
 });
