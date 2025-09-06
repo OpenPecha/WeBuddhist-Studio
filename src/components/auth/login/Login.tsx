@@ -24,7 +24,7 @@ const Login = () => {
   const loginMutation = useMutation<any, Error, LoginData>({
     mutationFn: async (loginData: LoginData) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/api/v1/auth/login`,
+        `${BACKEND_BASE_URL}/api/v1/cms/auth/login`,
         loginData,
       );
       return response.data;

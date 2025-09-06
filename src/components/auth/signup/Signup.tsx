@@ -14,8 +14,8 @@ import { signupSchema } from "@/schema/SignupSchema";
 import { createPasswordHash } from "@/lib/utils";
 interface SignupData {
   email: string;
-  firstname: string;
-  lastname: string;
+  first_name: string;
+  last_name: string;
   password: string;
 }
 
@@ -27,7 +27,7 @@ const Signup = () => {
   const signupMutation = useMutation<any, Error, SignupData>({
     mutationFn: async (signupData: SignupData) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/v1/cms/auth/register`,
+        `${BACKEND_BASE_URL}/api/v1/cms/auth/register`,
         signupData,
       );
       return response.data;
@@ -39,7 +39,7 @@ const Signup = () => {
     },
     onError: (error: any) => {
       const errorMsg =
-        error?.response?.data?.message || "Signup failed. Please try again.";
+        error?.response?.data?.detail || "Signup failed. Please try again.";
       setError(errorMsg);
     },
   });
@@ -51,13 +51,13 @@ const Signup = () => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirm-password") as string;
-    const firstname = formData.get("firstname") as string;
-    const lastname = formData.get("lastname") as string;
+    const first_name = formData.get("first_name") as string;
+    const last_name = formData.get("last_name") as string;
 
     const formDataObj = {
       email,
-      firstname,
-      lastname,
+      first_name,
+      last_name,
       password,
       confirmPassword,
     };
@@ -67,8 +67,8 @@ const Signup = () => {
       const clientPassword = createPasswordHash(email, password);
       signupMutation.mutate({
         email: validatedData.email,
-        firstname: validatedData.firstname,
-        lastname: validatedData.lastname,
+        first_name: validatedData.first_name,
+        last_name: validatedData.last_name,
         password: clientPassword,
       });
     } catch (error) {
@@ -98,19 +98,19 @@ const Signup = () => {
           </Label>
           <Input
             type="text"
-            name="firstname"
+            name="first_name"
             placeholder={t("studio.signup.placeholder.first_name")}
             className="  placeholder:text-[#b1b1b1]"
             required
           />
         </div>
         <div className="text-sm space-y-2">
-          <Label htmlFor="lastname" className="font-medium">
+          <Label htmlFor="last_name" className="font-medium">
             {t("sign_up.form.last_name")}
           </Label>
           <Input
             type="text"
-            name="lastname"
+            name="last_name"
             placeholder={t("studio.signup.placeholder.last_name")}
             className="  placeholder:text-[#b1b1b1]"
             required

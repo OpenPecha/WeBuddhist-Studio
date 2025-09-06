@@ -8,11 +8,11 @@ export const signupSchema = z
       .refine((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), {
         message: "Please enter a valid email address",
       }),
-    firstname: z
+    first_name: z
       .string()
       .min(1, "First name is required")
       .min(2, "First name must be at least 2 characters"),
-    lastname: z
+    last_name: z
       .string()
       .min(1, "Last name is required")
       .min(2, "Last name must be at least 2 characters"),

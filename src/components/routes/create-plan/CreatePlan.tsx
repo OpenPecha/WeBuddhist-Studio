@@ -101,7 +101,6 @@ const Createplan = () => {
     console.log(data);
     createPlanMutation.mutate(data);
   };
-
   return (
     <div className="w-full h-full font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
