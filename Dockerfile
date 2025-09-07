@@ -31,7 +31,7 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 
 COPY nginx/nginx.conf /etc/nginx/
 COPY nginx/studio.conf.template /etc/nginx/conf.d/
-COPY nginx/security-header.conf /etc/nginx/
+COPY nginx/security-headers.conf /etc/nginx/
 
 EXPOSE 4173
 
