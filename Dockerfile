@@ -4,6 +4,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+
+# Accept build arguments for environment variables
+ARG VITE_BACKEND_BASE_URL
+ARG VITE_DEFAULT_LANGUAGE
+ARG VITE_ENV_SALT
+
+# Set environment variables for the build
+ENV VITE_BACKEND_BASE_URL=$VITE_BACKEND_BASE_URL
+ENV VITE_DEFAULT_LANGUAGE=$VITE_DEFAULT_LANGUAGE
+ENV VITE_ENV_SALT=$VITE_ENV_SALT
+
 RUN npm run build
 
 # Stage 2: Serve
