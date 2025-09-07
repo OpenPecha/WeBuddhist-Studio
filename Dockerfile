@@ -1,24 +1,38 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS build-stage
+
+LABEL maintainer="dharmadutta"
+
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm ci
+
+RUN npm install
+
 COPY . .
 
-# Accept build arguments for environment variables
-ARG VITE_BACKEND_BASE_URL
-ARG VITE_DEFAULT_LANGUAGE
-ARG VITE_ENV_SALT
-
-# Set environment variables for the build
-ENV VITE_BACKEND_BASE_URL=$VITE_BACKEND_BASE_URL
-ENV VITE_DEFAULT_LANGUAGE=$VITE_DEFAULT_LANGUAGE
-ENV VITE_ENV_SALT=$VITE_ENV_SALT
+ENV NODE_ENV=production
 
 RUN npm run build
 
-# Stage 2: Serve
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM nginx:stable-alpine
+
+WORKDIR /app
+
+RUN chown nginx:nginx /app && apk add --no-cache gettext
+
+ARG BACKEND="https://api.webuddhist.com"
+ENV VITE_BACKEND_BASE_URL=$BACKEND
+
+ENV PORT=4173
+
+# Copy the React build files into Nginx's public directory
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+COPY nginx/nginx.conf /etc/nginx/
+COPY nginx/studio.conf.template /etc/nginx/conf.d/
+COPY nginx/security-header.conf /etc/nginx/
+
+EXPOSE 4173
+
+CMD ["sh", "-c", "envsubst '${VITE_BACKEND_BASE_URL}' < /etc/nginx/conf.d/studio.conf.template > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
