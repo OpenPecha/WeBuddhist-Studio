@@ -33,12 +33,3 @@ Object.defineProperty(global, "URL", {
   writable: true,
 });
 
-Object.defineProperty(window, "addEventListener", {
-  value: vi.fn(),
-  writable: true,
-});
-
-Object.defineProperty(window, "removeEventListener", {
-  value: vi.fn(),
-  writable: true,
-});

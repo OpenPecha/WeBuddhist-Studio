@@ -89,21 +89,7 @@ const Createplan = () => {
       });
     },
   });
-
-  // Handle browser navigation (refresh, close tab, etc.)
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        event.preventDefault();
-        // eslint-disable-next-line deprecation/deprecation
-        event.returnValue = ""; // Required for some browsers
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasUnsavedChanges]);
-
+  
   useEffect(() => {
     if (blocker.state === "blocked") {
       setShowNavigationDialog(true);
