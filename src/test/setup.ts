@@ -32,4 +32,3 @@ Object.defineProperty(global, "URL", {
   },
   writable: true,
 });
-
