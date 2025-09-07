@@ -24,3 +24,21 @@ vi.mock("@tolgee/react", () => ({
     t: (key: string) => key,
   }),
 }));
+
+Object.defineProperty(global, "URL", {
+  value: {
+    createObjectURL: vi.fn(() => "mock-blob-url"),
+    revokeObjectURL: vi.fn(),
+  },
+  writable: true,
+});
+
+Object.defineProperty(window, "addEventListener", {
+  value: vi.fn(),
+  writable: true,
+});
+
+Object.defineProperty(window, "removeEventListener", {
+  value: vi.fn(),
+  writable: true,
+});

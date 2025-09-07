@@ -1,16 +1,20 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CreatePlan from "./CreatePlan";
 import { vi } from "vitest";
 import axiosInstance from "@/config/axios-config";
 
-Object.defineProperty(global, "URL", {
-  value: {
-    createObjectURL: vi.fn(() => "mock-blob-url"),
-    revokeObjectURL: vi.fn(),
-  },
-  writable: true,
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useBlocker: vi.fn(() => ({
+      state: "unblocked",
+      proceed: vi.fn(),
+      reset: vi.fn(),
+    })),
+  };
 });
 
 const renderWithProviders = (component: React.ReactElement) => {
@@ -22,11 +26,11 @@ const renderWithProviders = (component: React.ReactElement) => {
   });
 
   return render(
-    <BrowserRouter>
+    <MemoryRouter>
       <QueryClientProvider client={queryClient}>
         {component}
       </QueryClientProvider>
-    </BrowserRouter>,
+    </MemoryRouter>,
   );
 };
 

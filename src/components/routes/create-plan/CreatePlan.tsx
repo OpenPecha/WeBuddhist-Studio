@@ -18,8 +18,9 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/atoms/textarea";
+import { useBlocker } from "react-router-dom";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
@@ -48,6 +49,7 @@ const Createplan = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [showNavigationDialog, setShowNavigationDialog] = useState(false);
 
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
@@ -63,6 +65,14 @@ const Createplan = () => {
       tags: [],
     },
   });
+
+  const hasUnsavedChanges =
+    form.formState.isDirty && !form.formState.isSubmitSuccessful;
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+  );
   const createPlanMutation = useMutation({
     mutationFn: callplan,
     onSuccess: () => {
@@ -80,6 +90,26 @@ const Createplan = () => {
     },
   });
 
+  // Handle browser navigation (refresh, close tab, etc.)
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        event.preventDefault();
+        // eslint-disable-next-line deprecation/deprecation
+        event.returnValue = ""; // Required for some browsers
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setShowNavigationDialog(true);
+    }
+  }, [blocker.state]);
+
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
@@ -89,6 +119,15 @@ const Createplan = () => {
     }
   };
 
+  const handleConfirmNavigation = () => {
+    setShowNavigationDialog(false);
+    blocker.proceed?.();
+  };
+
+  const handleCancelNavigation = () => {
+    setShowNavigationDialog(false);
+    blocker.reset?.();
+  };
   const handleImageUpload = (file: File) => {
     const imageUrl = URL.createObjectURL(file);
     setImagePreview(imageUrl);
@@ -224,6 +263,35 @@ const Createplan = () => {
                   <DialogTitle>Upload & Crop Image</DialogTitle>
                 </DialogHeader>
                 <ImageContentData onUpload={handleImageUpload} />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog
+              open={showNavigationDialog}
+              onOpenChange={setShowNavigationDialog}
+            >
+              <DialogContent showCloseButton={false}>
+                <DialogHeader>
+                  <DialogTitle>
+                    {t("studio.plan.navigation.confirm_title")}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t("studio.plan.navigation.confirm_message")}
+                  </p>
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={handleCancelNavigation}>
+                    {t("common.button.cancel")}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleConfirmNavigation}
+                  >
+                    {t("studio.plan.navigation.leave")}
+                  </Button>
+                </div>
               </DialogContent>
             </Dialog>
           </form>
