@@ -82,7 +82,8 @@ describe("Login Component", () => {
         `${BACKEND_BASE_URL}/api/v1/cms/auth/login`,
         {
           email: "test@example.com",
-          password: "password123",
+          clientPassword:
+            "0fe95e968475ec73c2826adf398143b39acb43b69384b0349e586a8313bfbaaa",
         },
       );
     });

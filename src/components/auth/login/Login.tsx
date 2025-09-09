@@ -9,9 +9,10 @@ import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useState } from "react";
 import { useAuth } from "@/config/auth-context";
 import { useTranslate } from "@tolgee/react";
+import { createPasswordHash } from "@/lib/utils";
 interface LoginData {
   email: string;
-  password: string;
+  clientPassword: string;
 }
 const Login = () => {
   const { t } = useTranslate();
@@ -46,7 +47,8 @@ const Login = () => {
   });
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({ email, password });
+    const clientPassword = createPasswordHash(email, password);
+    loginMutation.mutate({ email, clientPassword });
   };
   return (
     <StudioCard title={t("studio.login.title")}>
