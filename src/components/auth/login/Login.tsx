@@ -12,7 +12,7 @@ import { useTranslate } from "@tolgee/react";
 import { createPasswordHash } from "@/lib/utils";
 interface LoginData {
   email: string;
-  clientPassword: string;
+  password: string;
 }
 const Login = () => {
   const { t } = useTranslate();
@@ -48,7 +48,7 @@ const Login = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const clientPassword = createPasswordHash(email, password);
-    loginMutation.mutate({ email, clientPassword });
+    loginMutation.mutate({ email, password: clientPassword });
   };
   return (
     <StudioCard title={t("studio.login.title")}>
