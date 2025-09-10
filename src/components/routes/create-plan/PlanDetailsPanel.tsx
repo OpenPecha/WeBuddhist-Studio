@@ -154,7 +154,7 @@ const PlanDetailsPanel = () => {
                       className={`w-6 h-6 rounded-full ${
                         selectedDay === day.day_number
                           ? "bg-[#4CAF50]"
-                          : "bg-gray-200 dark:bg-input"
+                          : "bg-input"
                       }`}
                     ></div>
                     <span
