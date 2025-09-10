@@ -3,6 +3,7 @@ import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { FiTrash } from "react-icons/fi";
+import TaskForm from "./TaskForm";
 
 interface PlanWithDays {
   id: string;
@@ -217,7 +218,9 @@ const PlanDetailsPanel = () => {
         </div>
       </div>
 
-      <div className="flex-1 bg-white dark:bg-background p-8"></div>
+      <div className="flex-1 bg-white dark:bg-background p-8">
+        <TaskForm selectedDay={selectedDay} />
+      </div>
     </div>
   );
 };
