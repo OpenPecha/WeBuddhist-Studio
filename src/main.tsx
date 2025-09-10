@@ -23,6 +23,7 @@ import Dashboard from "./components/routes/dashboard/Dashboard";
 import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import PlanDetailsPanel from "./components/routes/create-plan/PlanDetailsPanel";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "bo-IN";
@@ -83,6 +84,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <CreatePlan />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/plan-details",
+        element: (
+          <ProtectedRoute>
+            <PlanDetailsPanel />
           </ProtectedRoute>
         ),
       },
