@@ -14,7 +14,7 @@ interface TaskFormProps {
   selectedDay: number;
 }
 
-const TaskForm = ({ selectedDay }: TaskFormProps) => {
+const TaskForm = ({ selectedDay: _selectedDay }: TaskFormProps) => {
   const [title, setTitle] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
