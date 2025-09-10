@@ -123,7 +123,7 @@ const PlanDetailsPanel = () => {
   };
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-background">
-      <div className="w-80 bg-white dark:bg-background border-r border-t border-gray-200 dark:border-border h-full flex flex-col">
+      <div className="w-80 bg-white dark:bg-background border-r border-gray-200 dark:border-border h-full flex flex-col">
         <div className="p-4">
           <div className="text-[#A51C21] text-md font-semibold mb-1">
             Current Plan
@@ -154,7 +154,7 @@ const PlanDetailsPanel = () => {
                       className={`w-6 h-6 rounded-full ${
                         selectedDay === day.day_number
                           ? "bg-[#4CAF50]"
-                          : "bg-gray-200 dark:bg-gray-600"
+                          : "bg-gray-200 dark:bg-input"
                       }`}
                     ></div>
                     <span
