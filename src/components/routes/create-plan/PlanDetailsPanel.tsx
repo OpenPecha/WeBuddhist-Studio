@@ -154,7 +154,7 @@ const PlanDetailsPanel = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           setExpandedDay(
-                            expandedDay === day.day_number ? 0 : day.day_number
+                            expandedDay === day.day_number ? 0 : day.day_number,
                           );
                         }}
                       />
