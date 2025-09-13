@@ -27,15 +27,19 @@ const fetchPlans = async (
   sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
+  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/cms/plan`,
+    `${BACKEND_BASE_URL}/api/v1/cms/plans`,
     {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
       params: {
         skip,
         limit,
-        search,
-        sort_by: sortBy,
-        sort_order: sortOrder,
+        ...(search && { search }),
+        ...(sortBy && { sort_by: sortBy }),
+        ...(sortOrder && { sort_order: sortOrder }),
       },
     },
   );
@@ -91,7 +95,7 @@ const Dashboard = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Link to="/create-plan">
+        <Link to="/create-plan/new">
           <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
             <IoMdAdd /> Add Plan
           </Button>
@@ -99,7 +103,7 @@ const Dashboard = () => {
       </div>
 
       <DashBoardTable
-        plans={planData?.plan}
+        plans={planData?.plans}
         t={t}
         isLoading={isLoading}
         error={error}
