@@ -27,12 +27,12 @@ const fetchPlans = async (
   sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
-  const accessToken = sessionStorage.getItem('accessToken');
+  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(
     `${BACKEND_BASE_URL}/api/v1/cms/plan`,
     {
-      headers:{
-        Authorization: `Bearer ${accessToken}`
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
       params: {
         skip,

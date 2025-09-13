@@ -37,28 +37,31 @@ import {
 } from "@/components/ui/atoms/dialog";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 
-export const UploadImageToS3= async(file:File,plan_id:string)=>{
-  const formData= new FormData();
+export const UploadImageToS3 = async (file: File, plan_id: string) => {
+  const formData = new FormData();
   formData.append("file", file);
-  const {data}= await axiosInstance.post(`${BACKEND_BASE_URL}/api/v1/cms/media/upload`,formData,
+  const { data } = await axiosInstance.post(
+    `${BACKEND_BASE_URL}/api/v1/cms/media/upload`,
+    formData,
     {
-      params:{
-        ...(plan_id && {plan_id:plan_id})
-      }
-    }
+      params: {
+        ...(plan_id && { plan_id: plan_id }),
+      },
+    },
   );
-  return data;  
-}
+  return data;
+};
 
 export const callplan = async (formdata: z.infer<typeof planSchema>) => {
-  const accessToken = sessionStorage.getItem('accessToken');
+  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans`,formdata,
+    `${BACKEND_BASE_URL}/api/v1/cms/plans`,
+    formdata,
     {
       headers: {
-      Authorization: `Bearer ${accessToken}`
-    },  
-  },
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
   );
   return data;
 };
@@ -68,7 +71,7 @@ const Createplan = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [showNavigationDialog, setShowNavigationDialog] = useState(false);
-  const {plan_id}=useParams()
+  const { plan_id } = useParams();
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
 
@@ -135,7 +138,10 @@ const Createplan = () => {
   };
   const handleImageUpload = async (file: File) => {
     try {
-      const {url} = await UploadImageToS3(file,plan_id==="new" ? "":plan_id || "");
+      const { url } = await UploadImageToS3(
+        file,
+        plan_id === "new" ? "" : plan_id || "",
+      );
       const imageUrl = url;
       setImagePreview(imageUrl);
       setSelectedImage(file);
@@ -152,9 +158,9 @@ const Createplan = () => {
     const language = localStorage.getItem("language") || "en";
     const planformdata = {
       ...data,
-      language: language
+      language: language,
     };
-    
+
     console.log(planformdata);
     createPlanMutation.mutate(planformdata);
   };
