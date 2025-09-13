@@ -29,7 +29,7 @@ const fetchPlans = async (
   const skip = (page - 1) * limit;
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/cms/plan`,
+    `${BACKEND_BASE_URL}/api/v1/cms/plans`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -37,9 +37,9 @@ const fetchPlans = async (
       params: {
         skip,
         limit,
-        search,
-        sort_by: sortBy,
-        sort_order: sortOrder,
+        ...(search && { search }),
+        ...(sortBy && { sort_by: sortBy }),
+        ...(sortOrder && { sort_order: sortOrder }),
       },
     },
   );
@@ -103,7 +103,7 @@ const Dashboard = () => {
       </div>
 
       <DashBoardTable
-        plans={planData?.plan}
+        plans={planData?.plans}
         t={t}
         isLoading={isLoading}
         error={error}
