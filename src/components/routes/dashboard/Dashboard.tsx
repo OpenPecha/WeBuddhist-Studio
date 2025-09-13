@@ -27,9 +27,13 @@ const fetchPlans = async (
   sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
+  const accessToken = sessionStorage.getItem('accessToken');
   const { data } = await axiosInstance.get(
     `${BACKEND_BASE_URL}/api/v1/cms/plan`,
     {
+      headers:{
+        Authorization: `Bearer ${accessToken}`
+      },
       params: {
         skip,
         limit,
@@ -91,7 +95,7 @@ const Dashboard = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Link to="/create-plan">
+        <Link to="/create-plan/new">
           <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
             <IoMdAdd /> Add Plan
           </Button>

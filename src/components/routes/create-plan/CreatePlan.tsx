@@ -20,7 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/atoms/textarea";
-import { useBlocker } from "react-router-dom";
+import { useBlocker, useParams } from "react-router-dom";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
@@ -37,10 +37,28 @@ import {
 } from "@/components/ui/atoms/dialog";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 
+export const UploadImageToS3= async(file:File,plan_id:string)=>{
+  const formData= new FormData();
+  formData.append("file", file);
+  const {data}= await axiosInstance.post(`${BACKEND_BASE_URL}/api/v1/cms/media/upload`,formData,
+    {
+      params:{
+        ...(plan_id && {plan_id:plan_id})
+      }
+    }
+  );
+  return data;  
+}
+
 export const callplan = async (formdata: z.infer<typeof planSchema>) => {
+  const accessToken = sessionStorage.getItem('accessToken');
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans`,
-    formdata,
+    `${BACKEND_BASE_URL}/api/v1/cms/plans`,formdata,
+    {
+      headers: {
+      Authorization: `Bearer ${accessToken}`
+    },  
+  },
   );
   return data;
 };
@@ -50,7 +68,7 @@ const Createplan = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [showNavigationDialog, setShowNavigationDialog] = useState(false);
-
+  const {plan_id}=useParams()
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
 
@@ -63,6 +81,7 @@ const Createplan = () => {
       difficulty_level: "",
       image_url: "",
       tags: [],
+      language: "",
     },
   });
 
@@ -114,17 +133,30 @@ const Createplan = () => {
     setShowNavigationDialog(false);
     blocker.reset?.();
   };
-  const handleImageUpload = (file: File) => {
-    const imageUrl = URL.createObjectURL(file);
-    setImagePreview(imageUrl);
-    setSelectedImage(file);
-    form.setValue("image_url", imageUrl);
-    setIsImageDialogOpen(false);
+  const handleImageUpload = async (file: File) => {
+    try {
+      const {url} = await UploadImageToS3(file,plan_id==="new" ? "":plan_id || "");
+      const imageUrl = url;
+      setImagePreview(imageUrl);
+      setSelectedImage(file);
+      form.setValue("image_url", imageUrl);
+      setIsImageDialogOpen(false);
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      toast.error("Failed to upload image");
+    }
   };
 
   const onSubmit = (data: PlanFormData) => {
-    console.log(data);
-    createPlanMutation.mutate(data);
+    const language = localStorage.getItem("language") || "en";
+    const planformdata = {
+      ...data,
+      language: language
+    };
+    
+    console.log(planformdata);
+    createPlanMutation.mutate(planformdata);
   };
   return (
     <div className="w-full h-full font-dynamic flex max-sm:flex-col">
