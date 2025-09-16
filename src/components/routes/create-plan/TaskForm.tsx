@@ -8,7 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/atoms/dialog";
+import { Input } from "@/components/ui/atoms/input";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
+import pechaIcon from "../../../assets/icon/pecha_icon.png";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -19,6 +21,12 @@ const TaskForm = ({ selectedDay: _selectedDay }: TaskFormProps) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [showContentTypes, setShowContentTypes] = useState(false);
+  const [activeContentType, setActiveContentType] = useState<string | null>(
+    null
+  );
+  const [videoUrl, setVideoUrl] = useState("");
+  const [textContent, setTextContent] = useState("");
 
   const handleImageUpload = (file: File) => {
     const imageUrl = URL.createObjectURL(file);
@@ -43,56 +51,69 @@ const TaskForm = ({ selectedDay: _selectedDay }: TaskFormProps) => {
 
       <form className="space-y-6">
         <div>
-          <input
+          <Input
             type="text"
             placeholder="Task Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="h-12 text-base"
           />
         </div>
-
         <div className="flex gap-4">
           <button
             type="button"
-            className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-3 border border-gray-300 rounded-sm hover:bg-gray-50 cursor-pointer"
+            onClick={() => setShowContentTypes(!showContentTypes)}
           >
-            <IoMdAdd className="w-5 h-5 text-gray-600" />
+            <IoMdAdd className="w-4 h-4 text-gray-400" />
           </button>
-          <div className="flex border border-gray-300 rounded-lg overflow-hidden w-fit">
-            <button
-              type="button"
-              className="p-3 hover:bg-gray-50 border-gray-300"
-              onClick={() => setIsImageDialogOpen(true)}
-            >
-              <MdOutlineImage className="w-5 h-5 text-gray-600" />
-            </button>
-            <button
-              type="button"
-              className="p-3 hover:bg-gray-50 border-gray-300"
-            >
-              <IoMusicalNotesSharp className="w-5 h-5 text-gray-600" />
-            </button>
-            <button
-              type="button"
-              className="p-3 hover:bg-gray-50 border-gray-300"
-            >
-              <IoMdVideocam className="w-5 h-5 text-gray-600" />
-            </button>
-            <button
-              type="button"
-              className="p-3 hover:bg-gray-50 border-gray-300"
-            >
-              <IoTextOutline className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
+
+          {showContentTypes && (
+            <div className="flex border border-gray-300 rounded-sm overflow-hidden">
+              <button
+                type="button"
+                className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                onClick={() => setIsImageDialogOpen(true)}
+              >
+                <MdOutlineImage className="w-4 h-4 text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+              >
+                <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                onClick={() => setActiveContentType("video")}
+              >
+                <IoMdVideocam className="w-4 h-4 text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                onClick={() => setActiveContentType("text")}
+              >
+                <IoTextOutline className="w-4 h-4 text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+              >
+                <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
-        <button
-          type="submit"
-          className="bg-[#A51C21] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#8B1419] transition-colors"
-        >
-          Submit
-        </button>
+        <div className="pt-6">
+          <button
+            type="submit"
+            className="bg-[#A51C21] text-white px-8 py-3 rounded-md font-medium hover:bg-[#8B1419] transition-colors cursor-pointer"
+          >
+            Submit
+          </button>
+        </div>
       </form>
 
       {imagePreview && (
