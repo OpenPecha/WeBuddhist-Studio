@@ -138,14 +138,15 @@ const Createplan = () => {
   };
   const handleImageUpload = async (file: File) => {
     try {
-      const { url } = await UploadImageToS3(
+      const { url, key } = await UploadImageToS3(
         file,
         plan_id === "new" ? "" : plan_id || "",
       );
       const imageUrl = url;
+      const imageKey = key;
       setImagePreview(imageUrl);
       setSelectedImage(file);
-      form.setValue("image_url", imageUrl);
+      form.setValue("image_url", imageKey);
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
     } catch (error) {
