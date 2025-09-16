@@ -12,16 +12,16 @@ export default defineConfig({
     },
   },
   define: {
-    global: 'globalThis',
+    global: "globalThis",
   },
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          'crypto-js': ['crypto-js']
-        }
-      }
-    }
+          "crypto-js": ["crypto-js"],
+        },
+      },
+    },
   },
   server: {
     open: true,
