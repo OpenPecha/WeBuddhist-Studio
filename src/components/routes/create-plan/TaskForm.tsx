@@ -139,6 +139,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             type="button"
             className={`${BUTTON_CLASSES} border border-gray-300 dark:border-input rounded-sm`}
             onClick={() => setShowContentTypes(!showContentTypes)}
+            data-testid="add-content-button"
           >
             <IoMdAdd className="w-4 h-4 text-gray-400" />
           </button>
@@ -149,6 +150,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 type="button"
                 className={BUTTON_CLASSES}
                 onClick={() => setIsImageDialogOpen(true)}
+                data-testid="image-button"
               >
                 <MdOutlineImage className="w-4 h-4 text-gray-400" />
               </button>
@@ -156,6 +158,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 type="button"
                 className={BUTTON_CLASSES}
                 onClick={() => handleContentTypeToggle("music")}
+                data-testid="music-button"
               >
                 <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />
               </button>
@@ -163,6 +166,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 type="button"
                 className={BUTTON_CLASSES}
                 onClick={() => handleContentTypeToggle("video")}
+                data-testid="video-button"
               >
                 <IoMdVideocam className="w-4 h-4 text-gray-400" />
               </button>
@@ -170,10 +174,11 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 type="button"
                 className={BUTTON_CLASSES}
                 onClick={() => handleContentTypeToggle("text")}
+                data-testid="text-button"
               >
                 <IoTextOutline className="w-4 h-4 text-gray-400" />
               </button>
-              <button type="button" className={BUTTON_CLASSES}>
+              <button type="button" className={BUTTON_CLASSES} data-testid="pecha-button">
                 <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />
               </button>
             </div>
@@ -217,7 +222,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               <IoTextOutline className="w-4 h-4 text-gray-600" />
             </div>
             <Textarea
-              placeholder="Enter your text content..."
+              placeholder="Enter your text content"
               value={textContent}
               onChange={(e) => {
                 setTextContent(e.target.value);
@@ -296,6 +301,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 type="button"
                 onClick={handleRemoveImage}
                 className="text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
+                data-testid="remove-image-button"
               >
                 <IoMdClose className="h-4 w-4" />
               </button>
@@ -307,6 +313,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
           <button
             type="submit"
             className="bg-[#A51C21] text-white px-8 py-3 rounded-md font-medium hover:bg-[#8B1419] transition-colors cursor-pointer"
+            data-testid="submit-button"
           >
             Submit
           </button>
