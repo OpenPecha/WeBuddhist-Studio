@@ -17,7 +17,7 @@ interface TaskFormProps {
   selectedDay: number;
 }
 
-const TaskForm = ({ selectedDay: _selectedDay }: TaskFormProps) => {
+const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const BUTTON_CLASSES =
     "px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer";
   const YOUTUBE_REGEX =
@@ -63,6 +63,11 @@ const TaskForm = ({ selectedDay: _selectedDay }: TaskFormProps) => {
       setMusicUrl(savedMusicUrl);
     }
   }, []);
+
+  useEffect(() => {
+    clearFormData();
+    setTitle("");
+  }, [selectedDay]);
 
   const handleImageUpload = (file: File) => {
     const imageUrl = URL.createObjectURL(file);

@@ -105,6 +105,7 @@ const PlanDetailsPanel = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [expandedDay, setExpandedDay] = useState<number>(1);
   const [currentPlan, setCurrentPlan] = useState<PlanWithDays>(mockPlanData);
+  const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
   const addNewDay = () => {
     const newDay = currentPlan.days.length + 1;
     setCurrentPlan((prev) => ({
@@ -148,6 +149,7 @@ const PlanDetailsPanel = () => {
                   onClick={() => {
                     setSelectedDay(day.day_number);
                     setExpandedDay(day.day_number);
+                    setShowTaskForm(false);
                   }}
                 >
                   <div className="flex items-center gap-3">
@@ -171,7 +173,13 @@ const PlanDetailsPanel = () => {
 
                   {selectedDay === day.day_number && (
                     <div className="flex items-center gap-2">
-                      <IoMdAdd className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                      <IoMdAdd
+                        className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowTaskForm(true);
+                        }}
+                      />
                       <MdExpandMore
                         className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
                           expandedDay === day.day_number ? "rotate-180" : ""
@@ -219,7 +227,7 @@ const PlanDetailsPanel = () => {
       </div>
 
       <div className="flex-1 bg-white dark:bg-background p-8">
-        <TaskForm selectedDay={selectedDay} />
+        {showTaskForm && <TaskForm selectedDay={selectedDay} />}
       </div>
     </div>
   );
