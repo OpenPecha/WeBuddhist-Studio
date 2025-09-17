@@ -294,7 +294,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               uploadedImage={selectedImage}
             />
             {imagePreview && selectedImage && (
-              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="mt-4 p-3 rounded-lg">
                 <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   Uploaded Image:
                 </p>
