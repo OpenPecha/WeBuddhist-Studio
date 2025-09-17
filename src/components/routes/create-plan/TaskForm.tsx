@@ -2,15 +2,9 @@ import { useState, useEffect } from "react";
 import { IoMdAdd, IoMdVideocam, IoMdClose } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/atoms/dialog";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { Input } from "@/components/ui/atoms/input";
-import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
+import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
 import pechaIcon from "../../../assets/icon/pecha_icon.png";
 
 interface TaskFormProps {
@@ -27,7 +21,6 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const [title, setTitle] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [showContentTypes, setShowContentTypes] = useState(false);
   const [activeContentType, setActiveContentType] = useState<string | null>(
     null,
@@ -38,6 +31,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const youTubeVideoId = videoUrl.match(YOUTUBE_REGEX)?.[1] || "";
   const isValidYouTube = youTubeVideoId.length > 0;
   const isValidMusicUrl = musicUrl.length > 0 && MUSIC_URL_REGEX.test(musicUrl);
+  const isFormValid = title.trim().length > 0;
   const extractSpotifyId = (url: string) => {
     const match = url.match(/spotify\.com\/(track|album)\/([a-zA-Z0-9]+)/);
     return match ? { type: match[1], id: match[2] } : null;
@@ -69,13 +63,6 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     setTitle("");
   }, [selectedDay]);
 
-  const handleImageUpload = (file: File) => {
-    const imageUrl = URL.createObjectURL(file);
-    setImagePreview(imageUrl);
-    setSelectedImage(file);
-    setIsImageDialogOpen(false);
-  };
-
   const handleRemoveImage = () => {
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
@@ -92,6 +79,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
       setActiveContentType(contentType);
       localStorage.setItem("activeContentType", contentType);
     }
+    setShowContentTypes(true);
   };
 
   const clearFormData = () => {
@@ -149,7 +137,10 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               <button
                 type="button"
                 className={BUTTON_CLASSES}
-                onClick={() => setIsImageDialogOpen(true)}
+                onClick={() => {
+                  setActiveContentType("image");
+                  localStorage.setItem("activeContentType", "image");
+                }}
                 data-testid="image-button"
               >
                 <MdOutlineImage className="w-4 h-4 text-gray-400" />
@@ -288,50 +279,55 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             )}
           </div>
         )}
-        {imagePreview && (
-          <div className="relative w-fit mt-4">
-            <img
-              src={imagePreview}
-              alt="Task image preview"
-              className="w-48 h-32 object-cover rounded-lg border"
-            />
-            <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
-              {selectedImage && (
-                <p className="text-xs text-white truncate max-w-32">
-                  {selectedImage.name}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={handleRemoveImage}
-                className="text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
-                data-testid="remove-image-button"
-              >
-                <IoMdClose className="h-4 w-4" />
-              </button>
+        {activeContentType === "image" && (
+          <div className="border border-gray-300 dark:border-input rounded-sm p-4">
+            <div className="flex items-center gap-2 mb-3 justify-end">
+              <MdOutlineImage className="w-4 h-4 text-gray-600" />
             </div>
+
+            <InlineImageUpload
+              onUpload={(file) => {
+                const imageUrl = URL.createObjectURL(file);
+                setImagePreview(imageUrl);
+                setSelectedImage(file);
+              }}
+              uploadedImage={selectedImage}
+            />
+            {imagePreview && selectedImage && (
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  Uploaded Image:
+                </p>
+                <div className="relative w-fit">
+                  <img
+                    src={imagePreview}
+                    alt="Final uploaded image"
+                    className="w-48 h-32 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-gray-600 text-white rounded-full p-1 cursor-pointer transition-colors"
+                    data-testid="remove-image-button"
+                  >
+                    <IoMdClose className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
-
         <div className="pt-6">
           <button
             type="submit"
-            className="bg-[#A51C21] text-white px-8 py-3 rounded-md font-medium hover:bg-[#8B1419] transition-colors cursor-pointer"
+            className="bg-[#A51C21] text-white px-8 py-3 rounded-md font-medium hover:bg-[#8B1419] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="submit-button"
+            disabled={!isFormValid}
           >
             Submit
           </button>
         </div>
       </form>
-
-      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
-        <DialogContent showCloseButton={true}>
-          <DialogHeader>
-            <DialogTitle>Upload & Crop Image</DialogTitle>
-          </DialogHeader>
-          <ImageContentData onUpload={handleImageUpload} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

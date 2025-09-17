@@ -2,26 +2,29 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import TaskForm from "./TaskForm";
 import { vi } from "vitest";
 
-vi.mock(
-  "@/components/ui/molecules/modals/image-upload/ImageContentData",
-  () => ({
-    default: ({ onUpload }: { onUpload: (file: File) => void }) => (
-      <div>
-        <button
-          onClick={() => {
-            const mockFile = new File(["sample file"], "sample.jpg", {
-              type: "image/jpeg",
-            });
-            onUpload(mockFile);
-          }}
-          data-testid="mock-upload-trigger"
-        >
-          Upload
-        </button>
-      </div>
-    ),
-  }),
-);
+vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
+  default: ({
+    onUpload,
+  }: {
+    onUpload?: (file: File) => void;
+    uploadedImage?: File | null;
+  }) => (
+    <div>
+      <div>Drag 'n' drop an image here, or click to select</div>
+      <button
+        onClick={() => {
+          const mockFile = new File(["sample file"], "sample.jpg", {
+            type: "image/jpeg",
+          });
+          onUpload?.(mockFile);
+        }}
+        data-testid="mock-upload-trigger"
+      >
+        Upload
+      </button>
+    </div>
+  ),
+}));
 
 describe("TaskForm Component", () => {
   it("renders task form with Add Task heading", () => {
@@ -136,15 +139,15 @@ describe("TaskForm Component", () => {
     expect(textArea).toHaveValue("Test content");
   });
 
-  it("opens image dialog when image button is clicked", async () => {
+  it("shows image upload section when image button is clicked", () => {
     render(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const imageButton = screen.getByTestId("image-button");
     fireEvent.click(imageButton);
-    await waitFor(() => {
-      expect(screen.getByText("Upload & Crop Image")).toBeInTheDocument();
-    });
+    expect(
+      screen.getByText("Drag 'n' drop an image here, or click to select"),
+    ).toBeInTheDocument();
   });
 
   it("clears form data when submitted", () => {
@@ -163,21 +166,6 @@ describe("TaskForm Component", () => {
     expect(
       screen.queryByPlaceholderText("Enter your text content"),
     ).not.toBeInTheDocument();
-  });
-
-  it("displays image preview and allows removal after upload", async () => {
-    render(<TaskForm selectedDay={1} />);
-    const addButton = screen.getByTestId("add-content-button");
-    fireEvent.click(addButton);
-    const imageButton = screen.getByTestId("image-button");
-    fireEvent.click(imageButton);
-    const uploadTrigger = screen.getByTestId("mock-upload-trigger");
-    fireEvent.click(uploadTrigger);
-    expect(screen.getByAltText("Task image preview")).toBeInTheDocument();
-    expect(screen.getByText("sample.jpg")).toBeInTheDocument();
-    const removeButton = screen.getByTestId("remove-image-button");
-    fireEvent.click(removeButton);
-    expect(screen.queryByAltText("Task image preview")).not.toBeInTheDocument();
   });
 
   it("shows YouTube preview for valid URL", () => {
