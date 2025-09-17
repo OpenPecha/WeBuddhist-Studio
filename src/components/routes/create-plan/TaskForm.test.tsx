@@ -26,7 +26,7 @@ vi.mock(
 describe("TaskForm Component", () => {
   it("renders task form with Add Task heading", () => {
     render(<TaskForm selectedDay={1} />);
-    
+
     expect(screen.getByText("Add Task")).toBeInTheDocument();
   });
 
@@ -70,7 +70,9 @@ describe("TaskForm Component", () => {
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
     fireEvent.click(videoButton);
-    expect(screen.getByPlaceholderText("Enter YouTube URL")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Enter YouTube URL"),
+    ).toBeInTheDocument();
   });
 
   it("shows text input when text content type is selected", () => {
@@ -79,7 +81,9 @@ describe("TaskForm Component", () => {
     fireEvent.click(addButton);
     const textButton = screen.getByTestId("text-button");
     fireEvent.click(textButton);
-    expect(screen.getByPlaceholderText("Enter your text content")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Enter your text content"),
+    ).toBeInTheDocument();
   });
 
   it("shows music input when music content type is selected", () => {
@@ -88,7 +92,9 @@ describe("TaskForm Component", () => {
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
     fireEvent.click(musicButton);
-    expect(screen.getByPlaceholderText("Enter Spotify or SoundCloud URL")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Enter Spotify or SoundCloud URL"),
+    ).toBeInTheDocument();
   });
 
   it("validates YouTube URL and shows error for invalid URL", () => {
@@ -99,7 +105,9 @@ describe("TaskForm Component", () => {
     fireEvent.click(videoButton);
     const videoInput = screen.getByPlaceholderText("Enter YouTube URL");
     fireEvent.change(videoInput, { target: { value: "invalid-url" } });
-    expect(screen.getByText("Please enter a valid YouTube URL")).toBeInTheDocument();
+    expect(
+      screen.getByText("Please enter a valid YouTube URL"),
+    ).toBeInTheDocument();
   });
 
   it("validates music URL and shows error for invalid URL", () => {
@@ -108,9 +116,13 @@ describe("TaskForm Component", () => {
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
     fireEvent.click(musicButton);
-    const musicInput = screen.getByPlaceholderText("Enter Spotify or SoundCloud URL");
+    const musicInput = screen.getByPlaceholderText(
+      "Enter Spotify or SoundCloud URL",
+    );
     fireEvent.change(musicInput, { target: { value: "invalid-url" } });
-    expect(screen.getByText("Please enter a valid music platform URL")).toBeInTheDocument();
+    expect(
+      screen.getByText("Please enter a valid music platform URL"),
+    ).toBeInTheDocument();
   });
 
   it("allows typing in text content textarea", () => {
@@ -148,7 +160,9 @@ describe("TaskForm Component", () => {
     const submitButton = screen.getByTestId("submit-button");
     fireEvent.click(submitButton);
     expect(titleInput).toHaveValue("");
-    expect(screen.queryByPlaceholderText("Enter your text content")).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText("Enter your text content"),
+    ).not.toBeInTheDocument();
   });
 
   it("displays image preview and allows removal after upload", async () => {
@@ -165,7 +179,7 @@ describe("TaskForm Component", () => {
     fireEvent.click(removeButton);
     expect(screen.queryByAltText("Task image preview")).not.toBeInTheDocument();
   });
-  
+
   it("shows YouTube preview for valid URL", () => {
     render(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
@@ -173,7 +187,9 @@ describe("TaskForm Component", () => {
     const videoButton = screen.getByTestId("video-button");
     fireEvent.click(videoButton);
     const videoInput = screen.getByPlaceholderText("Enter YouTube URL");
-    fireEvent.change(videoInput, { target: { value: "https://youtube.com/watch?v=dQw4w9WgXcQ" } });
+    fireEvent.change(videoInput, {
+      target: { value: "https://youtube.com/watch?v=dQw4w9WgXcQ" },
+    });
     expect(screen.getByTitle("YouTube preview")).toBeInTheDocument();
   });
 });

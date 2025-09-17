@@ -178,7 +178,11 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               >
                 <IoTextOutline className="w-4 h-4 text-gray-400" />
               </button>
-              <button type="button" className={BUTTON_CLASSES} data-testid="pecha-button">
+              <button
+                type="button"
+                className={BUTTON_CLASSES}
+                data-testid="pecha-button"
+              >
                 <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />
               </button>
             </div>
