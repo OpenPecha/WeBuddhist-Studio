@@ -114,7 +114,7 @@ describe("TaskForm Component", () => {
     fireEvent.change(videoInput, { target: { value: "invalid-url" } });
     await waitFor(() => {
       expect(
-        screen.getByText("Please enter a valid YouTube URL")
+        screen.getByText("Please enter a valid YouTube URL"),
       ).toBeInTheDocument();
     });
   });
@@ -126,12 +126,12 @@ describe("TaskForm Component", () => {
     const musicButton = screen.getByTestId("music-button");
     fireEvent.click(musicButton);
     const musicInput = screen.getByPlaceholderText(
-      "Enter Spotify or SoundCloud URL"
+      "Enter Spotify or SoundCloud URL",
     );
     fireEvent.change(musicInput, { target: { value: "invalid-url" } });
     await waitFor(() => {
       expect(
-        screen.getByText("Please enter a valid music platform URL")
+        screen.getByText("Please enter a valid music platform URL"),
       ).toBeInTheDocument();
     });
   });
@@ -159,10 +159,10 @@ describe("TaskForm Component", () => {
   });
 
   it("clears form data when submitted", async () => {
-    const consoleSpy = vi.spyOn(console, 'log');
+    const consoleSpy = vi.spyOn(console, "log");
     render(<TaskForm selectedDay={1} />);
-    fireEvent.change(screen.getByPlaceholderText("Task Title"), { 
-      target: { value: "Test Task" } 
+    fireEvent.change(screen.getByPlaceholderText("Task Title"), {
+      target: { value: "Test Task" },
     });
     await waitFor(() => {
       const submitButton = screen.getByTestId("submit-button");
@@ -170,10 +170,13 @@ describe("TaskForm Component", () => {
     });
     fireEvent.click(screen.getByTestId("submit-button"));
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith("Form submitted:", expect.any(Object));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Form submitted:",
+        expect.any(Object),
+      );
       expect(screen.getByPlaceholderText("Task Title")).toHaveValue("");
       expect(localStorage.getItem("day_1_title")).toBeNull();
-    });    
+    });
     consoleSpy.mockRestore();
   });
 
