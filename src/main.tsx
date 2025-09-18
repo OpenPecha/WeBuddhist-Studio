@@ -80,7 +80,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/create-plan",
+        path: "/create-plan/:plan_id",
         element: (
           <ProtectedRoute>
             <CreatePlan />
