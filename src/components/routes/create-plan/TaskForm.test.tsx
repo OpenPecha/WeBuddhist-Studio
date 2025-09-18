@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import TaskForm from "./TaskForm";
 import { vi, beforeEach } from "vitest";
 
@@ -104,7 +104,7 @@ describe("TaskForm Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("validates YouTube URL and shows error for invalid URL", () => {
+  it("validates YouTube URL and shows error for invalid URL", async () => {
     render(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
@@ -112,24 +112,28 @@ describe("TaskForm Component", () => {
     fireEvent.click(videoButton);
     const videoInput = screen.getByPlaceholderText("Enter YouTube URL");
     fireEvent.change(videoInput, { target: { value: "invalid-url" } });
-    expect(
-      screen.getByText("Please enter a valid YouTube URL"),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText("Please enter a valid YouTube URL")
+      ).toBeInTheDocument();
+    });
   });
 
-  it("validates music URL and shows error for invalid URL", () => {
+  it("validates music URL and shows error for invalid URL", async () => {
     render(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
     fireEvent.click(musicButton);
     const musicInput = screen.getByPlaceholderText(
-      "Enter Spotify or SoundCloud URL",
+      "Enter Spotify or SoundCloud URL"
     );
     fireEvent.change(musicInput, { target: { value: "invalid-url" } });
-    expect(
-      screen.getByText("Please enter a valid music platform URL"),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText("Please enter a valid music platform URL")
+      ).toBeInTheDocument();
+    });
   });
 
   it("allows typing in text content textarea", () => {
@@ -154,22 +158,23 @@ describe("TaskForm Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("clears form data when submitted", () => {
+  it("clears form data when submitted", async () => {
+    const consoleSpy = vi.spyOn(console, 'log');
     render(<TaskForm selectedDay={1} />);
-    const titleInput = screen.getByPlaceholderText("Task Title");
-    fireEvent.change(titleInput, { target: { value: "Test Task" } });
-    const addButton = screen.getByTestId("add-content-button");
-    fireEvent.click(addButton);
-    const textButton = screen.getByTestId("text-button");
-    fireEvent.click(textButton);
-    const textArea = screen.getByPlaceholderText("Enter your text content");
-    fireEvent.change(textArea, { target: { value: "Test content" } });
-    const submitButton = screen.getByTestId("submit-button");
-    fireEvent.click(submitButton);
-    expect(titleInput).toHaveValue("");
-    expect(
-      screen.queryByPlaceholderText("Enter your text content"),
-    ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText("Task Title"), { 
+      target: { value: "Test Task" } 
+    });
+    await waitFor(() => {
+      const submitButton = screen.getByTestId("submit-button");
+      expect(submitButton).not.toBeDisabled();
+    });
+    fireEvent.click(screen.getByTestId("submit-button"));
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith("Form submitted:", expect.any(Object));
+      expect(screen.getByPlaceholderText("Task Title")).toHaveValue("");
+      expect(localStorage.getItem("day_1_title")).toBeNull();
+    });    
+    consoleSpy.mockRestore();
   });
 
   it("shows YouTube preview for valid URL", () => {

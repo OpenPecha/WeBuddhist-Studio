@@ -23,15 +23,15 @@ interface TaskFormProps {
 
 const taskSchema = z.object({
   title: z.string().min(1, "Task title is required"),
-  videoUrl: z
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
+  videoUrl: z.union([
+    z.literal(""),
+    z.url("Please enter a valid YouTube URL"),
+  ]).optional(),
   textContent: z.string().optional(),
-  musicUrl: z
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
+  musicUrl: z.union([
+    z.literal(""),
+    z.url("Please enter a valid music platform URL"),
+  ]).optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -48,6 +48,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
+    mode: "onChange",
     defaultValues: {
       title: "",
       videoUrl: "",
@@ -116,6 +117,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     setSelectedImage(null);
     setImagePreview(null);
     setShowContentTypes(false);
+    form.reset();
   };
 
   return (
@@ -129,7 +131,6 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
           onSubmit={form.handleSubmit((data) => {
             console.log("Form submitted:", data);
             clearFormData();
-            form.reset();
           })}
         >
           <FormField
