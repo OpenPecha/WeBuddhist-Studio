@@ -12,6 +12,7 @@ import { IoMdAdd, IoMdTrash } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { FaPen } from "react-icons/fa";
+import defaultCover from "/default-image.webp";
 export interface Plan {
   id: string;
   image_url: string;
@@ -121,7 +122,10 @@ export function DashBoardTable({
       <TableRow key={plan.id} className="hover:cursor-pointer">
         <TableCell>
           <img
-            src={plan.image_url}
+            src={plan.image_url || defaultCover}
+            onError={(e) => {
+              e.currentTarget.src = defaultCover;
+            }}
             alt="cover"
             className="w-32 h-20 object-cover rounded-md"
           />

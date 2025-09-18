@@ -7,8 +7,7 @@ export const BACKEND_BASE_URL =
   import.meta.env.VITE_BACKEND_BASE_URL || "https://api.webuddhist.com";
 export const LANGUAGE = "language";
 export const DIFFICULTY = [
-  { label: "Beginner", value: "beginner" },
-  { label: "Intermediate", value: "intermediate" },
-  { label: "Advanced", value: "advanced" },
-  { label: "Expert", value: "expert" },
+  { label: "Beginner", value: "BEGINNER" },
+  { label: "Intermediate", value: "INTERMEDIATE" },
+  { label: "Advanced", value: "ADVANCED" },
 ];
