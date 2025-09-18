@@ -36,12 +36,14 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     const match = url.match(/spotify\.com\/(track|album)\/([a-zA-Z0-9]+)/);
     return match ? { type: match[1], id: match[2] } : null;
   };
-
+  const getDayKey = (key: string) => `day_${selectedDay}_${key}`;
   useEffect(() => {
-    const savedContentType = localStorage.getItem("activeContentType");
-    const savedVideoUrl = localStorage.getItem("videoUrl");
-    const savedTextContent = localStorage.getItem("textContent");
-    const savedMusicUrl = localStorage.getItem("musicUrl");
+    const savedContentType = localStorage.getItem(
+      getDayKey("activeContentType"),
+    );
+    const savedVideoUrl = localStorage.getItem(getDayKey("videoUrl"));
+    const savedTextContent = localStorage.getItem(getDayKey("textContent"));
+    const savedMusicUrl = localStorage.getItem(getDayKey("musicUrl"));
 
     if (savedContentType) {
       setActiveContentType(savedContentType);
@@ -56,11 +58,6 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     if (savedMusicUrl) {
       setMusicUrl(savedMusicUrl);
     }
-  }, []);
-
-  useEffect(() => {
-    clearFormData();
-    setTitle("");
   }, [selectedDay]);
 
   const handleRemoveImage = () => {
@@ -74,10 +71,10 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const handleContentTypeToggle = (contentType: string) => {
     if (activeContentType === contentType) {
       setActiveContentType(null);
-      localStorage.removeItem("activeContentType");
+      localStorage.removeItem(getDayKey("activeContentType"));
     } else {
       setActiveContentType(contentType);
-      localStorage.setItem("activeContentType", contentType);
+      localStorage.setItem(getDayKey("activeContentType"), contentType);
     }
     setShowContentTypes(true);
   };
@@ -86,10 +83,10 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
-    localStorage.removeItem("activeContentType");
-    localStorage.removeItem("videoUrl");
-    localStorage.removeItem("textContent");
-    localStorage.removeItem("musicUrl");
+    localStorage.removeItem(getDayKey("activeContentType"));
+    localStorage.removeItem(getDayKey("videoUrl"));
+    localStorage.removeItem(getDayKey("textContent"));
+    localStorage.removeItem(getDayKey("musicUrl"));
     setActiveContentType(null);
     setVideoUrl("");
     setTextContent("");
@@ -137,10 +134,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               <button
                 type="button"
                 className={BUTTON_CLASSES}
-                onClick={() => {
-                  setActiveContentType("image");
-                  localStorage.setItem("activeContentType", "image");
-                }}
+                onClick={() => handleContentTypeToggle("image")}
                 data-testid="image-button"
               >
                 <MdOutlineImage className="w-4 h-4 text-gray-400" />
@@ -190,7 +184,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               value={videoUrl}
               onChange={(e) => {
                 setVideoUrl(e.target.value);
-                localStorage.setItem("videoUrl", e.target.value);
+                localStorage.setItem(getDayKey("videoUrl"), e.target.value);
               }}
               className="h-12 text-base"
             />
@@ -221,7 +215,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               value={textContent}
               onChange={(e) => {
                 setTextContent(e.target.value);
-                localStorage.setItem("textContent", e.target.value);
+                localStorage.setItem(getDayKey("textContent"), e.target.value);
               }}
               className="w-full h-24 resize-none text-base"
             />
@@ -239,7 +233,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               value={musicUrl}
               onChange={(e) => {
                 setMusicUrl(e.target.value);
-                localStorage.setItem("musicUrl", e.target.value);
+                localStorage.setItem(getDayKey("musicUrl"), e.target.value);
               }}
               className="h-12 text-base"
             />

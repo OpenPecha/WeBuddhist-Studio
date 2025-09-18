@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import TaskForm from "./TaskForm";
-import { vi } from "vitest";
+import { vi, beforeEach } from "vitest";
 
 vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
   default: ({
@@ -25,6 +25,10 @@ vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
     </div>
   ),
 }));
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 describe("TaskForm Component", () => {
   it("renders task form with Add Task heading", () => {
@@ -179,5 +183,39 @@ describe("TaskForm Component", () => {
       target: { value: "https://youtube.com/watch?v=dQw4w9WgXcQ" },
     });
     expect(screen.getByTitle("YouTube preview")).toBeInTheDocument();
+  });
+
+  it("toggles content type off when clicked again", () => {
+    render(<TaskForm selectedDay={1} />);
+    const addButton = screen.getByTestId("add-content-button");
+    fireEvent.click(addButton);
+    const videoButton = screen.getByTestId("video-button");
+    fireEvent.click(videoButton);
+    expect(
+      screen.getByPlaceholderText("Enter YouTube URL"),
+    ).toBeInTheDocument();
+    fireEvent.click(videoButton);
+    expect(
+      screen.queryByPlaceholderText("Enter YouTube URL"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows Spotify embed for valid Spotify URL", () => {
+    render(<TaskForm selectedDay={1} />);
+    const addButton = screen.getByTestId("add-content-button");
+    fireEvent.click(addButton);
+    const musicButton = screen.getByTestId("music-button");
+    fireEvent.click(musicButton);
+    const musicInput = screen.getByPlaceholderText(
+      "Enter Spotify or SoundCloud URL",
+    );
+    fireEvent.change(musicInput, {
+      target: {
+        value: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC",
+      },
+    });
+    expect(
+      document.querySelector('iframe[src*="spotify.com/embed"]'),
+    ).toBeInTheDocument();
   });
 });
