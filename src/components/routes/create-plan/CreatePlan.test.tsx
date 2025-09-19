@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  act,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CreatePlan from "./CreatePlan";
@@ -56,6 +62,20 @@ vi.mock(
 );
 
 describe("CreatePlan Component", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(axiosInstance, "post").mockImplementation((url) => {
+      if (url.includes("/media/upload")) {
+        return Promise.resolve({
+          data: {
+            url: "mock-image-url",
+            key: "mock-image-key",
+          },
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+  });
   it("renders create plan form with main heading", () => {
     renderWithProviders(<CreatePlan />);
 
@@ -185,8 +205,14 @@ describe("CreatePlan Component", () => {
       expect(screen.getByText("Upload & Crop Image")).toBeInTheDocument();
     });
     const mockUploadButton = screen.getByTestId("mock-upload-trigger");
-    fireEvent.click(mockUploadButton);
-    expect(screen.getByAltText("Cover preview")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(mockUploadButton);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByAltText("Cover preview")).toBeInTheDocument();
+    });
     expect(screen.getByTestId("image-remove")).toBeInTheDocument();
     expect(screen.getByText("sample.jpg")).toBeInTheDocument();
     expect(screen.queryByText("Upload & Crop Image")).not.toBeInTheDocument();
@@ -199,12 +225,25 @@ describe("CreatePlan Component", () => {
     await waitFor(() => {
       expect(screen.getByTestId("mock-upload-trigger")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByTestId("mock-upload-trigger"));
-    expect(screen.getByAltText("Cover preview")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("mock-upload-trigger"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByAltText("Cover preview")).toBeInTheDocument();
+    });
+
     const removeButton = screen.getByTestId("image-remove");
     expect(removeButton).toBeInTheDocument();
-    fireEvent.click(removeButton);
-    expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(removeButton);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
+    });
     expect(screen.queryByTestId("image-remove")).not.toBeInTheDocument();
     expect(screen.queryByText("sample.jpg")).not.toBeInTheDocument();
   });
