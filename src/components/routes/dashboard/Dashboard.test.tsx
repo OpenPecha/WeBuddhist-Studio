@@ -75,7 +75,7 @@ describe("Dashboard Component", () => {
 
     const linkElement = addPlanButton.closest("a");
     expect(linkElement).toBeDefined();
-    expect(linkElement?.getAttribute("href")).toBe("/create-plan");
+    expect(linkElement?.getAttribute("href")).toBe("/create-plan/new");
   });
 
   it("renders loading state by default", () => {
@@ -105,7 +105,7 @@ describe("Dashboard Component", () => {
 
   it("fetches plans correctly and returns the correct data", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plan: [], total: 0 },
+      data: { plans: [], total: 0 },
     });
 
     renderWithProviders(<Dashboard />);
@@ -116,7 +116,7 @@ describe("Dashboard Component", () => {
 
   it("should toggle sort order when clicking column header multiple times", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plan: [], total: 0 },
+      data: { plans: [], total: 0 },
     });
 
     renderWithProviders(<Dashboard />);
@@ -161,7 +161,7 @@ describe("Dashboard Component", () => {
 
   it("should handle previous button", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plan: [], total: 200 },
+      data: { plans: [], total: 200 },
     });
 
     renderWithProviders(<Dashboard />);
@@ -196,7 +196,7 @@ describe("Dashboard Component", () => {
 
   it("should handle next button", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plan: [], total: 200 },
+      data: { plans: [], total: 200 },
     });
     renderWithProviders(<Dashboard />);
     await waitFor(() => {

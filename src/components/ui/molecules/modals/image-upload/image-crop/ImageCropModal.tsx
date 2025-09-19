@@ -118,10 +118,11 @@ const CropActions = ({
   disabled: boolean;
 }) => (
   <div className="flex float-end gap-4 p-4 border-t border-[#eee] dark:border-[#222222]">
-    <Button className="flex-1" variant="outline" onClick={onBack}>
+    <Button type="button" className="flex-1" variant="outline" onClick={onBack}>
       Back
     </Button>
     <Button
+      type="button"
       variant="default"
       className="bg-[#A51C21] hover:bg-[#A51C21]/90 flex-1 text-white"
       onClick={onCropConfirm}
