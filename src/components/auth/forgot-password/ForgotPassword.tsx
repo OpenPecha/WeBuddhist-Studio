@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
 import pechaIcon from "../../../assets/icon/pecha_icon.png";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
@@ -13,14 +13,13 @@ import { z } from "zod";
 
 const ForgotPassword = () => {
   const { t } = useTranslate();
-  const navigate = useNavigate();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const forgotPasswordMutation = useMutation({
     mutationFn: async (emailData: { email: string }) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/api/v1/auth/request-reset-password`,
+        `${BACKEND_BASE_URL}/api/v1/cms/auth/request-reset-password`,
         emailData,
       );
       return response.data;
@@ -29,10 +28,9 @@ const ForgotPassword = () => {
       setSuccess(
         "Email with reset password link is sent to your email address",
       );
-      navigate("/");
     },
     onError: (error: any) => {
-      setError(error.response.data.message);
+      setError(error.message);
     },
   });
   const handleForgotPassword = (e: React.FormEvent) => {
@@ -41,6 +39,7 @@ const ForgotPassword = () => {
     const email = formData.get("email") as string;
     try {
       const validatedEmail = forgotPasswordSchema.parse({ email });
+      setError("");
       forgotPasswordMutation.mutate({ email: validatedEmail.email });
     } catch (error) {
       if (error instanceof z.ZodError) {
