@@ -3,6 +3,10 @@ import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { FiTrash } from "react-icons/fi";
+import axiosInstance from "@/config/axios-config";
+import { BACKEND_BASE_URL } from "@/lib/constant";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
 interface PlanWithDays {
   id: string;
@@ -11,7 +15,6 @@ interface PlanWithDays {
   days: {
     id: string;
     day_number: number;
-    title: string;
     tasks: {
       id: string;
       title: string;
@@ -23,101 +26,32 @@ interface PlanWithDays {
   }[];
 }
 
-const mockPlanData: PlanWithDays = {
-  id: "6819c6f3bd6d4825cc05f6c8",
-  title: "4-Day Practice Plan: Daily Motivation Boost",
-  description:
-    "Right Motivation: You will learn how to set a clear and positive intention for your spiritual journey, recognizing the rare opportunity of human life. You'll begin each day with the aspiration to live meaningfully, act compassionately, and use your life to benefit others.",
-  days: [
+const fetchPlanDetails = async (planId: string) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.get(
+    `${BACKEND_BASE_URL}/api/v1/cms/plans/${planId}`,
     {
-      id: "1",
-      day_number: 1,
-      title: "Day 1",
-      tasks: [
-        {
-          id: "task-1-1",
-          title: "Morning Intention Setting",
-          description: "Set your daily motivation and spiritual intention",
-          content_type: "TEXT",
-          content: "Begin your practice with clear intention...",
-          estimated_time: 15,
-        },
-        {
-          id: "task-1-2",
-          title: "Compassion Reflection",
-          description: "Reflect on ways to benefit others today",
-          content_type: "TEXT",
-          content: "Consider how your actions can help others...",
-          estimated_time: 10,
-        },
-      ],
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-    {
-      id: "2",
-      day_number: 2,
-      title: "Day 2",
-      tasks: [
-        {
-          id: "task-2-1",
-          title: "Meaningful Living Practice",
-          description: "Focus on living with purpose and meaning",
-          content_type: "TEXT",
-          content: "Explore what meaningful living means to you...",
-          estimated_time: 20,
-        },
-      ],
-    },
-    {
-      id: "3",
-      day_number: 3,
-      title: "Day 3",
-      tasks: [
-        {
-          id: "task-3-1",
-          title: "Heart Transformation Exercise",
-          description: "Practice changing your perspective and motivation",
-          content_type: "AUDIO",
-          content: "Guided meditation on inner transformation...",
-          estimated_time: 25,
-        },
-      ],
-    },
-    {
-      id: "4",
-      day_number: 4,
-      title: "Day 4",
-      tasks: [
-        {
-          id: "task-4-1",
-          title: "Integration and Commitment",
-          description: "Solidify your practice and make commitments",
-          content_type: "TEXT",
-          content: "Reflect on your journey and set future intentions...",
-          estimated_time: 30,
-        },
-      ],
-    },
-  ],
+  );
+  return data;
 };
 
 const PlanDetailsPanel = () => {
+  const { planId } = useParams<{ planId: string }>();
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [expandedDay, setExpandedDay] = useState<number>(1);
-  const [currentPlan, setCurrentPlan] = useState<PlanWithDays>(mockPlanData);
+  const { data: currentPlan, isLoading, error } = useQuery<PlanWithDays>({
+    queryKey: ["planDetails", planId],
+    queryFn: () => fetchPlanDetails(planId!),
+    enabled: !!planId,
+    refetchOnWindowFocus: false,
+  });
   const addNewDay = () => {
+    if (!currentPlan) return;
     const newDay = currentPlan.days.length + 1;
-    setCurrentPlan((prev) => ({
-      ...prev,
-      days: [
-        ...prev.days,
-        {
-          id: `day-${newDay}`,
-          day_number: newDay,
-          title: `Day ${newDay}`,
-          tasks: [],
-        },
-      ],
-    }));
     setSelectedDay(newDay);
     setExpandedDay(newDay);
   };
@@ -129,7 +63,7 @@ const PlanDetailsPanel = () => {
             Current Plan
           </div>
           <div className="text-sm text-muted-foreground leading-relaxed">
-            {currentPlan.title}
+            {currentPlan?.title}
           </div>
         </div>
 
@@ -140,7 +74,7 @@ const PlanDetailsPanel = () => {
           </div>
 
           <div className="space-y-2">
-            {currentPlan.days.map((day) => (
+            {currentPlan?.days.map((day) => (
               <div key={day.id} className="group">
                 <div
                   className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-accent/50"
@@ -200,7 +134,7 @@ const PlanDetailsPanel = () => {
                   </div>
                 )}
               </div>
-            ))}
+            )) || []}
           </div>
 
           <div className="mt-4">

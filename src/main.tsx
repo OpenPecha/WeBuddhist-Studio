@@ -88,7 +88,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/plan-details",
+        path: "/plan-details/:planId",
         element: (
           <ProtectedRoute>
             <PlanDetailsPanel />
