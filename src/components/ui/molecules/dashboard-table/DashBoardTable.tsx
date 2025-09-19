@@ -106,7 +106,7 @@ export function DashBoardTable({
                 {t("studio.dashboard.no_plan_found")}
               </p>
               <Button
-                onClick={() => navigate("/create-plan")}
+                onClick={() => navigate("/create-plan/new")}
                 variant="outline"
                 className="mt-2"
               >

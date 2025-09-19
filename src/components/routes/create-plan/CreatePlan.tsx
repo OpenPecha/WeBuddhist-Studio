@@ -20,7 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/atoms/textarea";
-import { useBlocker, useParams } from "react-router-dom";
+import { useBlocker, useNavigate, useParams } from "react-router-dom";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
@@ -74,7 +74,7 @@ const Createplan = () => {
   const { plan_id } = useParams();
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
-
+  const navigate = useNavigate();
   const form = useForm({
     resolver: zodResolver(planSchema),
     defaultValues: {
@@ -104,6 +104,7 @@ const Createplan = () => {
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
+      navigate(`/create-plan/new/plan-details`); //change to id later
     },
     onError: (error) => {
       toast.error("Failed to create plan", {
