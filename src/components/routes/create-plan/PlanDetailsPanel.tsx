@@ -6,8 +6,9 @@ import { FiTrash } from "react-icons/fi";
 import TaskForm from "./TaskForm";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 interface PlanWithDays {
   id: string;
@@ -27,15 +28,23 @@ interface PlanWithDays {
   }[];
 }
 
+const getAuthHeaders = () => ({
+  Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+});
+
 const fetchPlanDetails = async (planId: string) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(
     `${BACKEND_BASE_URL}/api/v1/cms/plans/${planId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
+    { headers: getAuthHeaders() }
+  );
+  return data;
+};
+
+const createNewDay = async (planId: string) => {
+  const { data } = await axiosInstance.post(
+    `${BACKEND_BASE_URL}/api/v1/cms/plans/${planId}/days`,
+    {},
+    { headers: getAuthHeaders() }
   );
   return data;
 };
@@ -45,18 +54,41 @@ const PlanDetailsPanel = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [expandedDay, setExpandedDay] = useState<number>(1);
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
-  const { data: currentPlan, isLoading, error } = useQuery<PlanWithDays>({
+  const queryClient = useQueryClient();
+  const {
+    data: currentPlan,
+    isLoading,
+    error,
+  } = useQuery<PlanWithDays>({
     queryKey: ["planDetails", planId],
     queryFn: () => fetchPlanDetails(planId!),
     enabled: !!planId,
     refetchOnWindowFocus: false,
   });
+
+  const createNewDayMutation = useMutation({
+    mutationFn: () => createNewDay(planId!),
+    onSuccess: (newDay) => {
+      setSelectedDay(newDay.day_number);
+      setExpandedDay(newDay.day_number);
+      queryClient.refetchQueries({ queryKey: ["planDetails", planId] });
+    },
+    onError: (error) => {
+      toast.error("Failed to create new day", {
+        description: error.message,
+      });
+    },
+  });
   const addNewDay = () => {
-    if (!currentPlan) return;
-    const newDay = currentPlan.days.length + 1;
-    setSelectedDay(newDay);
-    setExpandedDay(newDay);
+    if (!currentPlan || !planId) return;
+    createNewDayMutation.mutate();
   };
+  const handleDayClick = (dayNumber: number) => {
+    setSelectedDay(dayNumber);
+    setExpandedDay(dayNumber);
+    setShowTaskForm(false);
+  };
+  
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-background">
       <div className="w-80 bg-white dark:bg-background border-r border-gray-200 dark:border-border h-full flex flex-col">
@@ -81,9 +113,7 @@ const PlanDetailsPanel = () => {
                 <div
                   className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-accent/50"
                   onClick={() => {
-                    setSelectedDay(day.day_number);
-                    setExpandedDay(day.day_number);
-                    setShowTaskForm(false);
+                    handleDayClick(day.day_number);
                   }}
                 >
                   <div className="flex items-center gap-3">
@@ -149,11 +179,12 @@ const PlanDetailsPanel = () => {
           <div className="mt-4">
             <button
               onClick={addNewDay}
-              className="w-full flex items-center gap-2 py-2 px-3 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-accent/50 transition-colors"
+              disabled={createNewDayMutation.isPending}
+              className="w-full flex items-center gap-2 py-2 px-3 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-accent/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <IoMdAdd className="w-4 h-4 text-foreground" />
               <span className="text-md font-medium text-foreground">
-                Add New Day
+                {createNewDayMutation.isPending ? "Adding..." : "Add New Day"}
               </span>
             </button>
           </div>
