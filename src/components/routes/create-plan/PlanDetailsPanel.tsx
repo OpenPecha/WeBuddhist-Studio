@@ -57,8 +57,8 @@ const PlanDetailsPanel = () => {
   const queryClient = useQueryClient();
   const {
     data: currentPlan,
-    isLoading,
-    error,
+    isLoading: _isLoading,
+    error: _error,
   } = useQuery<PlanWithDays>({
     queryKey: ["planDetails", planId],
     queryFn: () => fetchPlanDetails(planId!),
