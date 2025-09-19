@@ -32,17 +32,17 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
 });
 
-const fetchPlanDetails = async (planId: string) => {
+const fetchPlanDetails = async (plan_id: string) => {
   const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans/${planId}`,
+    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
     { headers: getAuthHeaders() },
   );
   return data;
 };
 
-const createNewDay = async (planId: string) => {
+const createNewDay = async (plan_id: string) => {
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans/${planId}/days`,
+    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}/days`,
     {},
     { headers: getAuthHeaders() },
   );
@@ -50,7 +50,7 @@ const createNewDay = async (planId: string) => {
 };
 
 const PlanDetailsPanel = () => {
-  const { planId } = useParams<{ planId: string }>();
+  const { plan_id } = useParams<{ plan_id: string }>();
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [expandedDay, setExpandedDay] = useState<number>(1);
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
@@ -60,18 +60,18 @@ const PlanDetailsPanel = () => {
     isLoading: _isLoading,
     error: _error,
   } = useQuery<PlanWithDays>({
-    queryKey: ["planDetails", planId],
-    queryFn: () => fetchPlanDetails(planId!),
-    enabled: !!planId,
+    queryKey: ["planDetails", plan_id],
+    queryFn: () => fetchPlanDetails(plan_id!),
+    enabled: !!plan_id,
     refetchOnWindowFocus: false,
   });
 
   const createNewDayMutation = useMutation({
-    mutationFn: () => createNewDay(planId!),
+    mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
       setSelectedDay(newDay.day_number);
       setExpandedDay(newDay.day_number);
-      queryClient.refetchQueries({ queryKey: ["planDetails", planId] });
+      queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error) => {
       toast.error("Failed to create new day", {
@@ -80,7 +80,7 @@ const PlanDetailsPanel = () => {
     },
   });
   const addNewDay = () => {
-    if (!currentPlan || !planId) return;
+    if (!currentPlan || !plan_id) return;
     createNewDayMutation.mutate();
   };
   const handleDayClick = (dayNumber: number) => {

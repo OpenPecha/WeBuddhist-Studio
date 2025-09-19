@@ -80,7 +80,7 @@ vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
     ...actual,
-    useParams: vi.fn().mockReturnValue({ planId: "test-plan-id" }),
+    useParams: vi.fn().mockReturnValue({ plan_id: "test-plan-id" }),
   };
 });
 

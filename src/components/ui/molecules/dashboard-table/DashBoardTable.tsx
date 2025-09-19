@@ -106,7 +106,7 @@ export function DashBoardTable({
                 {t("studio.dashboard.no_plan_found")}
               </p>
               <Button
-                onClick={() => navigate("/create-plan")}
+                onClick={() => navigate("/create-plan/new")}
                 variant="outline"
                 className="mt-2"
               >
@@ -148,7 +148,7 @@ export function DashBoardTable({
               variant="outline"
               size="sm"
               className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
-              onClick={() => navigate(`/plan-details/${plan.id}`)}
+              onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
             >
               <FaPen className="h-4 w-4" />
             </Button>
