@@ -97,14 +97,14 @@ const Createplan = () => {
   );
   const createPlanMutation = useMutation({
     mutationFn: callplan,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Plan created successfully!", {
         description: "Your plan has been created and is now available.",
       });
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
-      navigate(`/create-plan/new/plan-details`); //change to id later
+      navigate(`/create-plan/${data.id}/plan-details`);
     },
     onError: (error) => {
       toast.error("Failed to create plan", {
