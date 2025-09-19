@@ -35,7 +35,7 @@ const getAuthHeaders = () => ({
 const fetchPlanDetails = async (planId: string) => {
   const { data } = await axiosInstance.get(
     `${BACKEND_BASE_URL}/api/v1/cms/plans/${planId}`,
-    { headers: getAuthHeaders() }
+    { headers: getAuthHeaders() },
   );
   return data;
 };
@@ -44,7 +44,7 @@ const createNewDay = async (planId: string) => {
   const { data } = await axiosInstance.post(
     `${BACKEND_BASE_URL}/api/v1/cms/plans/${planId}/days`,
     {},
-    { headers: getAuthHeaders() }
+    { headers: getAuthHeaders() },
   );
   return data;
 };
@@ -88,7 +88,7 @@ const PlanDetailsPanel = () => {
     setExpandedDay(dayNumber);
     setShowTaskForm(false);
   };
-  
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-background">
       <div className="w-80 bg-white dark:bg-background border-r border-gray-200 dark:border-border h-full flex flex-col">
