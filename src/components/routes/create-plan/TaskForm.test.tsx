@@ -34,9 +34,9 @@ vi.mock("@/config/axios-config", () => ({
   },
 }));
 
-Object.defineProperty(window, 'sessionStorage', {
+Object.defineProperty(window, "sessionStorage", {
   value: {
-    getItem: vi.fn(() => 'mock-token'),
+    getItem: vi.fn(() => "mock-token"),
     setItem: vi.fn(),
     removeItem: vi.fn(),
   },
@@ -63,7 +63,7 @@ const renderWithProviders = (component: React.ReactElement) => {
     id: "test-plan-id",
     days: [
       {
-        id: "day-1", 
+        id: "day-1",
         day_number: 1,
       },
     ],
@@ -76,7 +76,7 @@ const renderWithProviders = (component: React.ReactElement) => {
           <Route path="/plan/:plan_id" element={component} />
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 };
 
@@ -275,7 +275,7 @@ describe("TaskForm Component", () => {
   it("handles image upload successfully", async () => {
     const axiosInstance = await import("@/config/axios-config");
     vi.mocked(axiosInstance.default.post).mockResolvedValue({
-      data: { url: "https://example.com/image.jpg", key: "image-key-123" }
+      data: { url: "https://example.com/image.jpg", key: "image-key-123" },
     });
     renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
@@ -288,7 +288,7 @@ describe("TaskForm Component", () => {
       expect(screen.getByText("Uploaded Image:")).toBeInTheDocument();
     });
   });
-  
+
   it("preserves form input values when submit fails", () => {
     renderWithProviders(<TaskForm selectedDay={1} />);
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
@@ -297,19 +297,21 @@ describe("TaskForm Component", () => {
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
-    fireEvent.click(videoButton);    
+    fireEvent.click(videoButton);
     fireEvent.change(screen.getByPlaceholderText("Enter YouTube URL"), {
       target: { value: "https://youtube.com/watch?v=test123" },
     });
     const submitButton = screen.getByTestId("submit-button");
     fireEvent.click(submitButton);
-    expect(screen.getByPlaceholderText("Enter YouTube URL")).toHaveValue("https://youtube.com/watch?v=test123");
+    expect(screen.getByPlaceholderText("Enter YouTube URL")).toHaveValue(
+      "https://youtube.com/watch?v=test123",
+    );
   });
 
   it("handles image removal and error states", async () => {
     const axiosInstance = await import("@/config/axios-config");
     vi.mocked(axiosInstance.default.post).mockResolvedValueOnce({
-      data: { url: "https://example.com/image.jpg", key: "image-key-123" }
+      data: { url: "https://example.com/image.jpg", key: "image-key-123" },
     });
     renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
@@ -321,14 +323,18 @@ describe("TaskForm Component", () => {
       expect(screen.getByText("Uploaded Image:")).toBeInTheDocument();
     });
     const removeButton = screen.getByTestId("remove-image-button");
-    fireEvent.click(removeButton);    
+    fireEvent.click(removeButton);
     expect(screen.queryByText("Uploaded Image:")).not.toBeInTheDocument();
-    expect(screen.getByText("Drag 'n' drop an image here, or click to select")).toBeInTheDocument();
+    expect(
+      screen.getByText("Drag 'n' drop an image here, or click to select"),
+    ).toBeInTheDocument();
   });
 
   it("handles image upload error and mutation error", async () => {
     const axiosInstance = await import("@/config/axios-config");
-    vi.mocked(axiosInstance.default.post).mockRejectedValueOnce(new Error("Upload failed"));
+    vi.mocked(axiosInstance.default.post).mockRejectedValueOnce(
+      new Error("Upload failed"),
+    );
     renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
@@ -336,12 +342,16 @@ describe("TaskForm Component", () => {
     fireEvent.click(imageButton);
     fireEvent.click(screen.getByTestId("mock-upload-trigger"));
     await waitFor(() => {
-      expect(screen.getByText("Drag 'n' drop an image here, or click to select")).toBeInTheDocument();
+      expect(
+        screen.getByText("Drag 'n' drop an image here, or click to select"),
+      ).toBeInTheDocument();
     });
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
       target: { value: "Test Task" },
     });
-    vi.mocked(axiosInstance.default.post).mockRejectedValueOnce(new Error("Task creation failed"));
+    vi.mocked(axiosInstance.default.post).mockRejectedValueOnce(
+      new Error("Task creation failed"),
+    );
     fireEvent.click(screen.getByTestId("submit-button"));
     expect(screen.getByPlaceholderText("Task Title")).toHaveValue("Test Task");
   });
@@ -350,18 +360,26 @@ describe("TaskForm Component", () => {
     localStorage.setItem("day_1_title", "Restored Task");
     localStorage.setItem("day_1_activeContentType", "text");
     renderWithProviders(<TaskForm selectedDay={1} />);
-    expect(screen.getByPlaceholderText("Task Title")).toHaveValue("Restored Task");
-    expect(screen.getByPlaceholderText("Enter your text content")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Task Title")).toHaveValue(
+      "Restored Task",
+    );
+    expect(
+      screen.getByPlaceholderText("Enter your text content"),
+    ).toBeInTheDocument();
     const textButton = screen.getByTestId("text-button");
     fireEvent.click(textButton);
-    expect(screen.queryByPlaceholderText("Enter your text content")).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText("Enter your text content"),
+    ).not.toBeInTheDocument();
   });
 
   it("submits form successfully and calls API", async () => {
     const axiosInstance = await import("@/config/axios-config");
-    const postSpy = vi.mocked(axiosInstance.default.post).mockResolvedValueOnce({
-      data: { id: "task-123" }
-    });
+    const postSpy = vi
+      .mocked(axiosInstance.default.post)
+      .mockResolvedValueOnce({
+        data: { id: "task-123" },
+      });
     renderWithProviders(<TaskForm selectedDay={1} />);
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
       target: { value: "Simple Task" },
@@ -377,7 +395,7 @@ describe("TaskForm Component", () => {
           title: "Simple Task",
           content_type: "TEXT",
         }),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
