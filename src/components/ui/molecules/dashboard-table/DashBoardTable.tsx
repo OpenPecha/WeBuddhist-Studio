@@ -119,7 +119,7 @@ export function DashBoardTable({
     }
 
     return plans.map((plan) => (
-      <TableRow key={plan.id} className="hover:cursor-pointer">
+      <TableRow key={plan.id}>
         <TableCell>
           <img
             src={plan.image_url || defaultCover}
@@ -131,7 +131,12 @@ export function DashBoardTable({
           />
         </TableCell>
         <TableCell>
-          <div className="font-semibold text-base">{plan.title}</div>
+          <div
+            className="font-semibold text-base cursor-pointer"
+            onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
+          >
+            {plan.title}
+          </div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
             {plan.description}
           </div>
@@ -148,7 +153,6 @@ export function DashBoardTable({
               variant="outline"
               size="sm"
               className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
-              onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
             >
               <FaPen className="h-4 w-4" />
             </Button>
