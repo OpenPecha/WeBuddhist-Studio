@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
 import StudioCard from "@/components/ui/atoms/studio-card";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
@@ -17,7 +17,8 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState("");
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  
+  const navigate = useNavigate();
+
   const forgotPasswordMutation = useMutation({
     mutationFn: async (password: { password: string }) => {
       const response = await axiosInstance.post(
@@ -32,9 +33,10 @@ const ResetPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      setSuccess(
-        "Password reset successfully, you can now login with your new password",
-      );
+      setSuccess("Password reset successfully, redirecting to login page...");
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     },
     onError: (error: any) => {
       setError(error.message);
@@ -64,7 +66,7 @@ const ResetPassword = () => {
     }
   };
 
-   if (!token){
+  if (!token) {
     return (
       <StudioCard>
         <h2 className="text-xl font-semibold text-center">Invalid Token</h2>
@@ -73,7 +75,7 @@ const ResetPassword = () => {
         </p>
       </StudioCard>
     );
-   }
+  }
   return (
     <StudioCard title={t("studio.reset_password.new_password")}>
       <form
