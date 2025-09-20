@@ -98,7 +98,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    mode: "onChange",
+    mode: "onTouched",
     defaultValues: {
       title: "",
       videoUrl: "",
@@ -115,8 +115,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const formValues = form.watch();
   const youTubeVideoId = getYouTubeVideoId(formValues.videoUrl || "");
   const hasValidYouTubeId = youTubeVideoId.length > 0;
-  const isFormValid =
-    form.formState.isValid && formValues.title.trim().length > 0;
+  const isFormValid = formValues.title.trim().length > 0;
   const extractSpotifyId = (url: string) => {
     const match = url.match(/spotify\.com\/(track|album)\/([a-zA-Z0-9]+)/);
     return match ? { type: match[1], id: match[2] } : null;

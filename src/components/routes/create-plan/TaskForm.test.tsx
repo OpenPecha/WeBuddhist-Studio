@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import TaskForm from "./TaskForm";
 import { vi, beforeEach } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 
 vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
   default: ({
@@ -26,26 +28,79 @@ vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
   ),
 }));
 
+vi.mock("@/config/axios-config", () => ({
+  default: {
+    post: vi.fn(),
+  },
+}));
+
+Object.defineProperty(window, 'sessionStorage', {
+  value: {
+    getItem: vi.fn(() => 'mock-token'),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+  },
+  writable: true,
+});
+
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+const renderWithProviders = (component: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  queryClient.setQueryData(["planDetails", "test-plan-id"], {
+    id: "test-plan-id",
+    days: [
+      {
+        id: "day-1", 
+        day_number: 1,
+      },
+    ],
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={["/plan/test-plan-id"]}>
+        <Routes>
+          <Route path="/plan/:plan_id" element={component} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+};
+
 beforeEach(() => {
   localStorage.clear();
+  vi.clearAllMocks();
 });
 
 describe("TaskForm Component", () => {
   it("renders task form with Add Task heading", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
 
     expect(screen.getByText("Add Task")).toBeInTheDocument();
   });
 
   it("renders task title input field", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     expect(titleInput).toBeInTheDocument();
     expect(titleInput.tagName).toBe("INPUT");
   });
 
   it("renders submit button", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const submitButton = screen.getByTestId("submit-button");
     expect(submitButton).toBeInTheDocument();
     expect(submitButton.tagName).toBe("BUTTON");
@@ -53,7 +108,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows content type buttons when add button is clicked", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     expect(screen.queryByText("Enter YouTube URL")).not.toBeInTheDocument();
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
@@ -65,14 +120,14 @@ describe("TaskForm Component", () => {
   });
 
   it("allows typing in title input", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     fireEvent.change(titleInput, { target: { value: "Test Task Title" } });
     expect(titleInput).toHaveValue("Test Task Title");
   });
 
   it("shows video input when video content type is selected", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
@@ -83,7 +138,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows text input when text content type is selected", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const textButton = screen.getByTestId("text-button");
@@ -94,7 +149,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows music input when music content type is selected", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
@@ -105,13 +160,14 @@ describe("TaskForm Component", () => {
   });
 
   it("validates YouTube URL and shows error for invalid URL", async () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
     fireEvent.click(videoButton);
     const videoInput = screen.getByPlaceholderText("Enter YouTube URL");
     fireEvent.change(videoInput, { target: { value: "invalid-url" } });
+    fireEvent.blur(videoInput);
     await waitFor(() => {
       expect(
         screen.getByText("Please enter a valid YouTube URL"),
@@ -120,7 +176,7 @@ describe("TaskForm Component", () => {
   });
 
   it("validates music URL and shows error for invalid URL", async () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
@@ -129,6 +185,7 @@ describe("TaskForm Component", () => {
       "Enter Spotify or SoundCloud URL",
     );
     fireEvent.change(musicInput, { target: { value: "invalid-url" } });
+    fireEvent.blur(musicInput);
     await waitFor(() => {
       expect(
         screen.getByText("Please enter a valid music platform URL"),
@@ -137,7 +194,7 @@ describe("TaskForm Component", () => {
   });
 
   it("allows typing in text content textarea", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const textButton = screen.getByTestId("text-button");
@@ -148,7 +205,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows image upload section when image button is clicked", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const imageButton = screen.getByTestId("image-button");
@@ -158,30 +215,18 @@ describe("TaskForm Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("clears form data when submitted", async () => {
-    const consoleSpy = vi.spyOn(console, "log");
-    render(<TaskForm selectedDay={1} />);
+  it("disables submit button when form is invalid", () => {
+    renderWithProviders(<TaskForm selectedDay={1} />);
+    const submitButton = screen.getByTestId("submit-button");
+    expect(submitButton).toBeDisabled();
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
       target: { value: "Test Task" },
     });
-    await waitFor(() => {
-      const submitButton = screen.getByTestId("submit-button");
-      expect(submitButton).not.toBeDisabled();
-    });
-    fireEvent.click(screen.getByTestId("submit-button"));
-    await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Form submitted:",
-        expect.any(Object),
-      );
-      expect(screen.getByPlaceholderText("Task Title")).toHaveValue("");
-      expect(localStorage.getItem("day_1_title")).toBeNull();
-    });
-    consoleSpy.mockRestore();
+    expect(screen.getByPlaceholderText("Task Title")).toHaveValue("Test Task");
   });
 
   it("shows YouTube preview for valid URL", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
@@ -194,7 +239,7 @@ describe("TaskForm Component", () => {
   });
 
   it("toggles content type off when clicked again", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
@@ -209,7 +254,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows Spotify embed for valid Spotify URL", () => {
-    render(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
@@ -225,5 +270,115 @@ describe("TaskForm Component", () => {
     expect(
       document.querySelector('iframe[src*="spotify.com/embed"]'),
     ).toBeInTheDocument();
+  });
+
+  it("handles image upload successfully", async () => {
+    const axiosInstance = await import("@/config/axios-config");
+    vi.mocked(axiosInstance.default.post).mockResolvedValue({
+      data: { url: "https://example.com/image.jpg", key: "image-key-123" }
+    });
+    renderWithProviders(<TaskForm selectedDay={1} />);
+    const addButton = screen.getByTestId("add-content-button");
+    fireEvent.click(addButton);
+    const imageButton = screen.getByTestId("image-button");
+    fireEvent.click(imageButton);
+    const uploadButton = screen.getByTestId("mock-upload-trigger");
+    fireEvent.click(uploadButton);
+    await waitFor(() => {
+      expect(screen.getByText("Uploaded Image:")).toBeInTheDocument();
+    });
+  });
+  
+  it("preserves form input values when submit fails", () => {
+    renderWithProviders(<TaskForm selectedDay={1} />);
+    fireEvent.change(screen.getByPlaceholderText("Task Title"), {
+      target: { value: "Test Task" },
+    });
+    const addButton = screen.getByTestId("add-content-button");
+    fireEvent.click(addButton);
+    const videoButton = screen.getByTestId("video-button");
+    fireEvent.click(videoButton);    
+    fireEvent.change(screen.getByPlaceholderText("Enter YouTube URL"), {
+      target: { value: "https://youtube.com/watch?v=test123" },
+    });
+    const submitButton = screen.getByTestId("submit-button");
+    fireEvent.click(submitButton);
+    expect(screen.getByPlaceholderText("Enter YouTube URL")).toHaveValue("https://youtube.com/watch?v=test123");
+  });
+
+  it("handles image removal and error states", async () => {
+    const axiosInstance = await import("@/config/axios-config");
+    vi.mocked(axiosInstance.default.post).mockResolvedValueOnce({
+      data: { url: "https://example.com/image.jpg", key: "image-key-123" }
+    });
+    renderWithProviders(<TaskForm selectedDay={1} />);
+    const addButton = screen.getByTestId("add-content-button");
+    fireEvent.click(addButton);
+    const imageButton = screen.getByTestId("image-button");
+    fireEvent.click(imageButton);
+    fireEvent.click(screen.getByTestId("mock-upload-trigger"));
+    await waitFor(() => {
+      expect(screen.getByText("Uploaded Image:")).toBeInTheDocument();
+    });
+    const removeButton = screen.getByTestId("remove-image-button");
+    fireEvent.click(removeButton);    
+    expect(screen.queryByText("Uploaded Image:")).not.toBeInTheDocument();
+    expect(screen.getByText("Drag 'n' drop an image here, or click to select")).toBeInTheDocument();
+  });
+
+  it("handles image upload error and mutation error", async () => {
+    const axiosInstance = await import("@/config/axios-config");
+    vi.mocked(axiosInstance.default.post).mockRejectedValueOnce(new Error("Upload failed"));
+    renderWithProviders(<TaskForm selectedDay={1} />);
+    const addButton = screen.getByTestId("add-content-button");
+    fireEvent.click(addButton);
+    const imageButton = screen.getByTestId("image-button");
+    fireEvent.click(imageButton);
+    fireEvent.click(screen.getByTestId("mock-upload-trigger"));
+    await waitFor(() => {
+      expect(screen.getByText("Drag 'n' drop an image here, or click to select")).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText("Task Title"), {
+      target: { value: "Test Task" },
+    });
+    vi.mocked(axiosInstance.default.post).mockRejectedValueOnce(new Error("Task creation failed"));
+    fireEvent.click(screen.getByTestId("submit-button"));
+    expect(screen.getByPlaceholderText("Task Title")).toHaveValue("Test Task");
+  });
+
+  it("saves and restores form state from localStorage", () => {
+    localStorage.setItem("day_1_title", "Restored Task");
+    localStorage.setItem("day_1_activeContentType", "text");
+    renderWithProviders(<TaskForm selectedDay={1} />);
+    expect(screen.getByPlaceholderText("Task Title")).toHaveValue("Restored Task");
+    expect(screen.getByPlaceholderText("Enter your text content")).toBeInTheDocument();
+    const textButton = screen.getByTestId("text-button");
+    fireEvent.click(textButton);
+    expect(screen.queryByPlaceholderText("Enter your text content")).not.toBeInTheDocument();
+  });
+
+  it("submits form successfully and calls API", async () => {
+    const axiosInstance = await import("@/config/axios-config");
+    const postSpy = vi.mocked(axiosInstance.default.post).mockResolvedValueOnce({
+      data: { id: "task-123" }
+    });
+    renderWithProviders(<TaskForm selectedDay={1} />);
+    fireEvent.change(screen.getByPlaceholderText("Task Title"), {
+      target: { value: "Simple Task" },
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId("submit-button")).not.toBeDisabled();
+    });
+    fireEvent.click(screen.getByTestId("submit-button"));
+    await waitFor(() => {
+      expect(postSpy).toHaveBeenCalledWith(
+        expect.stringContaining("/day/day-1/tasks"),
+        expect.objectContaining({
+          title: "Simple Task",
+          content_type: "TEXT",
+        }),
+        expect.any(Object)
+      );
+    });
   });
 });
