@@ -9,6 +9,7 @@ import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useState } from "react";
 import { useTranslate } from "@tolgee/react";
 import { z } from "zod";
+import { resetPasswordSchema } from "@/schema/ResetPasswordSchema";
 
 const ResetPassword = () => {
   const { t } = useTranslate();
@@ -18,7 +19,7 @@ const ResetPassword = () => {
   const token = searchParams.get("token");
 
   const forgotPasswordMutation = useMutation({
-    mutationFn: async (password: string) => {
+    mutationFn: async (password: { password: string }) => {
       const response = await axiosInstance.post(
         `${BACKEND_BASE_URL}/api/v1/cms/auth/reset-password`,
         password,
@@ -41,11 +42,21 @@ const ResetPassword = () => {
   });
   const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    
     const formData = new FormData(e.target as HTMLFormElement);
     const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+    
+    const formDataObj = {
+      password,
+      confirmPassword,
+    };
+
     try {
-      setError("");
-      forgotPasswordMutation.mutate(password);
+      const validatedData = resetPasswordSchema.parse(formDataObj);
+      forgotPasswordMutation.mutate({ password: validatedData.password });
     } catch (error) {
       if (error instanceof z.ZodError) {
         setError(error.issues[0].message);
@@ -81,7 +92,7 @@ const ResetPassword = () => {
           onSubmit={handleResetPassword}
         >
           <div className="text-sm space-y-2">
-            <Label htmlFor="email" className="font-medium">
+            <Label htmlFor="password" className="font-medium">
               {t("common.password")}
             </Label>
             <Input
@@ -89,6 +100,19 @@ const ResetPassword = () => {
               placeholder={t("studio.login.placeholder.password")}
               className="placeholder:text-[#b1b1b1]"
               name="password"
+              required
+            />
+          </div>
+          <div className="text-sm space-y-2">
+            <Label htmlFor="confirmPassword" className="font-medium">
+              Confirm Password
+            </Label>
+            <Input
+              type="password"
+              placeholder="Confirm your new password"
+              className="placeholder:text-[#b1b1b1]"
+              name="confirmPassword"
+              required
             />
           </div>
           {error && (
