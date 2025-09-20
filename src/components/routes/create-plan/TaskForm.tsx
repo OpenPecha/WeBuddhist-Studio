@@ -89,6 +89,11 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
 const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
+  const getButtonClass = (contentType: string) => {
+    return `${BUTTON_CLASSES} ${
+      activeContentType === contentType ? "bg-accent" : ""
+    }`;
+  };
   const getYouTubeVideoId = (url: string) => {
     const match = url.match(
       /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
@@ -299,7 +304,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               <div className={`flex ${COMMON_BORDER_CLASSES} overflow-hidden`}>
                 <button
                   type="button"
-                  className={BUTTON_CLASSES}
+                  className={getButtonClass("image")}
                   onClick={() => handleContentTypeToggle("image")}
                   data-testid="image-button"
                 >
@@ -307,7 +312,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 </button>
                 <button
                   type="button"
-                  className={BUTTON_CLASSES}
+                  className={getButtonClass("music")}
                   onClick={() => handleContentTypeToggle("music")}
                   data-testid="music-button"
                 >
@@ -315,7 +320,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 </button>
                 <button
                   type="button"
-                  className={BUTTON_CLASSES}
+                  className={getButtonClass("video")}
                   onClick={() => handleContentTypeToggle("video")}
                   data-testid="video-button"
                 >
@@ -323,7 +328,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 </button>
                 <button
                   type="button"
-                  className={BUTTON_CLASSES}
+                  className={getButtonClass("text")}
                   onClick={() => handleContentTypeToggle("text")}
                   data-testid="text-button"
                 >
@@ -331,7 +336,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                 </button>
                 <button
                   type="button"
-                  className={BUTTON_CLASSES}
+                  className={getButtonClass("pecha")}
                   data-testid="pecha-button"
                 >
                   <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />
@@ -473,7 +478,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                     </div>
                   )}
                   {imagePreview && selectedImage && (
-                    <div className="mt-4 p-3 rounded-lg flex justify-center">
+                    <div className="mt-4 flex justify-center">
                       <div>
                         <p className="text-sm font-medium text-center mb-2 text-gray-700 dark:text-gray-300">
                           Uploaded Image:
@@ -482,7 +487,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                           <img
                             src={imagePreview}
                             alt="Final uploaded image"
-                            className="w-48 h-32 object-cover rounded-lg border"
+                            className="w-full h-48 object-cover rounded-lg border"
                           />
                           <button
                             type="button"
