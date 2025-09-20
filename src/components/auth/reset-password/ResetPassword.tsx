@@ -16,9 +16,9 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState("");
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  
+
   const forgotPasswordMutation = useMutation({
-    mutationFn: async (password:string) => {
+    mutationFn: async (password: string) => {
       const response = await axiosInstance.post(
         `${BACKEND_BASE_URL}/api/v1/cms/auth/reset-password`,
         password,

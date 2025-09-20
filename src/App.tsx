@@ -6,7 +6,13 @@ import { LANGUAGE } from "./lib/constant";
 
 function App() {
   const location = useLocation();
-  const authRoutes = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email"];
+  const authRoutes = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+  ];
   const hideNavbar = authRoutes.includes(location.pathname);
 
   useEffect(() => {
