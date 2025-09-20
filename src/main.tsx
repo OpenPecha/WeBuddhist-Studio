@@ -24,6 +24,7 @@ import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PlanDetailsPanel from "./components/routes/create-plan/PlanDetailsPanel";
+import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "bo-IN";
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
       {
         path: "/forgot-password",
         element: <ForgotPassword />,
+      },
+      {
+        path: "/reset-password",
+        element: <ResetPassword />,
       },
       {
         path: "/verify-email",

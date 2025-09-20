@@ -6,11 +6,14 @@ import { LANGUAGE } from "./lib/constant";
 
 function App() {
   const location = useLocation();
-  const hideNavbar =
-    location.pathname === "/login" ||
-    location.pathname === "/signup" ||
-    location.pathname === "/forgot-password" ||
-    location.pathname === "/verify-email";
+  const authRoutes = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+  ];
+  const hideNavbar = authRoutes.includes(location.pathname);
 
   useEffect(() => {
     setFontVariables(localStorage.getItem(LANGUAGE) || "en");
