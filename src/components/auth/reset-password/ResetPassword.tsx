@@ -17,7 +17,7 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState("");
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-
+  
   const forgotPasswordMutation = useMutation({
     mutationFn: async (password: { password: string }) => {
       const response = await axiosInstance.post(
@@ -64,6 +64,16 @@ const ResetPassword = () => {
     }
   };
 
+   if (!token){
+    return (
+      <StudioCard>
+        <h2 className="text-xl font-semibold text-center">Invalid Token</h2>
+        <p className="text-center mb-8 text-sm text-red-600 dark:text-red-400">
+          No reset password token provided.
+        </p>
+      </StudioCard>
+    );
+   }
   return (
     <StudioCard title={t("studio.reset_password.new_password")}>
       <form
