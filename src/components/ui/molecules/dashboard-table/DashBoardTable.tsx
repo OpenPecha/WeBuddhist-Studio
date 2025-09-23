@@ -119,7 +119,11 @@ export function DashBoardTable({
     }
 
     return plans.map((plan) => (
-      <TableRow key={plan.id}>
+      <TableRow
+        key={plan.id}
+        onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
+        className="cursor-pointer"
+      >
         <TableCell>
           <img
             src={plan.image_url || defaultCover}
@@ -131,12 +135,7 @@ export function DashBoardTable({
           />
         </TableCell>
         <TableCell>
-          <div
-            className="font-semibold text-base cursor-pointer"
-            onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
-          >
-            {plan.title}
-          </div>
+          <div className="font-semibold text-base">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
             {plan.description}
           </div>
@@ -146,13 +145,19 @@ export function DashBoardTable({
         <TableCell>{getStatusBadge(plan.status)}</TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            <Button variant="destructive" size="sm" className="h-8 w-10">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-8 w-10"
+              onClick={(e) => e.stopPropagation()}
+            >
               <IoMdTrash className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
+              onClick={(e) => e.stopPropagation()}
             >
               <FaPen className="h-4 w-4" />
             </Button>

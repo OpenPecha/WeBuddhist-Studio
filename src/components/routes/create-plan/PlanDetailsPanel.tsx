@@ -28,6 +28,22 @@ interface PlanWithDays {
   }[];
 }
 
+const DefaultDayView = ({ selectedDay }: { selectedDay: number }) => {
+  return (
+    <div className="max-w-xl">
+      <h2 className="text-2xl font-semibold mb-6" style={{ color: "#413F3F" }}>
+        Day {selectedDay}
+      </h2>
+      <div className="text-center py-12">
+        <p className="text-lg mb-4">No tasks created for Day {selectedDay}</p>
+        <p className="text-sm text-gray-500">
+          Click the + icon next to the day to add your first task
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
 });
@@ -88,6 +104,9 @@ const PlanDetailsPanel = () => {
     setExpandedDay(dayNumber);
     setShowTaskForm(false);
   };
+  const currentDayData = currentPlan?.days?.find(
+    (day: any) => day.day_number === selectedDay,
+  );
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-background">
@@ -192,7 +211,11 @@ const PlanDetailsPanel = () => {
       </div>
 
       <div className="flex-1 bg-white dark:bg-background p-8">
-        {showTaskForm && <TaskForm selectedDay={selectedDay} />}
+        {showTaskForm ? (
+          <TaskForm selectedDay={selectedDay} />
+        ) : currentDayData?.tasks?.length === 0 ? (
+          <DefaultDayView selectedDay={selectedDay} />
+        ) : null}
       </div>
     </div>
   );
