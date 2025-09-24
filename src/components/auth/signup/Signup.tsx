@@ -64,7 +64,7 @@ const Signup = () => {
 
     try {
       const validatedData = signupSchema.parse(formDataObj);
-      const clientPassword = createPasswordHash(email, password);
+      const clientPassword = createPasswordHash(password);
       signupMutation.mutate({
         email: validatedData.email,
         first_name: validatedData.first_name,

@@ -47,7 +47,7 @@ const Login = () => {
   });
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const clientPassword = createPasswordHash(email, password);
+    const clientPassword = createPasswordHash(password);
     loginMutation.mutate({ email, password: clientPassword });
   };
   return (

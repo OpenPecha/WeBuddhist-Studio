@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function createPasswordHash(email: string, password: string): string {
+export function createPasswordHash( password: string): string {
   const envSalt = import.meta.env.VITE_ENV_SALT || "";
-  const combinedString = email + envSalt + password;
+  const combinedString = envSalt + password;
   return sha256(combinedString).toString();
 }
