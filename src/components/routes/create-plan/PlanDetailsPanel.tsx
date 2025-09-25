@@ -30,11 +30,8 @@ interface PlanWithDays {
 
 const DefaultDayView = ({ selectedDay }: { selectedDay: number }) => {
   return (
-    <div className="max-w-xl">
-      <h2 className="text-2xl font-semibold mb-6" style={{ color: "#413F3F" }}>
-        Day {selectedDay}
-      </h2>
-      <div className="text-center py-12">
+    <div className=" w-full h-full flex items-center justify-center border">
+      <div className="text-center">
         <p className="text-lg mb-4">No tasks created for Day {selectedDay}</p>
         <p className="text-sm text-gray-500">
           Click the + icon next to the day to add your first task
@@ -109,42 +106,40 @@ const PlanDetailsPanel = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-background">
-      <div className="w-80 bg-white dark:bg-background border-r border-gray-200 dark:border-border h-full flex flex-col">
+    <div className="flex h-screen">
+      <div className="w-80 bg-[#FAFAFA] dark:bg-[#19191b] border-r border-t rounded-tr-lg border-gray-200 dark:border-border h-full flex flex-col">
         <div className="p-4">
-          <div className="text-[#A51C21] text-md font-semibold mb-1">
-            Current Plan
-          </div>
-          <div className="text-sm text-muted-foreground leading-relaxed">
+          <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
+          <div className="text-sm text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
             {currentPlan?.title}
           </div>
         </div>
 
         <div className="flex-1 p-4">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center border-b pb-3 gap-2 mb-1">
             <IoCalendarClearOutline className="w-5 h-5 text-foreground" />
-            <span className="text-md font-semibold text-foreground">Days</span>
+            <span className="text-sm  text-foreground">Days</span>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             {currentPlan?.days.map((day) => (
               <div key={day.id} className="group">
                 <div
-                  className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-accent/50"
+                  className="flex items-center justify-between px-1 py-2 rounded-sm cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-accent/50"
                   onClick={() => {
                     handleDayClick(day.day_number);
                   }}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-6 h-6 rounded-full ${
+                      className={`w-4 h-4 rounded-full ${
                         selectedDay === day.day_number
                           ? "bg-[#4CAF50]"
                           : "bg-input"
                       }`}
                     ></div>
                     <span
-                      className={`text-md font-medium ${
+                      className={`text-sm ${
                         selectedDay === day.day_number
                           ? "text-zinc-900 dark:text-zinc-100"
                           : "text-zinc-400 dark:text-zinc-600"
@@ -179,11 +174,11 @@ const PlanDetailsPanel = () => {
                 </div>
 
                 {expandedDay === day.day_number && day.tasks.length > 0 && (
-                  <div className="ml-9 mt-2 space-y-1">
+                  <div className=" ml-2.5 border-l dark:bg-accent/30 bg-gray-100">
                     {day.tasks.map((task) => (
                       <div
                         key={task.id}
-                        className="flex items-center justify-between py-2 px-3 text-sm text-foreground bg-gray-50 dark:bg-accent/30 rounded"
+                        className="flex items-center justify-between py-2 px-3 text-sm text-foreground"
                       >
                         <span>{task.title}</span>
                         <FiTrash className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
@@ -195,22 +190,20 @@ const PlanDetailsPanel = () => {
             )) || []}
           </div>
 
-          <div className="mt-4">
-            <button
-              onClick={addNewDay}
-              disabled={createNewDayMutation.isPending}
-              className="w-full flex items-center gap-2 py-2 px-3 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-accent/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <IoMdAdd className="w-4 h-4 text-foreground" />
-              <span className="text-md font-medium text-foreground">
-                {createNewDayMutation.isPending ? "Adding..." : "Add New Day"}
-              </span>
-            </button>
-          </div>
+          <button
+            onClick={addNewDay}
+            disabled={createNewDayMutation.isPending}
+            className="w-full mt-2 flex items-center justify-center bg-red-900 text-white py-2 px-3 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <IoMdAdd className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {createNewDayMutation.isPending ? "Adding..." : "Add New Day"}
+            </span>
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 bg-white dark:bg-background p-8">
+      <div className="flex-1 bg-white dark:bg-background px-4">
         {showTaskForm ? (
           <TaskForm selectedDay={selectedDay} />
         ) : currentDayData?.tasks?.length === 0 ? (

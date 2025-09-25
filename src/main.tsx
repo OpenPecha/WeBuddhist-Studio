@@ -27,7 +27,7 @@ import PlanDetailsPanel from "./components/routes/create-plan/PlanDetailsPanel";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 
 const queryClient = new QueryClient();
-const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "bo-IN";
+const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
 const tolgee = new (Tolgee as any)()
   .use(DevTools)
   .use(FormatSimple)

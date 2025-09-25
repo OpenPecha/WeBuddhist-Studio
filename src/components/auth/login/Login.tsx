@@ -48,7 +48,10 @@ const Login = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const clientPassword = createPasswordHash(email, password);
-    loginMutation.mutate({ email, password: clientPassword });
+    loginMutation.mutate({
+      email,
+      password: clientPassword,
+    });
   };
   return (
     <StudioCard title={t("studio.login.title")}>
