@@ -263,10 +263,8 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   };
 
   return (
-    <div className="max-w-xl">
-      <h2 className="text-2xl font-semibold mb-6" style={{ color: "#413F3F" }}>
-        Add Task
-      </h2>
+    <div className="w-full h-full border p-4 space-y-4">
+      <h2 className="text-xl font-semibold">Add Task</h2>
       <Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
@@ -480,9 +478,6 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                   {imagePreview && selectedImage && (
                     <div className="mt-4 flex justify-center">
                       <div>
-                        <p className="text-sm font-medium text-center mb-2 text-gray-700 dark:text-gray-300">
-                          Uploaded Image:
-                        </p>
                         <div className="relative w-fit">
                           <img
                             src={imagePreview}

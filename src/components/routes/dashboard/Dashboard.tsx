@@ -75,13 +75,13 @@ const Dashboard = () => {
       sortOrder,
     ],
     queryFn: () =>
-      fetchPlans(currentPage, 20, debouncedSearch, sortBy, sortOrder),
+      fetchPlans(currentPage, 5, debouncedSearch, sortBy, sortOrder),
     refetchOnWindowFocus: false,
     enabled: true,
     retry: false,
   });
 
-  const totalPages = planData ? Math.ceil(planData.total / 20) : 1;
+  const totalPages = planData ? Math.ceil(planData.total / 5) : 1;
 
   return (
     <div className="w-full h-full font-dynamic px-10 pt-10">

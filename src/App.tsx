@@ -20,7 +20,7 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-full p-2">
+    <div className="flex flex-col h-screen w-full">
       {!hideNavbar && <Navbar />}
       <Outlet />
     </div>
