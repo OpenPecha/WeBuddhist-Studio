@@ -45,8 +45,9 @@ const Login = () => {
         error?.response?.data?.detail ||
         "Login failed";
 
-      const emailVerificationErrorMessage =
-        errorMsg.toLowerCase().includes("author not verified");
+      const emailVerificationErrorMessage = errorMsg
+        .toLowerCase()
+        .includes("author not verified");
 
       setShowEmailReverify(emailVerificationErrorMessage);
       setErrors({ error: errorMsg });
@@ -158,8 +159,16 @@ const Login = () => {
         </div>
         {showEmailReverify && (
           <div>
-            <Button type="button" variant="outline" className="w-full text-sm" onClick={handleEmailReverify} disabled={emailReverifyMutation.isPending}>
-              {emailReverifyMutation.isPending ? "Sending..." : "Reverify your Email"}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full text-sm"
+              onClick={handleEmailReverify}
+              disabled={emailReverifyMutation.isPending}
+            >
+              {emailReverifyMutation.isPending
+                ? "Sending..."
+                : "Reverify your Email"}
             </Button>
           </div>
         )}

@@ -19,7 +19,7 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const email = searchParams.get("email");
-  
+
   const navigate = useNavigate();
 
   const forgotPasswordMutation = useMutation({
@@ -61,7 +61,10 @@ const ResetPassword = () => {
 
     try {
       const validatedData = resetPasswordSchema.parse(formDataObj);
-      const clientPassword = createPasswordHash(email as string, validatedData.password);
+      const clientPassword = createPasswordHash(
+        email as string,
+        validatedData.password,
+      );
       forgotPasswordMutation.mutate({ password: clientPassword });
     } catch (error) {
       if (error instanceof z.ZodError) {
