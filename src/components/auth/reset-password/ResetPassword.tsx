@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useTranslate } from "@tolgee/react";
 import { z } from "zod";
 import { resetPasswordSchema } from "@/schema/ResetPasswordSchema";
+import { createPasswordHash } from "@/lib/utils";
 
 const ResetPassword = () => {
   const { t } = useTranslate();
@@ -17,6 +18,8 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState("");
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+  const email = searchParams.get("email");
+  
   const navigate = useNavigate();
 
   const forgotPasswordMutation = useMutation({
@@ -58,7 +61,8 @@ const ResetPassword = () => {
 
     try {
       const validatedData = resetPasswordSchema.parse(formDataObj);
-      forgotPasswordMutation.mutate({ password: validatedData.password });
+      const clientPassword = createPasswordHash(email as string, validatedData.password);
+      forgotPasswordMutation.mutate({ password: clientPassword });
     } catch (error) {
       if (error instanceof z.ZodError) {
         setError(error.issues[0].message);
