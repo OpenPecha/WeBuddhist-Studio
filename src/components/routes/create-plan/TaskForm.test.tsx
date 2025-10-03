@@ -285,7 +285,7 @@ describe("TaskForm Component", () => {
     const uploadButton = screen.getByTestId("mock-upload-trigger");
     fireEvent.click(uploadButton);
     await waitFor(() => {
-      expect(screen.getByText("Uploaded Image:")).toBeInTheDocument();
+      expect(screen.getByAltText("Final uploaded image")).toBeInTheDocument();
     });
   });
 
@@ -320,11 +320,13 @@ describe("TaskForm Component", () => {
     fireEvent.click(imageButton);
     fireEvent.click(screen.getByTestId("mock-upload-trigger"));
     await waitFor(() => {
-      expect(screen.getByText("Uploaded Image:")).toBeInTheDocument();
+      expect(screen.getByAltText("Final uploaded image")).toBeInTheDocument();
     });
     const removeButton = screen.getByTestId("remove-image-button");
     fireEvent.click(removeButton);
-    expect(screen.queryByText("Uploaded Image:")).not.toBeInTheDocument();
+    expect(
+      screen.queryByAltText("Final uploaded image"),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByText("Drag 'n' drop an image here, or click to select"),
     ).toBeInTheDocument();

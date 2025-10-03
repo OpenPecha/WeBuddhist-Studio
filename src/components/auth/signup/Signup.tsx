@@ -38,9 +38,7 @@ const Signup = () => {
       }, 2000);
     },
     onError: (error: any) => {
-      const errorMsg =
-        error?.response?.data?.detail || "Signup failed. Please try again.";
-      setError(errorMsg);
+      setError(error.response.data.detail.message);
     },
   });
 
@@ -160,7 +158,7 @@ const Signup = () => {
           </div>
         )}
         {signupMutation.isSuccess && (
-          <div className="text-green-600 dark:text-green-400 flex items-center justify-center text-sm mb-2">
+          <div className="text-green-600 text-center dark:text-green-400 text-sm mb-2">
             {t("studio.signup.success_message")}
           </div>
         )}

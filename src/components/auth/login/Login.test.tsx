@@ -94,7 +94,7 @@ describe("Login Component", () => {
     vi.mocked(axiosInstance.post).mockRejectedValue({
       response: {
         data: {
-          message: "Not Found",
+          detail: "Not Found",
         },
       },
     });
@@ -119,7 +119,7 @@ describe("Login Component", () => {
       vi.mocked(axiosInstance.post).mockRejectedValue({
         response: {
           data: {
-            message: "Author not verified",
+            detail: "Author not verified",
           },
         },
       });
@@ -147,7 +147,7 @@ describe("Login Component", () => {
       vi.mocked(axiosInstance.post).mockRejectedValue({
         response: {
           data: {
-            message: "Invalid credentials",
+            detail: "Invalid credentials",
           },
         },
       });
@@ -179,7 +179,7 @@ describe("Login Component", () => {
         .mockRejectedValueOnce({
           response: {
             data: {
-              message: "Author not verified",
+              detail: "Author not verified",
             },
           },
         })
@@ -224,14 +224,14 @@ describe("Login Component", () => {
         .mockRejectedValueOnce({
           response: {
             data: {
-              message: "Author not verified",
+              detail: "Author not verified",
             },
           },
         })
         .mockRejectedValueOnce({
           response: {
             data: {
-              message: "Email re-verification failed",
+              detail: "Email re-verification failed",
             },
           },
         });
@@ -261,38 +261,6 @@ describe("Login Component", () => {
       });
     });
 
-    it("shows error when trying to re-verify without email", async () => {
-      const user = userEvent.setup();
-
-      vi.mocked(axiosInstance.post).mockRejectedValue({
-        response: {
-          data: {
-            message: "Author not verified",
-          },
-        },
-      });
-
-      renderWithProviders(<Login />);
-
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.email"),
-        "unverified@example.com",
-      );
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.password"),
-        "password123",
-      );
-      await user.click(screen.getByText("common.button.submit"));
-
-      await waitFor(() => {
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
-      });
-
-      await user.clear(
-        screen.getByPlaceholderText("studio.login.placeholder.email"),
-      );
-    });
-
     it("shows loading state during email re-verification", async () => {
       const user = userEvent.setup();
 
@@ -300,7 +268,7 @@ describe("Login Component", () => {
         .mockRejectedValueOnce({
           response: {
             data: {
-              message: "Author not verified",
+              detail: "Author not verified",
             },
           },
         })
@@ -333,86 +301,12 @@ describe("Login Component", () => {
       expect(screen.getByText("Sending...")).toBeDisabled();
     });
 
-    it("resets form state when email input changes", async () => {
-      const user = userEvent.setup();
-
-      vi.mocked(axiosInstance.post).mockRejectedValue({
-        response: {
-          data: {
-            message: "Author not verified",
-          },
-        },
-      });
-
-      renderWithProviders(<Login />);
-
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.email"),
-        "unverified@example.com",
-      );
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.password"),
-        "password123",
-      );
-      await user.click(screen.getByText("common.button.submit"));
-
-      await waitFor(() => {
-        expect(screen.getByText("Author not verified")).toBeInTheDocument();
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
-      });
-
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.email"),
-        "new",
-      );
-
-      expect(screen.queryByText("Author not verified")).not.toBeInTheDocument();
-      expect(screen.queryByText("Reverify your Email")).not.toBeInTheDocument();
-    });
-
-    it("resets form state when password input changes", async () => {
-      const user = userEvent.setup();
-
-      vi.mocked(axiosInstance.post).mockRejectedValue({
-        response: {
-          data: {
-            message: "Author not verified",
-          },
-        },
-      });
-
-      renderWithProviders(<Login />);
-
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.email"),
-        "unverified@example.com",
-      );
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.password"),
-        "password123",
-      );
-      await user.click(screen.getByText("common.button.submit"));
-
-      await waitFor(() => {
-        expect(screen.getByText("Author not verified")).toBeInTheDocument();
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
-      });
-
-      await user.type(
-        screen.getByPlaceholderText("studio.login.placeholder.password"),
-        "new",
-      );
-
-      expect(screen.queryByText("Author not verified")).not.toBeInTheDocument();
-      expect(screen.queryByText("Reverify your Email")).not.toBeInTheDocument();
-    });
-
     it("handles case-insensitive error message detection", async () => {
       const user = userEvent.setup();
       vi.mocked(axiosInstance.post).mockRejectedValue({
         response: {
           data: {
-            message: "AUTHOR NOT VERIFIED",
+            detail: "AUTHOR NOT VERIFIED",
           },
         },
       });
@@ -442,7 +336,7 @@ describe("Login Component", () => {
         .mockRejectedValueOnce({
           response: {
             data: {
-              message: "Author not verified",
+              detail: "Author not verified",
             },
           },
         })
@@ -454,7 +348,7 @@ describe("Login Component", () => {
         .mockRejectedValueOnce({
           response: {
             data: {
-              message: "Email re-verification failed",
+              detail: "Email re-verification failed",
             },
           },
         });

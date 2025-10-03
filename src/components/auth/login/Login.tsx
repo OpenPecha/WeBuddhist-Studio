@@ -19,7 +19,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ error?: string }>({});
+  const [errors, setErrors] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [showEmailReverify, setShowEmailReverify] = useState<boolean>(false);
   const { login } = useAuth();
@@ -39,18 +39,14 @@ const Login = () => {
       navigate("/dashboard");
     },
     onError: (error: any) => {
-      console.error("Login failed", error);
-      const errorMsg =
-        error?.response?.data?.message ||
-        error?.response?.data?.detail ||
-        "Login failed";
+      const errorMsg = error?.response?.data?.detail || "Login failed";
 
       const emailVerificationErrorMessage = errorMsg
         .toLowerCase()
         .includes("author not verified");
 
       setShowEmailReverify(emailVerificationErrorMessage);
-      setErrors({ error: errorMsg });
+      setErrors(errorMsg || "");
     },
   });
 
@@ -64,15 +60,12 @@ const Login = () => {
     onSuccess: (data: any) => {
       const message = data?.message;
       setSuccessMessage(message);
-      setErrors({});
+      setErrors("");
     },
     onError: (error: any) => {
-      console.error("Email re-verification failed", error);
       const errorMsg =
-        error?.response?.data?.message ||
-        error?.response?.data?.detail ||
-        "Email re-verification failed";
-      setErrors({ error: errorMsg });
+        error?.response?.data?.detail || "Email re-verification failed";
+      setErrors(errorMsg || "");
       setSuccessMessage("");
     },
   });
@@ -89,20 +82,9 @@ const Login = () => {
   };
 
   const handleEmailReverify = () => {
-    if (!email) {
-      setErrors({ error: "Please enter your email address first" });
-      setSuccessMessage("");
-      return;
-    }
-    setErrors({});
+    setErrors("");
     setSuccessMessage("");
     emailReverifyMutation.mutate({ email });
-  };
-
-  const resetFormState = () => {
-    setShowEmailReverify(false);
-    setSuccessMessage("");
-    setErrors({});
   };
 
   return (
@@ -120,7 +102,6 @@ const Login = () => {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              resetFormState();
             }}
           />
         </div>
@@ -137,21 +118,9 @@ const Login = () => {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              resetFormState();
             }}
           />
         </div>
-        {errors.error && (
-          <div className="text-red-800 dark:text-red-400 flex items-center justify-center text-sm">
-            {" "}
-            {errors.error}{" "}
-          </div>
-        )}
-        {successMessage && (
-          <div className="text-green-800 dark:text-green-400 flex items-center justify-center text-sm">
-            {successMessage}
-          </div>
-        )}
         <div className="flex mt-4 justify-center ">
           <Button type="submit" variant="outline" className="w-full text-sm ">
             {t("common.button.submit")}
@@ -172,7 +141,16 @@ const Login = () => {
             </Button>
           </div>
         )}
-
+        {errors && (
+          <div className="text-red-800 text-center dark:text-red-400 text-sm">
+            {errors}
+          </div>
+        )}
+        {successMessage && (
+          <div className="text-green-800 text-center dark:text-green-400 text-sm">
+            {successMessage}
+          </div>
+        )}
         <div className="flex justify-center">
           <Link to="/forgot-password" className="text-sm">
             Forgot password?
