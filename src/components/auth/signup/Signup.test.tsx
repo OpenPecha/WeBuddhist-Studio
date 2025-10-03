@@ -109,7 +109,9 @@ describe("Signup Component", () => {
     vi.mocked(axiosInstance.post).mockRejectedValue({
       response: {
         data: {
-          message: "Signup failed. Please try again.",
+          detail: {
+            message: "Signup failed. Please try again.",
+          },
         },
       },
     });

@@ -9,7 +9,7 @@ import { BACKEND_BASE_URL } from "@/lib/constant";
 
 const renderWithProviders = (
   component: React.ReactElement,
-  initialEntries = ["/reset-password?token=test-token"],
+  initialEntries = ["/reset-password?token=test-token&email=test@example.com"],
 ) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -145,7 +145,10 @@ describe("ResetPassword Component", () => {
     await waitFor(() => {
       expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
         `${BACKEND_BASE_URL}/api/v1/cms/auth/reset-password`,
-        { password: "newpassword123" },
+        {
+          password:
+            "d71fce13bfee14deb5302af59d48181a9a09cbc164ebadfde79d36190fcb6f93",
+        },
         {
           headers: {
             Authorization: "Bearer test-token",

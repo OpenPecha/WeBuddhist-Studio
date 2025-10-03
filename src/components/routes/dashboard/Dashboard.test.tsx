@@ -172,10 +172,10 @@ describe("Dashboard Component", () => {
     fireEvent.click(pagelink3);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plans`),
         expect.objectContaining({
           params: expect.objectContaining({
-            skip: 40,
+            skip: 10,
           }),
         }),
       );
@@ -184,10 +184,10 @@ describe("Dashboard Component", () => {
     fireEvent.click(previousButton);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plans`),
         expect.objectContaining({
           params: expect.objectContaining({
-            skip: 20,
+            skip: 10,
           }),
         }),
       );
@@ -206,10 +206,10 @@ describe("Dashboard Component", () => {
     fireEvent.click(nextButton);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
+        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plans`),
         expect.objectContaining({
           params: expect.objectContaining({
-            skip: 20,
+            skip: 5,
           }),
         }),
       );

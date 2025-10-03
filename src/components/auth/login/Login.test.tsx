@@ -94,7 +94,7 @@ describe("Login Component", () => {
     vi.mocked(axiosInstance.post).mockRejectedValue({
       response: {
         data: {
-          message: "Not Found",
+          detail: "Not Found",
         },
       },
     });
@@ -110,6 +110,282 @@ describe("Login Component", () => {
     await user.click(screen.getByText("common.button.submit"));
     await waitFor(() => {
       expect(screen.getByText("Not Found")).toBeInTheDocument();
+    });
+  });
+
+  describe("Email Re-verification Functionality", () => {
+    it("shows email re-verification button when login fails with 'author not verified' error", async () => {
+      const user = userEvent.setup();
+      vi.mocked(axiosInstance.post).mockRejectedValue({
+        response: {
+          data: {
+            detail: "Author not verified",
+          },
+        },
+      });
+
+      renderWithProviders(<Login />);
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "unverified@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Author not verified")).toBeInTheDocument();
+        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+      });
+    });
+
+    it("does not show email re-verification button for other login errors", async () => {
+      const user = userEvent.setup();
+      vi.mocked(axiosInstance.post).mockRejectedValue({
+        response: {
+          data: {
+            detail: "Invalid credentials",
+          },
+        },
+      });
+
+      renderWithProviders(<Login />);
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "test@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "wrongpassword",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Invalid credentials")).toBeInTheDocument();
+        expect(
+          screen.queryByText("Reverify your Email"),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it("successfully sends email re-verification request", async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(axiosInstance.post)
+        .mockRejectedValueOnce({
+          response: {
+            data: {
+              detail: "Author not verified",
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            message: "Verification email sent successfully",
+          },
+        });
+
+      renderWithProviders(<Login />);
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "unverified@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText("Reverify your Email"));
+
+      await waitFor(() => {
+        expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
+          `${BACKEND_BASE_URL}/api/v1/cms/auth/email-re-verification?email=unverified%40example.com`,
+        );
+        expect(
+          screen.getByText("Verification email sent successfully"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("shows error when email re-verification fails", async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(axiosInstance.post)
+        .mockRejectedValueOnce({
+          response: {
+            data: {
+              detail: "Author not verified",
+            },
+          },
+        })
+        .mockRejectedValueOnce({
+          response: {
+            data: {
+              detail: "Email re-verification failed",
+            },
+          },
+        });
+
+      renderWithProviders(<Login />);
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "unverified@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText("Reverify your Email"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Email re-verification failed"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("shows loading state during email re-verification", async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(axiosInstance.post)
+        .mockRejectedValueOnce({
+          response: {
+            data: {
+              detail: "Author not verified",
+            },
+          },
+        })
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ data: { message: "Success" } }), 1000),
+            ),
+        );
+
+      renderWithProviders(<Login />);
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "unverified@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText("Reverify your Email"));
+
+      expect(screen.getByText("Sending...")).toBeInTheDocument();
+      expect(screen.getByText("Sending...")).toBeDisabled();
+    });
+
+    it("handles case-insensitive error message detection", async () => {
+      const user = userEvent.setup();
+      vi.mocked(axiosInstance.post).mockRejectedValue({
+        response: {
+          data: {
+            detail: "AUTHOR NOT VERIFIED",
+          },
+        },
+      });
+
+      renderWithProviders(<Login />);
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "unverified@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(screen.getByText("AUTHOR NOT VERIFIED")).toBeInTheDocument();
+        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+      });
+    });
+
+    it("clears success message when re-verification fails", async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(axiosInstance.post)
+        .mockRejectedValueOnce({
+          response: {
+            data: {
+              detail: "Author not verified",
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            message: "Verification email sent successfully",
+          },
+        })
+        .mockRejectedValueOnce({
+          response: {
+            data: {
+              detail: "Email re-verification failed",
+            },
+          },
+        });
+
+      renderWithProviders(<Login />);
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "unverified@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+      });
+      await user.click(screen.getByText("Reverify your Email"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Verification email sent successfully"),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText("Reverify your Email"));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText("Verification email sent successfully"),
+        ).not.toBeInTheDocument();
+        expect(
+          screen.getByText("Email re-verification failed"),
+        ).toBeInTheDocument();
+      });
     });
   });
 });
