@@ -8,11 +8,11 @@ import {
 } from "../../atoms/table";
 import { Button } from "../../atoms/button";
 import { Badge } from "../../atoms/badge";
-import { IoMdAdd, IoMdTrash } from "react-icons/io";
+import { IoMdAdd } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
-import { FaPen } from "react-icons/fa";
 import defaultCover from "/default-image.webp";
+import { DropdownButton } from "../dropdown-button/DropdownButton";
 export interface Plan {
   id: string;
   image_url: string;
@@ -145,22 +145,7 @@ export function DashBoardTable({
         <TableCell>{getStatusBadge(plan.status)}</TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              className="h-8 w-10"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <IoMdTrash className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FaPen className="h-4 w-4" />
-            </Button>
+            <DropdownButton />
           </div>
         </TableCell>
       </TableRow>
