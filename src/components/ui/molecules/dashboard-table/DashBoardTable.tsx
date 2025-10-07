@@ -119,11 +119,7 @@ export function DashBoardTable({
     }
 
     return plans.map((plan) => (
-      <TableRow
-        key={plan.id}
-        onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
-        className="cursor-pointer"
-      >
+      <TableRow key={plan.id}>
         <TableCell>
           <img
             src={plan.image_url || defaultCover}
@@ -134,7 +130,10 @@ export function DashBoardTable({
             className="w-32 h-20 object-cover rounded-md"
           />
         </TableCell>
-        <TableCell>
+        <TableCell
+          className="cursor-pointer"
+          onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
+        >
           <div className="font-semibold text-base">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
             {plan.description}
