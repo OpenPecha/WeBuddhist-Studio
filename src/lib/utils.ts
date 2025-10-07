@@ -11,3 +11,10 @@ export function createPasswordHash(email: string, password: string): string {
   const combinedString = email + envSalt + password;
   return sha256(combinedString).toString();
 }
+
+export const getYouTubeVideoId = (url: string) => {
+  const match = url.match(
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  );
+  return match?.[1] || "";
+};

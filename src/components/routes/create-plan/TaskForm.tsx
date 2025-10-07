@@ -1,19 +1,11 @@
 import { useState, useEffect } from "react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/atoms/form";
+import { Pecha } from "@/components/ui/shadimport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { IoMdAdd, IoMdVideocam, IoMdClose } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
-import { Textarea } from "@/components/ui/atoms/textarea";
-import { Input } from "@/components/ui/atoms/input";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
 import pechaIcon from "../../../assets/icon/pecha_icon.png";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,30 +13,12 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { toast } from "sonner";
-
-const COMMON_INPUT_CLASSES = "h-12 text-base";
-const COMMON_BORDER_CLASSES =
-  "border border-gray-300 dark:border-input rounded-sm";
-const BUTTON_CLASSES =
-  "px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer";
+import { taskSchema } from "@/schema/TaskSchema";
+import { getYouTubeVideoId } from "@/lib/utils";
 
 interface TaskFormProps {
   selectedDay: number;
 }
-
-const taskSchema = z.object({
-  title: z.string().min(1, "Task title is required"),
-  videoUrl: z
-    .union([z.literal(""), z.url("Please enter a valid YouTube URL")])
-    .optional(),
-  textContent: z.string().optional(),
-  musicUrl: z
-    .union([z.literal(""), z.url("Please enter a valid music platform URL")])
-    .optional(),
-});
-
-type TaskFormData = z.infer<typeof taskSchema>;
-
 interface CreateTaskPayload {
   title: string;
   description: string;
@@ -52,6 +26,7 @@ interface CreateTaskPayload {
   content: string;
   estimated_time: number;
 }
+type TaskFormData = z.infer<typeof taskSchema>;
 
 const createTask = async (
   plan_id: string,
@@ -89,16 +64,11 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
 const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
+  
   const getButtonClass = (contentType: string) => {
-    return `${BUTTON_CLASSES} ${
+    return `px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer ${
       activeContentType === contentType ? "bg-accent" : ""
     }`;
-  };
-  const getYouTubeVideoId = (url: string) => {
-    const match = url.match(
-      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-    );
-    return match?.[1] || "";
   };
 
   const form = useForm<TaskFormData>({
@@ -265,33 +235,33 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   return (
     <div className="w-full h-full border p-4 space-y-4">
       <h2 className="text-xl font-semibold">Add Task</h2>
-      <Form {...form}>
+      <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <FormField
+          <Pecha.FormField
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
+              <Pecha.FormItem>
+                <Pecha.FormControl>
+                  <Pecha.Input
                     type="text"
                     placeholder="Task Title"
-                    className={COMMON_INPUT_CLASSES}
+                    className="h-12 text-base"
                     {...field}
                     onChange={(e) => {
                       field.onChange(e);
                       localStorage.setItem(getDayKey("title"), e.target.value);
                     }}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+                </Pecha.FormControl>
+                <Pecha.FormMessage />
+              </Pecha.FormItem>
             )}
           />
           <div className="flex gap-4">
             <button
               type="button"
-              className={`${BUTTON_CLASSES} ${COMMON_BORDER_CLASSES}`}
+              className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer border border-gray-300 dark:border-input rounded-sm`}
               onClick={() => setShowContentTypes(!showContentTypes)}
               data-testid="add-content-button"
             >
@@ -299,7 +269,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             </button>
 
             {showContentTypes && (
-              <div className={`flex ${COMMON_BORDER_CLASSES} overflow-hidden`}>
+              <div className={`flex border border-gray-300 dark:border-input rounded-sm overflow-hidden`}>
                 <button
                   type="button"
                   className={getButtonClass("image")}
@@ -343,7 +313,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             )}
           </div>
           {activeContentType && (
-            <div className={`${COMMON_BORDER_CLASSES} p-4`}>
+            <div className={`$border border-gray-300 dark:border-input rounded-sm p-4`}>
               <div className="flex items-center gap-2 mb-3 justify-end">
                 {activeContentType === "video" && (
                   <IoMdVideocam className="w-4 h-4 text-gray-600" />
@@ -360,21 +330,21 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               </div>
               {activeContentType === "video" && (
                 <>
-                  <FormField
+                  <Pecha.FormField
                     control={form.control}
                     name="videoUrl"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
+                      <Pecha.FormItem>
+                        <Pecha.FormControl>
+                          <Pecha.Input
                             type="url"
                             placeholder="Enter YouTube URL"
-                            className={COMMON_INPUT_CLASSES}
+                            className="h-12 text-base"
                             {...field}
                           />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                        </Pecha.FormControl>
+                        <Pecha.FormMessage />
+                      </Pecha.FormItem>
                     )}
                   />
                   {hasValidYouTubeId && (
@@ -391,20 +361,20 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
 
               {activeContentType === "text" && (
                 <>
-                  <FormField
+                  <Pecha.FormField
                     control={form.control}
                     name="textContent"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea
+                      <Pecha.FormItem>
+                        <Pecha.FormControl>
+                          <Pecha.Textarea
                             placeholder="Enter your text content"
                             className="w-full h-24 resize-none text-base"
                             {...field}
                           />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                        </Pecha.FormControl>
+                        <Pecha.FormMessage />
+                      </Pecha.FormItem>
                     )}
                   />
                 </>
@@ -412,21 +382,21 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
 
               {activeContentType === "music" && (
                 <>
-                  <FormField
+                  <Pecha.FormField
                     control={form.control}
                     name="musicUrl"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
+                      <Pecha.FormItem>
+                        <Pecha.FormControl>
+                          <Pecha.Input
                             type="url"
                             placeholder="Enter Spotify or SoundCloud URL"
-                            className={COMMON_INPUT_CLASSES}
+                            className="h-12 text-base"
                             {...field}
                           />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                        </Pecha.FormControl>
+                        <Pecha.FormMessage />
+                      </Pecha.FormItem>
                     )}
                   />
                   {formValues.musicUrl && (
@@ -511,7 +481,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             </button>
           </div>
         </form>
-      </Form>
+      </Pecha.Form>
     </div>
   );
 };
