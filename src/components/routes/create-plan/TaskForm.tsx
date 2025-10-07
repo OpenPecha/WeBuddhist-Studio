@@ -153,7 +153,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     contentType: "image" | "video" | "music" | "text",
   ) => {
     const newSubTask: SubTask = {
-      id: Date.now().toString(),  //for now we are using date as id, TODO: to update when backend is ready
+      id: Date.now().toString(), //for now we are using date as id, TODO: to update when backend is ready
       contentType,
       videoUrl: "",
       textContent: "",
