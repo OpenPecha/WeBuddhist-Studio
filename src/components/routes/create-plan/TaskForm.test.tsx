@@ -159,7 +159,7 @@ describe("TaskForm Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("validates YouTube URL and shows error for invalid URL", async () => {
+  it("allows entering YouTube URL without validation", async () => {
     renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
@@ -167,15 +167,10 @@ describe("TaskForm Component", () => {
     fireEvent.click(videoButton);
     const videoInput = screen.getByPlaceholderText("Enter YouTube URL");
     fireEvent.change(videoInput, { target: { value: "invalid-url" } });
-    fireEvent.blur(videoInput);
-    await waitFor(() => {
-      expect(
-        screen.getByText("Please enter a valid YouTube URL"),
-      ).toBeInTheDocument();
-    });
+    expect(videoInput).toHaveValue("invalid-url");
   });
 
-  it("validates music URL and shows error for invalid URL", async () => {
+  it("allows entering music URL without validation", async () => {
     renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
@@ -185,12 +180,7 @@ describe("TaskForm Component", () => {
       "Enter Spotify or SoundCloud URL",
     );
     fireEvent.change(musicInput, { target: { value: "invalid-url" } });
-    fireEvent.blur(musicInput);
-    await waitFor(() => {
-      expect(
-        screen.getByText("Please enter a valid music platform URL"),
-      ).toBeInTheDocument();
-    });
+    expect(musicInput).toHaveValue("invalid-url");
   });
 
   it("allows typing in text content textarea", () => {
@@ -238,19 +228,18 @@ describe("TaskForm Component", () => {
     expect(screen.getByTitle("YouTube preview")).toBeInTheDocument();
   });
 
-  it("toggles content type off when clicked again", () => {
+  it("adds multiple subtasks when same content type is clicked", () => {
     renderWithProviders(<TaskForm selectedDay={1} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
     fireEvent.click(videoButton);
-    expect(
-      screen.getByPlaceholderText("Enter YouTube URL"),
-    ).toBeInTheDocument();
+    const initialVideoInputs =
+      screen.getAllByPlaceholderText("Enter YouTube URL");
+    expect(initialVideoInputs).toHaveLength(1);
     fireEvent.click(videoButton);
-    expect(
-      screen.queryByPlaceholderText("Enter YouTube URL"),
-    ).not.toBeInTheDocument();
+    const videoInputs = screen.getAllByPlaceholderText("Enter YouTube URL");
+    expect(videoInputs).toHaveLength(2);
   });
 
   it("shows Spotify embed for valid Spotify URL", () => {
@@ -360,19 +349,17 @@ describe("TaskForm Component", () => {
 
   it("saves and restores form state from localStorage", () => {
     localStorage.setItem("day_1_title", "Restored Task");
-    localStorage.setItem("day_1_activeContentType", "text");
     renderWithProviders(<TaskForm selectedDay={1} />);
     expect(screen.getByPlaceholderText("Task Title")).toHaveValue(
       "Restored Task",
     );
-    expect(
-      screen.getByPlaceholderText("Enter your text content"),
-    ).toBeInTheDocument();
+    const addButton = screen.getByTestId("add-content-button");
+    fireEvent.click(addButton);
     const textButton = screen.getByTestId("text-button");
     fireEvent.click(textButton);
     expect(
-      screen.queryByPlaceholderText("Enter your text content"),
-    ).not.toBeInTheDocument();
+      screen.getByPlaceholderText("Enter your text content"),
+    ).toBeInTheDocument();
   });
 
   it("submits form successfully and calls API", async () => {
