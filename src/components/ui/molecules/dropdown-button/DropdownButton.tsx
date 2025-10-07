@@ -83,7 +83,7 @@ export function DropdownButton({ planId }: { planId: string }) {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className=" bg-[#AD1B21] hover:bg-[#AD1B21]/90"
+                    className=" bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
                     onClick={handleDeletePlan}
                   >
                     Delete Plan

@@ -1,20 +1,3 @@
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/atoms/form";
-import { Input } from "@/components/ui/atoms/input";
-import { Button } from "@/components/ui/atoms/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/atoms/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
@@ -29,12 +12,7 @@ import { DIFFICULTY, BACKEND_BASE_URL } from "@/lib/constant";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/atoms/dialog";
+import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 
 export const UploadImageToS3 = async (file: File, plan_id: string) => {
@@ -203,31 +181,31 @@ const Createplan = () => {
           {t("studio.plan.form_field.details")}
         </h1>
 
-        <Form {...form}>
+        <Pecha.Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
+            <Pecha.FormField
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
+                <Pecha.FormItem>
+                  <Pecha.FormControl>
+                    <Pecha.Input
                       placeholder={t("studio.plan.form.placeholder.title")}
                       className="h-12 text-base"
                       {...field}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
               )}
             />
 
-            <FormField
+            <Pecha.FormField
               control={form.control}
               name="description"
               render={({ field }) => (
-                <FormItem>
-                  <FormControl>
+                <Pecha.FormItem>
+                  <Pecha.FormControl>
                     <Textarea
                       placeholder={t(
                         "studio.plan.form.placeholder.description",
@@ -235,22 +213,22 @@ const Createplan = () => {
                       className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                       {...field}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
               )}
             />
 
-            <FormField
+            <Pecha.FormField
               control={form.control}
               name="total_days"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-bold">
+                <Pecha.FormItem>
+                  <Pecha.FormLabel className="text-sm font-bold">
                     {t("studio.plan.form_field.number_of_day")}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
+                  </Pecha.FormLabel>
+                  <Pecha.FormControl>
+                    <Pecha.Input
                       type="number"
                       placeholder={t(
                         "studio.plan.form.placeholder.number_of_days",
@@ -260,9 +238,9 @@ const Createplan = () => {
                       max="365"
                       {...field}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
               )}
             />
 
@@ -310,106 +288,106 @@ const Createplan = () => {
                 )}
               </div>
             </div>
-            <Dialog
+            <Pecha.Dialog
               open={isImageDialogOpen}
               onOpenChange={setIsImageDialogOpen}
             >
-              <DialogContent showCloseButton={true}>
-                <DialogHeader>
-                  <DialogTitle>Upload & Crop Image</DialogTitle>
-                </DialogHeader>
+              <Pecha.DialogContent showCloseButton={true}>
+                <Pecha.DialogHeader>
+                  <Pecha.DialogTitle>Upload & Crop Image</Pecha.DialogTitle>
+                </Pecha.DialogHeader>
                 <ImageContentData onUpload={handleImageUpload} />
-              </DialogContent>
-            </Dialog>
+              </Pecha.DialogContent>
+            </Pecha.Dialog>
 
-            <Dialog
+            <Pecha.Dialog
               open={showNavigationDialog}
               onOpenChange={setShowNavigationDialog}
             >
-              <DialogContent showCloseButton={false}>
-                <DialogHeader>
-                  <DialogTitle>
+              <Pecha.DialogContent showCloseButton={false}>
+                <Pecha.DialogHeader>
+                  <Pecha.DialogTitle>
                     {t("studio.plan.navigation.confirm_title")}
-                  </DialogTitle>
-                </DialogHeader>
+                  </Pecha.DialogTitle>
+                </Pecha.DialogHeader>
                 <div className="py-4">
                   <p className="text-sm text-muted-foreground">
                     {t("studio.plan.navigation.confirm_message")}
                   </p>
                 </div>
                 <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={handleCancelNavigation}>
+                  <Pecha.Button variant="outline" onClick={handleCancelNavigation}>
                     {t("common.button.cancel")}
-                  </Button>
-                  <Button
+                  </Pecha.Button>
+                  <Pecha.Button
                     variant="destructive"
                     onClick={handleConfirmNavigation}
                   >
                     {t("studio.plan.navigation.leave")}
-                  </Button>
+                  </Pecha.Button>
                 </div>
-              </DialogContent>
-            </Dialog>
+              </Pecha.DialogContent>
+            </Pecha.Dialog>
           </form>
-        </Form>
+        </Pecha.Form>
       </div>
 
       <div className="flex-1 p-10 sm:mt-9">
-        <Form {...form}>
+        <Pecha.Form {...form}>
           <div className="space-y-6">
-            <FormField
+            <Pecha.FormField
               control={form.control}
               name="difficulty_level"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-bold">
+                <Pecha.FormItem>
+                  <Pecha.FormLabel className="text-sm font-bold">
                     {t("studio.plan.form_field.difficulty")}
-                  </FormLabel>
-                  <Select
+                  </Pecha.FormLabel>
+                  <Pecha.Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
-                    <FormControl>
-                      <SelectTrigger
+                    <Pecha.FormControl>
+                      <Pecha.SelectTrigger
                         className="h-12"
                         data-testid="select-trigger"
                       >
-                        <SelectValue
+                        <Pecha.SelectValue
                           placeholder={t(
                             "studio.plan.form.placeholder.select_difficulty",
                           )}
                         />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
+                      </Pecha.SelectTrigger>
+                    </Pecha.FormControl>
+                    <Pecha.SelectContent>
                       {DIFFICULTY.map((difficulty) => (
-                        <SelectItem
+                        <Pecha.SelectItem
                           key={difficulty.value}
                           value={difficulty.value}
                         >
                           {difficulty.label}
-                        </SelectItem>
+                        </Pecha.SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
+                    </Pecha.SelectContent>
+                  </Pecha.Select>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
               )}
             />
-            <FormField
+            <Pecha.FormField
               control={form.control}
               name="tags"
               render={({ field }) => (
-                <FormItem>
-                  <FormControl>
+                <Pecha.FormItem>
+                  <Pecha.FormControl>
                     <TagInput value={field.value} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
               )}
             />
             <div className="pt-8 w-full flex justify-end">
-              <Button
+              <Pecha.Button
                 type="submit"
                 variant="default"
                 className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
@@ -419,10 +397,10 @@ const Createplan = () => {
                 {createPlanMutation.isPending
                   ? "Creating..."
                   : t("studio.plan.next_button")}
-              </Button>
+              </Pecha.Button>
             </div>
           </div>
-        </Form>
+        </Pecha.Form>
       </div>
     </div>
   );
