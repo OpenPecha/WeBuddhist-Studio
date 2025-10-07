@@ -9,6 +9,7 @@ import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Pecha } from "@/components/ui/shadimport";
 
 interface PlanWithDays {
   id: string;
@@ -41,14 +42,14 @@ const DefaultDayView = ({ selectedDay }: { selectedDay: number }) => {
   );
 };
 
-const getAuthHeaders = () => ({
-  Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-});
-
 const fetchPlanDetails = async (plan_id: string) => {
   const { data } = await axiosInstance.get(
     `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
-    { headers: getAuthHeaders() },
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+      },
+    },
   );
   return data;
 };
@@ -57,7 +58,11 @@ const createNewDay = async (plan_id: string) => {
   const { data } = await axiosInstance.post(
     `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}/days`,
     {},
-    { headers: getAuthHeaders() },
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+      },
+    },
   );
   return data;
 };
@@ -115,7 +120,7 @@ const PlanDetailsPanel = () => {
           </div>
         </div>
 
-        <div className="flex-1 p-4">
+        <div className="flex-1  p-4">
           <div className="flex items-center border-b pb-3 gap-2 mb-1">
             <IoCalendarClearOutline className="w-5 h-5 text-foreground" />
             <span className="text-sm  text-foreground">Days</span>
@@ -123,7 +128,7 @@ const PlanDetailsPanel = () => {
 
           <div className="space-y-1">
             {currentPlan?.days.map((day) => (
-              <div key={day.id} className="group">
+              <div key={day.id} className="group space-y-2">
                 <div
                   className="flex items-center justify-between px-1 py-2 rounded-sm cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-accent/50"
                   onClick={() => {
@@ -174,11 +179,11 @@ const PlanDetailsPanel = () => {
                 </div>
 
                 {expandedDay === day.day_number && day.tasks.length > 0 && (
-                  <div className=" ml-2.5 border-l dark:bg-accent/30 bg-gray-100">
+                  <div className=" ml-2.5 rounded-sm border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
                     {day.tasks.map((task) => (
                       <div
                         key={task.id}
-                        className="flex items-center justify-between py-2 px-3 text-sm text-foreground"
+                        className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
                       >
                         <span>{task.title}</span>
                         <FiTrash className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
@@ -190,16 +195,18 @@ const PlanDetailsPanel = () => {
             )) || []}
           </div>
 
-          <button
+          <Pecha.Button
+            type="button"
             onClick={addNewDay}
             disabled={createNewDayMutation.isPending}
-            className="w-full mt-2 flex items-center justify-center bg-red-900 text-white py-2 px-3 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="destructive"
+            className="cursor-pointer mt-3 disabled:opacity-50 w-full disabled:cursor-not-allowed"
           >
             <IoMdAdd className="w-4 h-4" />
             <span className="text-sm font-medium">
               {createNewDayMutation.isPending ? "Adding..." : "Add New Day"}
             </span>
-          </button>
+          </Pecha.Button>
         </div>
       </div>
 

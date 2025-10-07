@@ -1,15 +1,6 @@
-import { Input } from "@/components/ui/atoms/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/atoms/pagination";
+import { Pecha } from "@/components/ui/shadimport";
 import { DashBoardTable } from "@/components/ui/molecules/dashboard-table/DashBoardTable";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
-
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
@@ -88,14 +79,14 @@ const Dashboard = () => {
       <div className="mb-4 flex items-center gap-4">
         <div className="border w-fit px-2 rounded-md border-gray-200 dark:border-[#313132] flex items-center">
           <IoMdSearch className="w-4 h-4" />
-          <Input
+          <Pecha.Input
             placeholder={t("common.placeholder.search")}
             className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Link to="/create-plan/new">
+        <Link to="/plan/new">
           <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
             <IoMdAdd /> Add Plan
           </Button>
@@ -114,8 +105,8 @@ const Dashboard = () => {
 
       {!error && (
         <div>
-          <Pagination className="mt-4">
-            <PaginationPrevious
+          <Pecha.Pagination className="mt-4">
+            <Pecha.PaginationPrevious
               onClick={(e) => {
                 e.preventDefault();
                 setCurrentPage((prev) => Math.max(1, prev - 1));
@@ -126,11 +117,11 @@ const Dashboard = () => {
                   : "cursor-pointer"
               }
             />
-            <PaginationContent className="mx-2">
+            <Pecha.PaginationContent className="mx-2">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                 (pageNum) => (
-                  <PaginationItem key={pageNum}>
-                    <PaginationLink
+                  <Pecha.PaginationItem key={pageNum}>
+                    <Pecha.PaginationLink
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -143,12 +134,12 @@ const Dashboard = () => {
                       }
                     >
                       {pageNum}
-                    </PaginationLink>
-                  </PaginationItem>
+                    </Pecha.PaginationLink>
+                  </Pecha.PaginationItem>
                 ),
               )}
-            </PaginationContent>
-            <PaginationNext
+            </Pecha.PaginationContent>
+            <Pecha.PaginationNext
               onClick={(e) => {
                 e.preventDefault();
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1));
@@ -159,7 +150,7 @@ const Dashboard = () => {
                   : "cursor-pointer"
               }
             />
-          </Pagination>
+          </Pecha.Pagination>
         </div>
       )}
     </div>

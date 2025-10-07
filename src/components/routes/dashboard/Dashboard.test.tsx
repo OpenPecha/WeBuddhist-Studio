@@ -75,7 +75,7 @@ describe("Dashboard Component", () => {
 
     const linkElement = addPlanButton.closest("a");
     expect(linkElement).toBeDefined();
-    expect(linkElement?.getAttribute("href")).toBe("/create-plan/new");
+    expect(linkElement?.getAttribute("href")).toBe("/plan/new");
   });
 
   it("renders loading state by default", () => {

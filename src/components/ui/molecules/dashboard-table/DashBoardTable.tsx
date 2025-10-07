@@ -1,18 +1,10 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../atoms/table";
-import { Button } from "../../atoms/button";
-import { Badge } from "../../atoms/badge";
-import { IoMdAdd, IoMdTrash } from "react-icons/io";
+import { Pecha } from "@/components/ui/shadimport";
+import { IoMdAdd } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
-import { FaPen } from "react-icons/fa";
 import defaultCover from "/default-image.webp";
+import { DropdownButton } from "../dropdown-button/DropdownButton";
+
 export interface Plan {
   id: string;
   image_url: string;
@@ -47,15 +39,15 @@ export function DashBoardTable({
   const getStatusBadge = (status: string) => {
     if (status === "Published") {
       return (
-        <Badge className="bg-green-100 rounded-md dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
+        <Pecha.Badge className="bg-green-100  dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
           Published
-        </Badge>
+        </Pecha.Badge>
       );
     } else {
       return (
-        <Badge className="px-3 py-1.5 text-sm font-bold rounded-md dark:bg-blue-900 bg-[#E1F0FF] text-[#008DFF] dark:text-cyan-500">
+        <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-blue-900 bg-[#E1F0FF] text-[#008DFF] dark:text-cyan-500">
           In Draft
-        </Badge>
+        </Pecha.Badge>
       );
     }
   };
@@ -73,31 +65,34 @@ export function DashBoardTable({
   const renderTableContent = () => {
     if (isLoading) {
       return (
-        <TableRow>
-          <TableCell
+        <Pecha.TableRow>
+          <Pecha.TableCell
             colSpan={6}
             className="text-center py-10 text-muted-foreground"
           >
             Loading...
-          </TableCell>
-        </TableRow>
+          </Pecha.TableCell>
+        </Pecha.TableRow>
       );
     }
 
     if (error) {
       return (
-        <TableRow>
-          <TableCell colSpan={6} className="text-center py-10 text-red-500">
+        <Pecha.TableRow>
+          <Pecha.TableCell
+            colSpan={6}
+            className="text-center py-10 text-red-500"
+          >
             {error.message}
-          </TableCell>
-        </TableRow>
+          </Pecha.TableCell>
+        </Pecha.TableRow>
       );
     }
 
     if (plans.length === 0) {
       return (
-        <TableRow>
-          <TableCell
+        <Pecha.TableRow>
+          <Pecha.TableCell
             colSpan={6}
             className="text-center py-10 text-muted-foreground"
           >
@@ -105,76 +100,60 @@ export function DashBoardTable({
               <p className="text-base text-muted-foreground">
                 {t("studio.dashboard.no_plan_found")}
               </p>
-              <Button
-                onClick={() => navigate("/create-plan/new")}
+              <Pecha.Button
+                onClick={() => navigate("/plan/new")}
                 variant="outline"
                 className="mt-2"
               >
                 <IoMdAdd /> {t("studio.dashboard.add_plan")}
-              </Button>
+              </Pecha.Button>
             </div>
-          </TableCell>
-        </TableRow>
+          </Pecha.TableCell>
+        </Pecha.TableRow>
       );
     }
 
     return plans.map((plan) => (
-      <TableRow
-        key={plan.id}
-        onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
-        className="cursor-pointer"
-      >
-        <TableCell>
+      <Pecha.TableRow key={plan.id}>
+        <Pecha.TableCell>
           <img
             src={plan.image_url || defaultCover}
             onError={(e) => {
               e.currentTarget.src = defaultCover;
             }}
             alt="cover"
-            className="w-32 h-20 object-cover rounded-md"
+            className="w-32 h-20 object-cover"
           />
-        </TableCell>
-        <TableCell>
+        </Pecha.TableCell>
+        <Pecha.TableCell
+          className="cursor-pointer"
+          onClick={() => navigate(`/plan/${plan.id}/plan-details`)}
+        >
           <div className="font-semibold text-base">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
             {plan.description}
           </div>
-        </TableCell>
-        <TableCell>{plan.total_days} Days</TableCell>
-        <TableCell>{plan.subscription_count} Used</TableCell>
-        <TableCell>{getStatusBadge(plan.status)}</TableCell>
-        <TableCell>
+        </Pecha.TableCell>
+        <Pecha.TableCell>{plan.total_days} Days</Pecha.TableCell>
+        <Pecha.TableCell>{plan.subscription_count} Used</Pecha.TableCell>
+        <Pecha.TableCell>{getStatusBadge(plan.status)}</Pecha.TableCell>
+        <Pecha.TableCell>
           <div className="flex items-center gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              className="h-8 w-10"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <IoMdTrash className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-10 text-gray-500 bg-gray-100 hover:bg-gray-200"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FaPen className="h-4 w-4" />
-            </Button>
+            <DropdownButton planId={plan.id} />
           </div>
-        </TableCell>
-      </TableRow>
+        </Pecha.TableCell>
+      </Pecha.TableRow>
     ));
   };
   return (
     <div className="w-full h-[600px] overflow-auto">
-      <Table>
-        <TableHeader>
-          <TableRow className="font-dynamic">
-            <TableHead className="w-[160px] font-bold">
+      <Pecha.Table>
+        <Pecha.TableHeader>
+          <Pecha.TableRow className="font-dynamic">
+            <Pecha.TableHead className="w-[160px] font-bold">
               {t("studio.dashboard.cover_image")}
-            </TableHead>
-            <TableHead
+            </Pecha.TableHead>
+            <Pecha.TableHead
               className="font-bold cursor-pointer"
               onClick={() => onSort("title")}
             >
@@ -182,8 +161,8 @@ export function DashBoardTable({
                 {t("studio.dashboard.title")}
                 {getSortIcon("title")}
               </div>
-            </TableHead>
-            <TableHead
+            </Pecha.TableHead>
+            <Pecha.TableHead
               className="w-[150px] font-bold cursor-pointer"
               onClick={() => onSort("total_days")}
             >
@@ -191,18 +170,20 @@ export function DashBoardTable({
                 {t("studio.dashboard.plan_days")}
                 {getSortIcon("total_days")}
               </div>
-            </TableHead>
-            <TableHead className="w-[150px] font-bold">
+            </Pecha.TableHead>
+            <Pecha.TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.plan_used")}
-            </TableHead>
-            <TableHead className="w-[150px] font-bold">Status</TableHead>
-            <TableHead className="w-[150px] font-bold">
+            </Pecha.TableHead>
+            <Pecha.TableHead className="w-[150px] font-bold">
+              Status
+            </Pecha.TableHead>
+            <Pecha.TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.actions")}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>{renderTableContent()}</TableBody>
-      </Table>
+            </Pecha.TableHead>
+          </Pecha.TableRow>
+        </Pecha.TableHeader>
+        <Pecha.TableBody>{renderTableContent()}</Pecha.TableBody>
+      </Pecha.Table>
     </div>
   );
 }

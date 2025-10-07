@@ -1,19 +1,11 @@
 import { useState, useEffect } from "react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/atoms/form";
+import { Pecha } from "@/components/ui/shadimport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { IoMdAdd, IoMdVideocam, IoMdClose } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
-import { Textarea } from "@/components/ui/atoms/textarea";
-import { Input } from "@/components/ui/atoms/input";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
 import pechaIcon from "../../../assets/icon/pecha_icon.png";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,23 +13,13 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { toast } from "sonner";
-
-const COMMON_INPUT_CLASSES = "h-12 text-base";
-const COMMON_BORDER_CLASSES =
-  "border border-gray-300 dark:border-input rounded-sm";
-const BUTTON_CLASSES =
-  "px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer";
+import { extractSpotifyId, getYouTubeVideoId } from "@/lib/utils";
+import { taskSchema } from "@/schema/TaskSchema";
+import { FaMinus } from "react-icons/fa6";
 
 interface TaskFormProps {
   selectedDay: number;
 }
-
-const taskSchema = z.object({
-  title: z.string().min(1, "Task title is required"),
-});
-
-type TaskFormData = z.infer<typeof taskSchema>;
-
 interface SubTask {
   id: string;
   contentType: "image" | "video" | "music" | "text";
@@ -49,7 +31,6 @@ interface SubTask {
   imageKey: string | null;
   isUploading: boolean;
 }
-
 interface CreateTaskPayload {
   title: string;
   description: string;
@@ -57,6 +38,35 @@ interface CreateTaskPayload {
   content: string;
   estimated_time: number;
 }
+type TaskFormData = z.infer<typeof taskSchema>;
+
+const contentTypes = [
+  {
+    key: "image",
+    icon: <MdOutlineImage className="w-4 h-4 text-gray-400" />,
+    testid: "image-button",
+  },
+  {
+    key: "music",
+    icon: <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />,
+    testid: "music-button",
+  },
+  {
+    key: "video",
+    icon: <IoMdVideocam className="w-4 h-4 text-gray-400" />,
+    testid: "video-button",
+  },
+  {
+    key: "text",
+    icon: <IoTextOutline className="w-4 h-4 text-gray-400" />,
+    testid: "text-button",
+  },
+  {
+    key: "pecha",
+    icon: <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />,
+    testid: "pecha-button",
+  },
+];
 
 const createTask = async (
   plan_id: string,
@@ -94,13 +104,6 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
 const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
-  const getYouTubeVideoId = (url: string) => {
-    const match = url.match(
-      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-    );
-    return match?.[1] || "";
-  };
-
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     mode: "onTouched",
@@ -112,10 +115,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const [showContentTypes, setShowContentTypes] = useState(false);
   const formValues = form.watch();
   const isFormValid = formValues.title.trim().length > 0;
-  const extractSpotifyId = (url: string) => {
-    const match = url.match(/spotify\.com\/(track|album)\/([a-zA-Z0-9]+)/);
-    return match ? { type: match[1], id: match[2] } : null;
-  };
+
   const getDayKey = (key: string) => `day_${selectedDay}_${key}`;
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
@@ -270,80 +270,54 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   return (
     <div className="w-full h-full border p-4 space-y-4">
       <h2 className="text-xl font-semibold">Add Task</h2>
-      <Form {...form}>
+      <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <FormField
+          <Pecha.FormField
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
+              <Pecha.FormItem>
+                <Pecha.FormControl>
+                  <Pecha.Input
                     type="text"
                     placeholder="Task Title"
-                    className={COMMON_INPUT_CLASSES}
+                    className="h-12 text-base"
                     {...field}
                     onChange={(e) => {
                       field.onChange(e);
                       localStorage.setItem(getDayKey("title"), e.target.value);
                     }}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+                </Pecha.FormControl>
+                <Pecha.FormMessage />
+              </Pecha.FormItem>
             )}
           />
           <div className="flex gap-4">
-            <button
+            <Pecha.Button
               type="button"
-              className={`${BUTTON_CLASSES} ${COMMON_BORDER_CLASSES}`}
+              variant="outline"
               onClick={() => setShowContentTypes(!showContentTypes)}
               data-testid="add-content-button"
             >
               <IoMdAdd className="w-4 h-4 text-gray-400" />
-            </button>
+            </Pecha.Button>
 
             {showContentTypes && (
-              <div className={`flex ${COMMON_BORDER_CLASSES} overflow-hidden`}>
-                <button
-                  type="button"
-                  className={BUTTON_CLASSES}
-                  onClick={() => handleAddSubTask("image")}
-                  data-testid="image-button"
-                >
-                  <MdOutlineImage className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASSES}
-                  onClick={() => handleAddSubTask("music")}
-                  data-testid="music-button"
-                >
-                  <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASSES}
-                  onClick={() => handleAddSubTask("video")}
-                  data-testid="video-button"
-                >
-                  <IoMdVideocam className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASSES}
-                  onClick={() => handleAddSubTask("text")}
-                  data-testid="text-button"
-                >
-                  <IoTextOutline className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASSES}
-                  data-testid="pecha-button"
-                >
-                  <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />
-                </button>
+              <div
+                className={`flex border border-gray-300 dark:border-input rounded-sm overflow-hidden`}
+              >
+                {contentTypes.map(({ key, icon, testid }) => (
+                  <Pecha.Button
+                    key={key}
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleAddSubTask(key as any)}
+                    data-testid={testid}
+                  >
+                    {icon}
+                  </Pecha.Button>
+                ))}
               </div>
             )}
           </div>
@@ -352,7 +326,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               {subTasks.map((subTask) => (
                 <div
                   key={subTask.id}
-                  className={`${COMMON_BORDER_CLASSES} p-4 space-y-4`}
+                  className={`border border-gray-300 ${subTask.contentType === "image" ? "w-fit" : ""} dark:border-input rounded-sm p-4 space-y-4`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -369,21 +343,21 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                         <MdOutlineImage className="w-4 h-4 text-gray-600" />
                       )}
                     </div>
-                    <button
+                    <Pecha.Button
+                      variant="outline"
                       type="button"
                       onClick={() => removeSubTask(subTask.id)}
-                      className="text-[#A51C21] hover:text-[#8B1419] cursor-pointer"
                     >
                       <IoMdClose className="w-4 h-4" />
-                    </button>
+                    </Pecha.Button>
                   </div>
 
                   {subTask.contentType === "video" && (
                     <>
-                      <Input
+                      <Pecha.Input
                         type="url"
                         placeholder="Enter YouTube URL"
-                        className={COMMON_INPUT_CLASSES}
+                        className="h-12 text-base"
                         value={subTask.videoUrl}
                         onChange={(e) =>
                           updateSubTask(subTask.id, "videoUrl", e.target.value)
@@ -405,7 +379,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                   )}
 
                   {subTask.contentType === "text" && (
-                    <Textarea
+                    <Pecha.Textarea
                       placeholder="Enter your text content"
                       className="w-full h-24 resize-none text-base"
                       value={subTask.textContent}
@@ -417,10 +391,10 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
 
                   {subTask.contentType === "music" && (
                     <>
-                      <Input
+                      <Pecha.Input
                         type="url"
                         placeholder="Enter Spotify or SoundCloud URL"
-                        className={COMMON_INPUT_CLASSES}
+                        className="h-12 text-base"
                         value={subTask.musicUrl}
                         onChange={(e) =>
                           updateSubTask(subTask.id, "musicUrl", e.target.value)
@@ -478,23 +452,24 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                         </div>
                       )}
                       {subTask.imagePreview && subTask.imageFile && (
-                        <div className="mt-4 flex justify-center">
-                          <div className="relative w-fit">
+                        <div className="mt-4 flex w-full justify-center">
+                          <div className="relative">
                             <img
                               src={subTask.imagePreview}
                               alt="Final uploaded image"
                               className="w-full h-48 object-cover rounded-lg border"
                             />
-                            <button
+                            <Pecha.Button
+                              variant="default"
+                              className="absolute top-2 right-2"
                               type="button"
                               onClick={() =>
                                 handleRemoveSubTaskImage(subTask.id)
                               }
-                              className="absolute top-2 right-2 bg-gray-600 text-white rounded-full p-1 cursor-pointer transition-colors"
                               data-testid="remove-image-button"
                             >
-                              <IoMdClose className="w-4 h-4" />
-                            </button>
+                              <FaMinus className="w-4 h-4" />
+                            </Pecha.Button>
                           </div>
                         </div>
                       )}
@@ -505,17 +480,18 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             </div>
           )}
           <div className="pt-6">
-            <button
+            <Pecha.Button
+              variant="destructive"
+              className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
-              className="bg-[#A51C21] text-white px-8 py-3 rounded-md font-medium hover:bg-[#8B1419] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="submit-button"
               disabled={!isFormValid || createTaskMutation.isPending}
             >
               {createTaskMutation.isPending ? "Creating..." : "Submit"}
-            </button>
+            </Pecha.Button>
           </div>
         </form>
-      </Form>
+      </Pecha.Form>
     </div>
   );
 };
