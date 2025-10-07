@@ -79,7 +79,10 @@ export function DashBoardTable({
     if (error) {
       return (
         <Pecha.TableRow>
-          <Pecha.TableCell colSpan={6} className="text-center py-10 text-red-500">
+          <Pecha.TableCell
+            colSpan={6}
+            className="text-center py-10 text-red-500"
+          >
             {error.message}
           </Pecha.TableCell>
         </Pecha.TableRow>
@@ -171,7 +174,9 @@ export function DashBoardTable({
             <Pecha.TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.plan_used")}
             </Pecha.TableHead>
-            <Pecha.TableHead className="w-[150px] font-bold">Status</Pecha.TableHead>
+            <Pecha.TableHead className="w-[150px] font-bold">
+              Status
+            </Pecha.TableHead>
             <Pecha.TableHead className="w-[150px] font-bold">
               {t("studio.dashboard.actions")}
             </Pecha.TableHead>

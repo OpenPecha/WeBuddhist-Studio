@@ -28,10 +28,10 @@ export function DropdownButton({ planId }: { planId: string }) {
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
           <Pecha.DropdownMenuGroup>
             <Link to={`/plan/${planId}`}>
-            <Pecha.DropdownMenuItem>
-              <FaPen className="h-4 w-4" />
-              Edit Plan
-            </Pecha.DropdownMenuItem>
+              <Pecha.DropdownMenuItem>
+                <FaPen className="h-4 w-4" />
+                Edit Plan
+              </Pecha.DropdownMenuItem>
             </Link>
           </Pecha.DropdownMenuGroup>
           <Pecha.DropdownMenuSeparator />

@@ -15,6 +15,7 @@ import { BACKEND_BASE_URL } from "@/lib/constant";
 import { toast } from "sonner";
 import { extractSpotifyId, getYouTubeVideoId } from "@/lib/utils";
 import { taskSchema } from "@/schema/TaskSchema";
+import { FaMinus } from "react-icons/fa6";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -30,7 +31,6 @@ interface SubTask {
   imageKey: string | null;
   isUploading: boolean;
 }
-
 interface CreateTaskPayload {
   title: string;
   description: string;
@@ -39,6 +39,34 @@ interface CreateTaskPayload {
   estimated_time: number;
 }
 type TaskFormData = z.infer<typeof taskSchema>;
+
+const contentTypes = [
+  {
+    key: "image",
+    icon: <MdOutlineImage className="w-4 h-4 text-gray-400" />,
+    testid: "image-button",
+  },
+  {
+    key: "music",
+    icon: <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />,
+    testid: "music-button",
+  },
+  {
+    key: "video",
+    icon: <IoMdVideocam className="w-4 h-4 text-gray-400" />,
+    testid: "video-button",
+  },
+  {
+    key: "text",
+    icon: <IoTextOutline className="w-4 h-4 text-gray-400" />,
+    testid: "text-button",
+  },
+  {
+    key: "pecha",
+    icon: <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />,
+    testid: "pecha-button",
+  },
+];
 
 const createTask = async (
   plan_id: string,
@@ -266,52 +294,30 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             )}
           />
           <div className="flex gap-4">
-            <button
+            <Pecha.Button
               type="button"
-              className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer border border-gray-300 dark:border-input rounded-sm`}
+              variant="outline"
               onClick={() => setShowContentTypes(!showContentTypes)}
               data-testid="add-content-button"
             >
               <IoMdAdd className="w-4 h-4 text-gray-400" />
-            </button>
+            </Pecha.Button>
 
             {showContentTypes && (
-              <div className={`flex border border-gray-300 dark:border-input rounded-sm overflow-hidden`}>
-                <button
-                  type="button"
-                  onClick={() => handleAddSubTask("image")}
-                  data-testid="image-button"
-                >
-                  <MdOutlineImage className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAddSubTask("music")}
-                  data-testid="music-button"
-                >
-                  <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAddSubTask("video")}
-                  data-testid="video-button"
-                >
-                  <IoMdVideocam className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAddSubTask("text")}
-                  data-testid="text-button"
-                >
-                  <IoTextOutline className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer border border-gray-300 dark:border-input rounded-sm`}
-                  data-testid="pecha-button"
-                >
-                  <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />
-                </button>
+              <div
+                className={`flex border border-gray-300 dark:border-input rounded-sm overflow-hidden`}
+              >
+                {contentTypes.map(({ key, icon, testid }) => (
+                  <Pecha.Button
+                    key={key}
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleAddSubTask(key as any)}
+                    data-testid={testid}
+                  >
+                    {icon}
+                  </Pecha.Button>
+                ))}
               </div>
             )}
           </div>
@@ -320,7 +326,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               {subTasks.map((subTask) => (
                 <div
                   key={subTask.id}
-                  className={`border border-gray-300 dark:border-input rounded-sm p-4 space-y-4`}
+                  className={`border border-gray-300 ${subTask.contentType === "image" ? "w-fit" : ""} dark:border-input rounded-sm p-4 space-y-4`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -337,13 +343,13 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                         <MdOutlineImage className="w-4 h-4 text-gray-600" />
                       )}
                     </div>
-                    <button
+                    <Pecha.Button
+                      variant="outline"
                       type="button"
                       onClick={() => removeSubTask(subTask.id)}
-                      className="text-[#A51C21] hover:text-[#8B1419] cursor-pointer"
                     >
                       <IoMdClose className="w-4 h-4" />
-                    </button>
+                    </Pecha.Button>
                   </div>
 
                   {subTask.contentType === "video" && (
@@ -446,23 +452,24 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                         </div>
                       )}
                       {subTask.imagePreview && subTask.imageFile && (
-                        <div className="mt-4 flex justify-center">
-                          <div className="relative w-fit">
+                        <div className="mt-4 flex w-full justify-center">
+                          <div className="relative">
                             <img
                               src={subTask.imagePreview}
                               alt="Final uploaded image"
                               className="w-full h-48 object-cover rounded-lg border"
                             />
-                            <button
+                            <Pecha.Button
+                              variant="default"
+                              className="absolute top-2 right-2"
                               type="button"
                               onClick={() =>
                                 handleRemoveSubTaskImage(subTask.id)
                               }
-                              className="absolute top-2 right-2 bg-gray-600 text-white rounded-full p-1 cursor-pointer transition-colors"
                               data-testid="remove-image-button"
                             >
-                              <IoMdClose className="w-4 h-4" />
-                            </button>
+                              <FaMinus className="w-4 h-4" />
+                            </Pecha.Button>
                           </div>
                         </div>
                       )}
@@ -473,14 +480,15 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             </div>
           )}
           <div className="pt-6">
-            <button
+            <Pecha.Button
+              variant="destructive"
+              className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
-              className="bg-[#A51C21] text-white px-8 py-3 rounded-md font-medium hover:bg-[#8B1419] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="submit-button"
               disabled={!isFormValid || createTaskMutation.isPending}
             >
               {createTaskMutation.isPending ? "Creating..." : "Submit"}
-            </button>
+            </Pecha.Button>
           </div>
         </form>
       </Pecha.Form>

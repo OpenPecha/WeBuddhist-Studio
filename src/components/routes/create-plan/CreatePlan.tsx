@@ -29,17 +29,18 @@ export const UploadImageToS3 = async (file: File, plan_id: string) => {
   );
   return data;
 };
-export const getPlan= async(plan_id:string)=>{
-  const accessToken=sessionStorage.getItem("accessToken");
-  const {data}=await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
+export const getPlan = async (plan_id: string) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.get(
+    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
     {
-      headers:{
+      headers: {
         Authorization: `Bearer ${accessToken}`,
-      }
-    }
-  )
+      },
+    },
+  );
   return data;
-}
+};
 export const callplan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
@@ -94,7 +95,9 @@ const Createplan = () => {
         tags: planData.tags || [],
         language: planData.language || "",
       });
-      setImagePreview(planData.image_url ? `${BACKEND_BASE_URL}/${planData.image_url}` : null);
+      setImagePreview(
+        planData.image_url ? `${BACKEND_BASE_URL}/${planData.image_url}` : null,
+      );
     }
   }, [plan_id, planData, form]);
 
@@ -316,7 +319,10 @@ const Createplan = () => {
                   </p>
                 </div>
                 <div className="flex justify-end gap-3">
-                  <Pecha.Button variant="outline" onClick={handleCancelNavigation}>
+                  <Pecha.Button
+                    variant="outline"
+                    onClick={handleCancelNavigation}
+                  >
                     {t("common.button.cancel")}
                   </Pecha.Button>
                   <Pecha.Button
