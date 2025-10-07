@@ -27,7 +27,7 @@ import { useTranslate } from "@tolgee/react";
 import TagInput from "@/components/ui/molecules/tag-input/TagInput";
 import { DIFFICULTY, BACKEND_BASE_URL } from "@/lib/constant";
 import axiosInstance from "@/config/axios-config";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -51,7 +51,17 @@ export const UploadImageToS3 = async (file: File, plan_id: string) => {
   );
   return data;
 };
-
+export const getPlan= async(plan_id:string)=>{
+  const accessToken=sessionStorage.getItem("accessToken");
+  const {data}=await axiosInstance.get(`${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
+    {
+      headers:{
+        Authorization: `Bearer ${accessToken}`,
+      }
+    }
+  )
+  return data;
+}
 export const callplan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
@@ -87,6 +97,28 @@ const Createplan = () => {
       language: "",
     },
   });
+
+  const { data: planData } = useQuery({
+    queryKey: ["plan", plan_id],
+    queryFn: () => getPlan(plan_id!),
+    enabled: !!plan_id && plan_id !== "new",
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (plan_id !== "new" && planData) {
+      form.reset({
+        title: planData.title || "",
+        description: planData.description || "",
+        total_days: planData.total_days?.toString() || "",
+        difficulty_level: planData.difficulty_level || "",
+        image_url: planData.image_url || "",
+        tags: planData.tags || [],
+        language: planData.language || "",
+      });
+      setImagePreview(planData.image_url ? `${BACKEND_BASE_URL}/${planData.image_url}` : null);
+    }
+  }, [plan_id, planData, form]);
 
   const hasUnsavedChanges =
     form.formState.isDirty && !form.formState.isSubmitSuccessful;
