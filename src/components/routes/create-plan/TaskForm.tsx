@@ -13,12 +13,24 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { toast } from "sonner";
+import { extractSpotifyId, getYouTubeVideoId } from "@/lib/utils";
 import { taskSchema } from "@/schema/TaskSchema";
-import { getYouTubeVideoId } from "@/lib/utils";
 
 interface TaskFormProps {
   selectedDay: number;
 }
+interface SubTask {
+  id: string;
+  contentType: "image" | "video" | "music" | "text";
+  videoUrl: string;
+  textContent: string;
+  musicUrl: string;
+  imageFile: File | null;
+  imagePreview: string | null;
+  imageKey: string | null;
+  isUploading: boolean;
+}
+
 interface CreateTaskPayload {
   title: string;
   description: string;
@@ -64,39 +76,18 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
 const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
-  
-  const getButtonClass = (contentType: string) => {
-    return `px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer ${
-      activeContentType === contentType ? "bg-accent" : ""
-    }`;
-  };
-
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     mode: "onTouched",
     defaultValues: {
       title: "",
-      videoUrl: "",
-      textContent: "",
-      musicUrl: "",
     },
   });
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [subTasks, setSubTasks] = useState<SubTask[]>([]);
   const [showContentTypes, setShowContentTypes] = useState(false);
-  const [activeContentType, setActiveContentType] = useState<string | null>(
-    null,
-  );
   const formValues = form.watch();
-  const youTubeVideoId = getYouTubeVideoId(formValues.videoUrl || "");
-  const hasValidYouTubeId = youTubeVideoId.length > 0;
   const isFormValid = formValues.title.trim().length > 0;
-  const extractSpotifyId = (url: string) => {
-    const match = url.match(/spotify\.com\/(track|album)\/([a-zA-Z0-9]+)/);
-    return match ? { type: match[1], id: match[2] } : null;
-  };
-  const [imageKey, setImageKey] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+
   const getDayKey = (key: string) => `day_${selectedDay}_${key}`;
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
@@ -126,69 +117,81 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   });
 
   useEffect(() => {
-    const savedContentType = localStorage.getItem(
-      getDayKey("activeContentType"),
-    );
     const savedTitle = localStorage.getItem(getDayKey("title")) || "";
-
     form.setValue("title", savedTitle);
-
-    if (savedContentType) {
-      setActiveContentType(savedContentType);
-      setShowContentTypes(true);
-    }
   }, [selectedDay, form]);
 
-  const handleRemoveImage = () => {
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
-    setSelectedImage(null);
-    setImagePreview(null);
-    setImageKey(null);
+  const handleAddSubTask = (
+    contentType: "image" | "video" | "music" | "text",
+  ) => {
+    const newSubTask: SubTask = {
+      id: Date.now().toString(), //for now we are using date as id, TODO: to update when backend is ready
+      contentType,
+      videoUrl: "",
+      textContent: "",
+      musicUrl: "",
+      imageFile: null,
+      imagePreview: null,
+      imageKey: null,
+      isUploading: false,
+    };
+    setSubTasks([...subTasks, newSubTask]);
   };
 
-  const handleContentTypeToggle = (contentType: string) => {
-    if (activeContentType === contentType) {
-      setActiveContentType(null);
-      localStorage.removeItem(getDayKey("activeContentType"));
-    } else {
-      setActiveContentType(contentType);
-      localStorage.setItem(getDayKey("activeContentType"), contentType);
-    }
-    setShowContentTypes(true);
+  const updateSubTask = (id: string, field: keyof SubTask, value: any) => {
+    setSubTasks((prev) =>
+      prev.map((task) => (task.id === id ? { ...task, [field]: value } : task)),
+    );
   };
 
-  const handleImageUpload = async (file: File) => {
-    setIsUploading(true);
+  const removeSubTask = (id: string) => {
+    const subTask = subTasks.find((t) => t.id === id);
+    if (subTask?.imagePreview) {
+      URL.revokeObjectURL(subTask.imagePreview);
+    }
+    setSubTasks((prev) => prev.filter((task) => task.id !== id));
+  };
+
+  const handleSubTaskImageUpload = async (id: string, file: File) => {
+    updateSubTask(id, "isUploading", true);
     try {
       const { url, key } = await uploadImageToS3(file, plan_id || "");
-      setImagePreview(url);
-      setSelectedImage(file);
-      setImageKey(key);
-
+      updateSubTask(id, "imagePreview", url);
+      updateSubTask(id, "imageFile", file);
+      updateSubTask(id, "imageKey", key);
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image");
     } finally {
-      setIsUploading(false);
+      updateSubTask(id, "isUploading", false);
     }
   };
 
-  const clearFormData = () => {
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
+  const handleRemoveSubTaskImage = (id: string) => {
+    const subTask = subTasks.find((t) => t.id === id);
+    if (subTask?.imagePreview) {
+      URL.revokeObjectURL(subTask.imagePreview);
     }
-    localStorage.removeItem(getDayKey("activeContentType"));
-    localStorage.removeItem(getDayKey("title"));
+    updateSubTask(id, "imagePreview", null);
+    updateSubTask(id, "imageFile", null);
+    updateSubTask(id, "imageKey", null);
+  };
 
-    setActiveContentType(null);
-    setSelectedImage(null);
-    setImagePreview(null);
-    setImageKey(null);
-    setIsUploading(false);
+  const clearFormData = () => {
+    subTasks.forEach((subTask) => {
+      if (subTask.imagePreview) {
+        URL.revokeObjectURL(subTask.imagePreview);
+      }
+    });
+    localStorage.removeItem(getDayKey("title"));
+    setSubTasks([]);
     setShowContentTypes(false);
     form.reset();
+  };
+
+  const getSubTaskToSubmit = () => {
+    if (subTasks.length === 0) return null;
+    return subTasks[subTasks.length - 1];
   };
 
   const onSubmit = (data: TaskFormData) => {
@@ -201,25 +204,29 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
       | "IMAGE"
       | "SOURCE_REFERENCE" = "TEXT";
 
-    switch (activeContentType) {
-      case "video":
-        content_type = "VIDEO";
-        content = data.videoUrl || "";
-        break;
-      case "music":
-        content_type = "AUDIO";
-        content = data.musicUrl || "";
-        break;
-      case "image":
-        content_type = "IMAGE";
-        content = imageKey || "";
-        break;
-      case "text":
-      default:
-        content_type = "TEXT";
-        content = data.textContent || "";
+    const subTaskToSubmit = getSubTaskToSubmit();
+    if (subTaskToSubmit) {
+      switch (subTaskToSubmit.contentType) {
+        case "video":
+          content_type = "VIDEO";
+          content = subTaskToSubmit.videoUrl || "";
+          break;
+        case "music":
+          content_type = "AUDIO";
+          content = subTaskToSubmit.musicUrl || "";
+          break;
+        case "image":
+          content_type = "IMAGE";
+          content = subTaskToSubmit.imageKey || "";
+          break;
+        case "text":
+          content_type = "TEXT";
+          content = subTaskToSubmit.textContent || "";
+          break;
+      }
     }
-    description = data.textContent || data.title;
+
+    description = subTaskToSubmit?.textContent || data.title;
 
     const taskData = {
       title: data.title,
@@ -272,39 +279,35 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               <div className={`flex border border-gray-300 dark:border-input rounded-sm overflow-hidden`}>
                 <button
                   type="button"
-                  className={getButtonClass("image")}
-                  onClick={() => handleContentTypeToggle("image")}
+                  onClick={() => handleAddSubTask("image")}
                   data-testid="image-button"
                 >
                   <MdOutlineImage className="w-4 h-4 text-gray-400" />
                 </button>
                 <button
                   type="button"
-                  className={getButtonClass("music")}
-                  onClick={() => handleContentTypeToggle("music")}
+                  onClick={() => handleAddSubTask("music")}
                   data-testid="music-button"
                 >
                   <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />
                 </button>
                 <button
                   type="button"
-                  className={getButtonClass("video")}
-                  onClick={() => handleContentTypeToggle("video")}
+                  onClick={() => handleAddSubTask("video")}
                   data-testid="video-button"
                 >
                   <IoMdVideocam className="w-4 h-4 text-gray-400" />
                 </button>
                 <button
                   type="button"
-                  className={getButtonClass("text")}
-                  onClick={() => handleContentTypeToggle("text")}
+                  onClick={() => handleAddSubTask("text")}
                   data-testid="text-button"
                 >
                   <IoTextOutline className="w-4 h-4 text-gray-400" />
                 </button>
                 <button
                   type="button"
-                  className={getButtonClass("pecha")}
+                  className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-accent/50 cursor-pointer border border-gray-300 dark:border-input rounded-sm`}
                   data-testid="pecha-button"
                 >
                   <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />
@@ -312,162 +315,161 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               </div>
             )}
           </div>
-          {activeContentType && (
-            <div className={`$border border-gray-300 dark:border-input rounded-sm p-4`}>
-              <div className="flex items-center gap-2 mb-3 justify-end">
-                {activeContentType === "video" && (
-                  <IoMdVideocam className="w-4 h-4 text-gray-600" />
-                )}
-                {activeContentType === "text" && (
-                  <IoTextOutline className="w-4 h-4 text-gray-600" />
-                )}
-                {activeContentType === "music" && (
-                  <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />
-                )}
-                {activeContentType === "image" && (
-                  <MdOutlineImage className="w-4 h-4 text-gray-600" />
-                )}
-              </div>
-              {activeContentType === "video" && (
-                <>
-                  <Pecha.FormField
-                    control={form.control}
-                    name="videoUrl"
-                    render={({ field }) => (
-                      <Pecha.FormItem>
-                        <Pecha.FormControl>
-                          <Pecha.Input
-                            type="url"
-                            placeholder="Enter YouTube URL"
-                            className="h-12 text-base"
-                            {...field}
-                          />
-                        </Pecha.FormControl>
-                        <Pecha.FormMessage />
-                      </Pecha.FormItem>
-                    )}
-                  />
-                  {hasValidYouTubeId && (
-                    <div className="mt-4">
-                      <iframe
-                        className="w-full aspect-video rounded-md border"
-                        src={`https://www.youtube.com/embed/${youTubeVideoId}`}
-                        title="YouTube preview"
-                      />
+          {subTasks.length > 0 && (
+            <div className="space-y-4">
+              {subTasks.map((subTask) => (
+                <div
+                  key={subTask.id}
+                  className={`border border-gray-300 dark:border-input rounded-sm p-4 space-y-4`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {subTask.contentType === "video" && (
+                        <IoMdVideocam className="w-4 h-4 text-gray-600" />
+                      )}
+                      {subTask.contentType === "text" && (
+                        <IoTextOutline className="w-4 h-4 text-gray-600" />
+                      )}
+                      {subTask.contentType === "music" && (
+                        <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />
+                      )}
+                      {subTask.contentType === "image" && (
+                        <MdOutlineImage className="w-4 h-4 text-gray-600" />
+                      )}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => removeSubTask(subTask.id)}
+                      className="text-[#A51C21] hover:text-[#8B1419] cursor-pointer"
+                    >
+                      <IoMdClose className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {subTask.contentType === "video" && (
+                    <>
+                      <Pecha.Input
+                        type="url"
+                        placeholder="Enter YouTube URL"
+                        className="h-12 text-base"
+                        value={subTask.videoUrl}
+                        onChange={(e) =>
+                          updateSubTask(subTask.id, "videoUrl", e.target.value)
+                        }
+                      />
+                      {(() => {
+                        const videoId = getYouTubeVideoId(subTask.videoUrl);
+                        return videoId.length > 0 ? (
+                          <div className="mt-4">
+                            <iframe
+                              className="w-full aspect-video rounded-md border"
+                              src={`https://www.youtube.com/embed/${videoId}`}
+                              title="YouTube preview"
+                            />
+                          </div>
+                        ) : null;
+                      })()}
+                    </>
                   )}
-                </>
-              )}
 
-              {activeContentType === "text" && (
-                <>
-                  <Pecha.FormField
-                    control={form.control}
-                    name="textContent"
-                    render={({ field }) => (
-                      <Pecha.FormItem>
-                        <Pecha.FormControl>
-                          <Pecha.Textarea
-                            placeholder="Enter your text content"
-                            className="w-full h-24 resize-none text-base"
-                            {...field}
-                          />
-                        </Pecha.FormControl>
-                        <Pecha.FormMessage />
-                      </Pecha.FormItem>
-                    )}
-                  />
-                </>
-              )}
+                  {subTask.contentType === "text" && (
+                    <Pecha.Textarea
+                      placeholder="Enter your text content"
+                      className="w-full h-24 resize-none text-base"
+                      value={subTask.textContent}
+                      onChange={(e) =>
+                        updateSubTask(subTask.id, "textContent", e.target.value)
+                      }
+                    />
+                  )}
 
-              {activeContentType === "music" && (
-                <>
-                  <Pecha.FormField
-                    control={form.control}
-                    name="musicUrl"
-                    render={({ field }) => (
-                      <Pecha.FormItem>
-                        <Pecha.FormControl>
-                          <Pecha.Input
-                            type="url"
-                            placeholder="Enter Spotify or SoundCloud URL"
-                            className="h-12 text-base"
-                            {...field}
-                          />
-                        </Pecha.FormControl>
-                        <Pecha.FormMessage />
-                      </Pecha.FormItem>
-                    )}
-                  />
-                  {formValues.musicUrl && (
-                    <div className="mt-4">
-                      {formValues.musicUrl?.includes("spotify.com") &&
-                        (() => {
-                          const spotifyData = extractSpotifyId(
-                            formValues.musicUrl || "",
-                          );
-                          return spotifyData ? (
+                  {subTask.contentType === "music" && (
+                    <>
+                      <Pecha.Input
+                        type="url"
+                        placeholder="Enter Spotify or SoundCloud URL"
+                        className="h-12 text-base"
+                        value={subTask.musicUrl}
+                        onChange={(e) =>
+                          updateSubTask(subTask.id, "musicUrl", e.target.value)
+                        }
+                      />
+                      {subTask.musicUrl && (
+                        <div className="mt-4">
+                          {subTask.musicUrl.includes("spotify.com") &&
+                            (() => {
+                              const spotifyData = extractSpotifyId(
+                                subTask.musicUrl,
+                              );
+                              return spotifyData ? (
+                                <div className="w-full rounded-md overflow-hidden">
+                                  <iframe
+                                    src={`https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}?utm_source=generator`}
+                                    allowFullScreen
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                    loading="lazy"
+                                    className="w-full h-40 border-0"
+                                  />
+                                </div>
+                              ) : null;
+                            })()}
+
+                          {subTask.musicUrl.includes("soundcloud.com") && (
                             <div className="w-full rounded-md overflow-hidden">
                               <iframe
-                                src={`https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}?utm_source=generator`}
-                                allowFullScreen
-                                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                loading="lazy"
+                                allow="autoplay"
+                                src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(subTask.musicUrl)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`}
                                 className="w-full h-40 border-0"
                               />
                             </div>
-                          ) : null;
-                        })()}
-
-                      {formValues.musicUrl?.includes("soundcloud.com") && (
-                        <div className="w-full rounded-md overflow-hidden">
-                          <iframe
-                            allow="autoplay"
-                            src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(formValues.musicUrl || "")}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`}
-                            className="w-full h-40 border-0"
-                          />
+                          )}
                         </div>
                       )}
-                    </div>
+                    </>
                   )}
-                </>
-              )}
-              {activeContentType === "image" && (
-                <>
-                  {!imagePreview && !isUploading && (
-                    <InlineImageUpload
-                      onUpload={handleImageUpload}
-                      uploadedImage={selectedImage}
-                    />
-                  )}
-                  {isUploading && (
-                    <div className="flex items-center justify-center h-32 border border-dashed border-gray-300 rounded-lg">
-                      <span className="text-gray-600">Uploading image...</span>
-                    </div>
-                  )}
-                  {imagePreview && selectedImage && (
-                    <div className="mt-4 flex justify-center">
-                      <div>
-                        <div className="relative w-fit">
-                          <img
-                            src={imagePreview}
-                            alt="Final uploaded image"
-                            className="w-full h-48 object-cover rounded-lg border"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleRemoveImage}
-                            className="absolute top-2 right-2 bg-gray-600 text-white rounded-full p-1 cursor-pointer transition-colors"
-                            data-testid="remove-image-button"
-                          >
-                            <IoMdClose className="w-4 h-4" />
-                          </button>
+
+                  {subTask.contentType === "image" && (
+                    <>
+                      {!subTask.imagePreview && !subTask.isUploading && (
+                        <InlineImageUpload
+                          onUpload={(file) =>
+                            handleSubTaskImageUpload(subTask.id, file)
+                          }
+                          uploadedImage={subTask.imageFile}
+                        />
+                      )}
+                      {subTask.isUploading && (
+                        <div className="flex items-center justify-center h-32 border border-dashed border-gray-300 rounded-lg">
+                          <span className="text-gray-600">
+                            Uploading image...
+                          </span>
                         </div>
-                      </div>
-                    </div>
+                      )}
+                      {subTask.imagePreview && subTask.imageFile && (
+                        <div className="mt-4 flex justify-center">
+                          <div className="relative w-fit">
+                            <img
+                              src={subTask.imagePreview}
+                              alt="Final uploaded image"
+                              className="w-full h-48 object-cover rounded-lg border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleRemoveSubTaskImage(subTask.id)
+                              }
+                              className="absolute top-2 right-2 bg-gray-600 text-white rounded-full p-1 cursor-pointer transition-colors"
+                              data-testid="remove-image-button"
+                            >
+                              <IoMdClose className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
-                </>
-              )}
+                </div>
+              ))}
             </div>
           )}
           <div className="pt-6">
