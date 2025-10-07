@@ -79,7 +79,10 @@ export function DropdownButton() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeletePlan}>
+                  <AlertDialogAction
+                    className=" bg-[#AD1B21] hover:bg-[#AD1B21]/90"
+                    onClick={handleDeletePlan}
+                  >
                     Delete Plan
                   </AlertDialogAction>
                 </AlertDialogFooter>

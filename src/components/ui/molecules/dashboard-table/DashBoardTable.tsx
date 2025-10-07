@@ -47,13 +47,13 @@ export function DashBoardTable({
   const getStatusBadge = (status: string) => {
     if (status === "Published") {
       return (
-        <Badge className="bg-green-100 rounded-md dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
+        <Badge className="bg-green-100  dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
           Published
         </Badge>
       );
     } else {
       return (
-        <Badge className="px-3 py-1.5 text-sm font-bold rounded-md dark:bg-blue-900 bg-[#E1F0FF] text-[#008DFF] dark:text-cyan-500">
+        <Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-blue-900 bg-[#E1F0FF] text-[#008DFF] dark:text-cyan-500">
           In Draft
         </Badge>
       );
@@ -127,7 +127,7 @@ export function DashBoardTable({
               e.currentTarget.src = defaultCover;
             }}
             alt="cover"
-            className="w-32 h-20 object-cover rounded-md"
+            className="w-32 h-20 object-cover"
           />
         </TableCell>
         <TableCell
