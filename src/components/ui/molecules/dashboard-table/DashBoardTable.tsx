@@ -106,7 +106,7 @@ export function DashBoardTable({
                 {t("studio.dashboard.no_plan_found")}
               </p>
               <Button
-                onClick={() => navigate("/create-plan/new")}
+                onClick={() => navigate("/plan/new")}
                 variant="outline"
                 className="mt-2"
               >
@@ -132,7 +132,7 @@ export function DashBoardTable({
         </TableCell>
         <TableCell
           className="cursor-pointer"
-          onClick={() => navigate(`/create-plan/${plan.id}/plan-details`)}
+          onClick={() => navigate(`/plan/${plan.id}/plan-details`)}
         >
           <div className="font-semibold text-base">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
@@ -144,7 +144,7 @@ export function DashBoardTable({
         <TableCell>{getStatusBadge(plan.status)}</TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            <DropdownButton />
+            <DropdownButton planId={plan.id} />
           </div>
         </TableCell>
       </TableRow>

@@ -24,8 +24,9 @@ import { FaPen } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
-export function DropdownButton() {
+export function DropdownButton({ planId }: { planId: string }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const handleDeletePlan = () => {
     //api call
@@ -46,10 +47,12 @@ export function DropdownButton() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="[--radius:1rem]">
           <DropdownMenuGroup>
+            <Link to={`/plan/${planId}`}>
             <DropdownMenuItem>
               <FaPen className="h-4 w-4" />
               Edit Plan
             </DropdownMenuItem>
+            </Link>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

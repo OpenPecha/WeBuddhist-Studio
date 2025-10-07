@@ -104,7 +104,7 @@ const Createplan = () => {
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
-      navigate(`/create-plan/${data.id}/plan-details`);
+      navigate(`/plan/${data.id}/plan-details`);
     },
     onError: (error) => {
       toast.error("Failed to create plan", {

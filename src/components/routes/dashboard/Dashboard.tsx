@@ -95,7 +95,7 @@ const Dashboard = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Link to="/create-plan/new">
+        <Link to="/plan/new">
           <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
             <IoMdAdd /> Add Plan
           </Button>
