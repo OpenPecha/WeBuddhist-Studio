@@ -60,7 +60,7 @@ export const updatePlan = async ({
   );
   return data;
 };
-export const callplan = async (formdata: z.infer<typeof planSchema>) => {
+export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
     `${BACKEND_BASE_URL}/api/v1/cms/plans`,
@@ -125,7 +125,7 @@ const Createplan = () => {
       hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
   );
   const createPlanMutation = useMutation({
-    mutationFn: callplan,
+    mutationFn: postPlan,
     onSuccess: (data) => {
       toast.success("Plan created successfully!", {
         description: "Your plan has been created and is now available.",
