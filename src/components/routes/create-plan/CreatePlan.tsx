@@ -390,17 +390,32 @@ const Createplan = () => {
               )}
             />
             <div className="pt-8 w-full flex justify-end">
-              <Pecha.Button
-                type="submit"
-                variant="default"
-                className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
-                onClick={form.handleSubmit(onSubmit)}
-                disabled={createPlanMutation.isPending}
-              >
-                {createPlanMutation.isPending
-                  ? "Creating..."
-                  : t("studio.plan.next_button")}
-              </Pecha.Button>
+              {plan_id !== "new" ? (
+                <Pecha.Button
+                  type="submit"
+                  variant="default"
+                  className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                  onClick={() => {
+                    console.log("update");
+                  }}
+                >
+                  {createPlanMutation.isPending
+                    ? "Updating..."
+                    : t("studio.plan.update_button")}
+                </Pecha.Button>
+              ) : (
+                <Pecha.Button
+                  type="submit"
+                  variant="default"
+                  className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                  onClick={form.handleSubmit(onSubmit)}
+                  disabled={createPlanMutation.isPending}
+                >
+                  {createPlanMutation.isPending
+                    ? "Creating..."
+                    : t("studio.plan.next_button")}
+                </Pecha.Button>
+              )}
             </div>
           </div>
         </Pecha.Form>
