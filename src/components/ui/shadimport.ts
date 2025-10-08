@@ -60,6 +60,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/atoms/table";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/atoms/sheet";
+
 export const Pecha = {
   Form,
   FormControl,
@@ -87,6 +95,10 @@ export const Pecha = {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,

@@ -1,13 +1,6 @@
 import { IoLanguage } from "react-icons/io5";
 import { useTolgee } from "@tolgee/react";
-
-import { Button } from "../../atoms/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../atoms/dropdown-menu";
+import { Pecha } from "@/components/ui/shadimport";
 import { LANGUAGE } from "../../../../lib/constant";
 import { setFontVariables } from "../../../../lib/font-config";
 
@@ -21,26 +14,26 @@ export function LanguageToggle() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
+    <Pecha.DropdownMenu>
+      <Pecha.DropdownMenuTrigger asChild>
+        <Pecha.Button variant="outline" size="icon">
           <IoLanguage className="h-[1.2rem] w-[1.2rem]" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
+        </Pecha.Button>
+      </Pecha.DropdownMenuTrigger>
+      <Pecha.DropdownMenuContent align="end">
+        <Pecha.DropdownMenuItem
           onClick={() => changeLanguage("en")}
           className=" font-inter"
         >
           English
-        </DropdownMenuItem>
-        <DropdownMenuItem
+        </Pecha.DropdownMenuItem>
+        <Pecha.DropdownMenuItem
           onClick={() => changeLanguage("bo-IN")}
           className=" font-monlam"
         >
           བོད་ཡིག
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </Pecha.DropdownMenuItem>
+      </Pecha.DropdownMenuContent>
+    </Pecha.DropdownMenu>
   );
 }

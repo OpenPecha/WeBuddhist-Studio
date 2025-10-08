@@ -5,13 +5,8 @@ import { ModeToggle } from "../mode-toggle/modetoggle";
 import { SITE_NAME } from "@/lib/constant";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import { useTranslate } from "@tolgee/react";
+import { Pecha } from "@/components/ui/shadimport";
 
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose,
-} from "../../atoms/sheet";
 import { IoMdMenu } from "react-icons/io";
 const navItems = [
   {
@@ -49,25 +44,25 @@ const Navbar = () => {
         <AuthButton />
         <ModeToggle />
         <LanguageToggle />
-        <Sheet>
-          <SheetTrigger className="md:hidden p-2">
+        <Pecha.Sheet>
+          <Pecha.SheetTrigger className="md:hidden p-2">
             <IoMdMenu className="h-5 w-5" />
-          </SheetTrigger>
-          <SheetContent side="top" className="h-full">
+          </Pecha.SheetTrigger>
+          <Pecha.SheetContent side="top" className="h-full">
             <div className="space-y-4 pt-8 border h-screen flex items-center justify-center flex-col">
               {navItems.map((item, index) => (
-                <SheetClose asChild key={index}>
+                <Pecha.SheetClose asChild key={index}>
                   <Link
                     to={item.path}
                     className={`block py-3 text-2xl hover:text-zinc-500 dark:hover:text-zinc-400 font-instrument text-center`}
                   >
                     {t(item.label)}
                   </Link>
-                </SheetClose>
+                </Pecha.SheetClose>
               ))}
             </div>
-          </SheetContent>
-        </Sheet>
+          </Pecha.SheetContent>
+        </Pecha.Sheet>
       </div>
     </div>
   );
