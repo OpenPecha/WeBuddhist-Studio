@@ -268,7 +268,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   };
 
   return (
-    <div className="w-full h-full border p-4 space-y-4">
+    <div className="w-full h-full border p-4 space-y-4 overflow-y-auto">
       <h2 className="text-xl font-semibold">Add Task</h2>
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>

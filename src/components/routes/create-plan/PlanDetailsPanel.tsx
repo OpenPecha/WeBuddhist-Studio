@@ -111,7 +111,7 @@ const PlanDetailsPanel = () => {
   );
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-1 overflow-hidden">
       <div className="w-80 bg-[#FAFAFA] dark:bg-[#19191b] border-r border-t rounded-tr-lg border-gray-200 dark:border-border h-full flex flex-col">
         <div className="p-4">
           <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
@@ -210,7 +210,7 @@ const PlanDetailsPanel = () => {
         </div>
       </div>
 
-      <div className="flex-1 bg-white dark:bg-background px-4">
+      <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {showTaskForm ? (
           <TaskForm selectedDay={selectedDay} />
         ) : currentDayData?.tasks?.length === 0 ? (
