@@ -83,7 +83,6 @@ const Createplan = () => {
     enabled: !!plan_id && plan_id !== "new",
     refetchOnWindowFocus: false,
   });
-
   useEffect(() => {
     if (plan_id !== "new" && planData) {
       form.reset({
@@ -95,11 +94,9 @@ const Createplan = () => {
         tags: planData.tags || [],
         language: planData.language || "",
       });
-      setImagePreview(
-        planData.image_url ? `${BACKEND_BASE_URL}/${planData.image_url}` : null,
-      );
+      setImagePreview(planData.image_url ? `${planData.image_url}` : null);
     }
-  }, [plan_id, planData, form]);
+  }, [plan_id, planData]);
 
   const hasUnsavedChanges =
     form.formState.isDirty && !form.formState.isSubmitSuccessful;
@@ -351,7 +348,7 @@ const Createplan = () => {
                   </Pecha.FormLabel>
                   <Pecha.Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <Pecha.FormControl>
                       <Pecha.SelectTrigger
