@@ -3,13 +3,13 @@ import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { FiTrash } from "react-icons/fi";
-import TaskForm from "./TaskForm";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
+import TaskForm from "./components/TaskForm";
 
 interface PlanWithDays {
   id: string;
@@ -67,7 +67,7 @@ const createNewDay = async (plan_id: string) => {
   return data;
 };
 
-const PlanDetailsPanel = () => {
+const PlanDetailsPage = () => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [expandedDay, setExpandedDay] = useState<number>(1);
@@ -221,4 +221,4 @@ const PlanDetailsPanel = () => {
   );
 };
 
-export default PlanDetailsPanel;
+export default PlanDetailsPage;

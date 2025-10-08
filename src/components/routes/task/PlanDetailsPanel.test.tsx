@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import PlanDetailsPanel from "./PlanDetailsPanel";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
+import PlanDetailsPage from "./PlanDetailsPanel";
 
 const mockPlanData = {
   id: "e7c343c4-e17b-4e1e-ab9a-e844180c7b3a",
@@ -123,7 +124,7 @@ describe("PlanDetailsPanel Component", () => {
   });
 
   it("renders plan details panel with current plan title and days", async () => {
-    renderWithProviders(<PlanDetailsPanel />);
+    renderWithProviders(<PlanDetailsPage />);
     expect(screen.getByText("Current Plan")).toBeInTheDocument();
     expect(screen.getByText("Days")).toBeInTheDocument();
     await waitFor(() => {
@@ -136,7 +137,7 @@ describe("PlanDetailsPanel Component", () => {
   });
 
   it("shows tasks when a day is selected and expanded", async () => {
-    renderWithProviders(<PlanDetailsPanel />);
+    renderWithProviders(<PlanDetailsPage />);
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
@@ -156,7 +157,7 @@ describe("PlanDetailsPanel Component", () => {
   it("calls API when Add New Day button is clicked", async () => {
     const { default: axiosInstance } = await import("@/config/axios-config");
     const mockAxios = axiosInstance as any;
-    renderWithProviders(<PlanDetailsPanel />);
+    renderWithProviders(<PlanDetailsPage />);
     await waitFor(() => {
       expect(screen.getByText("Day 4")).toBeInTheDocument();
     });

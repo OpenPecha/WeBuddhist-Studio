@@ -7,7 +7,7 @@ import { IoMdAdd, IoMdVideocam, IoMdClose } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
-import pechaIcon from "../../../assets/icon/pecha_icon.png";
+import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
