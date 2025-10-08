@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { Link } from "react-router-dom";
+import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 
 const fetchPlans = async (
   page: number,
@@ -68,7 +69,6 @@ const Dashboard = () => {
     queryFn: () =>
       fetchPlans(currentPage, 5, debouncedSearch, sortBy, sortOrder),
     refetchOnWindowFocus: false,
-    enabled: true,
     retry: false,
   });
 
@@ -105,52 +105,11 @@ const Dashboard = () => {
 
       {!error && (
         <div>
-          <Pecha.Pagination className="mt-4">
-            <Pecha.PaginationPrevious
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentPage((prev) => Math.max(1, prev - 1));
-              }}
-              className={
-                currentPage === 1
-                  ? "pointer-events-none opacity-50"
-                  : "cursor-pointer"
-              }
-            />
-            <Pecha.PaginationContent className="mx-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (pageNum) => (
-                  <Pecha.PaginationItem key={pageNum}>
-                    <Pecha.PaginationLink
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setCurrentPage(pageNum);
-                      }}
-                      className={
-                        currentPage === pageNum
-                          ? "bg-primary text-white dark:bg-primary/10"
-                          : "cursor-pointer"
-                      }
-                    >
-                      {pageNum}
-                    </Pecha.PaginationLink>
-                  </Pecha.PaginationItem>
-                ),
-              )}
-            </Pecha.PaginationContent>
-            <Pecha.PaginationNext
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentPage((prev) => Math.min(totalPages, prev + 1));
-              }}
-              className={
-                currentPage === totalPages
-                  ? "pointer-events-none opacity-50"
-                  : "cursor-pointer"
-              }
-            />
-          </Pecha.Pagination>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
     </div>
