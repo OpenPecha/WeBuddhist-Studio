@@ -41,6 +41,25 @@ export const getPlan = async (plan_id: string) => {
   );
   return data;
 };
+export const updatePlan = async ({
+  plan_id,
+  formdata,
+}: {
+  plan_id: string;
+  formdata: z.infer<typeof planSchema>;
+}) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.put(
+    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
+    formdata,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  return data;
+};
 export const callplan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
@@ -122,6 +141,19 @@ const Createplan = () => {
       });
     },
   });
+  const updatePlanMutation = useMutation({
+    mutationFn: updatePlan,
+    onSuccess: (_) => {
+      toast.success("Plan updated successfully!", {
+        description: "Your plan has been updated and is now available.",
+      });
+    },
+    onError: (error) => {
+      toast.error("Failed to update plan", {
+        description: error.message,
+      });
+    },
+  });
 
   useEffect(() => {
     if (blocker.state === "blocked") {
@@ -172,7 +204,11 @@ const Createplan = () => {
       ...data,
       language: language,
     };
-    createPlanMutation.mutate(planformdata);
+    if (plan_id !== "new") {
+      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: planformdata });
+    } else {
+      createPlanMutation.mutate(planformdata);
+    }
   };
   return (
     <div className="w-full h-full font-dynamic flex max-sm:flex-col">
@@ -390,32 +426,25 @@ const Createplan = () => {
               )}
             />
             <div className="pt-8 w-full flex justify-end">
-              {plan_id !== "new" ? (
-                <Pecha.Button
-                  type="submit"
-                  variant="default"
-                  className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
-                  onClick={() => {
-                    console.log("update");
-                  }}
-                >
-                  {createPlanMutation.isPending
+              <Pecha.Button
+                type="submit"
+                variant="default"
+                className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={
+                  plan_id === "new"
+                    ? createPlanMutation.isPending
+                    : updatePlanMutation.isPending
+                }
+              >
+                {plan_id !== "new"
+                  ? updatePlanMutation.isPending
                     ? "Updating..."
-                    : t("studio.plan.update_button")}
-                </Pecha.Button>
-              ) : (
-                <Pecha.Button
-                  type="submit"
-                  variant="default"
-                  className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
-                  onClick={form.handleSubmit(onSubmit)}
-                  disabled={createPlanMutation.isPending}
-                >
-                  {createPlanMutation.isPending
+                    : t("studio.plan.update_button")
+                  : createPlanMutation.isPending
                     ? "Creating..."
                     : t("studio.plan.next_button")}
-                </Pecha.Button>
-              )}
+              </Pecha.Button>
             </div>
           </div>
         </Pecha.Form>
