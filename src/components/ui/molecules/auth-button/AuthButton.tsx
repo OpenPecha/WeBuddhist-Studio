@@ -9,7 +9,7 @@ import { useTranslate } from "@tolgee/react";
 import { IoIosLogOut } from "react-icons/io";
 export const fetchUserInfo = async () => {
   const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/users/info`,
+    `${BACKEND_BASE_URL}/api/v1/authors/info`,
   );
   return data;
 };
