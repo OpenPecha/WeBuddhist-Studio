@@ -67,6 +67,18 @@ const createNewDay = async (plan_id: string) => {
   return data;
 };
 
+const deleteTask = async (task_id: string) => {
+  const { data } = await axiosInstance.delete(
+    `${BACKEND_BASE_URL}/api/v1/cms/tasks/${task_id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+      },
+    },
+  );  
+  return data;
+};
+
 const PlanDetailsPage = () => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const [selectedDay, setSelectedDay] = useState<number>(1);
@@ -83,7 +95,15 @@ const PlanDetailsPage = () => {
     enabled: !!plan_id,
     refetchOnWindowFocus: false,
   });
-
+  const deleteTaskMutation = useMutation({
+    mutationFn: (task_id: string) => deleteTask(task_id),
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
+    },
+  });
+  const handleDeleteTask = (task_id: string) => {
+    deleteTaskMutation.mutate(task_id);
+  };
   const createNewDayMutation = useMutation({
     mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
@@ -186,7 +206,7 @@ const PlanDetailsPage = () => {
                         className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
                       >
                         <span>{task.title}</span>
-                        <FiTrash className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                        <FiTrash onClick={() => handleDeleteTask(task.id)} className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                       </div>
                     ))}
                   </div>
