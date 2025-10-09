@@ -5,7 +5,7 @@ import {
   waitFor,
   act,
 } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useBlocker, useParams } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CreatePlan from "./CreatePlan";
 import { vi } from "vitest";
@@ -20,6 +20,7 @@ vi.mock("react-router-dom", async () => {
       proceed: vi.fn(),
       reset: vi.fn(),
     })),
+    useParams: vi.fn(() => ({})),
   };
 });
 
@@ -64,6 +65,7 @@ vi.mock(
 describe("CreatePlan Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useParams).mockReturnValue({});
     vi.spyOn(axiosInstance, "post").mockImplementation((url) => {
       if (url.includes("/media/upload")) {
         return Promise.resolve({
@@ -248,6 +250,28 @@ describe("CreatePlan Component", () => {
     expect(screen.queryByText("sample.jpg")).not.toBeInTheDocument();
   });
 
+  it("handles image upload error", async () => {
+    vi.spyOn(axiosInstance, "post").mockImplementation((url) => {
+      if (url.includes("/media/upload")) {
+        return Promise.reject(new Error("Upload failed"));
+      }
+      return Promise.resolve({ data: {} });
+    });
+    renderWithProviders(<CreatePlan />);
+    const uploadButton = screen.getByLabelText("Upload cover image");
+    fireEvent.click(uploadButton);
+    await waitFor(() => {
+      expect(screen.getByText("Upload & Crop Image")).toBeInTheDocument();
+    });
+    const mockUploadButton = screen.getByTestId("mock-upload-trigger");
+    await act(async () => {
+      fireEvent.click(mockUploadButton);
+    });
+    await waitFor(() => {
+      expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
+    });
+  });
+
   it("opens image upload dialog when upload button is clicked", async () => {
     renderWithProviders(<CreatePlan />);
     const uploadButton = screen.getByLabelText("Upload cover image");
@@ -306,6 +330,103 @@ describe("CreatePlan Component", () => {
       expect(descriptionTextarea).toHaveValue("Test Plan Description");
       expect(daysInput).toHaveValue(30);
       expect(submitButton).toBeInTheDocument();
+    });
+  });
+
+  it("shows navigation dialog when blocker state is blocked", async () => {
+    const mockBlocker = {
+      state: "blocked" as const,
+      proceed: vi.fn(),
+      reset: vi.fn(),
+      location: {} as any,
+    };
+    vi.mocked(useBlocker).mockReturnValue(mockBlocker);
+    renderWithProviders(<CreatePlan />);
+    await waitFor(() => {
+      expect(
+        screen.getByText("studio.plan.navigation.confirm_title"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("handles navigation confirmation", async () => {
+    const mockBlocker = {
+      state: "blocked" as const,
+      proceed: vi.fn(),
+      reset: vi.fn(),
+      location: {} as any,
+    };
+    vi.mocked(useBlocker).mockReturnValue(mockBlocker);
+    renderWithProviders(<CreatePlan />);
+    await waitFor(() => {
+      expect(
+        screen.getByText("studio.plan.navigation.confirm_title"),
+      ).toBeInTheDocument();
+    });
+    const confirmButton = screen.getByText("studio.plan.navigation.leave");
+    fireEvent.click(confirmButton);
+    expect(mockBlocker.proceed).toHaveBeenCalled();
+  });
+
+  it("handles navigation cancellation", async () => {
+    const mockBlocker = {
+      state: "blocked" as const,
+      proceed: vi.fn(),
+      reset: vi.fn(),
+      location: {} as any,
+    };
+    vi.mocked(useBlocker).mockReturnValue(mockBlocker);
+    renderWithProviders(<CreatePlan />);
+    await waitFor(() => {
+      expect(
+        screen.getByText("studio.plan.navigation.confirm_title"),
+      ).toBeInTheDocument();
+    });
+    const cancelButton = screen.getByText("common.button.cancel");
+    fireEvent.click(cancelButton);
+    expect(mockBlocker.reset).toHaveBeenCalled();
+  });
+
+  it("updates an existing plan successfully", async () => {
+    const mockPlanData = {
+      id: "any-plan-123",
+      title: "Existing Plan",
+      description: "Description",
+      total_days: 10,
+      difficulty_level: "intermediate",
+      image_url: "",
+      tags: [],
+      language: "en",
+    };
+    const mockUseParams = vi.fn().mockReturnValue({ plan_id: "any-plan-123" });
+    vi.mocked(useParams).mockImplementation(mockUseParams);
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: mockPlanData,
+    });
+    vi.spyOn(axiosInstance, "put").mockResolvedValue({
+      data: { ...mockPlanData, title: "Updated Plan" },
+    });
+    renderWithProviders(<CreatePlan />);
+    await waitFor(() => {
+      const titleInput = screen.getByPlaceholderText(
+        "studio.plan.form.placeholder.title",
+      ) as HTMLInputElement;
+      expect(titleInput.value).toBe("Existing Plan");
+    });
+    const titleInput = screen.getByPlaceholderText(
+      "studio.plan.form.placeholder.title",
+    );
+    fireEvent.change(titleInput, { target: { value: "Updated Plan" } });
+    const submitButton = screen.getByText("studio.plan.update_button");
+    fireEvent.click(submitButton);
+    await waitFor(() => {
+      expect(axiosInstance.put).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/cms/plans/any-plan-123"),
+        expect.objectContaining({
+          title: "Updated Plan",
+        }),
+        expect.any(Object),
+      );
     });
   });
 });
