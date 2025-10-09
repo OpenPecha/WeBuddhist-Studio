@@ -34,9 +34,12 @@ interface SubTask {
 interface CreateTaskPayload {
   title: string;
   description: string;
-  content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
-  content: string;
   estimated_time: number;
+  subtasks: {
+    content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
+    content: string;
+    display_order: number;
+  }[];
 }
 type TaskFormData = z.infer<typeof taskSchema>;
 
@@ -217,14 +220,15 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     form.reset();
   };
 
-  const getSubTaskToSubmit = () => {
-    if (subTasks.length === 0) return null;
-    return subTasks[subTasks.length - 1];
-  };
+  // const getSubTaskToSubmit = () => {
+  //   if (subTasks.length === 0) return null;
+  //   return subTasks[subTasks.length - 1];
+  // };
 
   const onSubmit = (data: TaskFormData) => {
+      const formattedSubTasks = subTasks.map((subTask, index) => {
     let content = "";
-    let description = "";
+    // let description = "";
     let content_type:
       | "TEXT"
       | "AUDIO"
@@ -232,39 +236,52 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
       | "IMAGE"
       | "SOURCE_REFERENCE" = "TEXT";
 
-    const subTaskToSubmit = getSubTaskToSubmit();
-    if (subTaskToSubmit) {
-      switch (subTaskToSubmit.contentType) {
+    // const subTaskToSubmit = getSubTaskToSubmit();
+    // if (subTaskToSubmit) {
+      switch (subTask.contentType) {
         case "video":
           content_type = "VIDEO";
-          content = subTaskToSubmit.videoUrl || "";
+          content = subTask.videoUrl || "";
           break;
         case "music":
           content_type = "AUDIO";
-          content = subTaskToSubmit.musicUrl || "";
+          content = subTask.musicUrl || "";
           break;
         case "image":
           content_type = "IMAGE";
-          content = subTaskToSubmit.imageKey || "";
+          content = subTask.imageKey || "";
           break;
         case "text":
           content_type = "TEXT";
-          content = subTaskToSubmit.textContent || "";
+          content = subTask.textContent || "";
           break;
       }
-    }
-
-    description = subTaskToSubmit?.textContent || data.title;
-
-    const taskData = {
-      title: data.title,
-      description: description,
+    return {
       content_type,
       content,
-      estimated_time: 30,
+      display_order: index + 1,
     };
+  });
+  //   description = subTaskToSubmit?.textContent || data.title;
 
-    createTaskMutation.mutate(taskData);
+  //   const taskData = {
+  //     title: data.title,
+  //     description: description,
+  //     content_type,
+  //     content,
+  //     estimated_time: 30,
+  //   };
+
+  const taskData: CreateTaskPayload = {
+    title: data.title,
+    description: data.title, 
+    estimated_time: 30,
+    subtasks: formattedSubTasks 
+  };
+
+  console.log("will send:", taskData);
+  toast.info(`Result: ${formattedSubTasks.length} subtasks`);
+  //   createTaskMutation.mutate(taskData);
   };
 
   return (

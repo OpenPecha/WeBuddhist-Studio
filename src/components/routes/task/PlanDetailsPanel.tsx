@@ -11,6 +11,13 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskForm from "./components/TaskForm";
 
+interface SubTask {
+  id: string;
+  content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
+  content: string;
+  display_order: number;
+}
+
 interface PlanWithDays {
   id: string;
   title: string;
@@ -22,8 +29,9 @@ interface PlanWithDays {
       id: string;
       title: string;
       description: string;
-      content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
-      content: string;
+      subtasks: SubTask[];
+      content_type?: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
+      content?: string;
       estimated_time: number;
     }[];
   }[];
