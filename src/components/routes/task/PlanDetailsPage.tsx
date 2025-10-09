@@ -69,7 +69,7 @@ const createNewDay = async (plan_id: string) => {
 
 const deleteTask = async (task_id: string) => {
   const { data } = await axiosInstance.delete(
-    `${BACKEND_BASE_URL}/api/v1/cms/tasks/${task_id}`,
+    `${BACKEND_BASE_URL}/api/v1/cms/plan/tasks/${task_id}`,
     {
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
