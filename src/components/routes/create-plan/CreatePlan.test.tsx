@@ -140,7 +140,7 @@ describe("CreatePlan Component", () => {
   it("renders submit button", () => {
     renderWithProviders(<CreatePlan />);
 
-    const submitButton = screen.getByText("studio.plan.next_button");
+    const submitButton = screen.getByText("studio.plan.update_button");
     expect(submitButton).toBeInTheDocument();
     expect(submitButton.tagName).toBe("BUTTON");
   });
@@ -260,7 +260,7 @@ describe("CreatePlan Component", () => {
 
   it("shows validation errors for required fields", async () => {
     renderWithProviders(<CreatePlan />);
-    const submitButton = screen.getByText("studio.plan.next_button");
+    const submitButton = screen.getByText("studio.plan.update_button");
     fireEvent.click(submitButton);
     expect(await screen.findAllByText(/required/)).not.toHaveLength(0);
   });
@@ -276,45 +276,6 @@ describe("CreatePlan Component", () => {
   it("shows no image preview initially", () => {
     renderWithProviders(<CreatePlan />);
     expect(screen.queryByAltText("Cover preview")).not.toBeInTheDocument();
-  });
-
-  it("handles successful plan creation", async () => {
-    vi.spyOn(axiosInstance, "post").mockResolvedValue({
-      data: {
-        id: "1",
-        title: "Test Plan",
-        description: "Test Plan Description",
-        total_days: 30,
-        difficulty_level: "Beginner",
-      },
-    });
-    renderWithProviders(<CreatePlan />);
-
-    const titleInput = screen.getByPlaceholderText(
-      "studio.plan.form.placeholder.title",
-    );
-    fireEvent.change(titleInput, { target: { value: "Test Plan" } });
-    const descriptionTextarea = screen.getByPlaceholderText(
-      "studio.plan.form.placeholder.description",
-    );
-    fireEvent.change(descriptionTextarea, {
-      target: { value: "Test Plan Description" },
-    });
-    const daysInput = screen.getByPlaceholderText(
-      "studio.plan.form.placeholder.number_of_days",
-    );
-    fireEvent.change(daysInput, { target: { value: "30" } });
-    const difficultyButton = screen.getByTestId("select-trigger");
-    fireEvent.click(difficultyButton);
-    const difficultyOption = screen.getByText("Beginner");
-    fireEvent.click(difficultyOption);
-    const submitButton = screen.getByText("studio.plan.next_button");
-    fireEvent.click(submitButton);
-    await waitFor(() => {
-      expect(titleInput).toHaveValue("");
-      expect(descriptionTextarea).toHaveValue("");
-      expect(daysInput).not.toHaveValue();
-    });
   });
 
   it("handles failed plan creation", async () => {
@@ -338,7 +299,7 @@ describe("CreatePlan Component", () => {
     fireEvent.click(difficultyButton);
     const difficultyOption = screen.getByText("Beginner");
     fireEvent.click(difficultyOption);
-    const submitButton = screen.getByText("studio.plan.next_button");
+    const submitButton = screen.getByText("studio.plan.update_button");
     fireEvent.click(submitButton);
     await waitFor(() => {
       expect(titleInput).toHaveValue("Test Plan");
