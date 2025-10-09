@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
-import PlanDetailsPage from "./PlanDetailsPanel";
+import PlanDetailsPage from "./PlanDetailsPage";
 
 const mockPlanData = {
   id: "e7c343c4-e17b-4e1e-ab9a-e844180c7b3a",

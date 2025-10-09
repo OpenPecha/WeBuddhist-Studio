@@ -24,7 +24,7 @@ import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
-import PlanDetailsPage from "./components/routes/task/PlanDetailsPanel.tsx";
+import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
