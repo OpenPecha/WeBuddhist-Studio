@@ -76,7 +76,7 @@ const deleteTask = async (task_id: string) => {
         Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
       },
     },
-  );  
+  );
   return data;
 };
 
@@ -102,7 +102,7 @@ const PlanDetailsPage = () => {
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
-      console.log(error)
+      console.log(error);
       toast.error("Failed to delete task", {
         description: error.response.data.detail,
       });
@@ -217,7 +217,7 @@ const PlanDetailsPage = () => {
                           <Pecha.DropdownMenuTrigger asChild>
                             <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                           </Pecha.DropdownMenuTrigger>
-                          <Pecha.DropdownMenuContent  side="right">
+                          <Pecha.DropdownMenuContent side="right">
                             <Pecha.DropdownMenuItem
                               className="gap-2 cursor-pointer"
                               onClick={() => handleDeleteTask(task.id)}
