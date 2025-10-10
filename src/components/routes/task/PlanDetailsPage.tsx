@@ -2,7 +2,6 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
-import { FiTrash } from "react-icons/fi";
 import { BsThreeDots } from "react-icons/bs";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
@@ -11,6 +10,7 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskForm from "./components/TaskForm";
+import TaskDeleteDialog from '@/components/ui/molecules/modals/task-delete/TaskDeleteDialog';
 
 interface PlanWithDays {
   id: string;
@@ -218,12 +218,8 @@ const PlanDetailsPage = () => {
                             <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                           </Pecha.DropdownMenuTrigger>
                           <Pecha.DropdownMenuContent side="right">
-                            <Pecha.DropdownMenuItem
-                              className="gap-2 cursor-pointer"
-                              onClick={() => handleDeleteTask(task.id)}
-                            >
-                              <FiTrash className="w-4 h-4" />
-                              Delete
+                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                              <TaskDeleteDialog taskId={task.id} onDelete={handleDeleteTask} />
                             </Pecha.DropdownMenuItem>
                           </Pecha.DropdownMenuContent>
                         </Pecha.DropdownMenu>
