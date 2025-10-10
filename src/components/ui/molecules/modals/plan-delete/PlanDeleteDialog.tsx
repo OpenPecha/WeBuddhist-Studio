@@ -8,7 +8,11 @@ interface PlanDeleteDialogProps {
   trigger?: React.ReactNode;
 }
 
-const PlanDeleteDialog = ({ planId, onDelete, trigger }: PlanDeleteDialogProps) => {
+const PlanDeleteDialog = ({
+  planId,
+  onDelete,
+  trigger,
+}: PlanDeleteDialogProps) => {
   const [open, setOpen] = useState(false);
 
   const handleDelete = () => {
@@ -35,8 +39,8 @@ const PlanDeleteDialog = ({ planId, onDelete, trigger }: PlanDeleteDialogProps) 
         <Pecha.AlertDialogHeader>
           <Pecha.AlertDialogTitle>Are you sure?</Pecha.AlertDialogTitle>
           <Pecha.AlertDialogDescription>
-            This action cannot be undone. This will permanently delete
-            your plan and remove all associated data.
+            This action cannot be undone. This will permanently delete your plan
+            and remove all associated data.
           </Pecha.AlertDialogDescription>
         </Pecha.AlertDialogHeader>
         <Pecha.AlertDialogFooter>

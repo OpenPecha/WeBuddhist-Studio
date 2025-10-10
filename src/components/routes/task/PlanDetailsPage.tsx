@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskForm from "./components/TaskForm";
-import TaskDeleteDialog from '@/components/ui/molecules/modals/task-delete/TaskDeleteDialog';
+import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 
 interface PlanWithDays {
   id: string;
@@ -219,7 +219,10 @@ const PlanDetailsPage = () => {
                           </Pecha.DropdownMenuTrigger>
                           <Pecha.DropdownMenuContent side="right">
                             <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                              <TaskDeleteDialog taskId={task.id} onDelete={handleDeleteTask} />
+                              <TaskDeleteDialog
+                                taskId={task.id}
+                                onDelete={handleDeleteTask}
+                              />
                             </Pecha.DropdownMenuItem>
                           </Pecha.DropdownMenuContent>
                         </Pecha.DropdownMenu>

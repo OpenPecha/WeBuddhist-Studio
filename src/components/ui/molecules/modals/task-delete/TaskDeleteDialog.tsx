@@ -26,14 +26,21 @@ const TaskDeleteDialog = ({ taskId, onDelete }: TaskDeleteDialogProps) => {
         <Pecha.AlertDialogHeader>
           <Pecha.AlertDialogTitle>Are you sure?</Pecha.AlertDialogTitle>
           <Pecha.AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this task and its Subtasks.
+            This action cannot be undone. This will permanently delete this task
+            and its Subtasks.
           </Pecha.AlertDialogDescription>
         </Pecha.AlertDialogHeader>
         <Pecha.AlertDialogFooter>
           <Pecha.AlertDialogCancel onClick={() => setOpen(false)}>
             Cancel
           </Pecha.AlertDialogCancel>
-          <Pecha.AlertDialogAction className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90" onClick={() => {onDelete(taskId); setOpen(false);}}>
+          <Pecha.AlertDialogAction
+            className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
+            onClick={() => {
+              onDelete(taskId);
+              setOpen(false);
+            }}
+          >
             Delete Task
           </Pecha.AlertDialogAction>
         </Pecha.AlertDialogFooter>
