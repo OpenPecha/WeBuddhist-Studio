@@ -47,6 +47,7 @@ vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    info: vi.fn(),
   },
 }));
 
@@ -362,13 +363,9 @@ describe("TaskForm Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("submits form successfully and calls API", async () => {
-    const axiosInstance = await import("@/config/axios-config");
-    const postSpy = vi
-      .mocked(axiosInstance.default.post)
-      .mockResolvedValueOnce({
-        data: { id: "task-123" },
-      });
+  it("submits form successfully and prepares payload", async () => {
+    const { toast } = await import("sonner");
+    const consoleSpy = vi.spyOn(console, "log");
     renderWithProviders(<TaskForm selectedDay={1} />);
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
       target: { value: "Simple Task" },
@@ -378,14 +375,17 @@ describe("TaskForm Component", () => {
     });
     fireEvent.click(screen.getByTestId("submit-button"));
     await waitFor(() => {
-      expect(postSpy).toHaveBeenCalledWith(
-        expect.stringContaining("/day/day-1/tasks"),
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "will send:",
         expect.objectContaining({
           title: "Simple Task",
-          content_type: "TEXT",
+          description: "Simple Task",
+          estimated_time: 30,
+          subtasks: [],
         }),
-        expect.any(Object),
       );
+      expect(toast.info).toHaveBeenCalledWith("Result: 0 subtasks");
     });
+    consoleSpy.mockRestore();
   });
 });

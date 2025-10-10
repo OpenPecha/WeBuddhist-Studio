@@ -156,7 +156,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     contentType: "image" | "video" | "music" | "text",
   ) => {
     const newSubTask: SubTask = {
-      id: Date.now().toString(), //for now we are using date as id, TODO: to update when backend is ready
+      id: Date.now().toString(), //for state management
       contentType,
       videoUrl: "",
       textContent: "",
@@ -220,24 +220,16 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     form.reset();
   };
 
-  // const getSubTaskToSubmit = () => {
-  //   if (subTasks.length === 0) return null;
-  //   return subTasks[subTasks.length - 1];
-  // };
-
   const onSubmit = (data: TaskFormData) => {
-      const formattedSubTasks = subTasks.map((subTask, index) => {
-    let content = "";
-    // let description = "";
-    let content_type:
-      | "TEXT"
-      | "AUDIO"
-      | "VIDEO"
-      | "IMAGE"
-      | "SOURCE_REFERENCE" = "TEXT";
+    const formattedSubTasks = subTasks.map((subTask, index) => {
+      let content = "";
+      let content_type:
+        | "TEXT"
+        | "AUDIO"
+        | "VIDEO"
+        | "IMAGE"
+        | "SOURCE_REFERENCE" = "TEXT";
 
-    // const subTaskToSubmit = getSubTaskToSubmit();
-    // if (subTaskToSubmit) {
       switch (subTask.contentType) {
         case "video":
           content_type = "VIDEO";
@@ -256,32 +248,23 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
           content = subTask.textContent || "";
           break;
       }
-    return {
-      content_type,
-      content,
-      display_order: index + 1,
+      return {
+        content_type,
+        content,
+        display_order: index + 1,
+      };
+    });
+
+    const taskData: CreateTaskPayload = {
+      title: data.title,
+      description: data.title,
+      estimated_time: 30,
+      subtasks: formattedSubTasks,
     };
-  });
-  //   description = subTaskToSubmit?.textContent || data.title;
 
-  //   const taskData = {
-  //     title: data.title,
-  //     description: description,
-  //     content_type,
-  //     content,
-  //     estimated_time: 30,
-  //   };
-
-  const taskData: CreateTaskPayload = {
-    title: data.title,
-    description: data.title, 
-    estimated_time: 30,
-    subtasks: formattedSubTasks 
-  };
-
-  console.log("will send:", taskData);
-  toast.info(`Result: ${formattedSubTasks.length} subtasks`);
-  //   createTaskMutation.mutate(taskData);
+    console.log("will send:", taskData);
+    toast.info(`Result: ${formattedSubTasks.length} subtasks`);
+    //  createTaskMutation.mutate(taskData);  //uncomment this when backend is ready
   };
 
   return (
