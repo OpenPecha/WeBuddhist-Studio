@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskForm from "./components/TaskForm";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
-
+import outlinepecha from "@/assets/icon/outlinepecha.svg";
 interface PlanWithDays {
   id: string;
   title: string;
@@ -32,9 +32,12 @@ interface PlanWithDays {
 
 const DefaultDayView = ({ selectedDay }: { selectedDay: number }) => {
   return (
-    <div className=" w-full h-full flex items-center justify-center border">
+    <div className=" w-full h-full flex  space-y-2 flex-col items-center justify-center border">
+      <div className=" opacity-20 dark:opacity-100">
+        <img src={outlinepecha} alt="pecha outline" height={100} width={100} />
+      </div>
       <div className="text-center">
-        <p className="text-lg mb-4">No tasks created for Day {selectedDay}</p>
+        <p className="text-lg ">No tasks created for Day {selectedDay}</p>
         <p className="text-sm text-gray-500">
           Click the + icon next to the day to add your first task
         </p>
@@ -139,7 +142,7 @@ const PlanDetailsPage = () => {
 
   return (
     <div className="flex flex-1 overflow-hidden">
-      <div className="w-80 bg-[#FAFAFA] dark:bg-[#19191b] border-r border-t rounded-tr-lg border-gray-200 dark:border-border h-full flex flex-col">
+      <div className="w-80 bg-[#FAFAFA] dark:bg-[#171414] border-r border-t border-gray-200 dark:border-border h-full flex flex-col">
         <div className="p-4">
           <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
           <div className="text-sm text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
@@ -147,8 +150,8 @@ const PlanDetailsPage = () => {
           </div>
         </div>
 
-        <div className="flex-1  p-4">
-          <div className="flex items-center border-b pb-3 gap-2 mb-1">
+        <div className="flex-1">
+          <div className="flex p-4 items-center border-b pb-3 gap-2 mb-1">
             <IoCalendarClearOutline className="w-5 h-5 text-foreground" />
             <span className="text-sm  text-foreground">Days</span>
           </div>
@@ -157,7 +160,7 @@ const PlanDetailsPage = () => {
             {currentPlan?.days.map((day) => (
               <div key={day.id} className="group space-y-2">
                 <div
-                  className="flex items-center justify-between px-1 py-2 rounded-sm cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-accent/50"
+                  className="flex items-center justify-between px-4 py-2 border-b cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
                   onClick={() => {
                     handleDayClick(day.day_number);
                   }}
@@ -166,7 +169,7 @@ const PlanDetailsPage = () => {
                     <div
                       className={`w-4 h-4 rounded-full ${
                         selectedDay === day.day_number
-                          ? "bg-[#4CAF50]"
+                          ? "bg-[#ba0909]"
                           : "bg-input"
                       }`}
                     ></div>
@@ -190,23 +193,27 @@ const PlanDetailsPage = () => {
                           setShowTaskForm(true);
                         }}
                       />
-                      <MdExpandMore
-                        className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
-                          expandedDay === day.day_number ? "rotate-180" : ""
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedDay(
-                            expandedDay === day.day_number ? 0 : day.day_number,
-                          );
-                        }}
-                      />
+                      {day.tasks.length > 0 && (
+                        <MdExpandMore
+                          className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
+                            expandedDay === day.day_number ? "rotate-180" : ""
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedDay(
+                              expandedDay === day.day_number
+                                ? 0
+                                : day.day_number,
+                            );
+                          }}
+                        />
+                      )}
                     </div>
                   )}
                 </div>
 
                 {expandedDay === day.day_number && day.tasks.length > 0 && (
-                  <div className=" ml-2.5 rounded-sm border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
+                  <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
                     {day.tasks.map((task) => (
                       <div
                         key={task.id}
@@ -233,19 +240,20 @@ const PlanDetailsPage = () => {
               </div>
             )) || []}
           </div>
-
-          <Pecha.Button
-            type="button"
-            onClick={addNewDay}
-            disabled={createNewDayMutation.isPending}
-            variant="destructive"
-            className="cursor-pointer mt-3 disabled:opacity-50 w-full disabled:cursor-not-allowed"
-          >
-            <IoMdAdd className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              {createNewDayMutation.isPending ? "Adding..." : "Add New Day"}
-            </span>
-          </Pecha.Button>
+          <div className="px-2">
+            <Pecha.Button
+              type="button"
+              onClick={addNewDay}
+              disabled={createNewDayMutation.isPending}
+              variant="destructive"
+              className="cursor-pointer mt-3 rounded-none disabled:opacity-50 w-full disabled:cursor-not-allowed"
+            >
+              <IoMdAdd className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {createNewDayMutation.isPending ? "Adding..." : "Add New Day"}
+              </span>
+            </Pecha.Button>
+          </div>
         </div>
       </div>
 
