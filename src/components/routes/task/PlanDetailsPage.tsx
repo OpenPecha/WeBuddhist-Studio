@@ -2,7 +2,7 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
-import { FiTrash } from "react-icons/fi";
+import { BsThreeDots } from "react-icons/bs";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskForm from "./components/TaskForm";
+import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 
 interface PlanWithDays {
   id: string;
@@ -100,9 +101,10 @@ const PlanDetailsPage = () => {
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.log(error);
       toast.error("Failed to delete task", {
-        description: error.message,
+        description: error.response.data.detail,
       });
     },
   });
@@ -116,9 +118,9 @@ const PlanDetailsPage = () => {
       setExpandedDay(newDay.day_number);
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error("Failed to create new day", {
-        description: error.message,
+        description: error.response.data.detail,
       });
     },
   });
@@ -211,10 +213,19 @@ const PlanDetailsPage = () => {
                         className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
                       >
                         <span>{task.title}</span>
-                        <FiTrash
-                          onClick={() => handleDeleteTask(task.id)}
-                          className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer"
-                        />
+                        <Pecha.DropdownMenu>
+                          <Pecha.DropdownMenuTrigger asChild>
+                            <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                          </Pecha.DropdownMenuTrigger>
+                          <Pecha.DropdownMenuContent side="right">
+                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                              <TaskDeleteDialog
+                                taskId={task.id}
+                                onDelete={handleDeleteTask}
+                              />
+                            </Pecha.DropdownMenuItem>
+                          </Pecha.DropdownMenuContent>
+                        </Pecha.DropdownMenu>
                       </div>
                     ))}
                   </div>
