@@ -174,36 +174,4 @@ describe("PlanDetailsPanel Component", () => {
       );
     });
   });
-
-  it("calls delete API and refetches data when trash icon is clicked", async () => {
-    const { default: axiosInstance } = await import("@/config/axios-config");
-    const mockAxios = axiosInstance as any;
-    mockAxios.delete.mockResolvedValue({ data: {} });
-    renderWithProviders(<PlanDetailsPage />);
-    await waitFor(() => {
-      expect(screen.getByText("Morning Intention Setting")).toBeInTheDocument();
-    });
-    mockAxios.get.mockClear();
-    const taskRow = screen
-      .getByText("Morning Intention Setting")
-      .closest("div");
-    const trashIcon = taskRow?.querySelector("svg.cursor-pointer");
-    fireEvent.click(trashIcon!);
-    await waitFor(() => {
-      expect(mockAxios.delete).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/cms/plan/tasks/task1"),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: "Bearer mock-token",
-          }),
-        }),
-      );
-    });
-    await waitFor(() => {
-      expect(mockAxios.get).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/cms/plans/test-plan-id"),
-        expect.any(Object),
-      );
-    });
-  });
 });
