@@ -47,6 +47,7 @@ vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    info: vi.fn(),
   },
 }));
 
@@ -362,30 +363,26 @@ describe("TaskForm Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("submits form successfully and calls API", async () => {
+  it("submits form successfully with subtasks", async () => {
     const axiosInstance = await import("@/config/axios-config");
-    const postSpy = vi
-      .mocked(axiosInstance.default.post)
-      .mockResolvedValueOnce({
-        data: { id: "task-123" },
-      });
+    const { toast } = await import("sonner");
+    vi.mocked(axiosInstance.default.post)
+      .mockResolvedValueOnce({ data: { id: "task-123" } })
+      .mockResolvedValueOnce({ data: {} });
     renderWithProviders(<TaskForm selectedDay={1} />);
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
-      target: { value: "Simple Task" },
+      target: { value: "Test Task" },
     });
-    await waitFor(() => {
-      expect(screen.getByTestId("submit-button")).not.toBeDisabled();
+    fireEvent.click(screen.getByTestId("add-content-button"));
+    fireEvent.click(screen.getByTestId("text-button"));
+    fireEvent.change(screen.getByPlaceholderText("Enter your text content"), {
+      target: { value: "Test" },
     });
     fireEvent.click(screen.getByTestId("submit-button"));
+
     await waitFor(() => {
-      expect(postSpy).toHaveBeenCalledWith(
-        expect.stringContaining("/day/day-1/tasks"),
-        expect.objectContaining({
-          title: "Simple Task",
-          content_type: "TEXT",
-        }),
-        expect.any(Object),
-      );
+      expect(axiosInstance.default.post).toHaveBeenCalledTimes(2);
+      expect(toast.success).toHaveBeenCalled();
     });
   });
 });

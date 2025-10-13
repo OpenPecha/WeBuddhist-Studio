@@ -34,8 +34,6 @@ interface SubTask {
 interface CreateTaskPayload {
   title: string;
   description: string;
-  content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
-  content: string;
   estimated_time: number;
 }
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -67,6 +65,26 @@ const contentTypes = [
     testid: "pecha-button",
   },
 ];
+
+const SUBTASK_CONTENT_MAP = {
+  video: { field: "videoUrl", type: "VIDEO" },
+  text: { field: "textContent", type: "TEXT" },
+  music: { field: "musicUrl", type: "AUDIO" },
+  image: { field: "imageKey", type: "IMAGE" },
+} as const;
+
+const transformSubTask = (subTask: SubTask) => {
+  const mapping = SUBTASK_CONTENT_MAP[subTask.contentType];
+  if (!mapping) {
+    return { content: "", content_type: "TEXT" };
+  }
+
+  const content = subTask[mapping.field as keyof SubTask] as string;
+  return {
+    content: content || "",
+    content_type: mapping.type,
+  };
+};
 
 const createTask = async (
   plan_id: string,
@@ -101,6 +119,26 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
   return data;
 };
 
+const createSubTasks = async (
+  task_id: string,
+  subTasksData: { content: string; content_type: string }[],
+) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.post(
+    `${BACKEND_BASE_URL}/api/v1/cms/sub-tasks`,
+    {
+      task_id: task_id,
+      sub_tasks: subTasksData,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  return data;
+};
+
 const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
@@ -124,11 +162,25 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   );
 
   const createTaskMutation = useMutation({
-    mutationFn: (taskData: CreateTaskPayload) => {
+    mutationFn: async (taskData: CreateTaskPayload) => {
       if (!plan_id || !currentDayData?.id) {
         throw new Error("Plan ID or Day ID not found");
       }
-      return createTask(plan_id, currentDayData.id, taskData);
+      const taskResponse = await createTask(
+        plan_id,
+        currentDayData.id,
+        taskData,
+      );
+      if (subTasks.length > 0) {
+        const subTasksPayload = subTasks
+          .map(transformSubTask)
+          .filter((st) => st.content.trim() !== "");
+
+        if (subTasksPayload.length > 0) {
+          await createSubTasks(taskResponse.id, subTasksPayload);
+        }
+      }
+      return taskResponse;
     },
     onSuccess: () => {
       toast.success("Task created successfully!", {
@@ -153,7 +205,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     contentType: "image" | "video" | "music" | "text",
   ) => {
     const newSubTask: SubTask = {
-      id: Date.now().toString(), //for now we are using date as id, TODO: to update when backend is ready
+      id: Date.now().toString(), //for state management
       contentType,
       videoUrl: "",
       textContent: "",
@@ -217,53 +269,12 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
     form.reset();
   };
 
-  const getSubTaskToSubmit = () => {
-    if (subTasks.length === 0) return null;
-    return subTasks[subTasks.length - 1];
-  };
-
   const onSubmit = (data: TaskFormData) => {
-    let content = "";
-    let description = "";
-    let content_type:
-      | "TEXT"
-      | "AUDIO"
-      | "VIDEO"
-      | "IMAGE"
-      | "SOURCE_REFERENCE" = "TEXT";
-
-    const subTaskToSubmit = getSubTaskToSubmit();
-    if (subTaskToSubmit) {
-      switch (subTaskToSubmit.contentType) {
-        case "video":
-          content_type = "VIDEO";
-          content = subTaskToSubmit.videoUrl || "";
-          break;
-        case "music":
-          content_type = "AUDIO";
-          content = subTaskToSubmit.musicUrl || "";
-          break;
-        case "image":
-          content_type = "IMAGE";
-          content = subTaskToSubmit.imageKey || "";
-          break;
-        case "text":
-          content_type = "TEXT";
-          content = subTaskToSubmit.textContent || "";
-          break;
-      }
-    }
-
-    description = subTaskToSubmit?.textContent || data.title;
-
-    const taskData = {
+    const taskData: CreateTaskPayload = {
       title: data.title,
-      description: description,
-      content_type,
-      content,
+      description: data.title,
       estimated_time: 30,
     };
-
     createTaskMutation.mutate(taskData);
   };
 
