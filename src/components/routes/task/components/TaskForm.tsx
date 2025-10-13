@@ -78,7 +78,7 @@ const transformSubTask = (subTask: SubTask) => {
   if (!mapping) {
     return { content: "", content_type: "TEXT" };
   }
-  
+
   const content = subTask[mapping.field as keyof SubTask] as string;
   return {
     content: content || "",
