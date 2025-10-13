@@ -35,11 +35,6 @@ interface CreateTaskPayload {
   title: string;
   description: string;
   estimated_time: number;
-  subtasks: {
-    content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
-    content: string;
-    display_order: number;
-  }[];
 }
 type TaskFormData = z.infer<typeof taskSchema>;
 
@@ -104,6 +99,23 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
   return data;
 };
 
+const createSubTasks = async (
+  task_id: string,
+  subTasksData: { content: string; content_type: string }[]
+) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.post(
+    `${BACKEND_BASE_URL}/api/v1/cms/plan/tasks/${task_id}/sub-tasks`,
+    { sub_tasks: subTasksData },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  return data;
+};
+
 const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
@@ -127,11 +139,51 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   );
 
   const createTaskMutation = useMutation({
-    mutationFn: (taskData: CreateTaskPayload) => {
+    mutationFn: async (taskData: CreateTaskPayload) => {
       if (!plan_id || !currentDayData?.id) {
         throw new Error("Plan ID or Day ID not found");
       }
-      return createTask(plan_id, currentDayData.id, taskData);
+      const taskResponse = await createTask(
+        plan_id,
+        currentDayData.id,
+        taskData
+      );
+      if (subTasks.length > 0) {
+        const subTasksPayload = subTasks
+          .map((subTask) => {
+            let content = "";
+            let content_type = "";
+
+            switch (subTask.contentType) {
+              case "video":
+                content = subTask.videoUrl;
+                content_type = "VIDEO";
+                break;
+              case "text":
+                content = subTask.textContent;
+                content_type = "TEXT";
+                break;
+              case "music":
+                content = subTask.musicUrl;
+                content_type = "AUDIO";
+                break;
+              case "image":
+                content = subTask.imageKey || "";
+                content_type = "IMAGE";
+                break;
+              default:
+                content = "";
+                content_type = "TEXT";
+            }
+            return { content, content_type };
+          })
+          .filter((st) => st.content.trim() !== "");
+
+        if (subTasksPayload.length > 0) {
+          await createSubTasks(taskResponse.id, subTasksPayload);
+        }
+      }
+      return taskResponse;
     },
     onSuccess: () => {
       toast.success("Task created successfully!", {
@@ -221,50 +273,15 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   };
 
   const onSubmit = (data: TaskFormData) => {
-    const formattedSubTasks = subTasks.map((subTask, index) => {
-      let content = "";
-      let content_type:
-        | "TEXT"
-        | "AUDIO"
-        | "VIDEO"
-        | "IMAGE"
-        | "SOURCE_REFERENCE" = "TEXT";
-
-      switch (subTask.contentType) {
-        case "video":
-          content_type = "VIDEO";
-          content = subTask.videoUrl || "";
-          break;
-        case "music":
-          content_type = "AUDIO";
-          content = subTask.musicUrl || "";
-          break;
-        case "image":
-          content_type = "IMAGE";
-          content = subTask.imageKey || "";
-          break;
-        case "text":
-          content_type = "TEXT";
-          content = subTask.textContent || "";
-          break;
-      }
-      return {
-        content_type,
-        content,
-        display_order: index + 1,
-      };
-    });
-
     const taskData: CreateTaskPayload = {
       title: data.title,
       description: data.title,
       estimated_time: 30,
-      subtasks: formattedSubTasks,
     };
 
-    console.log("will send:", taskData);
-    toast.info(`Result: ${formattedSubTasks.length} subtasks`);
-    //  createTaskMutation.mutate(taskData);  //uncomment this when backend is ready
+    console.log("Creating task with", subTasks.length, "subtasks");
+    console.log("Task data:", taskData);
+    createTaskMutation.mutate(taskData);
   };
 
   return (
