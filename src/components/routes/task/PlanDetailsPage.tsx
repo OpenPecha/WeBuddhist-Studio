@@ -23,7 +23,7 @@ interface PlanWithDays {
       id: string;
       title: string;
       description: string;
-      subtasks: SubTask[];
+      // subtasks: SubTask[];
       content_type?: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
       content?: string;
       estimated_time: number;
