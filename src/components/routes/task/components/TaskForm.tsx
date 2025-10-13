@@ -101,12 +101,15 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
 
 const createSubTasks = async (
   task_id: string,
-  subTasksData: { content: string; content_type: string }[]
+  subTasksData: { content: string; content_type: string }[],
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/plan/tasks/${task_id}/sub-tasks`,
-    { sub_tasks: subTasksData },
+    `${BACKEND_BASE_URL}/api/v1/cms/sub-tasks`,
+    {
+      task_id: task_id,
+      sub_tasks: subTasksData,
+    },
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -146,7 +149,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
       const taskResponse = await createTask(
         plan_id,
         currentDayData.id,
-        taskData
+        taskData,
       );
       if (subTasks.length > 0) {
         const subTasksPayload = subTasks
