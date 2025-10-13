@@ -66,6 +66,26 @@ const contentTypes = [
   },
 ];
 
+const SUBTASK_CONTENT_MAP = {
+  video: { field: "videoUrl", type: "VIDEO" },
+  text: { field: "textContent", type: "TEXT" },
+  music: { field: "musicUrl", type: "AUDIO" },
+  image: { field: "imageKey", type: "IMAGE" },
+} as const;
+
+const transformSubTask = (subTask: SubTask) => {
+  const mapping = SUBTASK_CONTENT_MAP[subTask.contentType];
+  if (!mapping) {
+    return { content: "", content_type: "TEXT" };
+  }
+  
+  const content = subTask[mapping.field as keyof SubTask] as string;
+  return {
+    content: content || "",
+    content_type: mapping.type,
+  };
+};
+
 const createTask = async (
   plan_id: string,
   day_id: string,
@@ -153,33 +173,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
       );
       if (subTasks.length > 0) {
         const subTasksPayload = subTasks
-          .map((subTask) => {
-            let content = "";
-            let content_type = "";
-
-            switch (subTask.contentType) {
-              case "video":
-                content = subTask.videoUrl;
-                content_type = "VIDEO";
-                break;
-              case "text":
-                content = subTask.textContent;
-                content_type = "TEXT";
-                break;
-              case "music":
-                content = subTask.musicUrl;
-                content_type = "AUDIO";
-                break;
-              case "image":
-                content = subTask.imageKey || "";
-                content_type = "IMAGE";
-                break;
-              default:
-                content = "";
-                content_type = "TEXT";
-            }
-            return { content, content_type };
-          })
+          .map(transformSubTask)
           .filter((st) => st.content.trim() !== "");
 
         if (subTasksPayload.length > 0) {
@@ -281,9 +275,6 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
       description: data.title,
       estimated_time: 30,
     };
-
-    console.log("Creating task with", subTasks.length, "subtasks");
-    console.log("Task data:", taskData);
     createTaskMutation.mutate(taskData);
   };
 

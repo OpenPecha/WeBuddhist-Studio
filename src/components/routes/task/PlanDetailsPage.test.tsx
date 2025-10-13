@@ -1,5 +1,4 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
@@ -17,18 +16,16 @@ const mockPlanData = {
         {
           id: "task1",
           title: "Morning Intention Setting",
-          description: "Set daily intentions",
-          content_type: "TEXT" as const,
-          content: "Morning practice content",
+          subtasks: [],
           estimated_time: 30,
+          display_order: 1,
         },
         {
           id: "task2",
           title: "Compassion Reflection",
-          description: "Reflect on compassion",
-          content_type: "TEXT" as const,
-          content: "Compassion practice content",
+          subtasks: [],
           estimated_time: 20,
+          display_order: 2,
         },
       ],
     },
@@ -39,10 +36,9 @@ const mockPlanData = {
         {
           id: "task3",
           title: "Meaningful Living Practice",
-          description: "Practice meaningful living",
-          content_type: "TEXT" as const,
-          content: "Meaningful living content",
+          subtasks: [],
           estimated_time: 45,
+          display_order: 1,
         },
       ],
     },
@@ -53,10 +49,9 @@ const mockPlanData = {
         {
           id: "task4",
           title: "Heart Transformation Exercise",
-          description: "Transform your heart",
-          content_type: "TEXT" as const,
-          content: "Heart transformation content",
+          subtasks: [],
           estimated_time: 35,
+          display_order: 1,
         },
       ],
     },
@@ -67,10 +62,9 @@ const mockPlanData = {
         {
           id: "task5",
           title: "Integration and Commitment",
-          description: "Integrate learnings",
-          content_type: "TEXT" as const,
-          content: "Integration content",
+          subtasks: [],
           estimated_time: 35,
+          display_order: 1,
         },
       ],
     },
@@ -87,6 +81,15 @@ vi.mock("react-router-dom", async () => {
 
 vi.mock("sonner", () => ({
   toast: { error: vi.fn() },
+}));
+
+vi.mock("./components/TaskForm", () => ({
+  default: ({ selectedDay }: { selectedDay: number }) => (
+    <div>
+      <h2>Add Task</h2>
+      <p>Selected Day: {selectedDay}</p>
+    </div>
+  ),
 }));
 
 Object.defineProperty(window, "sessionStorage", {
@@ -172,6 +175,60 @@ describe("PlanDetailsPanel Component", () => {
           }),
         }),
       );
+    });
+  });
+
+  it("renders DefaultDayView when selected day has no tasks", async () => {
+    const { default: axiosInstance } = await import("@/config/axios-config");
+    const mockAxios = axiosInstance as any;
+    mockAxios.get.mockResolvedValue({
+      data: {
+        ...mockPlanData,
+        days: [{ id: "day-1", day_number: 1, tasks: [] }],
+      },
+    });
+    renderWithProviders(<PlanDetailsPage />);
+    await waitFor(() => {
+      expect(
+        screen.getByText("No tasks created for Day 1"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Click the + icon next to the day to add your first task",
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("handles create new day error", async () => {
+    const { default: axiosInstance } = await import("@/config/axios-config");
+    const { toast } = await import("sonner");
+    const mockAxios = axiosInstance as any;
+    mockAxios.get.mockResolvedValue({ data: mockPlanData });
+    mockAxios.post.mockRejectedValueOnce({
+      response: { data: { detail: "Cannot create day" } },
+    });
+    renderWithProviders(<PlanDetailsPage />);
+    await waitFor(() => {
+      expect(screen.getByText("Day 4")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("Add New Day"));
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to create new day", {
+        description: "Cannot create day",
+      });
+    });
+  });
+
+  it("shows TaskForm when add task button is clicked", async () => {
+    renderWithProviders(<PlanDetailsPage />);
+    await waitFor(() => {
+      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
+    });
+    const addButton = screen.getByTestId("add-task-button");
+    fireEvent.click(addButton);
+    await waitFor(() => {
+      expect(screen.getByText("Add Task")).toBeInTheDocument();
     });
   });
 });
