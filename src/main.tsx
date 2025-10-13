@@ -124,7 +124,7 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <TolgeeProvider tolgee={tolgee}>
         <PlanAuthProvider>
-          <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <RouterProvider router={router} />
             <Toaster />
           </ThemeProvider>
