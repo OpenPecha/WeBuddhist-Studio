@@ -68,7 +68,7 @@ export function DashBoardTable({
         <Pecha.TableRow>
           <Pecha.TableCell
             colSpan={6}
-            className="text-center py-10 text-muted-foreground"
+            className="text-center py-6 text-muted-foreground"
           >
             Loading...
           </Pecha.TableCell>
@@ -81,7 +81,7 @@ export function DashBoardTable({
         <Pecha.TableRow>
           <Pecha.TableCell
             colSpan={6}
-            className="text-center py-10 text-red-500"
+            className="text-center py-6 text-red-500"
           >
             {error.message}
           </Pecha.TableCell>
@@ -122,7 +122,7 @@ export function DashBoardTable({
               e.currentTarget.src = defaultCover;
             }}
             alt="cover"
-            className="w-32 h-20 object-cover"
+            className="w-32 h-12 object-cover"
           />
         </Pecha.TableCell>
         <Pecha.TableCell
@@ -146,7 +146,7 @@ export function DashBoardTable({
     ));
   };
   return (
-    <div className="w-full h-[600px] overflow-auto">
+    <div className="w-full h-[640px] overflow-auto">
       <Pecha.Table>
         <Pecha.TableHeader>
           <Pecha.TableRow className="font-dynamic">
