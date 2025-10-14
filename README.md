@@ -1,5 +1,11 @@
 # Pecha Studio Frontend
 
+## Endpoints
+> Dev
+https://webuhhist-dev-frontend.onrender.com
+> Test
+> https://studio-tst-frontend.onrender.com
+
 This is the frontend application for the Pecha Studio platform, designed to manage and interact with Buddhist texts in the OpenPecha format.
 
 ## Prerequisites
