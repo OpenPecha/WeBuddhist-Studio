@@ -21,7 +21,6 @@ WORKDIR /app
 
 RUN chown nginx:nginx /app && apk add --no-cache gettext
 
-ENV BACKEND_API_URL=https://api.webuddhist.com
 ENV PORT=4173
 
 # Copy the React build files into Nginx's public directory
