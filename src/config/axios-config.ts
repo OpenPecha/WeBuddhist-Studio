@@ -5,7 +5,9 @@ import {
   RESET_PASSWORD_TOKEN,
 } from "@/lib/constant";
 
-const axiosInstance = axios.create({});
+const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_BASE_URL,
+});
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = window.location.href.includes(RESET_PASSWORD)
