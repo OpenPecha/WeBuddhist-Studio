@@ -5,7 +5,6 @@ import StudioCard from "@/components/ui/atoms/studio-card";
 import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useState } from "react";
 import { useTranslate } from "@tolgee/react";
 import { forgotPasswordSchema } from "@/schema/ForgotPasswordSchema";
@@ -19,7 +18,7 @@ const ForgotPassword = () => {
   const forgotPasswordMutation = useMutation({
     mutationFn: async (emailData: { email: string }) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/api/v1/cms/auth/request-reset-password`,
+        `/api/v1/cms/auth/request-reset-password`,
         emailData,
       );
       return response.data;

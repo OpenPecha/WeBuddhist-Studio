@@ -5,7 +5,6 @@ import Login from "./Login";
 import userEvent from "@testing-library/user-event";
 import axiosInstance from "@/config/axios-config";
 import { vi } from "vitest";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -79,7 +78,7 @@ describe("Login Component", () => {
     await user.click(screen.getByText("common.button.submit"));
     await waitFor(() => {
       expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
-        `${BACKEND_BASE_URL}/api/v1/cms/auth/login`,
+        `/api/v1/cms/auth/login`,
         {
           email: "test@example.com",
           password:
@@ -209,7 +208,7 @@ describe("Login Component", () => {
 
       await waitFor(() => {
         expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
-          `${BACKEND_BASE_URL}/api/v1/cms/auth/email-re-verification?email=unverified%40example.com`,
+          `/api/v1/cms/auth/email-re-verification?email=unverified%40example.com`,
         );
         expect(
           screen.getByText("Verification email sent successfully"),
