@@ -25,7 +25,6 @@ WORKDIR /app
 RUN chown nginx:nginx /app && apk add --no-cache gettext
 
 ENV PORT=4173
-ENV BACKEND_API_URL=http://localhost:3000
 
 # Copy the React build files into Nginx's public directory
 COPY --from=build-stage /app/dist /usr/share/nginx/html
