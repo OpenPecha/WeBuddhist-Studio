@@ -21,9 +21,6 @@ WORKDIR /app
 
 RUN chown nginx:nginx /app && apk add --no-cache gettext
 
-# Set default environment variable for nginx stage
-# ENV VITE_BACKEND_BASE_URL=$VITE_BACKEND_BASE_URL
-
 ENV PORT=4173
 
 # Copy the React build files into Nginx's public directory
