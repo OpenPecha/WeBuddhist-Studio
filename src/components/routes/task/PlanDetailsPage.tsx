@@ -3,6 +3,7 @@ import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
+import { FaPen } from "react-icons/fa";
 import axiosInstance from "@/config/axios-config";
 import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -95,6 +96,7 @@ const PlanDetailsPage = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [expandedDay, setExpandedDay] = useState<number>(1);
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
+  const [editingTask, setEditingTask] = useState<any>(null);
   const queryClient = useQueryClient();
   const {
     data: currentPlan,
@@ -121,6 +123,10 @@ const PlanDetailsPage = () => {
   const handleDeleteTask = (task_id: string) => {
     deleteTaskMutation.mutate(task_id);
   };
+  const handleEditTask = (task: any) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
+  };
   const createNewDayMutation = useMutation({
     mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
@@ -142,6 +148,7 @@ const PlanDetailsPage = () => {
     setSelectedDay(dayNumber);
     setExpandedDay(dayNumber);
     setShowTaskForm(false);
+    setEditingTask(null);
   };
   const currentDayData = currentPlan?.days?.find(
     (day: any) => day.day_number === selectedDay,
@@ -198,6 +205,7 @@ const PlanDetailsPage = () => {
                         data-testid="add-task-button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setEditingTask(null);
                           setShowTaskForm(true);
                         }}
                       />
@@ -211,7 +219,7 @@ const PlanDetailsPage = () => {
                             setExpandedDay(
                               expandedDay === day.day_number
                                 ? 0
-                                : day.day_number,
+                                : day.day_number
                             );
                           }}
                         />
@@ -233,6 +241,13 @@ const PlanDetailsPage = () => {
                             <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                           </Pecha.DropdownMenuTrigger>
                           <Pecha.DropdownMenuContent side="right">
+                            <Pecha.DropdownMenuItem
+                              className="gap-2 cursor-pointer"
+                              onClick={() => handleEditTask(task)}
+                            >
+                              <FaPen className="h-4 w-4" />
+                              Edit
+                            </Pecha.DropdownMenuItem>
                             <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
                               <TaskDeleteDialog
                                 taskId={task.id}
@@ -267,7 +282,7 @@ const PlanDetailsPage = () => {
 
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {showTaskForm ? (
-          <TaskForm selectedDay={selectedDay} />
+          <TaskForm selectedDay={selectedDay} editingTask={editingTask} />
         ) : currentDayData?.tasks?.length === 0 ? (
           <DefaultDayView selectedDay={selectedDay} />
         ) : null}

@@ -19,6 +19,7 @@ import { FaMinus } from "react-icons/fa6";
 
 interface TaskFormProps {
   selectedDay: number;
+  editingTask?: any;
 }
 interface SubTask {
   id: string;
@@ -139,7 +140,7 @@ const createSubTasks = async (
   return data;
 };
 
-const TaskForm = ({ selectedDay }: TaskFormProps) => {
+const TaskForm = ({ selectedDay, editingTask }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
   const form = useForm<TaskFormData>({
@@ -155,6 +156,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
   const isFormValid = formValues.title.trim().length > 0;
 
   const getDayKey = (key: string) => `day_${selectedDay}_${key}`;
+  const isEditMode = !!editingTask;
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
   const currentDayData = currentPlan?.days?.find(
@@ -280,7 +282,9 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
 
   return (
     <div className="w-full h-full border p-4 space-y-4 overflow-y-auto">
-      <h2 className="text-xl font-semibold">Add Task</h2>
+      <h2 className="text-xl font-semibold">
+        {isEditMode ? "Edit Task" : "Add Task"}
+      </h2>
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <Pecha.FormField
@@ -416,7 +420,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                           {subTask.musicUrl.includes("spotify.com") &&
                             (() => {
                               const spotifyData = extractSpotifyId(
-                                subTask.musicUrl,
+                                subTask.musicUrl
                               );
                               return spotifyData ? (
                                 <div className="w-full rounded-md overflow-hidden">
