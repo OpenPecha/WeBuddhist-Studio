@@ -505,6 +505,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             </div>
           )}
           <div className="pt-6 flex gap-3">
+            {isEditMode && (
             <Pecha.Button
               variant="outline"
               type="button"
@@ -513,6 +514,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             >
               Cancel
             </Pecha.Button>
+            )}
             <Pecha.Button
               variant="destructive"
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -520,7 +522,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               data-testid="submit-button"
               disabled={!isFormValid || createTaskMutation.isPending}
             >
-              {createTaskMutation.isPending ? "Creating..." : "Submit"}
+              {createTaskMutation.isPending ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update" : "Submit")}
             </Pecha.Button>
           </div>
         </form>
