@@ -11,6 +11,9 @@ RUN npm install
 
 COPY . .
 
+ARG VITE_BACKEND_DEV_BASE_URL=http://localhost:3000
+ENV VITE_BACKEND_DEV_BASE_URL=$VITE_BACKEND_DEV_BASE_URL
+
 ENV NODE_ENV=production
 
 RUN npm run build
