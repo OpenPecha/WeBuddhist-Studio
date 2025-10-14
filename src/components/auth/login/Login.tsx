@@ -5,7 +5,6 @@ import StudioCard from "@/components/ui/atoms/studio-card";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useState } from "react";
 import { useAuth } from "@/config/auth-context";
 import { useTranslate } from "@tolgee/react";
@@ -27,7 +26,7 @@ const Login = () => {
   const loginMutation = useMutation<any, Error, LoginData>({
     mutationFn: async (loginData: LoginData) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/api/v1/cms/auth/login`,
+        `/api/v1/cms/auth/login`,
         loginData,
       );
       return response.data;
@@ -53,7 +52,7 @@ const Login = () => {
   const emailReverifyMutation = useMutation<any, Error, { email: string }>({
     mutationFn: async (data: { email: string }) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/api/v1/cms/auth/email-re-verification?email=${encodeURIComponent(data.email)}`,
+        `/api/v1/cms/auth/email-re-verification?email=${encodeURIComponent(data.email)}`,
       );
       return response.data;
     },

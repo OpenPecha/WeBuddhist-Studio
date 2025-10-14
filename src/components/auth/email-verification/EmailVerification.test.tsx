@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import EmailVerification from "./EmailVerification";
 import axiosInstance from "@/config/axios-config";
 import { vi } from "vitest";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -104,7 +103,7 @@ describe("EmailVerification Component", () => {
 
     await waitFor(() => {
       expect(vi.mocked(axiosInstance.get)).toHaveBeenCalledWith(
-        `${BACKEND_BASE_URL}/api/v1/cms/auth/verify-email`,
+        `/api/v1/cms/auth/verify-email`,
         {
           headers: {
             Authorization: "Bearer test-token",

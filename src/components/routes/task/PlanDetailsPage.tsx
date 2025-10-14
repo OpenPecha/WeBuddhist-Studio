@@ -5,7 +5,6 @@ import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
 import { FaPen } from "react-icons/fa";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -55,20 +54,17 @@ const DefaultDayView = ({ selectedDay }: { selectedDay: number }) => {
 };
 
 const fetchPlanDetails = async (plan_id: string) => {
-  const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-      },
+  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
+    headers: {
+      Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
     },
-  );
+  });
   return data;
 };
 
 const createNewDay = async (plan_id: string) => {
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}/days`,
+    `/api/v1/cms/plans/${plan_id}/days`,
     {},
     {
       headers: {
@@ -80,14 +76,11 @@ const createNewDay = async (plan_id: string) => {
 };
 
 const deleteTask = async (task_id: string) => {
-  const { data } = await axiosInstance.delete(
-    `${BACKEND_BASE_URL}/api/v1/cms/plan/tasks/${task_id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-      },
+  const { data } = await axiosInstance.delete(`/api/v1/cms/tasks/${task_id}`, {
+    headers: {
+      Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
     },
-  );
+  });
   return data;
 };
 

@@ -10,9 +10,6 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-
-ENV NODE_ENV=production
-
 RUN npm run build
 
 FROM nginx:stable-alpine
@@ -21,7 +18,6 @@ WORKDIR /app
 
 RUN chown nginx:nginx /app && apk add --no-cache gettext
 
-ENV BACKEND_API_URL=https://api.webuddhist.com
 ENV PORT=4173
 
 # Copy the React build files into Nginx's public directory
@@ -33,4 +29,4 @@ COPY nginx/security-headers.conf /etc/nginx/
 
 EXPOSE 4173
 
-CMD ["sh", "-c", "envsubst '${BACKEND_API_URL}' < /etc/nginx/conf.d/studio.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "envsubst '${VITE_BACKEND_BASE_URL}' < /etc/nginx/conf.d/studio.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
