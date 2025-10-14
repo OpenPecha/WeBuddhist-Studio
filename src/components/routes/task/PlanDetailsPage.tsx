@@ -127,6 +127,10 @@ const PlanDetailsPage = () => {
     setEditingTask(task);
     setShowTaskForm(true);
   };
+  const handleCancelTaskForm = () => {
+    setShowTaskForm(false);
+    setEditingTask(null);
+  };
   const createNewDayMutation = useMutation({
     mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
@@ -282,7 +286,11 @@ const PlanDetailsPage = () => {
 
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {showTaskForm ? (
-          <TaskForm selectedDay={selectedDay} editingTask={editingTask} />
+          <TaskForm
+            selectedDay={selectedDay}
+            editingTask={editingTask}
+            onCancel={handleCancelTaskForm}
+          />
         ) : currentDayData?.tasks?.length === 0 ? (
           <DefaultDayView selectedDay={selectedDay} />
         ) : null}

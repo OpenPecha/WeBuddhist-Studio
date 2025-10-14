@@ -20,6 +20,7 @@ import { FaMinus } from "react-icons/fa6";
 interface TaskFormProps {
   selectedDay: number;
   editingTask?: any;
+  onCancel: () => void;
 }
 interface SubTask {
   id: string;
@@ -140,7 +141,7 @@ const createSubTasks = async (
   return data;
 };
 
-const TaskForm = ({ selectedDay, editingTask }: TaskFormProps) => {
+const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
   const form = useForm<TaskFormData>({
@@ -203,6 +204,14 @@ const TaskForm = ({ selectedDay, editingTask }: TaskFormProps) => {
     form.setValue("title", savedTitle);
   }, [selectedDay, form]);
 
+  useEffect(() => {
+    if (editingTask) {
+      form.setValue("title", editingTask.title);
+    } else {
+      form.reset();
+      setSubTasks([]);
+    }
+  }, [editingTask, form]);
   const handleAddSubTask = (
     contentType: "image" | "video" | "music" | "text",
   ) => {
@@ -269,6 +278,7 @@ const TaskForm = ({ selectedDay, editingTask }: TaskFormProps) => {
     setSubTasks([]);
     setShowContentTypes(false);
     form.reset();
+    onCancel();
   };
 
   const onSubmit = (data: TaskFormData) => {
@@ -494,7 +504,15 @@ const TaskForm = ({ selectedDay, editingTask }: TaskFormProps) => {
               ))}
             </div>
           )}
-          <div className="pt-6">
+          <div className="pt-6 flex gap-3">
+            <Pecha.Button
+              variant="outline"
+              type="button"
+              onClick={clearFormData}
+              data-testid="cancel-button"
+            >
+              Cancel
+            </Pecha.Button>
             <Pecha.Button
               variant="destructive"
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
