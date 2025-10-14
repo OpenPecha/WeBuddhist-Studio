@@ -11,6 +11,14 @@ import { Pecha } from "@/components/ui/shadimport";
 import TaskForm from "./components/TaskForm";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import outlinepecha from "@/assets/icon/outlinepecha.svg";
+
+interface SubTask {
+  id: string;
+  content: string;
+  content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE";
+  display_order: number;
+}
+
 interface PlanWithDays {
   id: string;
   title: string;
@@ -21,10 +29,9 @@ interface PlanWithDays {
     tasks: {
       id: string;
       title: string;
-      description: string;
-      content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE" | "SOURCE_REFERENCE";
-      content: string;
       estimated_time: number;
+      display_order: number;
+      subtasks: SubTask[];
     }[];
   }[];
 }
@@ -181,6 +188,7 @@ const PlanDetailsPage = () => {
                     <div className="flex items-center gap-2">
                       <IoMdAdd
                         className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                        data-testid="add-task-button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowTaskForm(true);
