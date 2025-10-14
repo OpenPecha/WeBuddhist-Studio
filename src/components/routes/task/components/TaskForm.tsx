@@ -124,7 +124,7 @@ const createSubTasks = async (
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/sub-tasks`,
+    `/api/v1/cms/sub-tasks`,
     {
       task_id: task_id,
       sub_tasks: subTasksData,
