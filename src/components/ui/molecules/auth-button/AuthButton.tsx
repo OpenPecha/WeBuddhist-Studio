@@ -3,14 +3,12 @@ import { Button } from "../../atoms/button";
 import { Skeleton } from "../../atoms/skeleton";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL, NO_PROFILE_IMAGE } from "@/lib/constant";
+import { NO_PROFILE_IMAGE } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslate } from "@tolgee/react";
 import { IoIosLogOut } from "react-icons/io";
 export const fetchUserInfo = async () => {
-  const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/authors/info`,
-  );
+  const { data } = await axiosInstance.get(`/api/v1/authors/info`);
   return data;
 };
 const AuthButton = () => {

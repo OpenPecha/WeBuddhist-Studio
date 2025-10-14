@@ -5,7 +5,6 @@ import ResetPassword from "./ResetPassword";
 import userEvent from "@testing-library/user-event";
 import axiosInstance from "@/config/axios-config";
 import { vi } from "vitest";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 
 const renderWithProviders = (
   component: React.ReactElement,
@@ -144,7 +143,7 @@ describe("ResetPassword Component", () => {
 
     await waitFor(() => {
       expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
-        `${BACKEND_BASE_URL}/api/v1/cms/auth/reset-password`,
+        `/api/v1/cms/auth/reset-password`,
         {
           password:
             "d71fce13bfee14deb5302af59d48181a9a09cbc164ebadfde79d36190fcb6f93",

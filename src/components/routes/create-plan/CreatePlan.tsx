@@ -8,7 +8,7 @@ import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
 import TagInput from "@/components/ui/molecules/tag-input/TagInput";
-import { DIFFICULTY, BACKEND_BASE_URL } from "@/lib/constant";
+import { DIFFICULTY } from "@/lib/constant";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ export const UploadImageToS3 = async (file: File, plan_id: string) => {
   const formData = new FormData();
   formData.append("file", file);
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/media/upload`,
+    `/api/v1/cms/media/upload`,
     formData,
     {
       params: {
@@ -31,14 +31,11 @@ export const UploadImageToS3 = async (file: File, plan_id: string) => {
 };
 export const getPlan = async (plan_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
   return data;
 };
 export const updatePlan = async ({
@@ -50,7 +47,7 @@ export const updatePlan = async ({
 }) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.put(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans/${plan_id}`,
+    `/api/v1/cms/plans/${plan_id}`,
     formdata,
     {
       headers: {
@@ -62,15 +59,11 @@ export const updatePlan = async ({
 };
 export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans`,
-    formdata,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const { data } = await axiosInstance.post(`/api/v1/cms/plans`, formdata, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
   return data;
 };
 const Createplan = () => {

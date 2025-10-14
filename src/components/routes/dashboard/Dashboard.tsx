@@ -7,7 +7,6 @@ import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 import { Link } from "react-router-dom";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 
@@ -20,21 +19,18 @@ const fetchPlans = async (
 ) => {
   const skip = (page - 1) * limit;
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/cms/plans`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      params: {
-        skip,
-        limit,
-        ...(search && { search }),
-        ...(sortBy && { sort_by: sortBy }),
-        ...(sortOrder && { sort_order: sortOrder }),
-      },
+  const { data } = await axiosInstance.get(`/api/v1/cms/plans`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+    params: {
+      skip,
+      limit,
+      ...(search && { search }),
+      ...(sortBy && { sort_by: sortBy }),
+      ...(sortOrder && { sort_order: sortOrder }),
+    },
+  });
   return data;
 };
 

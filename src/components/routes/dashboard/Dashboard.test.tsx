@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Dashboard from "./Dashboard";
 import axiosInstance from "@/config/axios-config";
 import { vi } from "vitest";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -124,7 +123,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
+        expect.stringContaining(`/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
@@ -136,7 +135,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
+        expect.stringContaining(`/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
@@ -148,7 +147,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`${BACKEND_BASE_URL}/api/v1/cms/plan`),
+        expect.stringContaining(`/api/v1/cms/plan`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",

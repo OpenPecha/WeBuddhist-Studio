@@ -3,18 +3,14 @@ import StudioCard from "@/components/ui/atoms/studio-card";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
 
 const verifyEmail = async (token: string) => {
-  const response = await axiosInstance.get(
-    `${BACKEND_BASE_URL}/api/v1/cms/auth/verify-email`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const response = await axiosInstance.get(`/api/v1/cms/auth/verify-email`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
   return response.data;
 };
 

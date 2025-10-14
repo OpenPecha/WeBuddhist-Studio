@@ -5,7 +5,6 @@ import StudioCard from "@/components/ui/atoms/studio-card";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslate } from "@tolgee/react";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 import { type FormEvent } from "react";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -27,7 +26,7 @@ const Signup = () => {
   const signupMutation = useMutation<any, Error, SignupData>({
     mutationFn: async (signupData: SignupData) => {
       const response = await axiosInstance.post(
-        `${BACKEND_BASE_URL}/api/v1/cms/auth/register`,
+        `/api/v1/cms/auth/register`,
         signupData,
       );
       return response.data;

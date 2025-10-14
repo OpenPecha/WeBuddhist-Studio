@@ -11,7 +11,6 @@ import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
-import { BACKEND_BASE_URL } from "@/lib/constant";
 import { toast } from "sonner";
 import { extractSpotifyId, getYouTubeVideoId } from "@/lib/utils";
 import { taskSchema } from "@/schema/TaskSchema";
@@ -93,7 +92,7 @@ const createTask = async (
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/plan/${plan_id}/day/${day_id}/tasks`,
+    `/api/v1/cms/plan/${plan_id}/day/${day_id}/tasks`,
     taskData,
     {
       headers: {
@@ -108,7 +107,7 @@ const uploadImageToS3 = async (file: File, plan_id: string) => {
   const formData = new FormData();
   formData.append("file", file);
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/media/upload`,
+    `/api/v1/cms/media/upload`,
     formData,
     {
       params: {
@@ -125,7 +124,7 @@ const createSubTasks = async (
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
-    `${BACKEND_BASE_URL}/api/v1/cms/sub-tasks`,
+    `/api/v1/cms/sub-tasks`,
     {
       task_id: task_id,
       sub_tasks: subTasksData,
