@@ -25,8 +25,7 @@ WORKDIR /app
 RUN chown nginx:nginx /app && apk add --no-cache gettext
 
 # Set default environment variable for nginx stage
-ARG VITE_BACKEND_BASE_URL=http://localhost:3000
-ENV VITE_BACKEND_BASE_URL=$VITE_BACKEND_BASE_URL
+# ENV VITE_BACKEND_BASE_URL=$VITE_BACKEND_BASE_URL
 
 ENV PORT=4173
 
