@@ -216,7 +216,7 @@ const PlanDetailsPage = () => {
                             setExpandedDay(
                               expandedDay === day.day_number
                                 ? 0
-                                : day.day_number
+                                : day.day_number,
                             );
                           }}
                         />

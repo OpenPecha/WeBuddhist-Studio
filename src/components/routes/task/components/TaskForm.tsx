@@ -8,7 +8,7 @@ import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
 import { toast } from "sonner";
@@ -33,6 +33,8 @@ interface SubTask {
   isUploading: boolean;
 }
 interface CreateTaskPayload {
+  plan_id: string;
+  day_id: string;
   title: string;
   description: string;
   estimated_time: number;
@@ -93,15 +95,11 @@ const createTask = async (
   taskData: CreateTaskPayload,
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.post(
-    `/api/v1/cms/plan/${plan_id}/day/${day_id}/tasks`,
-    taskData,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const { data } = await axiosInstance.post(`/api/v1/cms/tasks`, taskData, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
   return data;
 };
 
@@ -140,6 +138,16 @@ const createSubTasks = async (
   return data;
 };
 
+const fetchTaskDetails = async (task_id: string) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.get(`/api/v1/cms/tasks/${task_id}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return data;
+};
+
 const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
@@ -162,6 +170,11 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const currentDayData = currentPlan?.days?.find(
     (day: any) => day.day_number === selectedDay,
   );
+  const { data: taskDetails } = useQuery({
+    queryKey: ["taskDetails", editingTask?.id],
+    queryFn: () => fetchTaskDetails(editingTask.id),
+    enabled: !!editingTask?.id,
+  });
 
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: CreateTaskPayload) => {
@@ -204,13 +217,42 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   }, [selectedDay, form]);
 
   useEffect(() => {
-    if (editingTask) {
-      form.setValue("title", editingTask.title);
-    } else {
-      form.reset();
+    if (editingTask && taskDetails) {
+      form.setValue("title", taskDetails.task.title);
+
+      const transformedSubTasks: SubTask[] = taskDetails.task.subtasks.map(
+        (st: any) => ({
+          id: st.id,
+          contentType:
+            st.content_type === "VIDEO"
+              ? "video"
+              : st.content_type === "TEXT"
+                ? "text"
+                : st.content_type === "AUDIO"
+                  ? "music"
+                  : st.content_type === "IMAGE"
+                    ? "image"
+                    : "text",
+          videoUrl: st.content_type === "VIDEO" ? st.content : "",
+          textContent: st.content_type === "TEXT" ? st.content : "",
+          musicUrl: st.content_type === "AUDIO" ? st.content : "",
+          imageFile: null,
+          imagePreview: st.content_type === "IMAGE" ? st.content : null,
+          imageKey: st.content_type === "IMAGE" ? st.content : null,
+          isUploading: false,
+        }),
+      );
+
+      setSubTasks(transformedSubTasks);
+    } else if (!editingTask) {
+      const savedTitle = localStorage.getItem(getDayKey("title"));
+      if (!savedTitle) {
+        form.reset();
+      }
       setSubTasks([]);
     }
-  }, [editingTask, form]);
+  }, [editingTask, taskDetails, form, selectedDay]);
+
   const handleAddSubTask = (
     contentType: "image" | "video" | "music" | "text",
   ) => {
@@ -282,6 +324,8 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const onSubmit = (data: TaskFormData) => {
     const taskData: CreateTaskPayload = {
+      plan_id: plan_id!,
+      day_id: currentDayData!.id,
       title: data.title,
       description: data.title,
       estimated_time: 30,
@@ -429,7 +473,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                           {subTask.musicUrl.includes("spotify.com") &&
                             (() => {
                               const spotifyData = extractSpotifyId(
-                                subTask.musicUrl
+                                subTask.musicUrl,
                               );
                               return spotifyData ? (
                                 <div className="w-full rounded-md overflow-hidden">
@@ -505,14 +549,14 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           )}
           <div className="pt-6 flex gap-3">
             {isEditMode && (
-            <Pecha.Button
-              variant="outline"
-              type="button"
-              onClick={clearFormData}
-              data-testid="cancel-button"
-            >
-              Cancel
-            </Pecha.Button>
+              <Pecha.Button
+                variant="outline"
+                type="button"
+                onClick={clearFormData}
+                data-testid="cancel-button"
+              >
+                Cancel
+              </Pecha.Button>
             )}
             <Pecha.Button
               variant="destructive"
@@ -521,7 +565,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               data-testid="submit-button"
               disabled={!isFormValid || createTaskMutation.isPending}
             >
-              {createTaskMutation.isPending ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update" : "Submit")}
+              {createTaskMutation.isPending
+                ? isEditMode
+                  ? "Updating..."
+                  : "Creating..."
+                : isEditMode
+                  ? "Update"
+                  : "Submit"}
             </Pecha.Button>
           </div>
         </form>
