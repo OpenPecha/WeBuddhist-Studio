@@ -239,7 +239,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             imagePreview: st.content_type === "IMAGE" ? st.content : null,
             imageKey: st.content_type === "IMAGE" ? st.content : null,
             isUploading: false,
-          })
+          }),
         );
         setSubTasks(transformedSubTasks);
       }
