@@ -107,7 +107,6 @@ const PlanDetailsPage = () => {
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
-      console.log(error);
       toast.error("Failed to delete task", {
         description: error.response.data.detail,
       });

@@ -34,7 +34,9 @@ jobs:
       - name: Build Docker image in Github container registry
         run: |
           lower_owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/$lower_owner/plan_frontend:${{ env.IMAGE_TAG }} .
+          docker build \
+            --build-arg VITE_ENV_SALT=${{ secrets.VITE_ENV_SALT }} \
+            -t ghcr.io/$lower_owner/plan_frontend:${{ env.IMAGE_TAG }} .
 
       - name: Push Docker image to GHCR
         run: |

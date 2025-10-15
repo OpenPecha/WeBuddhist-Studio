@@ -95,11 +95,15 @@ const createTask = async (
   taskData: CreateTaskPayload,
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.post(`/api/v1/cms/tasks`, taskData, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
+  const { data } = await axiosInstance.post(
+    `/api/v1/cms/tasks`,
+    { ...taskData, plan_id, day_id },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-  });
+  );
   return data;
 };
 
