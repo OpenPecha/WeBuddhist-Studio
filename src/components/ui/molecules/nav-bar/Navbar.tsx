@@ -24,14 +24,14 @@ const Navbar = () => {
   return (
     <div className="font-dynamic p-2 flex justify-between items-center">
       <div className="flex items-center space-x-10">
-        <div className="flex items-center gap-2 group cursor-pointer">
+        <Link to="/dashboard" className="flex items-center gap-2 group cursor-pointer">
           <img
             src={pechaIcon}
             alt="Pecha Studio Logo"
             className="w-10 group-hover:rotate-[360deg] transition-all duration-800 h-10"
           />
           <h1 className="font-semibold text-sm font-inter">{SITE_NAME}</h1>
-        </div>
+        </Link>
         <div className="hidden md:flex items-center space-x-6">
           {navItems.map((item, index) => (
             <Link

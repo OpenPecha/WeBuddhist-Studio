@@ -122,7 +122,7 @@ export function DashBoardTable({
               e.currentTarget.src = defaultCover;
             }}
             alt="cover"
-            className="w-32 h-12 object-cover"
+            className="w-32 rounded border-2 h-12 object-cover"
           />
         </Pecha.TableCell>
         <Pecha.TableCell
