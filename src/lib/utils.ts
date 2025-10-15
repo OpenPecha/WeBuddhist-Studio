@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function createPasswordHash(email: string, password: string): string {
   const envSalt = import.meta.env.VITE_ENV_SALT || "";
-  console.log(envSalt,email,password);
+  console.log(envSalt, email, password);
   const combinedString = email + envSalt + password;
   return sha256(combinedString).toString();
 }
