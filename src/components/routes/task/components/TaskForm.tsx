@@ -216,46 +216,43 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   });
 
   useEffect(() => {
-    const savedTitle = localStorage.getItem(getDayKey("title")) || "";
-    form.setValue("title", savedTitle);
-  }, [selectedDay, form]);
-
-  useEffect(() => {
-    if (editingTask && taskDetails) {
-      form.setValue("title", taskDetails.task.title);
-
-      const transformedSubTasks: SubTask[] = taskDetails.task.subtasks.map(
-        (st: any) => ({
-          id: st.id,
-          contentType:
-            st.content_type === "VIDEO"
-              ? "video"
-              : st.content_type === "TEXT"
-                ? "text"
-                : st.content_type === "AUDIO"
-                  ? "music"
-                  : st.content_type === "IMAGE"
-                    ? "image"
-                    : "text",
-          videoUrl: st.content_type === "VIDEO" ? st.content : "",
-          textContent: st.content_type === "TEXT" ? st.content : "",
-          musicUrl: st.content_type === "AUDIO" ? st.content : "",
-          imageFile: null,
-          imagePreview: st.content_type === "IMAGE" ? st.content : null,
-          imageKey: st.content_type === "IMAGE" ? st.content : null,
-          isUploading: false,
-        }),
-      );
-
-      setSubTasks(transformedSubTasks);
+    if (editingTask) {
+      form.setValue("title", editingTask.title);
+      if (taskDetails) {
+        const transformedSubTasks: SubTask[] = taskDetails.task.subtasks.map(
+          (st: any) => ({
+            id: st.id,
+            contentType:
+              st.content_type === "VIDEO"
+                ? "video"
+                : st.content_type === "TEXT"
+                  ? "text"
+                  : st.content_type === "AUDIO"
+                    ? "music"
+                    : st.content_type === "IMAGE"
+                      ? "image"
+                      : "text",
+            videoUrl: st.content_type === "VIDEO" ? st.content : "",
+            textContent: st.content_type === "TEXT" ? st.content : "",
+            musicUrl: st.content_type === "AUDIO" ? st.content : "",
+            imageFile: null,
+            imagePreview: st.content_type === "IMAGE" ? st.content : null,
+            imageKey: st.content_type === "IMAGE" ? st.content : null,
+            isUploading: false,
+          })
+        );
+        setSubTasks(transformedSubTasks);
+      }
     } else if (!editingTask) {
       const savedTitle = localStorage.getItem(getDayKey("title"));
-      if (!savedTitle) {
+      if (savedTitle) {
+        form.setValue("title", savedTitle);
+      } else {
         form.reset();
       }
       setSubTasks([]);
     }
-  }, [editingTask, taskDetails, form, selectedDay]);
+  }, [editingTask, taskDetails, selectedDay]);
 
   const handleAddSubTask = (
     contentType: "image" | "video" | "music" | "text",

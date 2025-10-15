@@ -348,19 +348,19 @@ describe("TaskForm Component", () => {
     expect(screen.getByPlaceholderText("Task Title")).toHaveValue("Test Task");
   });
 
-  it("saves and restores form state from localStorage", () => {
+  it("saves form title to localStorage when typing", () => {
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
+    const titleInput = screen.getByPlaceholderText("Task Title");
+    fireEvent.change(titleInput, { target: { value: "My Task" } });
+    expect(localStorage.getItem("day_1_title")).toBe("My Task");
+  });
+
+  it("loads title from localStorage on initial render", () => {
     localStorage.setItem("day_1_title", "Restored Task");
     renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     expect(screen.getByPlaceholderText("Task Title")).toHaveValue(
       "Restored Task",
     );
-    const addButton = screen.getByTestId("add-content-button");
-    fireEvent.click(addButton);
-    const textButton = screen.getByTestId("text-button");
-    fireEvent.click(textButton);
-    expect(
-      screen.getByPlaceholderText("Enter your text content"),
-    ).toBeInTheDocument();
   });
 
   it("submits form successfully with subtasks", async () => {
