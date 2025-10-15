@@ -10,6 +10,8 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+ARG VITE_ENV_SALT
+ENV VITE_ENV_SALT=${VITE_ENV_SALT}
 RUN npm run build
 
 FROM nginx:stable-alpine
