@@ -2,7 +2,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/ui/molecules/nav-bar/Navbar";
 import { setFontVariables } from "./lib/font-config";
 import { useEffect, useState } from "react";
-import { LANGUAGE } from "./lib/constant";
+import { ACCESS_TOKEN, LANGUAGE, REFRESH_TOKEN } from "./lib/constant";
 import { useAuth } from "./config/auth-context";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "./config/axios-config";
@@ -32,22 +32,22 @@ function App() {
       return data;
     },
     onSuccess: (data: any) => {
-      sessionStorage.setItem("accessToken", data.access_token);
+      sessionStorage.setItem(ACCESS_TOKEN, data.access_token);
       login(data.access_token);
       if (!intervalId) {
         startTokenRefreshCounter();
       }
     },
     onError: () => {
-      sessionStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      sessionStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
       navigate("/login");
     },
   });
 
   const startTokenRefreshCounter = () => {
     const interval = setInterval(() => {
-      const refreshToken = localStorage.getItem("refreshToken");
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN);
       if (refreshToken) {
         loginMutation.mutate(refreshToken);
       }
@@ -55,7 +55,7 @@ function App() {
     setIntervalId(interval as any);
   };
   useEffect(() => {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN);
     if (refreshToken) {
       loginMutation.mutate(refreshToken);
     }
