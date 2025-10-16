@@ -146,7 +146,7 @@ describe("ResetPassword Component", () => {
         `/api/v1/cms/auth/reset-password`,
         {
           password:
-            "d71fce13bfee14deb5302af59d48181a9a09cbc164ebadfde79d36190fcb6f93",
+            "4c2417eef23ec7fb1bd8d74eb29afe5f0867a4ddbdb707ada89d1cf91f0e6e1d",
         },
         {
           headers: {
