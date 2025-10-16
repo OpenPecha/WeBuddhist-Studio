@@ -43,6 +43,7 @@ import {
 import { ButtonGroup } from "@/components/ui/atoms/button-group";
 import { Badge } from "@/components/ui/atoms/badge";
 import { Textarea } from "@/components/ui/atoms/textarea";
+import { Skeleton } from "@/components/ui/atoms/skeleton";
 
 import {
   Pagination,
@@ -120,4 +121,5 @@ export const Pecha = {
   TableRow,
   Badge,
   Textarea,
+  Skeleton,
 };
