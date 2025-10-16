@@ -6,29 +6,6 @@ import TaskForm from "./components/TaskForm";
 import SideBar from "./components/SideBar";
 import { DefaultDayView } from "./components/DefaultView";
 
-interface SubTask {
-  id: string;
-  content: string;
-  content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE";
-  display_order: number;
-}
-
-interface PlanWithDays {
-  id: string;
-  title: string;
-  description: string;
-  days: {
-    id: string;
-    day_number: number;
-    tasks: {
-      id: string;
-      title: string;
-      estimated_time: number;
-      display_order: number;
-      subtasks: SubTask[];
-    }[];
-  }[];
-}
 const fetchPlanDetails = async (plan_id: string) => {
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
     headers: {
@@ -47,7 +24,7 @@ const PlanDetailsPage = () => {
     data: currentPlan,
     isLoading: _isLoading,
     error: _error,
-  } = useQuery<PlanWithDays>({
+  } = useQuery({
     queryKey: ["planDetails", plan_id],
     queryFn: () => fetchPlanDetails(plan_id!),
     enabled: !!plan_id,
