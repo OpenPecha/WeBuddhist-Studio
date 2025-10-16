@@ -23,8 +23,11 @@ const PlanDetailsPage = () => {
         onAddTaskClick={() => setShowTaskForm(true)}
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
-        {showTaskForm && <TaskForm selectedDay={selectedDay} />}
-        {!showTaskForm && <DefaultDayView selectedDay={selectedDay} />}
+        {showTaskForm ? (
+          <TaskForm selectedDay={selectedDay} />
+        ) : (
+          <DefaultDayView selectedDay={selectedDay} />
+        )}
       </div>
     </div>
   );
