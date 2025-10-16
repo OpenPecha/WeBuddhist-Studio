@@ -259,6 +259,7 @@ const Createplan = () => {
                   <Pecha.FormControl>
                     <Pecha.Input
                       type="number"
+                      disabled={plan_id !== "new"}
                       placeholder={t(
                         "studio.plan.form.placeholder.number_of_days",
                       )}
