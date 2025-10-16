@@ -3,47 +3,27 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import axiosInstance from "@/config/axios-config";
 
-interface SubTask {
-  id: string;
-  content: string;
-  content_type: "TEXT" | "AUDIO" | "VIDEO" | "IMAGE";
-  display_order: number;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  estimated_time: number;
-  display_order: number;
-  subtasks: SubTask[];
-}
-
-interface Day {
-  id: string;
-  day_number: number;
-  tasks: Task[];
-}
-
-interface PlanWithDays {
-  id: string;
-  title: string;
-  description: string;
-  days: Day[];
-}
-
 interface SideBarProps {
-  currentPlan: PlanWithDays | undefined;
   planId: string;
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
   onAddTaskClick: () => void;
 }
+
+const fetchPlanDetails = async (plan_id: string) => {
+  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
+    headers: {
+      Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+    },
+  });
+  return data;
+};
 
 const createNewDay = async (plan_id: string) => {
   const { data } = await axiosInstance.post(
@@ -68,7 +48,6 @@ const deleteTask = async (task_id: string) => {
 };
 
 const SideBar = ({
-  currentPlan,
   planId,
   selectedDay,
   onDaySelect,
@@ -76,6 +55,17 @@ const SideBar = ({
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const queryClient = useQueryClient();
+
+  const {
+    data: currentPlan,
+    isLoading: _isLoading,
+    error: _error,
+  } = useQuery({
+    queryKey: ["planDetails", planId],
+    queryFn: () => fetchPlanDetails(planId),
+    enabled: !!planId,
+    refetchOnWindowFocus: false,
+  });
 
   const deleteTaskMutation = useMutation({
     mutationFn: (task_id: string) => deleteTask(task_id),
@@ -121,7 +111,11 @@ const SideBar = ({
       <div className="p-4">
         <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
         <div className="text-sm text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
-          {currentPlan?.title}
+          {_isLoading ? (
+            <Pecha.Skeleton className="h-6 w-9/12 rounded" />
+          ) : (
+            currentPlan?.title
+          )}
         </div>
       </div>
 
@@ -131,88 +125,100 @@ const SideBar = ({
           <span className="text-sm  text-foreground">Days</span>
         </div>
 
-        <div className="space-y-1">
-          {currentPlan?.days.map((day) => (
-            <div key={day.id} className="group space-y-2">
-              <div
-                className="flex items-center justify-between px-4 py-2 border-b cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
-                onClick={() => {
-                  handleDayClick(day.day_number);
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-4 h-4 rounded-full ${
-                      selectedDay === day.day_number
-                        ? "bg-[#ba0909]"
-                        : "bg-input"
-                    }`}
-                  ></div>
-                  <span
-                    className={`text-sm ${
-                      selectedDay === day.day_number
-                        ? "text-zinc-900 dark:text-zinc-100"
-                        : "text-zinc-400 dark:text-zinc-600"
-                    }`}
-                  >
-                    Day {day.day_number}
-                  </span>
+        <div className="space-y-1 h-[calc(100vh-300px)] overflow-auto">
+          {_isLoading ? (
+            <>
+              {[1, 2, 3].map((index) => (
+                <div key={index} className="px-4 py-2 border-b">
+                  <Pecha.Skeleton className="h-8 w-full rounded" />
                 </div>
+              ))}
+            </>
+          ) : (
+            currentPlan?.days.map((day: any) => (
+              <div key={day.id} className="group space-y-2">
+                <div
+                  className="flex items-center justify-between px-4 py-2 border-b cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
+                  onClick={() => {
+                    handleDayClick(day.day_number);
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-4 h-4 rounded-full ${
+                        selectedDay === day.day_number
+                          ? "bg-[#ba0909]"
+                          : "bg-input"
+                      }`}
+                    ></div>
+                    <span
+                      className={`text-sm ${
+                        selectedDay === day.day_number
+                          ? "text-zinc-900 dark:text-zinc-100"
+                          : "text-zinc-400 dark:text-zinc-600"
+                      }`}
+                    >
+                      Day {day.day_number}
+                    </span>
+                  </div>
 
-                {selectedDay === day.day_number && (
-                  <div className="flex items-center gap-2">
-                    <IoMdAdd
-                      className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
-                      data-testid="add-task-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddTaskClick();
-                      }}
-                    />
-                    {day.tasks.length > 0 && (
-                      <MdExpandMore
-                        className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
-                          expandedDay === day.day_number ? "rotate-180" : ""
-                        }`}
+                  {selectedDay === day.day_number && (
+                    <div className="flex items-center gap-2">
+                      <IoMdAdd
+                        className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                        data-testid="add-task-button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setExpandedDay(
-                            expandedDay === day.day_number ? 0 : day.day_number,
-                          );
+                          onAddTaskClick();
                         }}
                       />
-                    )}
+                      {day.tasks.length > 0 && (
+                        <MdExpandMore
+                          className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
+                            expandedDay === day.day_number ? "rotate-180" : ""
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedDay(
+                              expandedDay === day.day_number
+                                ? 0
+                                : day.day_number,
+                            );
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {expandedDay === day.day_number && day.tasks.length > 0 && (
+                  <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
+                    {day.tasks.map((task: any) => (
+                      <div
+                        key={task.id}
+                        className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
+                      >
+                        <span>{task.title}</span>
+                        <Pecha.DropdownMenu>
+                          <Pecha.DropdownMenuTrigger asChild>
+                            <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                          </Pecha.DropdownMenuTrigger>
+                          <Pecha.DropdownMenuContent side="right">
+                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                              <TaskDeleteDialog
+                                taskId={task.id}
+                                onDelete={handleDeleteTask}
+                              />
+                            </Pecha.DropdownMenuItem>
+                          </Pecha.DropdownMenuContent>
+                        </Pecha.DropdownMenu>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-
-              {expandedDay === day.day_number && day.tasks.length > 0 && (
-                <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
-                  {day.tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
-                    >
-                      <span>{task.title}</span>
-                      <Pecha.DropdownMenu>
-                        <Pecha.DropdownMenuTrigger asChild>
-                          <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
-                        </Pecha.DropdownMenuTrigger>
-                        <Pecha.DropdownMenuContent side="right">
-                          <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                            <TaskDeleteDialog
-                              taskId={task.id}
-                              onDelete={handleDeleteTask}
-                            />
-                          </Pecha.DropdownMenuItem>
-                        </Pecha.DropdownMenuContent>
-                      </Pecha.DropdownMenu>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )) || []}
+            ))
+          )}
         </div>
         <div className="px-2">
           <Pecha.Button

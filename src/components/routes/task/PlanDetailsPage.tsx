@@ -1,49 +1,22 @@
 import { useState } from "react";
-import axiosInstance from "@/config/axios-config";
-import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import TaskForm from "./components/TaskForm";
 import SideBar from "./components/SideBar";
 import { DefaultDayView } from "./components/DefaultView";
-
-const fetchPlanDetails = async (plan_id: string) => {
-  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
-    headers: {
-      Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-    },
-  });
-  return data;
-};
 
 const PlanDetailsPage = () => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
 
-  const {
-    data: currentPlan,
-    isLoading: _isLoading,
-    error: _error,
-  } = useQuery({
-    queryKey: ["planDetails", plan_id],
-    queryFn: () => fetchPlanDetails(plan_id!),
-    enabled: !!plan_id,
-    refetchOnWindowFocus: false,
-  });
-
   const handleDaySelect = (dayNumber: number) => {
     setSelectedDay(dayNumber);
     setShowTaskForm(false);
   };
-  const currentDayData = currentPlan?.days?.find(
-    (day: any) => day.day_number === selectedDay,
-  );
-  const hasNoTasks = currentDayData?.tasks?.length === 0;
 
   return (
     <div className="flex flex-1 overflow-hidden">
       <SideBar
-        currentPlan={currentPlan}
         planId={plan_id!}
         selectedDay={selectedDay}
         onDaySelect={handleDaySelect}
@@ -51,9 +24,7 @@ const PlanDetailsPage = () => {
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {showTaskForm && <TaskForm selectedDay={selectedDay} />}
-        {!showTaskForm && hasNoTasks && (
-          <DefaultDayView selectedDay={selectedDay} />
-        )}
+        {!showTaskForm && <DefaultDayView selectedDay={selectedDay} />}
       </div>
     </div>
   );
