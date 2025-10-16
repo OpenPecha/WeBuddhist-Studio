@@ -38,6 +38,7 @@ const PlanDetailsPage = () => {
   const currentDayData = currentPlan?.days?.find(
     (day: any) => day.day_number === selectedDay,
   );
+  const hasNoTasks = currentDayData?.tasks?.length === 0;
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -49,11 +50,10 @@ const PlanDetailsPage = () => {
         onAddTaskClick={() => setShowTaskForm(true)}
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
-        {showTaskForm ? (
-          <TaskForm selectedDay={selectedDay} />
-        ) : currentDayData?.tasks?.length === 0 ? (
+        {showTaskForm && <TaskForm selectedDay={selectedDay} />}
+        {!showTaskForm && hasNoTasks && (
           <DefaultDayView selectedDay={selectedDay} />
-        ) : null}
+        )}
       </div>
     </div>
   );
