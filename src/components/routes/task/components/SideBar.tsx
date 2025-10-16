@@ -8,9 +8,9 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import axiosInstance from "@/config/axios-config";
+import { useParams } from "react-router-dom";
 
 interface SideBarProps {
-  planId: string;
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
   onAddTaskClick: () => void;
@@ -48,29 +48,29 @@ const deleteTask = async (task_id: string) => {
 };
 
 const SideBar = ({
-  planId,
   selectedDay,
   onDaySelect,
   onAddTaskClick,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const queryClient = useQueryClient();
+  const { plan_id } = useParams<{ plan_id: string }>();
 
   const {
     data: currentPlan,
     isLoading: _isLoading,
     error: _error,
   } = useQuery({
-    queryKey: ["planDetails", planId],
-    queryFn: () => fetchPlanDetails(planId),
-    enabled: !!planId,
+    queryKey: ["planDetails", plan_id],
+    queryFn: () => fetchPlanDetails(plan_id!),
+    enabled: !!plan_id,
     refetchOnWindowFocus: false,
   });
 
   const deleteTaskMutation = useMutation({
     mutationFn: (task_id: string) => deleteTask(task_id),
     onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ["planDetails", planId] });
+      queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
       toast.error("Failed to delete task", {
@@ -80,11 +80,11 @@ const SideBar = ({
   });
 
   const createNewDayMutation = useMutation({
-    mutationFn: () => createNewDay(planId),
+    mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
       onDaySelect(newDay.day_number);
       setExpandedDay(newDay.day_number);
-      queryClient.refetchQueries({ queryKey: ["planDetails", planId] });
+      queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
       toast.error("Failed to create new day", {
@@ -103,7 +103,7 @@ const SideBar = ({
   };
 
   const addNewDay = () => {
-    if (!currentPlan || !planId) return;
+    if (!currentPlan || !plan_id) return;
     createNewDayMutation.mutate();
   };
   return (
