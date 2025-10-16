@@ -282,14 +282,16 @@ const Createplan = () => {
               </p>
 
               <div className="flex gap-4 mt-4 items-start">
-                <button
-                  type="button"
-                  onClick={() => setIsImageDialogOpen(true)}
-                  className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
-                  aria-label="Upload cover image"
-                >
-                  <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                </button>
+                {!imagePreview && (
+                  <button
+                    type="button"
+                    onClick={() => setIsImageDialogOpen(true)}
+                    className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
+                    aria-label="Upload cover image"
+                  >
+                    <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                  </button>
+                )}
 
                 {imagePreview && (
                   <div className="relative">
