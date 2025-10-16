@@ -102,7 +102,7 @@ const Createplan = () => {
         description: planData.description || "",
         total_days: planData.total_days?.toString() || "",
         difficulty_level: planData.difficulty_level || "",
-        image_url: planData.image_url || "",
+        image_url: planData.plan_image_url || "",
         tags: planData.tags || [],
         language: planData.language || "",
       });
