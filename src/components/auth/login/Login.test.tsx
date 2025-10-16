@@ -82,7 +82,7 @@ describe("Login Component", () => {
         {
           email: "test@example.com",
           password:
-            "0fe95e968475ec73c2826adf398143b39acb43b69384b0349e586a8313bfbaaa",
+            "6ce4b8809c36425acadafc21bb73a6358201fe0e619d64032f502728493f78dc",
         },
       );
     });
