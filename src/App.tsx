@@ -23,9 +23,12 @@ function App() {
   const hideNavbar = authRoutes.includes(location.pathname);
   const loginMutation = useMutation({
     mutationFn: async (refreshToken: string) => {
-      const { data } = await axiosInstance.post("/api/v1/cms/auth/refresh-token", {
-        token: refreshToken,
-      });
+      const { data } = await axiosInstance.post(
+        "/api/v1/cms/auth/refresh-token",
+        {
+          token: refreshToken,
+        },
+      );
       return data;
     },
     onSuccess: (data: any) => {
