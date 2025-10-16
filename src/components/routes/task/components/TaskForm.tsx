@@ -219,7 +219,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     if (editingTask) {
       form.setValue("title", editingTask.title);
       if (taskDetails) {
-        const transformedSubTasks: SubTask[] = taskDetails.task.subtasks.map(
+        const transformedSubTasks: SubTask[] = taskDetails.subtasks.map(
           (st: any) => ({
             id: st.id,
             contentType:
@@ -520,7 +520,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                           </span>
                         </div>
                       )}
-                      {subTask.imagePreview && subTask.imageFile && (
+                      {subTask.imagePreview && (
                         <div className="mt-4 flex w-full justify-center">
                           <div className="relative">
                             <img
