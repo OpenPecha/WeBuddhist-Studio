@@ -11,7 +11,7 @@ const StudioCard = ({ children, title }: StudioCardProps) => {
   return (
     <div className="min-h-screen font-dynamic relative flex items-center justify-center p-4">
       {theme === "light" ? <LightThemeOverlay /> : <DarkThemeOverlay />}
-      <div className="rounded-sm w-full max-w-[460px] flex flex-col items-center justify-center p-8 relative z-10">
+      <div className="rounded-sm w-[500px] flex flex-col items-center justify-center p-8 relative z-10">
         <div className="flex items-center mb-4 relative z-10">
           <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center">
             <img
