@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
+import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
 import axiosInstance from "@/config/axios-config";
 import { useParams } from "react-router-dom";
 
@@ -47,6 +48,15 @@ const deleteTask = async (task_id: string) => {
   return data;
 };
 
+const deleteDay = async (day_id: string) => {
+  const { data } = await axiosInstance.delete(`/api/v1/cms/days/${day_id}`, {
+    headers: {
+      Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+    },
+  });
+  return data;
+};
+
 const SideBar = ({
   selectedDay,
   onDaySelect,
@@ -79,6 +89,18 @@ const SideBar = ({
     },
   });
 
+  const deleteDayMutation = useMutation({
+    mutationFn: (day_id: string) => deleteDay(day_id),
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to delete day", {
+        description: error.response.data.detail,
+      });
+    },
+  });
+
   const createNewDayMutation = useMutation({
     mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
@@ -100,6 +122,10 @@ const SideBar = ({
 
   const handleDeleteTask = (task_id: string) => {
     deleteTaskMutation.mutate(task_id);
+  };
+
+  const handleDeleteDay = (day_id: string) => {
+    deleteDayMutation.mutate(day_id);
   };
 
   const addNewDay = () => {
@@ -187,6 +213,19 @@ const SideBar = ({
                           }}
                         />
                       )}
+                      <Pecha.DropdownMenu>
+                        <Pecha.DropdownMenuTrigger asChild>
+                          <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                        </Pecha.DropdownMenuTrigger>
+                        <Pecha.DropdownMenuContent side="right">
+                          <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                            <DayDeleteDialog
+                              dayId={day.id}
+                              onDelete={handleDeleteDay}
+                            />
+                          </Pecha.DropdownMenuItem>
+                        </Pecha.DropdownMenuContent>
+                      </Pecha.DropdownMenu>
                     </div>
                   )}
                 </div>
