@@ -31,6 +31,8 @@ vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
 vi.mock("@/config/axios-config", () => ({
   default: {
     post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
   },
 }));
 
@@ -383,6 +385,72 @@ describe("TaskForm Component", () => {
     await waitFor(() => {
       expect(axiosInstance.default.post).toHaveBeenCalledTimes(2);
       expect(toast.success).toHaveBeenCalled();
+    });
+  });
+
+  it("updates existing task by adding new subtask", async () => {
+    const axiosInstance = await import("@/config/axios-config");
+    const { toast } = await import("sonner");
+    const mockTaskDetails = {
+      id: "task-123",
+      title: "Original Task",
+      subtasks: [
+        {
+          id: "subtask-1",
+          content: "Original text",
+          content_type: "TEXT",
+        },
+      ],
+    };
+    const mockEditingTask = {
+      id: "task-123",
+      title: "Original Task",
+    };
+    vi.mocked(axiosInstance.default.get)
+      .mockResolvedValueOnce({ data: mockTaskDetails })
+      .mockResolvedValueOnce({
+        data: {
+          id: "task-123",
+          title: "Original Task",
+          subtasks: [
+            {
+              id: "subtask-1",
+              content: "Original text",
+              content_type: "TEXT",
+            },
+            {
+              id: "subtask-2",
+              content: "https://youtube.com/watch?v=test123",
+              content_type: "VIDEO",
+            },
+          ],
+        },
+      });
+    vi.mocked(axiosInstance.default.post).mockResolvedValueOnce({
+      data: {},
+    });
+    vi.mocked(axiosInstance.default.put).mockResolvedValueOnce({
+      data: {},
+    });
+    renderWithProviders(
+      <TaskForm
+        selectedDay={1}
+        editingTask={mockEditingTask}
+        onCancel={() => {}}
+      />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("Edit Task")).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("submit-button")).toHaveTextContent("Update");
+    fireEvent.click(screen.getByTestId("add-content-button"));
+    fireEvent.click(screen.getByTestId("video-button"));
+    fireEvent.change(screen.getByPlaceholderText("Enter YouTube URL"), {
+      target: { value: "https://youtube.com/watch?v=test123" },
+    });
+    fireEvent.click(screen.getByTestId("submit-button"));
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("Task updated successfully!");
     });
   });
 });

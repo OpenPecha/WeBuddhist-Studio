@@ -34,7 +34,11 @@ const PlanDetailsPage = () => {
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {showTaskForm ? (
-          <TaskForm selectedDay={selectedDay} editingTask={editingTask} onCancel={handleCancelTaskForm} />
+          <TaskForm
+            selectedDay={selectedDay}
+            editingTask={editingTask}
+            onCancel={handleCancelTaskForm}
+          />
         ) : (
           <DefaultDayView selectedDay={selectedDay} />
         )}

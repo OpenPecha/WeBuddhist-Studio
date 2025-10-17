@@ -21,8 +21,9 @@ interface TaskFormProps {
   editingTask?: any;
   onCancel: () => void;
 }
+
 interface SubTask {
-  id: string;
+  id: string | null;
   contentType: "image" | "video" | "music" | "text";
   videoUrl: string;
   textContent: string;
@@ -32,6 +33,7 @@ interface SubTask {
   imageKey: string | null;
   isUploading: boolean;
 }
+
 interface CreateTaskPayload {
   plan_id: string;
   day_id: string;
@@ -39,6 +41,7 @@ interface CreateTaskPayload {
   description: string;
   estimated_time: number;
 }
+
 type TaskFormData = z.infer<typeof taskSchema>;
 
 const contentTypes = [
@@ -142,6 +145,30 @@ const createSubTasks = async (
   return data;
 };
 
+const updateSubTasks = async (
+  task_id: string,
+  subTasksData: {
+    id: string;
+    content: string;
+    content_type: string;
+    display_order: number;
+  }[],
+) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  await axiosInstance.put(
+    `/api/v1/cms/sub-tasks`,
+    {
+      task_id: task_id,
+      sub_tasks: subTasksData,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+};
+
 const fetchTaskDetails = async (task_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(`/api/v1/cms/tasks/${task_id}`, {
@@ -174,6 +201,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const currentDayData = currentPlan?.days?.find(
     (day: any) => day.day_number === selectedDay,
   );
+
   const { data: taskDetails } = useQuery({
     queryKey: ["taskDetails", editingTask?.id],
     queryFn: () => fetchTaskDetails(editingTask.id),
@@ -185,11 +213,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       if (!plan_id || !currentDayData?.id) {
         throw new Error("Plan ID or Day ID not found");
       }
+
       const taskResponse = await createTask(
         plan_id,
         currentDayData.id,
         taskData,
       );
+
       if (subTasks.length > 0) {
         const subTasksPayload = subTasks
           .map(transformSubTask)
@@ -199,6 +229,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           await createSubTasks(taskResponse.id, subTasksPayload);
         }
       }
+
       return taskResponse;
     },
     onSuccess: () => {
@@ -215,12 +246,89 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     },
   });
 
+  const updateTaskMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingTask?.id) {
+        throw new Error("Task ID not found");
+      }
+      const newSubtasks = subTasks.filter((st) => st.id === null);
+      const existingSubtasks = subTasks.filter((st) => st.id !== null);
+      let createdCount = 0;
+      if (newSubtasks.length > 0) {
+        const newSubTasksPayload = newSubtasks
+          .map(transformSubTask)
+          .filter((st) => st.content.trim() !== "");
+        if (newSubTasksPayload.length > 0) {
+          await createSubTasks(editingTask.id, newSubTasksPayload);
+          createdCount = newSubTasksPayload.length;
+        }
+      }
+      const refreshedTask = await fetchTaskDetails(editingTask.id);
+      const existingIds = existingSubtasks.map((st) => st.id);
+      const newlyCreated = refreshedTask.subtasks
+        .filter((rst: any) => !existingIds.includes(rst.id))
+        .slice(-createdCount);
+      const updatePayload: any[] = [];
+      let newIndex = 0;
+
+      for (let i = 0; i < subTasks.length; i++) {
+        const st = subTasks[i];
+        let matched;
+        if (st.id !== null) {
+          matched = refreshedTask.subtasks.find((rst: any) => rst.id === st.id);
+        } else {
+          matched = newlyCreated[newIndex];
+          newIndex++;
+        }
+        if (!matched) {
+          console.error("Match failed:", { index: i, subtask: st });
+          throw new Error(`Could not sync subtask at position ${i + 1}`);
+        }
+        updatePayload.push({
+          id: matched.id,
+          content:
+            st.id !== null ? transformSubTask(st).content : matched.content,
+          content_type:
+            st.id !== null
+              ? transformSubTask(st).content_type
+              : matched.content_type,
+          display_order: i + 1,
+        });
+      }
+      await updateSubTasks(editingTask.id, updatePayload);
+    },
+    onSuccess: () => {
+      toast.success("Task updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+      queryClient.invalidateQueries({
+        queryKey: ["taskDetails", editingTask?.id],
+      });
+      clearFormData();
+    },
+    onError: (error: any) => {
+      console.error("Update failed:", error);
+      toast.error("Failed to update task", {
+        description: error?.message || "Something went wrong",
+      });
+    },
+  });
+
   useEffect(() => {
-    if (editingTask) {
-      form.setValue("title", editingTask.title);
-      if (taskDetails) {
-        const transformedSubTasks: SubTask[] = taskDetails.subtasks.map(
-          (st: any) => ({
+    if (editingTask && taskDetails && taskDetails.id === editingTask.id) {
+      const currentLoadedTaskId = subTasks.length > 0 ? subTasks[0]?.id : null;
+      const shouldLoadNewTask =
+        subTasks.length === 0 ||
+        (currentLoadedTaskId &&
+          !taskDetails.subtasks.some(
+            (st: any) => st.id === currentLoadedTaskId,
+          ));
+
+      if (shouldLoadNewTask) {
+        form.setValue("title", editingTask.title);
+
+        const transformedSubTasks: SubTask[] = taskDetails.subtasks
+          .sort((a: any, b: any) => a.display_order - b.display_order)
+          .map((st: any) => ({
             id: st.id,
             contentType:
               st.content_type === "VIDEO"
@@ -239,8 +347,8 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             imagePreview: st.content_type === "IMAGE" ? st.content : null,
             imageKey: st.content_type === "IMAGE" ? st.content : null,
             isUploading: false,
-          }),
-        );
+          }));
+
         setSubTasks(transformedSubTasks);
       }
     } else if (!editingTask) {
@@ -252,13 +360,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       }
       setSubTasks([]);
     }
-  }, [editingTask, taskDetails, selectedDay]);
+  }, [editingTask?.id, selectedDay, taskDetails]);
 
   const handleAddSubTask = (
     contentType: "image" | "video" | "music" | "text",
   ) => {
     const newSubTask: SubTask = {
-      id: Date.now().toString(), //for state management
+      id: null,
       contentType,
       videoUrl: "",
       textContent: "",
@@ -271,43 +379,43 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     setSubTasks([...subTasks, newSubTask]);
   };
 
-  const updateSubTask = (id: string, field: keyof SubTask, value: any) => {
+  const updateSubTask = (index: number, field: keyof SubTask, value: any) => {
     setSubTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, [field]: value } : task)),
+      prev.map((task, i) => (i === index ? { ...task, [field]: value } : task)),
     );
   };
 
-  const removeSubTask = (id: string) => {
-    const subTask = subTasks.find((t) => t.id === id);
+  const removeSubTask = (index: number) => {
+    const subTask = subTasks[index];
     if (subTask?.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
-    setSubTasks((prev) => prev.filter((task) => task.id !== id));
+    setSubTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubTaskImageUpload = async (id: string, file: File) => {
-    updateSubTask(id, "isUploading", true);
+  const handleSubTaskImageUpload = async (index: number, file: File) => {
+    updateSubTask(index, "isUploading", true);
     try {
       const { url, key } = await uploadImageToS3(file, plan_id || "");
-      updateSubTask(id, "imagePreview", url);
-      updateSubTask(id, "imageFile", file);
-      updateSubTask(id, "imageKey", key);
+      updateSubTask(index, "imagePreview", url);
+      updateSubTask(index, "imageFile", file);
+      updateSubTask(index, "imageKey", key);
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image");
     } finally {
-      updateSubTask(id, "isUploading", false);
+      updateSubTask(index, "isUploading", false);
     }
   };
 
-  const handleRemoveSubTaskImage = (id: string) => {
-    const subTask = subTasks.find((t) => t.id === id);
+  const handleRemoveSubTaskImage = (index: number) => {
+    const subTask = subTasks[index];
     if (subTask?.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
-    updateSubTask(id, "imagePreview", null);
-    updateSubTask(id, "imageFile", null);
-    updateSubTask(id, "imageKey", null);
+    updateSubTask(index, "imagePreview", null);
+    updateSubTask(index, "imageFile", null);
+    updateSubTask(index, "imageKey", null);
   };
 
   const clearFormData = () => {
@@ -331,7 +439,12 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       description: data.title,
       estimated_time: 30,
     };
-    createTaskMutation.mutate(taskData);
+
+    if (isEditMode) {
+      updateTaskMutation.mutate();
+    } else {
+      createTaskMutation.mutate(taskData);
+    }
   };
 
   return (
@@ -362,6 +475,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               </Pecha.FormItem>
             )}
           />
+
           <div className="flex gap-4">
             <Pecha.Button
               type="button"
@@ -390,11 +504,16 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               </div>
             )}
           </div>
+
           {subTasks.length > 0 && (
             <div className="space-y-4">
-              {subTasks.map((subTask) => (
+              {subTasks.map((subTask, index) => (
                 <div
-                  key={subTask.id}
+                  key={
+                    subTask.id
+                      ? `subtask-${subTask.id}`
+                      : `new-subtask-${index}`
+                  }
                   className={`border border-gray-300 ${subTask.contentType === "image" ? "w-fit" : ""} dark:border-input rounded-sm p-4 space-y-4`}
                 >
                   <div className="flex items-center justify-between">
@@ -415,7 +534,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                     <Pecha.Button
                       variant="outline"
                       type="button"
-                      onClick={() => removeSubTask(subTask.id)}
+                      onClick={() => removeSubTask(index)}
                     >
                       <IoMdClose className="w-4 h-4" />
                     </Pecha.Button>
@@ -429,7 +548,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                         className="h-12 text-base"
                         value={subTask.videoUrl}
                         onChange={(e) =>
-                          updateSubTask(subTask.id, "videoUrl", e.target.value)
+                          updateSubTask(index, "videoUrl", e.target.value)
                         }
                       />
                       {(() => {
@@ -453,7 +572,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                       className="w-full h-24 resize-none text-base"
                       value={subTask.textContent}
                       onChange={(e) =>
-                        updateSubTask(subTask.id, "textContent", e.target.value)
+                        updateSubTask(index, "textContent", e.target.value)
                       }
                     />
                   )}
@@ -466,7 +585,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                         className="h-12 text-base"
                         value={subTask.musicUrl}
                         onChange={(e) =>
-                          updateSubTask(subTask.id, "musicUrl", e.target.value)
+                          updateSubTask(index, "musicUrl", e.target.value)
                         }
                       />
                       {subTask.musicUrl && (
@@ -508,7 +627,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                       {!subTask.imagePreview && !subTask.isUploading && (
                         <InlineImageUpload
                           onUpload={(file) =>
-                            handleSubTaskImageUpload(subTask.id, file)
+                            handleSubTaskImageUpload(index, file)
                           }
                           uploadedImage={subTask.imageFile}
                         />
@@ -532,9 +651,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                               variant="default"
                               className="absolute top-2 right-2"
                               type="button"
-                              onClick={() =>
-                                handleRemoveSubTaskImage(subTask.id)
-                              }
+                              onClick={() => handleRemoveSubTaskImage(index)}
                               data-testid="remove-image-button"
                             >
                               <FaMinus className="w-4 h-4" />
@@ -548,6 +665,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               ))}
             </div>
           )}
+
           <div className="pt-6 flex gap-3">
             {isEditMode && (
               <Pecha.Button
@@ -564,9 +682,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               data-testid="submit-button"
-              disabled={!isFormValid || createTaskMutation.isPending}
+              disabled={
+                !isFormValid ||
+                createTaskMutation.isPending ||
+                updateTaskMutation.isPending
+              }
             >
-              {createTaskMutation.isPending
+              {createTaskMutation.isPending || updateTaskMutation.isPending
                 ? isEditMode
                   ? "Updating..."
                   : "Creating..."
