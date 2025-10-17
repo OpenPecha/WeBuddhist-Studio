@@ -264,9 +264,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         }
       }
       const refreshedTask = await fetchTaskDetails(editingTask.id);
-      const existingIds = existingSubtasks.map((st) => st.id);
+      const existingIds = new Set(existingSubtasks.map((st) => st.id));
       const newlyCreated = refreshedTask.subtasks
-        .filter((rst: any) => !existingIds.includes(rst.id))
+        .filter((rst: any) => !existingIds.has(rst.id))
         .slice(-createdCount);
       const updatePayload: any[] = [];
       let newIndex = 0;
@@ -325,7 +325,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
       if (shouldLoadNewTask) {
         form.setValue("title", editingTask.title);
-
         const transformedSubTasks: SubTask[] = taskDetails.subtasks
           .sort((a: any, b: any) => a.display_order - b.display_order)
           .map((st: any) => ({
