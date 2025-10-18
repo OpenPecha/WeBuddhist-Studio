@@ -201,19 +201,12 @@ const SideBar = ({
                         key={task.id}
                         className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
                       >
-                        <span>{task.title}</span>
+                        <span className="cursor-pointer w-full"  onClick={() => onEditTask(task)}>{task.title}</span>
                         <Pecha.DropdownMenu>
                           <Pecha.DropdownMenuTrigger asChild>
                             <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                           </Pecha.DropdownMenuTrigger>
                           <Pecha.DropdownMenuContent side="right">
-                            <Pecha.DropdownMenuItem
-                              className="gap-2 cursor-pointer"
-                              onClick={() => onEditTask(task)}
-                            >
-                              <FaPen className="h-4 w-4" />
-                              Edit
-                            </Pecha.DropdownMenuItem>
                             <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
                               <TaskDeleteDialog
                                 taskId={task.id}
