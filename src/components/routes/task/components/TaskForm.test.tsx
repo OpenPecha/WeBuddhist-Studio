@@ -31,6 +31,8 @@ vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
 vi.mock("@/config/axios-config", () => ({
   default: {
     post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
   },
 }));
 
@@ -88,20 +90,20 @@ beforeEach(() => {
 
 describe("TaskForm Component", () => {
   it("renders task form with Add Task heading", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
 
     expect(screen.getByText("Add Task")).toBeInTheDocument();
   });
 
   it("renders task title input field", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     expect(titleInput).toBeInTheDocument();
     expect(titleInput.tagName).toBe("INPUT");
   });
 
   it("renders submit button", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const submitButton = screen.getByTestId("submit-button");
     expect(submitButton).toBeInTheDocument();
     expect(submitButton.tagName).toBe("BUTTON");
@@ -109,7 +111,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows content type buttons when add button is clicked", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     expect(screen.queryByText("Enter YouTube URL")).not.toBeInTheDocument();
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
@@ -121,14 +123,14 @@ describe("TaskForm Component", () => {
   });
 
   it("allows typing in title input", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     fireEvent.change(titleInput, { target: { value: "Test Task Title" } });
     expect(titleInput).toHaveValue("Test Task Title");
   });
 
   it("shows video input when video content type is selected", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
@@ -139,7 +141,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows text input when text content type is selected", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const textButton = screen.getByTestId("text-button");
@@ -150,7 +152,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows music input when music content type is selected", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
@@ -161,7 +163,7 @@ describe("TaskForm Component", () => {
   });
 
   it("allows entering YouTube URL without validation", async () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
@@ -172,7 +174,7 @@ describe("TaskForm Component", () => {
   });
 
   it("allows entering music URL without validation", async () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
@@ -185,7 +187,7 @@ describe("TaskForm Component", () => {
   });
 
   it("allows typing in text content textarea", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const textButton = screen.getByTestId("text-button");
@@ -196,7 +198,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows image upload section when image button is clicked", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const imageButton = screen.getByTestId("image-button");
@@ -207,7 +209,7 @@ describe("TaskForm Component", () => {
   });
 
   it("disables submit button when form is invalid", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const submitButton = screen.getByTestId("submit-button");
     expect(submitButton).toBeDisabled();
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
@@ -217,7 +219,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows YouTube preview for valid URL", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
@@ -230,7 +232,7 @@ describe("TaskForm Component", () => {
   });
 
   it("adds multiple subtasks when same content type is clicked", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const videoButton = screen.getByTestId("video-button");
@@ -244,7 +246,7 @@ describe("TaskForm Component", () => {
   });
 
   it("shows Spotify embed for valid Spotify URL", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const musicButton = screen.getByTestId("music-button");
@@ -267,7 +269,7 @@ describe("TaskForm Component", () => {
     vi.mocked(axiosInstance.default.post).mockResolvedValue({
       data: { url: "https://example.com/image.jpg", key: "image-key-123" },
     });
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const imageButton = screen.getByTestId("image-button");
@@ -280,7 +282,7 @@ describe("TaskForm Component", () => {
   });
 
   it("preserves form input values when submit fails", () => {
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
       target: { value: "Test Task" },
     });
@@ -303,7 +305,7 @@ describe("TaskForm Component", () => {
     vi.mocked(axiosInstance.default.post).mockResolvedValueOnce({
       data: { url: "https://example.com/image.jpg", key: "image-key-123" },
     });
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const imageButton = screen.getByTestId("image-button");
@@ -327,7 +329,7 @@ describe("TaskForm Component", () => {
     vi.mocked(axiosInstance.default.post).mockRejectedValueOnce(
       new Error("Upload failed"),
     );
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     const imageButton = screen.getByTestId("image-button");
@@ -348,19 +350,19 @@ describe("TaskForm Component", () => {
     expect(screen.getByPlaceholderText("Task Title")).toHaveValue("Test Task");
   });
 
-  it("saves and restores form state from localStorage", () => {
+  it("saves form title to localStorage when typing", () => {
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
+    const titleInput = screen.getByPlaceholderText("Task Title");
+    fireEvent.change(titleInput, { target: { value: "My Task" } });
+    expect(localStorage.getItem("day_1_title")).toBe("My Task");
+  });
+
+  it("loads title from localStorage on initial render", () => {
     localStorage.setItem("day_1_title", "Restored Task");
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     expect(screen.getByPlaceholderText("Task Title")).toHaveValue(
       "Restored Task",
     );
-    const addButton = screen.getByTestId("add-content-button");
-    fireEvent.click(addButton);
-    const textButton = screen.getByTestId("text-button");
-    fireEvent.click(textButton);
-    expect(
-      screen.getByPlaceholderText("Enter your text content"),
-    ).toBeInTheDocument();
   });
 
   it("submits form successfully with subtasks", async () => {
@@ -369,7 +371,7 @@ describe("TaskForm Component", () => {
     vi.mocked(axiosInstance.default.post)
       .mockResolvedValueOnce({ data: { id: "task-123" } })
       .mockResolvedValueOnce({ data: {} });
-    renderWithProviders(<TaskForm selectedDay={1} />);
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     fireEvent.change(screen.getByPlaceholderText("Task Title"), {
       target: { value: "Test Task" },
     });
@@ -384,5 +386,94 @@ describe("TaskForm Component", () => {
       expect(axiosInstance.default.post).toHaveBeenCalledTimes(2);
       expect(toast.success).toHaveBeenCalled();
     });
+  });
+
+  it("updates existing task by adding new subtask", async () => {
+    const axiosInstance = await import("@/config/axios-config");
+    const { toast } = await import("sonner");
+    const existingTask = {
+      id: "task-123",
+      title: "My Task",
+      subtasks: [
+        {
+          id: "existing-subtask-1",
+          content: "Existing content",
+          content_type: "TEXT",
+          display_order: 1,
+        },
+      ],
+    };
+    vi.mocked(axiosInstance.default.get).mockResolvedValue({
+      data: existingTask,
+    });
+    vi.mocked(axiosInstance.default.post).mockResolvedValue({
+      data: {
+        sub_tasks: [
+          {
+            id: "new-subtask-2",
+            content: "https://youtube.com/watch?v=abc123",
+            content_type: "VIDEO",
+            display_order: 0,
+          },
+        ],
+      },
+    });
+    vi.mocked(axiosInstance.default.put).mockResolvedValue({ data: {} });
+    renderWithProviders(
+      <TaskForm
+        selectedDay={1}
+        editingTask={{ id: "task-123", title: "My Task" }}
+        onCancel={() => {}}
+      />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("Edit Task")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("add-content-button"));
+    fireEvent.click(screen.getByTestId("video-button"));
+    fireEvent.change(screen.getByPlaceholderText("Enter YouTube URL"), {
+      target: { value: "https://youtube.com/watch?v=abc123" },
+    });
+    expect(screen.getByTestId("submit-button")).toHaveTextContent("Update");
+    fireEvent.click(screen.getByTestId("submit-button"));
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("Task updated successfully!");
+    });
+    expect(axiosInstance.default.post).toHaveBeenCalledTimes(1);
+    expect(axiosInstance.default.put).toHaveBeenCalledTimes(1);
+    expect(axiosInstance.default.post).toHaveBeenCalledWith(
+      "/api/v1/cms/sub-tasks",
+      {
+        task_id: "task-123",
+        sub_tasks: [
+          {
+            content: "https://youtube.com/watch?v=abc123",
+            content_type: "VIDEO",
+          },
+        ],
+      },
+      expect.any(Object),
+    );
+    expect(axiosInstance.default.put).toHaveBeenCalledWith(
+      "/api/v1/cms/sub-tasks",
+      {
+        task_id: "task-123",
+        sub_tasks: [
+          {
+            id: "existing-subtask-1",
+            content: "Existing content",
+            content_type: "TEXT",
+            display_order: 1,
+          },
+          {
+            id: "new-subtask-2",
+            content: "https://youtube.com/watch?v=abc123",
+            content_type: "VIDEO",
+            display_order: 2,
+          },
+        ],
+      },
+      expect.any(Object),
+    );
   });
 });

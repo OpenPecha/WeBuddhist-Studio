@@ -84,7 +84,7 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("./components/TaskForm", () => ({
-  default: ({ selectedDay }: { selectedDay: number }) => (
+  default: ({ selectedDay }: { selectedDay: number; onCancel: () => void }) => (
     <div>
       <h2>Add Task</h2>
       <p>Selected Day: {selectedDay}</p>

@@ -6,10 +6,22 @@ import { DefaultDayView } from "./components/DefaultView";
 const PlanDetailsPage = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
   const handleDaySelect = (dayNumber: number) => {
     setSelectedDay(dayNumber);
     setShowTaskForm(false);
+    setEditingTask(null);
+  };
+
+  const handleEditTask = (task: any) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
+  };
+
+  const handleCancelTaskForm = () => {
+    setShowTaskForm(false);
+    setEditingTask(null);
   };
 
   return (
@@ -17,11 +29,19 @@ const PlanDetailsPage = () => {
       <SideBar
         selectedDay={selectedDay}
         onDaySelect={handleDaySelect}
-        onAddTaskClick={() => setShowTaskForm(true)}
+        onAddTaskClick={() => {
+          setEditingTask(null);
+          setShowTaskForm(true);
+        }}
+        onEditTask={handleEditTask}
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {showTaskForm ? (
-          <TaskForm selectedDay={selectedDay} />
+          <TaskForm
+            selectedDay={selectedDay}
+            editingTask={editingTask}
+            onCancel={handleCancelTaskForm}
+          />
         ) : (
           <DefaultDayView selectedDay={selectedDay} />
         )}
