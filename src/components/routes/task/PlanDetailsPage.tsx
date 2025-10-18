@@ -29,7 +29,10 @@ const PlanDetailsPage = () => {
       <SideBar
         selectedDay={selectedDay}
         onDaySelect={handleDaySelect}
-        onAddTaskClick={() => setShowTaskForm(true)}
+        onAddTaskClick={() => {
+          setEditingTask(null);
+          setShowTaskForm(true);
+        }}
         onEditTask={handleEditTask}
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">

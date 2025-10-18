@@ -179,6 +179,26 @@ const fetchTaskDetails = async (task_id: string) => {
   return data;
 };
 
+const extractS3KeyFromPresignedUrl = (url: string): string => {
+  try {
+    if (!url || !url.startsWith("http")) {
+      return url;
+    }
+    const urlObj = new URL(url);
+    let s3Key = urlObj.pathname.substring(1);
+    s3Key = decodeURIComponent(s3Key);
+    if (s3Key.startsWith("http")) {
+      const secondUrlObj = new URL(s3Key);
+      s3Key = secondUrlObj.pathname.substring(1);
+      s3Key = decodeURIComponent(s3Key);
+    }
+    return s3Key;
+  } catch (error) {
+    console.error("Failed to extract S3 key:", error);
+    return url;
+  }
+};
+
 const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
@@ -284,14 +304,25 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           console.error("Match failed:", { index: i, subtask: st });
           throw new Error(`Could not sync subtask at position ${i + 1}`);
         }
+        let contentToSend;
+        let contentTypeToSend;
+
+        if (st.id !== null) {
+          contentToSend = transformSubTask(st).content;
+          contentTypeToSend = transformSubTask(st).content_type;
+        } else {
+          if (matched.content_type === "IMAGE") {
+            contentToSend = extractS3KeyFromPresignedUrl(matched.content);
+          } else {
+            contentToSend = matched.content;
+          }
+          contentTypeToSend = matched.content_type;
+        }
+
         updatePayload.push({
           id: matched.id,
-          content:
-            st.id !== null ? transformSubTask(st).content : matched.content,
-          content_type:
-            st.id !== null
-              ? transformSubTask(st).content_type
-              : matched.content_type,
+          content: contentToSend,
+          content_type: contentTypeToSend,
           display_order: i + 1,
         });
       }
@@ -344,7 +375,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             musicUrl: st.content_type === "AUDIO" ? st.content : "",
             imageFile: null,
             imagePreview: st.content_type === "IMAGE" ? st.content : null,
-            imageKey: st.content_type === "IMAGE" ? st.content : null,
+            imageKey:
+              st.content_type === "IMAGE"
+                ? extractS3KeyFromPresignedUrl(st.content)
+                : null,
             isUploading: false,
           }));
 
