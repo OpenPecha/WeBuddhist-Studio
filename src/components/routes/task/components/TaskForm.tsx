@@ -272,55 +272,50 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         throw new Error("Task ID not found");
       }
       const newSubtasks = subTasks.filter((st) => st.id === null);
-      const existingSubtasks = subTasks.filter((st) => st.id !== null);
-      let createdCount = 0;
+      let createdSubTasks: any[] = [];
       if (newSubtasks.length > 0) {
         const newSubTasksPayload = newSubtasks
           .map(transformSubTask)
           .filter((st) => st.content.trim() !== "");
         if (newSubTasksPayload.length > 0) {
-          await createSubTasks(editingTask.id, newSubTasksPayload);
-          createdCount = newSubTasksPayload.length;
+          const createResponse = await createSubTasks(
+            editingTask.id,
+            newSubTasksPayload,
+          );
+          createdSubTasks = createResponse.sub_tasks || [];
         }
       }
-      const refreshedTask = await fetchTaskDetails(editingTask.id);
-      const existingIds = new Set(existingSubtasks.map((st) => st.id));
-      const newlyCreated = refreshedTask.subtasks
-        .filter((rst: any) => !existingIds.has(rst.id))
-        .slice(-createdCount);
       const updatePayload: any[] = [];
-      let newIndex = 0;
-
+      let createdIndex = 0;
       for (let i = 0; i < subTasks.length; i++) {
         const st = subTasks[i];
-        let matched;
+        let subtaskId: string;
+        let contentToSend: string;
+        let contentTypeToSend: string;
         if (st.id !== null) {
-          matched = refreshedTask.subtasks.find((rst: any) => rst.id === st.id);
-        } else {
-          matched = newlyCreated[newIndex];
-          newIndex++;
-        }
-        if (!matched) {
-          console.error("Match failed:", { index: i, subtask: st });
-          throw new Error(`Could not sync subtask at position ${i + 1}`);
-        }
-        let contentToSend;
-        let contentTypeToSend;
-
-        if (st.id !== null) {
+          subtaskId = st.id;
           contentToSend = transformSubTask(st).content;
           contentTypeToSend = transformSubTask(st).content_type;
         } else {
-          if (matched.content_type === "IMAGE") {
-            contentToSend = extractS3KeyFromPresignedUrl(matched.content);
-          } else {
-            contentToSend = matched.content;
+          const createdSubTask = createdSubTasks[createdIndex];
+          if (!createdSubTask) {
+            throw new Error(
+              `Could not find created subtask at position ${i + 1}`,
+            );
           }
-          contentTypeToSend = matched.content_type;
+          subtaskId = createdSubTask.id;
+          createdIndex++;
+          if (createdSubTask.content_type === "IMAGE") {
+            contentToSend = extractS3KeyFromPresignedUrl(
+              createdSubTask.content,
+            );
+          } else {
+            contentToSend = createdSubTask.content;
+          }
+          contentTypeToSend = createdSubTask.content_type;
         }
-
         updatePayload.push({
-          id: matched.id,
+          id: subtaskId,
           content: contentToSend,
           content_type: contentTypeToSend,
           display_order: i + 1,
@@ -346,44 +341,34 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   useEffect(() => {
     if (editingTask && taskDetails && taskDetails.id === editingTask.id) {
-      const currentLoadedTaskId = subTasks.length > 0 ? subTasks[0]?.id : null;
-      const shouldLoadNewTask =
-        subTasks.length === 0 ||
-        (currentLoadedTaskId &&
-          !taskDetails.subtasks.some(
-            (st: any) => st.id === currentLoadedTaskId,
-          ));
+      form.setValue("title", editingTask.title);
+      const transformedSubTasks: SubTask[] = taskDetails.subtasks
+        .sort((a: any, b: any) => a.display_order - b.display_order)
+        .map((st: any) => ({
+          id: st.id,
+          contentType:
+            st.content_type === "VIDEO"
+              ? "video"
+              : st.content_type === "TEXT"
+                ? "text"
+                : st.content_type === "AUDIO"
+                  ? "music"
+                  : st.content_type === "IMAGE"
+                    ? "image"
+                    : "text",
+          videoUrl: st.content_type === "VIDEO" ? st.content : "",
+          textContent: st.content_type === "TEXT" ? st.content : "",
+          musicUrl: st.content_type === "AUDIO" ? st.content : "",
+          imageFile: null,
+          imagePreview: st.content_type === "IMAGE" ? st.content : null,
+          imageKey:
+            st.content_type === "IMAGE"
+              ? extractS3KeyFromPresignedUrl(st.content)
+              : null,
+          isUploading: false,
+        }));
 
-      if (shouldLoadNewTask) {
-        form.setValue("title", editingTask.title);
-        const transformedSubTasks: SubTask[] = taskDetails.subtasks
-          .sort((a: any, b: any) => a.display_order - b.display_order)
-          .map((st: any) => ({
-            id: st.id,
-            contentType:
-              st.content_type === "VIDEO"
-                ? "video"
-                : st.content_type === "TEXT"
-                  ? "text"
-                  : st.content_type === "AUDIO"
-                    ? "music"
-                    : st.content_type === "IMAGE"
-                      ? "image"
-                      : "text",
-            videoUrl: st.content_type === "VIDEO" ? st.content : "",
-            textContent: st.content_type === "TEXT" ? st.content : "",
-            musicUrl: st.content_type === "AUDIO" ? st.content : "",
-            imageFile: null,
-            imagePreview: st.content_type === "IMAGE" ? st.content : null,
-            imageKey:
-              st.content_type === "IMAGE"
-                ? extractS3KeyFromPresignedUrl(st.content)
-                : null,
-            isUploading: false,
-          }));
-
-        setSubTasks(transformedSubTasks);
-      }
+      setSubTasks(transformedSubTasks);
     } else if (!editingTask) {
       const savedTitle = localStorage.getItem(getDayKey("title"));
       if (savedTitle) {
@@ -393,7 +378,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       }
       setSubTasks([]);
     }
-  }, [editingTask?.id, selectedDay, taskDetails]);
+  }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
   const handleAddSubTask = (
     contentType: "image" | "video" | "music" | "text",

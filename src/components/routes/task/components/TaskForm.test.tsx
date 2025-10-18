@@ -391,66 +391,89 @@ describe("TaskForm Component", () => {
   it("updates existing task by adding new subtask", async () => {
     const axiosInstance = await import("@/config/axios-config");
     const { toast } = await import("sonner");
-    const mockTaskDetails = {
+    const existingTask = {
       id: "task-123",
-      title: "Original Task",
+      title: "My Task",
       subtasks: [
         {
-          id: "subtask-1",
-          content: "Original text",
+          id: "existing-subtask-1",
+          content: "Existing content",
           content_type: "TEXT",
+          display_order: 1,
         },
       ],
     };
-    const mockEditingTask = {
-      id: "task-123",
-      title: "Original Task",
-    };
-    vi.mocked(axiosInstance.default.get)
-      .mockResolvedValueOnce({ data: mockTaskDetails })
-      .mockResolvedValueOnce({
-        data: {
-          id: "task-123",
-          title: "Original Task",
-          subtasks: [
-            {
-              id: "subtask-1",
-              content: "Original text",
-              content_type: "TEXT",
-            },
-            {
-              id: "subtask-2",
-              content: "https://youtube.com/watch?v=test123",
-              content_type: "VIDEO",
-            },
-          ],
-        },
-      });
-    vi.mocked(axiosInstance.default.post).mockResolvedValueOnce({
-      data: {},
+    vi.mocked(axiosInstance.default.get).mockResolvedValue({
+      data: existingTask,
     });
-    vi.mocked(axiosInstance.default.put).mockResolvedValueOnce({
-      data: {},
+    vi.mocked(axiosInstance.default.post).mockResolvedValue({
+      data: {
+        sub_tasks: [
+          {
+            id: "new-subtask-2",
+            content: "https://youtube.com/watch?v=abc123",
+            content_type: "VIDEO",
+            display_order: 0,
+          },
+        ],
+      },
     });
+    vi.mocked(axiosInstance.default.put).mockResolvedValue({ data: {} });
     renderWithProviders(
       <TaskForm
         selectedDay={1}
-        editingTask={mockEditingTask}
+        editingTask={{ id: "task-123", title: "My Task" }}
         onCancel={() => {}}
       />,
     );
     await waitFor(() => {
       expect(screen.getByText("Edit Task")).toBeInTheDocument();
     });
-    expect(screen.getByTestId("submit-button")).toHaveTextContent("Update");
     fireEvent.click(screen.getByTestId("add-content-button"));
     fireEvent.click(screen.getByTestId("video-button"));
     fireEvent.change(screen.getByPlaceholderText("Enter YouTube URL"), {
-      target: { value: "https://youtube.com/watch?v=test123" },
+      target: { value: "https://youtube.com/watch?v=abc123" },
     });
+    expect(screen.getByTestId("submit-button")).toHaveTextContent("Update");
     fireEvent.click(screen.getByTestId("submit-button"));
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith("Task updated successfully!");
     });
+    expect(axiosInstance.default.post).toHaveBeenCalledTimes(1);
+    expect(axiosInstance.default.put).toHaveBeenCalledTimes(1);
+    expect(axiosInstance.default.post).toHaveBeenCalledWith(
+      "/api/v1/cms/sub-tasks",
+      {
+        task_id: "task-123",
+        sub_tasks: [
+          {
+            content: "https://youtube.com/watch?v=abc123",
+            content_type: "VIDEO",
+          },
+        ],
+      },
+      expect.any(Object),
+    );
+    expect(axiosInstance.default.put).toHaveBeenCalledWith(
+      "/api/v1/cms/sub-tasks",
+      {
+        task_id: "task-123",
+        sub_tasks: [
+          {
+            id: "existing-subtask-1",
+            content: "Existing content",
+            content_type: "TEXT",
+            display_order: 1,
+          },
+          {
+            id: "new-subtask-2",
+            content: "https://youtube.com/watch?v=abc123",
+            content_type: "VIDEO",
+            display_order: 2,
+          },
+        ],
+      },
+      expect.any(Object),
+    );
   });
 });
