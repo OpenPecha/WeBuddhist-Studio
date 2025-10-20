@@ -450,7 +450,7 @@ const Createplan = () => {
                     variant="default"
                     className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
                     onClick={form.handleSubmit(onSubmit)}
-                    disabled={updatePlanMutation.isPending}
+                    disabled={updatePlanMutation.isPending || !form.formState.isDirty}
                   >
                     {updatePlanMutation.isPending
                       ? "Updating..."
