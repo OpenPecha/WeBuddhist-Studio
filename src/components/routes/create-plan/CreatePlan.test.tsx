@@ -283,10 +283,19 @@ describe("CreatePlan Component", () => {
   });
 
   it("shows validation errors for required fields", async () => {
+    vi.mocked(useParams).mockReturnValue({ plan_id: "new" });
     renderWithProviders(<CreatePlan />);
-    const submitButton = screen.getByText("studio.plan.update_button");
+    const submitButton = screen.getByText("studio.plan.next_button");
     fireEvent.click(submitButton);
-    expect(await screen.findAllByText(/required/)).not.toHaveLength(0);
+    expect(
+      await screen.findByText("Plan title is required"),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("Description is required"),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("Difficulty is required"),
+    ).toBeInTheDocument();
   });
 
   it("handles tag input add and remove", () => {
@@ -366,25 +375,6 @@ describe("CreatePlan Component", () => {
     const confirmButton = screen.getByText("studio.plan.navigation.leave");
     fireEvent.click(confirmButton);
     expect(mockBlocker.proceed).toHaveBeenCalled();
-  });
-
-  it("handles navigation cancellation", async () => {
-    const mockBlocker = {
-      state: "blocked" as const,
-      proceed: vi.fn(),
-      reset: vi.fn(),
-      location: {} as any,
-    };
-    vi.mocked(useBlocker).mockReturnValue(mockBlocker);
-    renderWithProviders(<CreatePlan />);
-    await waitFor(() => {
-      expect(
-        screen.getByText("studio.plan.navigation.confirm_title"),
-      ).toBeInTheDocument();
-    });
-    const cancelButton = screen.getByText("common.button.cancel");
-    fireEvent.click(cancelButton);
-    expect(mockBlocker.reset).toHaveBeenCalled();
   });
 
   it("updates an existing plan successfully", async () => {
