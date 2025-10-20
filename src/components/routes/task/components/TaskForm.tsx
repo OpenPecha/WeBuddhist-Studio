@@ -291,7 +291,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
                   <Pecha.Input
                     type="text"
                     placeholder="Task Title"
-                    className="h-12 text-base"
+                    className="h-12 text-base w-2/3"
                     {...field}
                     onChange={(e) => {
                       field.onChange(e);
@@ -303,10 +303,11 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
               </Pecha.FormItem>
             )}
           />
-          <div className="flex gap-4">
+          <div className="flex h-12 items-center gap-4">
             <Pecha.Button
               type="button"
               variant="outline"
+              className="h-full"
               onClick={() => setShowContentTypes(!showContentTypes)}
               data-testid="add-content-button"
             >
@@ -315,7 +316,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
 
             {showContentTypes && (
               <div
-                className={`flex border border-gray-300 dark:border-input rounded-sm overflow-hidden`}
+                className={`flex border h-full items-center p-2 border-gray-300 dark:border-input rounded-sm overflow-hidden`}
               >
                 {contentTypes.map(({ key, icon, testid }) => (
                   <Pecha.Button
@@ -332,7 +333,7 @@ const TaskForm = ({ selectedDay }: TaskFormProps) => {
             )}
           </div>
           {subTasks.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-4 w-2/3">
               {subTasks.map((subTask) => (
                 <div
                   key={subTask.id}
