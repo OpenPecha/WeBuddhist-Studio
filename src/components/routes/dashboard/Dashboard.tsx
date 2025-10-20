@@ -1,7 +1,7 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { DashBoardTable } from "@/components/ui/molecules/dashboard-table/DashBoardTable";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
-import { useState } from "react";
+import { useState, Activity } from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
@@ -99,7 +99,7 @@ const Dashboard = () => {
         onSort={handleSort}
       />
 
-      {!error && (
+      <Activity mode={!error ? 'visible' : 'hidden'}>
         <div>
           <Pagination
             currentPage={currentPage}
@@ -107,7 +107,7 @@ const Dashboard = () => {
             onPageChange={setCurrentPage}
           />
         </div>
-      )}
+      </Activity>
     </div>
   );
 };
