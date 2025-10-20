@@ -14,6 +14,7 @@ interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
   onAddTaskClick: () => void;
+  onTaskClick?: (taskId: string) => void;
 }
 
 const fetchPlanDetails = async (plan_id: string) => {
@@ -51,6 +52,7 @@ const SideBar = ({
   selectedDay,
   onDaySelect,
   onAddTaskClick,
+  onTaskClick,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const queryClient = useQueryClient();
@@ -198,7 +200,12 @@ const SideBar = ({
                         key={task.id}
                         className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
                       >
-                        <span>{task.title}</span>
+                        <span
+                          className="cursor-pointer w-full"
+                          onClick={() => onTaskClick?.(task.id)}
+                        >
+                          {task.title}
+                        </span>
                         <Pecha.DropdownMenu>
                           <Pecha.DropdownMenuTrigger asChild>
                             <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
