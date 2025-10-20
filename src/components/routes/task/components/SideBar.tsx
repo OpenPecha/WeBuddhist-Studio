@@ -72,11 +72,12 @@ const SideBar = ({
   const deleteTaskMutation = useMutation({
     mutationFn: (task_id: string) => deleteTask(task_id),
     onSuccess: () => {
+      toast.success("Task deleted successfully");
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
       toast.error("Failed to delete task", {
-        description: error.response.data.detail,
+        description: error.response.data.detail.message,
       });
     },
   });
