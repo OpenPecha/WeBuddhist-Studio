@@ -163,7 +163,9 @@ const SideBar = ({
                     </span>
                   </div>
 
-                  <Activity mode={selectedDay === day.day_number ? 'visible' : 'hidden'}>
+                  <Activity
+                    mode={selectedDay === day.day_number ? "visible" : "hidden"}
+                  >
                     <div className="flex items-center gap-2">
                       <IoMdAdd
                         className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
@@ -173,7 +175,9 @@ const SideBar = ({
                           onAddTaskClick();
                         }}
                       />
-                      <Activity mode={day.tasks.length > 0 ? 'visible' : 'hidden'}>
+                      <Activity
+                        mode={day.tasks.length > 0 ? "visible" : "hidden"}
+                      >
                         <MdExpandMore
                           className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
                             expandedDay === day.day_number ? "rotate-180" : ""
@@ -192,7 +196,13 @@ const SideBar = ({
                   </Activity>
                 </div>
 
-                <Activity mode={expandedDay === day.day_number && day.tasks.length > 0 ? 'visible' : 'hidden'}>
+                <Activity
+                  mode={
+                    expandedDay === day.day_number && day.tasks.length > 0
+                      ? "visible"
+                      : "hidden"
+                  }
+                >
                   <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
                     {day.tasks.map((task: any) => (
                       <div

@@ -99,7 +99,7 @@ const Dashboard = () => {
         onSort={handleSort}
       />
 
-      <Activity mode={!error ? 'visible' : 'hidden'}>
+      <Activity mode={!error ? "visible" : "hidden"}>
         <div>
           <Pagination
             currentPage={currentPage}
