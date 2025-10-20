@@ -79,6 +79,13 @@ const SUBTASK_CONTENT_MAP = {
   image: { field: "imageKey", type: "IMAGE" },
 } as const;
 
+const CONTENT_TYPE_MAP: { [key: string]: SubTask["contentType"] } = {
+  VIDEO: "video",
+  TEXT: "text",
+  AUDIO: "music",
+  IMAGE: "image",
+};
+
 const transformSubTask = (subTask: SubTask) => {
   const mapping = SUBTASK_CONTENT_MAP[subTask.contentType];
   if (!mapping) {
@@ -285,42 +292,34 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           createdSubTasks = createResponse.sub_tasks || [];
         }
       }
-      const updatePayload: any[] = [];
       let createdIndex = 0;
-      for (let i = 0; i < subTasks.length; i++) {
-        const st = subTasks[i];
-        let subtaskId: string;
-        let contentToSend: string;
-        let contentTypeToSend: string;
+      const updatePayload = subTasks.map((st, index) => {
         if (st.id !== null) {
-          subtaskId = st.id;
-          contentToSend = transformSubTask(st).content;
-          contentTypeToSend = transformSubTask(st).content_type;
-        } else {
-          const createdSubTask = createdSubTasks[createdIndex];
-          if (!createdSubTask) {
-            throw new Error(
-              `Could not find created subtask at position ${i + 1}`,
-            );
-          }
-          subtaskId = createdSubTask.id;
-          createdIndex++;
-          if (createdSubTask.content_type === "IMAGE") {
-            contentToSend = extractS3KeyFromPresignedUrl(
-              createdSubTask.content,
-            );
-          } else {
-            contentToSend = createdSubTask.content;
-          }
-          contentTypeToSend = createdSubTask.content_type;
+          const { content, content_type } = transformSubTask(st);
+          return {
+            id: st.id,
+            content,
+            content_type,
+            display_order: index + 1,
+          };
         }
-        updatePayload.push({
-          id: subtaskId,
-          content: contentToSend,
-          content_type: contentTypeToSend,
-          display_order: i + 1,
-        });
-      }
+        const createdSubTask = createdSubTasks[createdIndex];
+        if (!createdSubTask) {
+          throw new Error(
+            `Could not find created subtask at position ${index + 1}`
+          );
+        }
+        createdIndex++;
+        return {
+          id: createdSubTask.id,
+          content:
+            createdSubTask.content_type === "IMAGE"
+              ? extractS3KeyFromPresignedUrl(createdSubTask.content)
+              : createdSubTask.content,
+          content_type: createdSubTask.content_type,
+          display_order: index + 1,
+        };
+      });
       await updateSubTasks(editingTask.id, updatePayload);
     },
     onSuccess: () => {
@@ -346,16 +345,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         .sort((a: any, b: any) => a.display_order - b.display_order)
         .map((st: any) => ({
           id: st.id,
-          contentType:
-            st.content_type === "VIDEO"
-              ? "video"
-              : st.content_type === "TEXT"
-                ? "text"
-                : st.content_type === "AUDIO"
-                  ? "music"
-                  : st.content_type === "IMAGE"
-                    ? "image"
-                    : "text",
+          contentType: CONTENT_TYPE_MAP[st.content_type] || "text",
           videoUrl: st.content_type === "VIDEO" ? st.content : "",
           textContent: st.content_type === "TEXT" ? st.content : "",
           musicUrl: st.content_type === "AUDIO" ? st.content : "",
@@ -408,7 +398,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     if (subTask?.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
-    setSubTasks((prev) => prev.filter((_, i) => i !== index));
+    setSubTasks((prev) => prev.filter((_, i) => i !== index));  //by index, might cause race condition
   };
 
   const handleSubTaskImageUpload = async (index: number, file: File) => {
