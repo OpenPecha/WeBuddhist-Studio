@@ -422,25 +422,42 @@ const Createplan = () => {
               )}
             />
             <div className="pt-8 w-full flex justify-end">
-              <Pecha.Button
-                type="submit"
-                variant="default"
-                className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
-                onClick={form.handleSubmit(onSubmit)}
-                disabled={
-                  plan_id === "new"
-                    ? createPlanMutation.isPending
-                    : updatePlanMutation.isPending
-                }
-              >
-                {plan_id !== "new"
-                  ? updatePlanMutation.isPending
-                    ? "Updating..."
-                    : t("studio.plan.update_button")
-                  : createPlanMutation.isPending
+              {plan_id == "new" ? (
+                <Pecha.Button
+                  type="submit"
+                  variant="default"
+                  className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                  onClick={form.handleSubmit(onSubmit)}
+                  disabled={createPlanMutation.isPending}
+                >
+                  {createPlanMutation.isPending
                     ? "Creating..."
                     : t("studio.plan.next_button")}
-              </Pecha.Button>
+                </Pecha.Button>
+              ) : (
+                <div className="flex gap-3">
+                  <Pecha.Button
+                    type="button"
+                    variant="outline"
+                    className=" h-12 px-12 font-medium"
+                    onClick={() => navigate(`/dashboard`)}
+                  >
+                    {t("common.button.cancel")}
+                  </Pecha.Button>
+
+                  <Pecha.Button
+                    type="submit"
+                    variant="default"
+                    className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                    onClick={form.handleSubmit(onSubmit)}
+                    disabled={updatePlanMutation.isPending}
+                  >
+                    {updatePlanMutation.isPending
+                      ? "Updating..."
+                      : t("studio.plan.update_button")}
+                  </Pecha.Button>
+                </div>
+              )}
             </div>
           </div>
         </Pecha.Form>
