@@ -3,6 +3,7 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
+import { FaPen } from "react-icons/fa";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
@@ -224,6 +225,13 @@ const SideBar = ({
                             <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                           </Pecha.DropdownMenuTrigger>
                           <Pecha.DropdownMenuContent side="right">
+                            <Pecha.DropdownMenuItem
+                              className="gap-2 cursor-pointer"
+                              onClick={() => onEditTask(task)}
+                            >
+                              <FaPen className="h-4 w-4" />
+                              Edit
+                            </Pecha.DropdownMenuItem>
                             <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
                               <TaskDeleteDialog
                                 taskId={task.id}
