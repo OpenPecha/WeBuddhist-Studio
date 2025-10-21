@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Activity } from "react";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
@@ -15,6 +15,7 @@ interface SideBarProps {
   onDaySelect: (dayNumber: number) => void;
   onAddTaskClick: () => void;
   onTaskClick?: (taskId: string) => void;
+  onEditTask: (task: any) => void;
 }
 
 const fetchPlanDetails = async (plan_id: string) => {
@@ -53,6 +54,7 @@ const SideBar = ({
   onDaySelect,
   onAddTaskClick,
   onTaskClick,
+  onEditTask,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const queryClient = useQueryClient();
@@ -72,11 +74,12 @@ const SideBar = ({
   const deleteTaskMutation = useMutation({
     mutationFn: (task_id: string) => deleteTask(task_id),
     onSuccess: () => {
+      toast.success("Task deleted successfully");
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
       toast.error("Failed to delete task", {
-        description: error.response.data.detail,
+        description: error.response.data.detail.message,
       });
     },
   });
@@ -164,7 +167,9 @@ const SideBar = ({
                     </span>
                   </div>
 
-                  {selectedDay === day.day_number && (
+                  <Activity
+                    mode={selectedDay === day.day_number ? "visible" : "hidden"}
+                  >
                     <div className="flex items-center gap-2">
                       <IoMdAdd
                         className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
@@ -174,7 +179,9 @@ const SideBar = ({
                           onAddTaskClick();
                         }}
                       />
-                      {day.tasks.length > 0 && (
+                      <Activity
+                        mode={day.tasks.length > 0 ? "visible" : "hidden"}
+                      >
                         <MdExpandMore
                           className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
                             expandedDay === day.day_number ? "rotate-180" : ""
@@ -188,12 +195,18 @@ const SideBar = ({
                             );
                           }}
                         />
-                      )}
+                      </Activity>
                     </div>
-                  )}
+                  </Activity>
                 </div>
 
-                {expandedDay === day.day_number && day.tasks.length > 0 && (
+                <Activity
+                  mode={
+                    expandedDay === day.day_number && day.tasks.length > 0
+                      ? "visible"
+                      : "hidden"
+                  }
+                >
                   <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
                     {day.tasks.map((task: any) => (
                       <div
@@ -222,7 +235,7 @@ const SideBar = ({
                       </div>
                     ))}
                   </div>
-                )}
+                </Activity>
               </div>
             ))
           )}

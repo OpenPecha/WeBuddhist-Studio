@@ -8,11 +8,24 @@ const PlanDetailsPage = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
   const handleDaySelect = (dayNumber: number) => {
     setSelectedDay(dayNumber);
     setShowTaskForm(false);
     setSelectedTaskId(null);
+    setEditingTask(null);
+  };
+
+  const handleEditTask = (task: any) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
+    setSelectedTaskId(null);
+  };
+
+  const handleCancelTaskForm = () => {
+    setShowTaskForm(false);
+    setEditingTask(null);
   };
 
   return (
@@ -28,6 +41,7 @@ const PlanDetailsPage = () => {
           setSelectedTaskId(taskId);
           setShowTaskForm(false);
         }}
+        onEditTask={handleEditTask}
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {selectedTaskId ? (
@@ -36,7 +50,11 @@ const PlanDetailsPage = () => {
             onClose={() => setSelectedTaskId(null)}
           />
         ) : showTaskForm ? (
-          <TaskForm selectedDay={selectedDay} />
+          <TaskForm
+            selectedDay={selectedDay}
+            editingTask={editingTask}
+            onCancel={handleCancelTaskForm}
+          />
         ) : (
           <DefaultDayView selectedDay={selectedDay} />
         )}
