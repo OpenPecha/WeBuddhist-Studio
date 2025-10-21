@@ -14,6 +14,7 @@ interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
   onAddTaskClick: () => void;
+  onTaskClick?: (taskId: string) => void;
   onEditTask: (task: any) => void;
 }
 
@@ -52,6 +53,7 @@ const SideBar = ({
   selectedDay,
   onDaySelect,
   onAddTaskClick,
+  onTaskClick,
   onEditTask,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
@@ -213,7 +215,7 @@ const SideBar = ({
                       >
                         <span
                           className="cursor-pointer w-full"
-                          onClick={() => onEditTask(task)}
+                          onClick={() => onTaskClick?.(task.id)}
                         >
                           {task.title}
                         </span>
