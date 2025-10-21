@@ -398,7 +398,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     if (subTask?.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
-    setSubTasks((prev) => prev.filter((_, i) => i !== index)); //by index, might cause race condition
+    setSubTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubTaskImageUpload = async (index: number, file: File) => {

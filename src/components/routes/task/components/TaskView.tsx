@@ -12,9 +12,9 @@ interface TaskViewProps {
   onClose: () => void;
 }
 
-const fetchTaskDetails = async (taskId: string) => {
+const fetchTaskDetails = async (task_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(`/api/v1/cms/tasks/${taskId}`, {
+  const { data } = await axiosInstance.get(`/api/v1/cms/tasks/${task_id}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   return data;
@@ -71,7 +71,7 @@ const TaskView = ({ taskId, onClose }: TaskViewProps) => {
                     {contentType === "text" && (
                       <IoTextOutline className="w-4 h-4 text-gray-600" />
                     )}
-                    {contentType === "audio" && (
+                    {contentType === "music" && (
                       <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />
                     )}
                     {contentType === "image" && (
@@ -100,7 +100,7 @@ const TaskView = ({ taskId, onClose }: TaskViewProps) => {
                     </div>
                   )}
 
-                  {contentType === "audio" && content && (
+                  {contentType === "music" && content && (
                     <div className="mt-4">
                       {content.includes("spotify.com") &&
                         (() => {
