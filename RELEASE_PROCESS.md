@@ -7,10 +7,12 @@ This document outlines the release process using timestamp-based versioning for 
 We use timestamp-based versioning with the format: `YYYY.MM.DD.HHMM`
 
 ### Examples:
+
 - `2024.10.22.1730` - Released on Oct 22, 2024 at 17:30
 - `2024.11.05.0945` - Released on Nov 5, 2024 at 09:45
 
 ### Tag Formats:
+
 - **Sprint releases**: `sprint-2024.10.22.1730`
 - **Hotfixes**: `hotfix-2024.10.22.1730`
 - **Major releases**: `release-2024.10.22.1730`
@@ -18,6 +20,7 @@ We use timestamp-based versioning with the format: `YYYY.MM.DD.HHMM`
 ## Quick Release Commands
 
 ### Sprint Release (End of Sprint)
+
 ```bash
 # Using npm scripts (recommended)
 npm run release:sprint
@@ -30,6 +33,7 @@ node scripts/release-sprint.js --type sprint
 ```
 
 ### Hotfix Release (Emergency fixes)
+
 ```bash
 # Using npm scripts (recommended)
 npm run release:hotfix
@@ -42,6 +46,7 @@ node scripts/release-sprint.js --type hotfix
 ```
 
 ### Major Release
+
 ```bash
 # Using npm scripts
 npm run release:major
@@ -53,6 +58,7 @@ node scripts/release-sprint.js --type release
 ## Advanced Usage
 
 ### Dry Run (See what would happen)
+
 ```bash
 # Using npm script
 npm run release:dry-run
@@ -62,6 +68,7 @@ node scripts/release-sprint.js --dry-run --type sprint
 ```
 
 ### Local Only (Don't push to remote)
+
 ```bash
 node scripts/release-sprint.js --type sprint --no-push
 ```
@@ -103,7 +110,7 @@ node scripts/release-sprint.js --type sprint --no-push
 {
   "scripts": {
     "release:sprint": "node scripts/release-sprint.js --type sprint",
-    "release:hotfix": "node scripts/release-sprint.js --type hotfix", 
+    "release:hotfix": "node scripts/release-sprint.js --type hotfix",
     "release:major": "node scripts/release-sprint.js --type release",
     "release:dry-run": "node scripts/release-sprint.js --dry-run --type sprint"
   }
@@ -113,21 +120,25 @@ node scripts/release-sprint.js --type sprint --no-push
 ## Viewing Releases
 
 ### List All Tags
+
 ```bash
 git tag -l
 ```
 
 ### List Recent Tags (Sorted)
+
 ```bash
 git tag -l --sort=-version:refname | head -10
 ```
 
 ### View Tag Details
+
 ```bash
 git show sprint-2024.10.22.1730
 ```
 
 ### List Tags by Pattern
+
 ```bash
 # Sprint releases only
 git tag -l "sprint-*"
@@ -142,6 +153,7 @@ git tag -l "*2024.10.*"
 ## WeBuddhist-Studio Specific Considerations
 
 ### Tech Stack
+
 - **Frontend**: React 19 + TypeScript + Vite
 - **UI**: Radix UI + Tailwind CSS + shadcn/ui
 - **State Management**: TanStack Query
@@ -149,6 +161,7 @@ git tag -l "*2024.10.*"
 - **Internationalization**: Tolgee
 
 ### Before Release
+
 - **Type Check**: `npm run build` (includes TypeScript compilation)
 - **Run tests**: `npm test`
 - **Run linting**: `npm run lint`
@@ -157,6 +170,7 @@ git tag -l "*2024.10.*"
 - **Test components**: Verify shadcn/ui components work correctly
 
 ### After Release
+
 - **Deploy to staging**: Test the tagged version
 - **Update environment variables**: If needed for new features
 - **Test internationalization**: Verify Tolgee translations work
@@ -177,6 +191,7 @@ After each sprint release, consider:
 ## Troubleshooting
 
 ### TypeScript Compilation Errors
+
 ```bash
 # Check TypeScript errors
 npm run build
@@ -186,6 +201,7 @@ npx tsc --noEmit
 ```
 
 ### Working Directory Not Clean
+
 ```bash
 # Check what's uncommitted
 git status
@@ -196,6 +212,7 @@ git commit -m "Pre-release cleanup"
 ```
 
 ### Node.js Not Found
+
 ```bash
 # Check Node.js installation
 node --version
@@ -206,6 +223,7 @@ npm --version
 ```
 
 ### Tag Already Exists
+
 ```bash
 # Delete local tag
 git tag -d sprint-2024.10.22.1730
@@ -215,6 +233,7 @@ git push origin --delete sprint-2024.10.22.1730
 ```
 
 ### Failed Push
+
 ```bash
 # Check remote connection
 git remote -v
@@ -241,7 +260,7 @@ Consider adding these steps to your GitHub Actions workflow:
   if: github.ref == 'refs/heads/main'
   run: |
     npm run release:sprint
-    
+
 - name: Deploy to Production
   if: startsWith(github.ref, 'refs/tags/sprint-')
   run: |
@@ -252,6 +271,7 @@ Consider adding these steps to your GitHub Actions workflow:
 ## Development Workflow Integration
 
 ### Pre-commit Hooks (Recommended)
+
 ```bash
 # Install husky for git hooks
 npm install --save-dev husky
@@ -261,6 +281,7 @@ npx husky add .husky/pre-commit "npm run format && npm run lint"
 ```
 
 ### Component Development
+
 - Use `npm run shad` to add new shadcn/ui components
 - Follow TypeScript best practices
 - Update Tolgee keys for internationalization
