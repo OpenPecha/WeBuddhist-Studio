@@ -27,31 +27,6 @@ interface TaskFormProps {
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
-const buildSubTaskPayload = (subTask: SubTask) => {
-  switch (subTask.contentType) {
-    case "VIDEO":
-      return {
-        content: subTask.videoUrl,
-        content_type: "VIDEO",
-      };
-    case "TEXT":
-      return {
-        content: subTask.textContent,
-        content_type: "TEXT",
-      };
-    case "AUDIO":
-      return {
-        content: subTask.musicUrl,
-        content_type: "AUDIO",
-      };
-    case "IMAGE":
-      return {
-        content: subTask.imageKey,
-        content_type: "IMAGE",
-      };
-  }
-};
-
 const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const { plan_id } = useParams();
   const queryClient = useQueryClient();
@@ -89,7 +64,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       const taskResponse = await createTask(taskData);
 
       if (subTasksData.length > 0) {
-        const subTasksPayload = subTasksData.map(buildSubTaskPayload); // later removing it.
+        const subTasksPayload = subTasksData.map((subTask) => ({
+          content: subTask.content,
+          content_type: subTask.content_type,
+        }));
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
       return taskResponse;
@@ -110,7 +88,11 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const updateTaskMutation = useMutation({
     mutationFn: async () => {
-      await updateSubTasks(editingTask.id, subTasks); // make changes here later
+      const subTasksPayload = subTasks.map((subTask) => ({
+        content: subTask.content,
+        content_type: subTask.content_type,
+      }));
+      await updateSubTasks(editingTask.id, subTasksPayload);
     },
     onSuccess: () => {
       toast.success("Task updated successfully!");
@@ -134,29 +116,29 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         switch (data.content_type) {
           case "VIDEO":
             return {
-              contentType: "VIDEO",
-              videoUrl: data.content,
+              content_type: "VIDEO",
+              content: data.content,
             };
           case "TEXT":
             return {
-              contentType: "TEXT",
-              textContent: data.content,
+              content_type: "TEXT",
+              content: data.content,
             };
           case "AUDIO":
             return {
-              contentType: "AUDIO",
-              musicUrl: data.content,
+              content_type: "AUDIO",
+              content: data.content,
             };
           case "IMAGE":
             return {
-              contentType: "IMAGE",
+              content_type: "IMAGE",
               imagePreview: data.content,
-              imageKey: data.image_key,
+              content: data.image_key,
             };
           default:
             return {
-              contentType: "TEXT",
-              textContent: data.content,
+              content_type: "TEXT",
+              content: data.content,
             };
         }
       });
@@ -164,33 +146,33 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     }
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
-  const handleAddSubTask = (contentType: any) => {
+  const handleAddSubTask = (content_type: any) => {
     let newSubTask: SubTask;
 
-    switch (contentType) {
+    switch (content_type) {
       case "VIDEO":
         newSubTask = {
-          contentType: "VIDEO",
-          videoUrl: "",
+          content_type: "VIDEO",
+          content: "",
         };
         break;
       case "TEXT":
         newSubTask = {
-          contentType: "TEXT",
-          textContent: "",
+          content_type: "TEXT",
+          content: "",
         };
         break;
       case "AUDIO":
         newSubTask = {
-          contentType: "AUDIO",
-          musicUrl: "",
+          content_type: "AUDIO",
+          content: "",
         };
         break;
       case "IMAGE":
         newSubTask = {
-          contentType: "IMAGE",
+          content_type: "IMAGE",
           imagePreview: null,
-          imageKey: null,
+          content: null,
         };
         break;
     }
@@ -216,7 +198,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       const { url, key } = await uploadImageToS3(file, plan_id || "");
       updateSubTask(index, {
         imagePreview: url,
-        imageKey: key,
+        content: key,
       });
       toast.success("Image uploaded successfully!");
     } catch (error) {
@@ -225,7 +207,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   };
 
   const handleRemoveSubTaskImage = (index: number) => {
-    updateSubTask(index, { imagePreview: null, imageKey: null });
+    updateSubTask(index, { imagePreview: null, content: null });
   };
 
   const clearFormData = (newlyCreatedTaskId?: string) => {

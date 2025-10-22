@@ -5,24 +5,24 @@ import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImage
 import { VideoContent, AudioContent, ContentIcon } from "./ContentComponents";
 
 interface VideoSubTask {
-  contentType: "VIDEO";
-  videoUrl: string;
+  content_type: "VIDEO";
+  content: string;
 }
 
 interface TextSubTask {
-  contentType: "TEXT";
-  textContent: string;
+  content_type: "TEXT";
+  content: string;
 }
 
 interface AudioSubTask {
-  contentType: "AUDIO";
-  musicUrl: string;
+  content_type: "AUDIO";
+  content: string;
 }
 
 interface ImageSubTask {
-  contentType: "IMAGE";
+  content_type: "IMAGE";
+  content: string | null;
   imagePreview: string | null;
-  imageKey: string | null;
 }
 
 export type SubTask = VideoSubTask | TextSubTask | AudioSubTask | ImageSubTask;
@@ -50,10 +50,10 @@ const VideoSubtask = ({
       type="url"
       placeholder="Enter YouTube URL"
       className="h-12 text-base"
-      value={subTask.videoUrl}
-      onChange={(e) => onUpdate(index, { videoUrl: e.target.value })}
+      value={subTask.content}
+      onChange={(e) => onUpdate(index, { content: e.target.value })}
     />
-    <VideoContent content={subTask.videoUrl} />
+    <VideoContent content={subTask.content} />
   </>
 );
 
@@ -69,8 +69,8 @@ const TextSubtask = ({
   <Pecha.Textarea
     placeholder="Enter your text content"
     className="w-full h-24 resize-none text-base"
-    value={subTask.textContent}
-    onChange={(e) => onUpdate(index, { textContent: e.target.value })}
+    value={subTask.content}
+    onChange={(e) => onUpdate(index, { content: e.target.value })}
   />
 );
 
@@ -88,10 +88,10 @@ const AudioSubtask = ({
       type="url"
       placeholder="Enter Spotify or SoundCloud URL"
       className="h-12 text-base"
-      value={subTask.musicUrl}
-      onChange={(e) => onUpdate(index, { musicUrl: e.target.value })}
+      value={subTask.content}
+      onChange={(e) => onUpdate(index, { content: e.target.value })}
     />
-    {subTask.musicUrl && <AudioContent content={subTask.musicUrl} />}
+    {subTask.content && <AudioContent content={subTask.content} />}
   </>
 );
 
@@ -145,7 +145,7 @@ export const SubTaskCard = ({
   onRemoveImage,
 }: SubTaskCardProps) => {
   const renderContent = () => {
-    switch (subTask.contentType) {
+    switch (subTask.content_type) {
       case "VIDEO":
         return (
           <VideoSubtask subTask={subTask} index={index} onUpdate={onUpdate} />
@@ -177,7 +177,7 @@ export const SubTaskCard = ({
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ContentIcon type={subTask.contentType} />
+          <ContentIcon type={subTask.content_type} />
         </div>
         <Pecha.Button
           variant="outline"
