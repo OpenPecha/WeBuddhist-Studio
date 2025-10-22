@@ -186,26 +186,6 @@ const fetchTaskDetails = async (task_id: string) => {
   return data;
 };
 
-const extractS3KeyFromPresignedUrl = (url: string): string => {
-  try {
-    if (!url || !url.startsWith("http")) {
-      return url;
-    }
-    const urlObj = new URL(url);
-    let s3Key = urlObj.pathname.substring(1);
-    s3Key = decodeURIComponent(s3Key);
-    if (s3Key.startsWith("http")) {
-      const secondUrlObj = new URL(s3Key);
-      s3Key = secondUrlObj.pathname.substring(1);
-      s3Key = decodeURIComponent(s3Key);
-    }
-    return s3Key;
-  } catch (error) {
-    console.error("Failed to extract S3 key:", error);
-    return url;
-  }
-};
-
 const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const queryClient = useQueryClient();
@@ -315,7 +295,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           id: createdSubTask.id,
           content:
             createdSubTask.content_type === "IMAGE"
-              ? extractS3KeyFromPresignedUrl(createdSubTask.content)
+              ? createdSubTask.image_key
               : createdSubTask.content,
           content_type: createdSubTask.content_type,
           display_order: index + 1,
@@ -342,22 +322,17 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   useEffect(() => {
     if (editingTask && taskDetails && taskDetails.id === editingTask.id) {
       form.setValue("title", editingTask.title);
-      const transformedSubTasks: SubTask[] = taskDetails.subtasks
-        .sort((a: any, b: any) => a.display_order - b.display_order)
-        .map((st: any) => ({
-          id: st.id,
-          contentType: CONTENT_TYPE_MAP[st.content_type] || "text",
-          videoUrl: st.content_type === "VIDEO" ? st.content : "",
-          textContent: st.content_type === "TEXT" ? st.content : "",
-          musicUrl: st.content_type === "AUDIO" ? st.content : "",
-          imageFile: null,
-          imagePreview: st.content_type === "IMAGE" ? st.content : null,
-          imageKey:
-            st.content_type === "IMAGE"
-              ? extractS3KeyFromPresignedUrl(st.content)
-              : null,
-          isUploading: false,
-        }));
+      const transformedSubTasks = taskDetails.subtasks.map((data: any) => ({
+        id: data.id,
+        contentType: CONTENT_TYPE_MAP[data.content_type] || "text",
+        videoUrl: data.content_type === "VIDEO" ? data.content : "",
+        textContent: data.content_type === "TEXT" ? data.content : "",
+        musicUrl: data.content_type === "AUDIO" ? data.content : "",
+        imageFile: null,
+        imagePreview: data.content_type === "IMAGE" ? data.content : "",
+        imageKey: data.image_key,
+        isUploading: false,
+      }));
 
       setSubTasks(transformedSubTasks);
     } else if (!editingTask) {
