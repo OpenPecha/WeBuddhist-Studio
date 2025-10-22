@@ -136,7 +136,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   });
 
   useEffect(() => {
-    if (editingTask && taskDetails.id === editingTask.id) {
+    if (editingTask) {
       form.setValue("title", editingTask.title);
       const subTasksData = taskDetails.subtasks.map((data: any) => {
         const contentType = CONTENT_TYPE_MAP[data.content_type]; // dont really need this.
