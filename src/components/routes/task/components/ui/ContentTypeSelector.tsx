@@ -44,20 +44,27 @@ export const ContentTypeSelector = ({
       <Pecha.Button
         type="button"
         variant="outline"
-        className="h-full"
+        className="h-full transition-transform active:scale-95"
         onClick={() => setShowContentTypes(!showContentTypes)}
       >
-        <IoMdAdd className={iconClassName} />
+        <IoMdAdd
+          className={`${iconClassName} transition-transform duration-300 ${showContentTypes ? "rotate-45" : "rotate-0"}`}
+        />
       </Pecha.Button>
 
       {showContentTypes && (
-        <div className="flex border h-full items-center p-2 border-gray-300 dark:border-input rounded-sm overflow-hidden">
-          {contentTypes.map(({ key, icon }) => (
+        <div className="flex border h-full items-center px-1 border-gray-300 dark:border-input rounded-sm overflow-visible animate-in zoom-in-90 slide-in-from-left-3 duration-300 ease-out">
+          {contentTypes.map(({ key, icon }, index) => (
             <Pecha.Button
               key={key}
               type="button"
               variant="ghost"
               onClick={() => onSelectType(key as any)}
+              className="animate-in fade-in zoom-in-50 duration-300 ease-out hover:scale-110 transition-transform"
+              style={{
+                animationDelay: `${index * 50}ms`,
+                animationFillMode: "backwards",
+              }}
             >
               {icon}
             </Pecha.Button>
