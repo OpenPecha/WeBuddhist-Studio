@@ -156,7 +156,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           default:
             return {
               contentType: "TEXT",
-              textContent: data.content || "",
+              textContent: data.content,
             };
         }
       });
@@ -164,9 +164,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     }
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
-  const handleAddSubTask = (
-    contentType: "IMAGE" | "VIDEO" | "AUDIO" | "TEXT",
-  ) => {
+  const handleAddSubTask = (contentType: any) => {
     let newSubTask: SubTask;
 
     switch (contentType) {
@@ -197,10 +195,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         break;
     }
 
-    setSubTasks([...subTasks, newSubTask]);
+    setSubTasks([...subTasks, newSubTask!]);
   };
 
-  const updateSubTask = (index: number, updates: Partial<SubTask>) => {
+  const updateSubTask = (index: number, updates: any) => {
     setSubTasks((prev) =>
       prev.map((task, i) => {
         if (i !== index) return task;
@@ -241,7 +239,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       plan_id: plan_id!,
       day_id: currentDayData!.id,
       title: data.title,
-      estimated_time: 30, //doubt here
+      estimated_time: 30,
     };
     if (isEditMode) {
       updateTaskMutation.mutate();
