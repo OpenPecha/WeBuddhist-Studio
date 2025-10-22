@@ -18,7 +18,10 @@ const fetchPlanDetails = async (plan_id: string) => {
   return data;
 };
 
-export const DefaultDayView = ({ selectedDay, onFirstTaskSelect }: DefaultDayViewProps) => {
+export const DefaultDayView = ({
+  selectedDay,
+  onFirstTaskSelect,
+}: DefaultDayViewProps) => {
   const { plan_id } = useParams<{ plan_id: string }>();
   const { data: currentPlan } = useQuery({
     queryKey: ["planDetails", plan_id],
@@ -26,11 +29,11 @@ export const DefaultDayView = ({ selectedDay, onFirstTaskSelect }: DefaultDayVie
     enabled: !!plan_id,
     refetchOnWindowFocus: false,
   });
-  
+
   const selectedDayData = currentPlan?.days?.find(
-    (d: any) => d.day_number === selectedDay
+    (d: any) => d.day_number === selectedDay,
   );
-  
+
   const hasTasks = selectedDayData?.tasks?.length > 0;
   const firstTask = hasTasks ? selectedDayData.tasks[0] : null;
   useEffect(() => {

@@ -224,7 +224,7 @@ describe("PlanDetailsPanel Component", () => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
     const addButtons = screen.getAllByTestId("add-task-button");
-    fireEvent.click(addButtons[0]); 
+    fireEvent.click(addButtons[0]);
     await waitFor(() => {
       expect(screen.getByText("Add Task")).toBeInTheDocument();
     });
