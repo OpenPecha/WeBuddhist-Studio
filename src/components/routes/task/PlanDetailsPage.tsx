@@ -1,6 +1,6 @@
 import { useState } from "react";
 import TaskForm from "./components/TaskForm";
-import SideBar from "./components/SideBar";
+import SideBar from "./components/molecules/SideBar";
 import TaskView from "./components/TaskView";
 
 const PlanDetailsPage = () => {

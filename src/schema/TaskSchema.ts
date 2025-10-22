@@ -14,5 +14,4 @@ export const subTaskSchema = z.object({
 
 export const taskSchema = z.object({
   title: z.string().min(1, "Task title is required"),
-  subTasks: z.array(subTaskSchema).optional(),
 });

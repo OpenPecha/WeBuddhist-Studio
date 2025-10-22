@@ -1,20 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Activity } from "react";
 import { Pecha } from "@/components/ui/shadimport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { IoMdAdd, IoMdVideocam, IoMdClose } from "react-icons/io";
-import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
-import { MdOutlineImage } from "react-icons/md";
-import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
-import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import axiosInstance from "@/config/axios-config";
 import { toast } from "sonner";
-import { extractSpotifyId, getYouTubeVideoId } from "@/lib/utils";
 import { taskSchema } from "@/schema/TaskSchema";
-import { FaMinus } from "react-icons/fa6";
+import { SubTaskCard } from "./ui/SubTaskCard";
+import type { SubTask } from "./ui/SubTaskCard";
+import { TaskTitleField } from "./ui/TaskTitleField";
+import { ContentTypeSelector } from "./ui/ContentTypeSelector";
+import {
+  createTask,
+  uploadImageToS3,
+  createSubTasks,
+  updateSubTasks,
+  fetchTaskDetails,
+} from "../api/taskApi";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -22,62 +25,7 @@ interface TaskFormProps {
   onCancel: (newlyCreatedTaskId?: string) => void;
 }
 
-interface SubTask {
-  id: string | null;
-  contentType: "image" | "video" | "audio" | "text";
-  videoUrl: string;
-  textContent: string;
-  musicUrl: string;
-  imageFile: File | null;
-  imagePreview: string | null;
-  imageKey: string | null;
-  isUploading: boolean;
-}
-
-interface CreateTaskPayload {
-  plan_id: string;
-  day_id: string;
-  title: string;
-  description: string;
-  estimated_time: number;
-}
-
 type TaskFormData = z.infer<typeof taskSchema>;
-
-const contentTypes = [
-  {
-    key: "image",
-    icon: <MdOutlineImage className="w-4 h-4 text-gray-400" />,
-    testid: "image-button",
-  },
-  {
-    key: "audio",
-    icon: <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />,
-    testid: "audio-button",
-  },
-  {
-    key: "video",
-    icon: <IoMdVideocam className="w-4 h-4 text-gray-400" />,
-    testid: "video-button",
-  },
-  {
-    key: "text",
-    icon: <IoTextOutline className="w-4 h-4 text-gray-400" />,
-    testid: "text-button",
-  },
-  {
-    key: "pecha",
-    icon: <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />,
-    testid: "pecha-button",
-  },
-];
-
-const SUBTASK_CONTENT_MAP = {
-  video: { field: "videoUrl", type: "VIDEO" },
-  text: { field: "textContent", type: "TEXT" },
-  audio: { field: "musicUrl", type: "AUDIO" },
-  image: { field: "imageKey", type: "IMAGE" },
-} as const;
 
 const CONTENT_TYPE_MAP: { [key: string]: SubTask["contentType"] } = {
   VIDEO: "video",
@@ -86,99 +34,29 @@ const CONTENT_TYPE_MAP: { [key: string]: SubTask["contentType"] } = {
   IMAGE: "image",
 };
 
-const transformSubTask = (subTask: SubTask) => {
-  const mapping = SUBTASK_CONTENT_MAP[subTask.contentType];
-  if (!mapping) {
-    return { content: "", content_type: "TEXT" };
+const buildSubTaskPayload = (subTask: SubTask) => {
+  switch (subTask.contentType) {
+    case "video":
+      return {
+        content: subTask.videoUrl,
+        content_type: "VIDEO",
+      };
+    case "text":
+      return {
+        content: subTask.textContent,
+        content_type: "TEXT",
+      };
+    case "audio":
+      return {
+        content: subTask.musicUrl,
+        content_type: "AUDIO",
+      };
+    case "image":
+      return {
+        content: subTask.imageKey,
+        content_type: "IMAGE",
+      };
   }
-
-  const content = subTask[mapping.field as keyof SubTask] as string;
-  return {
-    content: content || "",
-    content_type: mapping.type,
-  };
-};
-
-const createTask = async (
-  plan_id: string,
-  day_id: string,
-  taskData: CreateTaskPayload,
-) => {
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.post(
-    `/api/v1/cms/tasks`,
-    { ...taskData, plan_id, day_id },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-  return data;
-};
-
-const uploadImageToS3 = async (file: File, plan_id: string) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  const { data } = await axiosInstance.post(
-    `/api/v1/cms/media/upload`,
-    formData,
-    {
-      params: {
-        ...(plan_id && { plan_id: plan_id }),
-      },
-    },
-  );
-  return data;
-};
-
-const createSubTasks = async (
-  task_id: string,
-  subTasksData: { content: string; content_type: string }[],
-) => {
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.post(
-    `/api/v1/cms/sub-tasks`,
-    {
-      task_id: task_id,
-      sub_tasks: subTasksData,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-  return data;
-};
-
-const updateSubTasks = async (
-  task_id: string,
-  subTasksData: any,
-) => {
-  const accessToken = sessionStorage.getItem("accessToken");
-  await axiosInstance.put(
-    `/api/v1/cms/sub-tasks`,
-    {
-      task_id: task_id,
-      sub_tasks: subTasksData,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-};
-
-const fetchTaskDetails = async (task_id: string) => {
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(`/api/v1/cms/tasks/${task_id}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  return data;
 };
 
 const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
@@ -195,7 +73,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const [showContentTypes, setShowContentTypes] = useState(false);
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const formValues = form.watch();
-  const isEditMode = !!editingTask;
+  const isEditMode = Boolean(editingTask);
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
   const currentDayData = currentPlan?.days?.find(
@@ -209,19 +87,11 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   });
 
   const createTaskMutation = useMutation({
-    mutationFn: async (taskData: CreateTaskPayload) => {
-      if (!plan_id || !currentDayData?.id) {
-        throw new Error("Plan ID or Day ID not found");
-      }
+    mutationFn: async ({ taskData, subTasksData }: { taskData: any; subTasksData: SubTask[] }) => {
+      const taskResponse = await createTask(taskData);
 
-      const taskResponse = await createTask(
-        plan_id,
-        currentDayData.id,
-        taskData,
-      );
-
-      if (subTasks.length > 0) {
-        const subTasksPayload = subTasks.map(transformSubTask);
+      if (subTasksData.length > 0) {
+        const subTasksPayload = subTasksData.map(buildSubTaskPayload); // later removing it.
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
       return taskResponse;
@@ -242,10 +112,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const updateTaskMutation = useMutation({
     mutationFn: async () => {
-      if (!editingTask?.id) {
-        throw new Error("Task ID not found");
-      }
-      await updateSubTasks(editingTask.id, subTasks);
+      await updateSubTasks(editingTask.id, subTasks); // make changes here later
     },
     onSuccess: () => {
       toast.success("Task updated successfully!");
@@ -256,7 +123,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       clearFormData(editingTask?.id);
     },
     onError: (error: any) => {
-      console.error("Update failed:", error);
       toast.error("Failed to update task", {
         description: error?.message || "Something went wrong",
       });
@@ -264,86 +130,121 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   });
 
   useEffect(() => {
-    if (editingTask && taskDetails && taskDetails.id === editingTask.id) {
+    if (editingTask && taskDetails.id === editingTask.id) {
       form.setValue("title", editingTask.title);
-      const transformedSubTasks = taskDetails.subtasks.map((data: any) => ({
-        id: data.id,
-        contentType: CONTENT_TYPE_MAP[data.content_type] || "text",
-        videoUrl: data.content_type === "VIDEO" ? data.content : "",
-        textContent: data.content_type === "TEXT" ? data.content : "",
-        musicUrl: data.content_type === "AUDIO" ? data.content : "",
-        imageFile: null,
-        imagePreview: data.content_type === "IMAGE" ? data.content : "",
-        imageKey: data.image_key,
-        isUploading: false,
-      }));
-
-      setSubTasks(transformedSubTasks);
-    } else if (!editingTask) {
-      form.reset();
-      setSubTasks([]);
-    }
+      const subTasksData = taskDetails.subtasks.map((data: any) => {
+        const contentType = CONTENT_TYPE_MAP[data.content_type]; // dont really need this. 
+        switch (contentType) {
+          case "video":
+            return {
+              contentType: "video",
+              videoUrl: data.content,
+            };
+          case "text":
+            return {
+              contentType: "text",
+              textContent: data.content,
+            };
+          case "audio":
+            return {
+              contentType: "audio",
+              musicUrl: data.content,
+            };
+          case "image":
+            return {
+              contentType: "image",
+              imagePreview: data.content , //why we are keeping it here/
+              imageKey: data.image_key,
+              isUploading: false, // ?
+            };
+          default:
+            return {
+              contentType: "text",
+              textContent: data.content || "",
+            };
+        }
+      });
+      setSubTasks(subTasksData);
+    } 
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
   const handleAddSubTask = (
     contentType: "image" | "video" | "audio" | "text",
   ) => {
-    const newSubTask: SubTask = {
-      id: null,
-      contentType,
-      videoUrl: "",
-      textContent: "",
-      musicUrl: "",
-      imageFile: null,
-      imagePreview: null,
-      imageKey: null,
-      isUploading: false,
-    };
+    let newSubTask: SubTask;
+    
+    switch (contentType) {
+      case "video":
+        newSubTask = {
+          contentType: "video",
+          videoUrl: "",
+        };
+        break;
+      case "text":
+        newSubTask = {
+          contentType: "text",
+          textContent: "",
+        };
+        break;
+      case "audio":
+        newSubTask = {
+          contentType: "audio",
+          musicUrl: "",
+        };
+        break;
+      case "image":
+        newSubTask = {
+          contentType: "image",
+          imagePreview: null,
+          imageKey: null,
+          isUploading: false,
+        };
+        break;
+    }
+    
     setSubTasks([...subTasks, newSubTask]);
   };
 
-  const updateSubTask = (index: number, field: keyof SubTask, value: any) => {
+  const updateSubTask = (index: number, updates: Partial<SubTask>) => {
     setSubTasks((prev) =>
-      prev.map((task, i) => (i === index ? { ...task, [field]: value } : task)),
+      prev.map((task, i) => {
+        if (i !== index) return task;
+        return { ...task, ...updates } as SubTask;
+      }),
     );
   };
 
   const removeSubTask = (index: number) => {
     const subTask = subTasks[index];
-    if (subTask?.imagePreview) {
+    if (subTask.contentType === "image" && subTask.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
     setSubTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubTaskImageUpload = async (index: number, file: File) => {
-    updateSubTask(index, "isUploading", true);
+    updateSubTask(index, { isUploading: true });
     try {
       const { url, key } = await uploadImageToS3(file, plan_id || "");
-      updateSubTask(index, "imagePreview", url);
-      updateSubTask(index, "imageFile", file);
-      updateSubTask(index, "imageKey", key);
+      updateSubTask(index, { imagePreview: url, imageKey: key, isUploading: false });
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image");
-    } finally {
-      updateSubTask(index, "isUploading", false);
+      updateSubTask(index, { isUploading: false });
     }
   };
 
   const handleRemoveSubTaskImage = (index: number) => {
     const subTask = subTasks[index];
-    if (subTask?.imagePreview) {
+    if (subTask.contentType === "image" && subTask.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
-    updateSubTask(index, "imagePreview", null);
-    updateSubTask(index, "imageFile", null);
-    updateSubTask(index, "imageKey", null);
+    updateSubTask(index, { imagePreview: null, imageKey: null });
   };
 
   const clearFormData = (newlyCreatedTaskId?: string) => {
     subTasks.forEach((subTask) => {
-      if (subTask.imagePreview) {
+      if (subTask.contentType === "image" && subTask.imagePreview) {
         URL.revokeObjectURL(subTask.imagePreview);
       }
     });
@@ -354,30 +255,16 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   };
 
   const onSubmit = (data: TaskFormData) => {
-    if (subTasks.length > 0) {
-      const validation = taskSchema.safeParse({
-        title: data.title,
-        subTasks: subTasks,
-      });
-
-      if (!validation.success) {
-        toast.error("Please fill in all subtask content or remove empty subtasks");
-        return;
-      }
-    }
-
-    const taskData: CreateTaskPayload = {
+    const taskData: any = {
       plan_id: plan_id!,
       day_id: currentDayData!.id,
-      title: data.title,
-      description: data.title,
-      estimated_time: 30,
+      title: data.title, 
+      estimated_time: 30,//doubt here 
     };
-
     if (isEditMode) {
       updateTaskMutation.mutate();
     } else {
-      createTaskMutation.mutate(taskData);
+      createTaskMutation.mutate({ taskData, subTasksData: subTasks });
     }
   };
 
@@ -389,270 +276,41 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex w-2/3 justify-between items-center gap-4">
-            {isEditMode && !isTitleEditing ? (
-              <>
-                <div className="h-12 text-base flex items-center px-3 border opacity-80 rounded-md flex-1">
-                  {formValues.title}
-                </div>
-                <Pecha.Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsTitleEditing(true)}
-                >
-                  Edit
-                </Pecha.Button>
-              </>
-            ) : isEditMode && isTitleEditing ? (
-              <>
-                <Pecha.FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <Pecha.FormItem className="flex-1">
-                      <Pecha.FormControl>
-                        <Pecha.Input
-                          type="text"
-                          placeholder="Task Title"
-                          className="h-12 text-base"
-                          {...field}
-                        />
-                      </Pecha.FormControl>
-                      <Pecha.FormMessage />
-                    </Pecha.FormItem>
-                  )}
-                />
-                <div className="flex gap-2">
-                  <Pecha.Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => {}}
-                  >
-                    Save
-                  </Pecha.Button>
-                  <Pecha.Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => setIsTitleEditing(false)}
-                  >
-                    Cancel
-                  </Pecha.Button>
-                </div>
-              </>
-            ) : (
-              <Pecha.FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <Pecha.FormItem className="flex-1">
-                    <Pecha.FormControl>
-                      <Pecha.Input
-                        type="text"
-                        placeholder="Task Title"
-                        className="h-12 text-base"
-                        {...field}
-                      />
-                    </Pecha.FormControl>
-                    <Pecha.FormMessage />
-                  </Pecha.FormItem>
-                )}
-              />
-            )}
+            <TaskTitleField
+              isEditMode={isEditMode}
+              isTitleEditing={isTitleEditing}
+              formValue={formValues.title}
+              control={form.control}
+              onEdit={() => setIsTitleEditing(true)}
+              onSave={() => {}}
+              onCancel={() => setIsTitleEditing(false)}
+            />
           </div>
-
-          <div className="flex h-12 items-center gap-4">
-            <Pecha.Button
-              type="button"
-              variant="outline"
-              className="h-full"
-              onClick={() => setShowContentTypes(!showContentTypes)}
-              data-testid="add-content-button"
-            >
-              <IoMdAdd className="w-4 h-4 text-gray-400" />
-            </Pecha.Button>
-
-            {showContentTypes && (
-              <div
-                className={`flex border h-full items-center p-2 border-gray-300 dark:border-input rounded-sm overflow-hidden`}
-              >
-                {contentTypes.map(({ key, icon, testid }) => (
-                  <Pecha.Button
-                    key={key}
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleAddSubTask(key as any)}
-                    data-testid={testid}
-                  >
-                    {icon}
-                  </Pecha.Button>
-                ))}
-              </div>
-            )}
-          </div>
+          <ContentTypeSelector
+            showContentTypes={showContentTypes}
+            onToggle={() => setShowContentTypes(!showContentTypes)}
+            onSelectType={handleAddSubTask}
+          />
 
           {subTasks.length > 0 && (
             <div className="space-y-4 w-2/3">
               {subTasks.map((subTask, index) => (
-                <div
-                  key={
-                    subTask.id
-                      ? `subtask-${subTask.id}`
-                      : `new-subtask-${index}`
-                  }
-                  className={`border border-gray-300 ${subTask.contentType === "image" ? "w-fit" : ""} dark:border-input rounded-sm p-4 space-y-4`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {subTask.contentType === "video" && (
-                        <IoMdVideocam className="w-4 h-4 text-gray-600" />
-                      )}
-                      {subTask.contentType === "text" && (
-                        <IoTextOutline className="w-4 h-4 text-gray-600" />
-                      )}
-                      {subTask.contentType === "audio" && (
-                        <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />
-                      )}
-                      {subTask.contentType === "image" && (
-                        <MdOutlineImage className="w-4 h-4 text-gray-600" />
-                      )}
-                    </div>
-                    <Pecha.Button
-                      variant="outline"
-                      type="button"
-                      onClick={() => removeSubTask(index)}
-                    >
-                      <IoMdClose className="w-4 h-4" />
-                    </Pecha.Button>
-                  </div>
-
-                  {subTask.contentType === "video" && (
-                    <>
-                      <Pecha.Input
-                        type="url"
-                        placeholder="Enter YouTube URL"
-                        className="h-12 text-base"
-                        value={subTask.videoUrl}
-                        onChange={(e) =>
-                          updateSubTask(index, "videoUrl", e.target.value)
-                        }
-                      />
-                      {(() => {
-                        const videoId = getYouTubeVideoId(subTask.videoUrl);
-                        return videoId.length > 0 ? (
-                          <div className="mt-4">
-                            <iframe
-                              className="w-full aspect-video rounded-md border"
-                              src={`https://www.youtube.com/embed/${videoId}`}
-                              title="YouTube preview"
-                            />
-                          </div>
-                        ) : null;
-                      })()}
-                    </>
-                  )}
-
-                  {subTask.contentType === "text" && (
-                    <Pecha.Textarea
-                      placeholder="Enter your text content"
-                      className="w-full h-24 resize-none text-base"
-                      value={subTask.textContent}
-                      onChange={(e) =>
-                        updateSubTask(index, "textContent", e.target.value)
-                      }
-                    />
-                  )}
-
-                  {subTask.contentType === "audio" && (
-                    <>
-                      <Pecha.Input
-                        type="url"
-                        placeholder="Enter Spotify or SoundCloud URL"
-                        className="h-12 text-base"
-                        value={subTask.musicUrl}
-                        onChange={(e) =>
-                          updateSubTask(index, "musicUrl", e.target.value)
-                        }
-                      />
-                      {subTask.musicUrl && (
-                        <div className="mt-4">
-                          {subTask.musicUrl.includes("spotify.com") &&
-                            (() => {
-                              const spotifyData = extractSpotifyId(
-                                subTask.musicUrl,
-                              );
-                              return spotifyData ? (
-                                <div className="w-full rounded-md overflow-hidden">
-                                  <iframe
-                                    src={`https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}?utm_source=generator`}
-                                    allowFullScreen
-                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                    loading="lazy"
-                                    className="w-full h-40 border-0"
-                                  />
-                                </div>
-                              ) : null;
-                            })()}
-
-                          {subTask.musicUrl.includes("soundcloud.com") && (
-                            <div className="w-full rounded-md overflow-hidden">
-                              <iframe
-                                allow="autoplay"
-                                src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(subTask.musicUrl)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`}
-                                className="w-full h-40 border-0"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {subTask.contentType === "image" && (
-                    <>
-                      {!subTask.imagePreview && !subTask.isUploading && (
-                        <InlineImageUpload
-                          onUpload={(file) =>
-                            handleSubTaskImageUpload(index, file)
-                          }
-                          uploadedImage={subTask.imageFile}
-                        />
-                      )}
-                      {subTask.isUploading && (
-                        <div className="flex items-center justify-center h-32 border border-dashed border-gray-300 rounded-lg">
-                          <span className="text-gray-600">
-                            Uploading image...
-                          </span>
-                        </div>
-                      )}
-                      {subTask.imagePreview && (
-                        <div className="mt-4 flex w-full justify-center">
-                          <div className="relative">
-                            <img
-                              src={subTask.imagePreview}
-                              alt="Final uploaded image"
-                              className="w-full h-48 object-cover rounded-lg border"
-                            />
-                            <Pecha.Button
-                              variant="default"
-                              className="absolute top-2 right-2"
-                              type="button"
-                              onClick={() => handleRemoveSubTaskImage(index)}
-                              data-testid="remove-image-button"
-                            >
-                              <FaMinus className="w-4 h-4" />
-                            </Pecha.Button>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+                <SubTaskCard
+                  key={index}
+                  subTask={subTask}
+                  index={index}
+                  onUpdate={updateSubTask}
+                  onRemove={removeSubTask}
+                  onImageUpload={handleSubTaskImageUpload}
+                  onRemoveImage={handleRemoveSubTaskImage}
+                />
               ))}
             </div>
           )}
 
           <div className="pt-6 flex gap-3">
-            {isEditMode && (
-              <Pecha.Button
+            <Activity mode={isEditMode?"visible":"hidden"}>
+            <Pecha.Button
                 variant="outline"
                 type="button"
                 onClick={() => clearFormData()}
@@ -660,15 +318,15 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               >
                 Cancel
               </Pecha.Button>
-            )}
+            </Activity>
+
             <Pecha.Button
               variant="destructive"
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               data-testid="submit-button"
               disabled={
-                createTaskMutation.isPending ||
-                updateTaskMutation.isPending
+                createTaskMutation.isPending || updateTaskMutation.isPending
               }
             >
               {createTaskMutation.isPending || updateTaskMutation.isPending
