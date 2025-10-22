@@ -7,22 +7,22 @@ import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImage
 import { VideoContent, AudioContent } from "./ContentComponents";
 
 interface VideoSubTask {
-  contentType: "video";
+  contentType: "VIDEO";
   videoUrl: string;
 }
 
 interface TextSubTask {
-  contentType: "text";
+  contentType: "TEXT";
   textContent: string;
 }
 
 interface AudioSubTask {
-  contentType: "audio";
+  contentType: "AUDIO";
   musicUrl: string;
 }
 
 interface ImageSubTask {
-  contentType: "image";
+  contentType: "IMAGE";
   imagePreview: string | null;
   imageKey: string | null;
   isUploading: boolean;
@@ -47,13 +47,13 @@ const SubTaskIcon = ({
   const iconClass = "w-4 h-4 text-gray-600";
 
   switch (contentType) {
-    case "video":
+    case "VIDEO":
       return <IoMdVideocam className={iconClass} />;
-    case "text":
+    case "TEXT":
       return <IoTextOutline className={iconClass} />;
-    case "audio":
+    case "AUDIO":
       return <IoMusicalNotesSharp className={iconClass} />;
-    case "image":
+    case "IMAGE":
       return <MdOutlineImage className={iconClass} />;
     default:
       return null;
@@ -175,19 +175,19 @@ export const SubTaskCard = ({
 }: SubTaskCardProps) => {
   const renderContent = () => {
     switch (subTask.contentType) {
-      case "video":
+      case "VIDEO":
         return (
           <VideoSubtask subTask={subTask} index={index} onUpdate={onUpdate} />
         );
-      case "text":
+      case "TEXT":
         return (
           <TextSubtask subTask={subTask} index={index} onUpdate={onUpdate} />
         );
-      case "audio":
+      case "AUDIO":
         return (
           <AudioSubtask subTask={subTask} index={index} onUpdate={onUpdate} />
         );
-      case "image":
+      case "IMAGE":
         return (
           <ImageSubtask
             subTask={subTask}
@@ -204,7 +204,7 @@ export const SubTaskCard = ({
   return (
     <div
       key={index}
-      className={`border border-gray-300 ${subTask.contentType === "image" ? "w-fit" : ""} dark:border-input rounded-sm p-4 space-y-4`}
+      className={`border border-gray-300 ${subTask.contentType === "IMAGE" ? "w-fit" : ""} dark:border-input rounded-sm p-4 space-y-4`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

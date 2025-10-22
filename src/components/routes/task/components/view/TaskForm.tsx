@@ -27,31 +27,24 @@ interface TaskFormProps {
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
-const CONTENT_TYPE_MAP: { [key: string]: SubTask["contentType"] } = {
-  VIDEO: "video",
-  TEXT: "text",
-  AUDIO: "audio",
-  IMAGE: "image",
-};
-
 const buildSubTaskPayload = (subTask: SubTask) => {
   switch (subTask.contentType) {
-    case "video":
+    case "VIDEO":
       return {
         content: subTask.videoUrl,
         content_type: "VIDEO",
       };
-    case "text":
+    case "TEXT":
       return {
         content: subTask.textContent,
         content_type: "TEXT",
       };
-    case "audio":
+    case "AUDIO":
       return {
         content: subTask.musicUrl,
         content_type: "AUDIO",
       };
-    case "image":
+    case "IMAGE":
       return {
         content: subTask.imageKey,
         content_type: "IMAGE",
@@ -139,33 +132,32 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     if (editingTask) {
       form.setValue("title", editingTask.title);
       const subTasksData = taskDetails.subtasks.map((data: any) => {
-        const contentType = CONTENT_TYPE_MAP[data.content_type]; // dont really need this.
-        switch (contentType) {
-          case "video":
+        switch (data.content_type) {
+          case "VIDEO":
             return {
-              contentType: "video",
+              contentType: "VIDEO",
               videoUrl: data.content,
             };
-          case "text":
+          case "TEXT":
             return {
-              contentType: "text",
+              contentType: "TEXT",
               textContent: data.content,
             };
-          case "audio":
+          case "AUDIO":
             return {
-              contentType: "audio",
+              contentType: "AUDIO",
               musicUrl: data.content,
             };
-          case "image":
+          case "IMAGE":
             return {
-              contentType: "image",
-              imagePreview: data.content, //why we are keeping it here/
+              contentType: "IMAGE",
+              imagePreview: data.content,
               imageKey: data.image_key,
-              isUploading: false, // ?
+              isUploading: false,
             };
           default:
             return {
-              contentType: "text",
+              contentType: "TEXT",
               textContent: data.content || "",
             };
         }
@@ -175,32 +167,32 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
   const handleAddSubTask = (
-    contentType: "image" | "video" | "audio" | "text",
+    contentType: "IMAGE" | "VIDEO" | "AUDIO" | "TEXT",
   ) => {
     let newSubTask: SubTask;
 
     switch (contentType) {
-      case "video":
+      case "VIDEO":
         newSubTask = {
-          contentType: "video",
+          contentType: "VIDEO",
           videoUrl: "",
         };
         break;
-      case "text":
+      case "TEXT":
         newSubTask = {
-          contentType: "text",
+          contentType: "TEXT",
           textContent: "",
         };
         break;
-      case "audio":
+      case "AUDIO":
         newSubTask = {
-          contentType: "audio",
+          contentType: "AUDIO",
           musicUrl: "",
         };
         break;
-      case "image":
+      case "IMAGE":
         newSubTask = {
-          contentType: "image",
+          contentType: "IMAGE",
           imagePreview: null,
           imageKey: null,
           isUploading: false,
@@ -222,7 +214,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const removeSubTask = (index: number) => {
     const subTask = subTasks[index];
-    if (subTask.contentType === "image" && subTask.imagePreview) {
+    if (subTask.contentType === "IMAGE" && subTask.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
     setSubTasks((prev) => prev.filter((_, i) => i !== index));
@@ -246,7 +238,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const handleRemoveSubTaskImage = (index: number) => {
     const subTask = subTasks[index];
-    if (subTask.contentType === "image" && subTask.imagePreview) {
+    if (subTask.contentType === "IMAGE" && subTask.imagePreview) {
       URL.revokeObjectURL(subTask.imagePreview);
     }
     updateSubTask(index, { imagePreview: null, imageKey: null });
@@ -254,7 +246,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const clearFormData = (newlyCreatedTaskId?: string) => {
     subTasks.forEach((subTask) => {
-      if (subTask.contentType === "image" && subTask.imagePreview) {
+      if (subTask.contentType === "IMAGE" && subTask.imagePreview) {
         URL.revokeObjectURL(subTask.imagePreview);
       }
     });

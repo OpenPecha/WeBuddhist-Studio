@@ -7,32 +7,32 @@ import pechaIcon from "@/assets/icon/pecha_icon.png";
 interface ContentTypeSelectorProps {
   showContentTypes: boolean;
   onToggle: () => void;
-  onSelectType: (type: "image" | "video" | "audio" | "text") => void;
+  onSelectType: (type: "IMAGE" | "VIDEO" | "AUDIO" | "TEXT") => void;
 }
 
 const contentTypes = [
   {
-    key: "image",
+    key: "IMAGE",
     icon: <MdOutlineImage className="w-4 h-4 text-gray-400" />,
     testid: "image-button",
   },
   {
-    key: "audio",
+    key: "AUDIO",
     icon: <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />,
     testid: "audio-button",
   },
   {
-    key: "video",
+    key: "VIDEO",
     icon: <IoMdVideocam className="w-4 h-4 text-gray-400" />,
     testid: "video-button",
   },
   {
-    key: "text",
+    key: "TEXT",
     icon: <IoTextOutline className="w-4 h-4 text-gray-400" />,
     testid: "text-button",
   },
   {
-    key: "pecha",
+    key: "PECHA",
     icon: <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />,
     testid: "pecha-button",
   },
