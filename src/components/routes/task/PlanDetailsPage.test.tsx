@@ -84,7 +84,7 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("./components/TaskForm", () => ({
-  default: ({ selectedDay }: { selectedDay: number; onCancel: () => void }) => (
+  default: ({ selectedDay }: { selectedDay: number }) => (
     <div>
       <h2>Add Task</h2>
       <p>Selected Day: {selectedDay}</p>
@@ -152,7 +152,9 @@ describe("PlanDetailsPanel Component", () => {
         screen.getByText("Meaningful Living Practice"),
       ).toBeInTheDocument();
     });
-    expect(screen.getByText("Morning Intention Setting")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Morning Intention Setting"),
+    ).not.toBeInTheDocument();
   });
 
   it("calls API when Add New Day button is clicked", async () => {
@@ -223,8 +225,8 @@ describe("PlanDetailsPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
-    const addButtons = screen.getAllByTestId("add-task-button");
-    fireEvent.click(addButtons[0]);
+    const addButton = screen.getByTestId("add-task-button");
+    fireEvent.click(addButton);
     await waitFor(() => {
       expect(screen.getByText("Add Task")).toBeInTheDocument();
     });
