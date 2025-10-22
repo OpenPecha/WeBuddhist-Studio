@@ -218,6 +218,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   });
   const [subTasks, setSubTasks] = useState<SubTask[]>([]);
   const [showContentTypes, setShowContentTypes] = useState(false);
+  const [isTitleEditing, setIsTitleEditing] = useState(false);
   const formValues = form.watch();
   const isFormValid = formValues.title.trim().length > 0;
 
@@ -462,27 +463,77 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       </h2>
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <Pecha.FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <Pecha.FormItem>
-                <Pecha.FormControl>
-                  <Pecha.Input
-                    type="text"
-                    placeholder="Task Title"
-                    className="h-12 text-base w-2/3"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      localStorage.setItem(getDayKey("title"), e.target.value);
-                    }}
-                  />
-                </Pecha.FormControl>
-                <Pecha.FormMessage />
-              </Pecha.FormItem>
+          <div className="flex w-2/3 justify-between items-center gap-4">
+            {isEditMode && !isTitleEditing ? (
+              <>
+                <div className="h-12 text-base flex items-center px-3 border opacity-80 rounded-md flex-1">
+                  {formValues.title}
+                </div>
+                <Pecha.Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setIsTitleEditing(true)}
+                >
+                  Edit
+                </Pecha.Button>
+              </>
+            ) : isEditMode && isTitleEditing ? (
+              <>
+                <Pecha.FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <Pecha.FormItem className="flex-1">
+                      <Pecha.FormControl>
+                        <Pecha.Input
+                          type="text"
+                          placeholder="Task Title"
+                          className="h-12 text-base"
+                          {...field}
+                        />
+                      </Pecha.FormControl>
+                      <Pecha.FormMessage />
+                    </Pecha.FormItem>
+                  )}
+                />
+                <div className="flex gap-2">
+                  <Pecha.Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => {}}
+                  >
+                    Save
+                  </Pecha.Button>
+                  <Pecha.Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setIsTitleEditing(false)}
+                  >
+                    Cancel
+                  </Pecha.Button>
+                </div>
+              </>
+            ) : (
+              <Pecha.FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <Pecha.FormItem className="flex-1">
+                    <Pecha.FormControl>
+                      <Pecha.Input
+                        type="text"
+                        placeholder="Task Title"
+                        className="h-12 text-base"
+                        {...field}
+                      />
+                    </Pecha.FormControl>
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                )}
+              />
             )}
-          />
+          </div>
+
           <div className="flex h-12 items-center gap-4">
             <Pecha.Button
               type="button"
