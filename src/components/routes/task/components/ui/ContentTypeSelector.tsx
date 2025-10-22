@@ -2,7 +2,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { IoMdAdd, IoMdVideocam } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
-import pechaIcon from "@/assets/icon/pecha_icon.png";
+// import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useState } from "react";
 
 interface ContentTypeSelectorProps {
@@ -28,10 +28,10 @@ const contentTypes = [
     key: "TEXT",
     icon: <IoTextOutline className={iconClassName} />,
   },
-  {
-    key: "PECHA",
-    icon: <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />,
-  },
+  // {
+  //   key: "PECHA",
+  //   icon: <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />,
+  // },
 ];
 
 export const ContentTypeSelector = ({
