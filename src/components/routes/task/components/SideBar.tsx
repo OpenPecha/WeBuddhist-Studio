@@ -48,8 +48,8 @@ const deleteTask = async (task_id: string) => {
   return data;
 };
 
-const deleteDay = async (day_id: string) => {
-  const { data } = await axiosInstance.delete(`/api/v1/cms/days/${day_id}`, {
+const deleteDay = async (plan_id: string, day_id: string) => {
+  const { data } = await axiosInstance.delete(`/api/v1/cms/plans/${plan_id}/days/${day_id}`, {
     headers: {
       Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
     },
@@ -90,7 +90,7 @@ const SideBar = ({
   });
 
   const deleteDayMutation = useMutation({
-    mutationFn: (day_id: string) => deleteDay(day_id),
+    mutationFn: (day_id: string) => deleteDay(plan_id!, day_id),
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
