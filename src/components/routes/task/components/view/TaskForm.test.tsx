@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import TaskForm from "./view/TaskForm";
 import { vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import TaskForm from "./TaskForm";
 
 vi.mock("@/components/ui/molecules/form-upload/InlineImageUpload", () => ({
   default: ({
