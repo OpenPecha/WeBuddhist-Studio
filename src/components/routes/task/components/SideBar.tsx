@@ -49,11 +49,14 @@ const deleteTask = async (task_id: string) => {
 };
 
 const deleteDay = async (plan_id: string, day_id: string) => {
-  const { data } = await axiosInstance.delete(`/api/v1/cms/plans/${plan_id}/days/${day_id}`, {
-    headers: {
-      Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+  const { data } = await axiosInstance.delete(
+    `/api/v1/cms/plans/${plan_id}/days/${day_id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+      },
     },
-  });
+  );
   return data;
 };
 
@@ -218,7 +221,7 @@ const SideBar = ({
                           }}
                         />
                       </Activity>
-                      
+
                       <Pecha.DropdownMenu>
                         <Pecha.DropdownMenuTrigger asChild>
                           <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
