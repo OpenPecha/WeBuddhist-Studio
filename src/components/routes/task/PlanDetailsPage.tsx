@@ -31,9 +31,6 @@ const PlanDetailsPage = () => {
       <SideBar
         selectedDay={selectedDay}
         onDaySelect={handleDaySelect}
-        onAddTaskClick={() => {
-          setSelectedTaskId(null);
-        }}
         onTaskClick={(taskId) => {
           setSelectedTaskId(taskId);
         }}

@@ -15,7 +15,6 @@ import { useParams } from "react-router-dom";
 interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
-  onAddTaskClick: () => void;
   onTaskClick?: (taskId: string) => void;
   onEditTask: (task: any) => void;
 }
@@ -66,7 +65,6 @@ const deleteDay = async (plan_id: string, day_id: string) => {
 const SideBar = ({
   selectedDay,
   onDaySelect,
-  onAddTaskClick,
   onTaskClick,
   onEditTask,
 }: SideBarProps) => {
@@ -201,14 +199,6 @@ const SideBar = ({
                     mode={selectedDay === day.day_number ? "visible" : "hidden"}
                   >
                     <div className="flex items-center gap-2">
-                      <IoMdAdd
-                        className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
-                        data-testid="add-task-button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddTaskClick();
-                        }}
-                      />
                       <Activity
                         mode={day.tasks.length > 0 ? "visible" : "hidden"}
                       >
