@@ -152,7 +152,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               contentType: "IMAGE",
               imagePreview: data.content,
               imageKey: data.image_key,
-              isUploading: false,
             };
           default:
             return {
@@ -194,7 +193,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           contentType: "IMAGE",
           imagePreview: null,
           imageKey: null,
-          isUploading: false,
         };
         break;
     }
@@ -212,43 +210,27 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   };
 
   const removeSubTask = (index: number) => {
-    const subTask = subTasks[index];
-    if (subTask.contentType === "IMAGE" && subTask.imagePreview) {
-      URL.revokeObjectURL(subTask.imagePreview);
-    }
     setSubTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubTaskImageUpload = async (index: number, file: File) => {
-    updateSubTask(index, { isUploading: true });
     try {
       const { url, key } = await uploadImageToS3(file, plan_id || "");
       updateSubTask(index, {
         imagePreview: url,
         imageKey: key,
-        isUploading: false,
       });
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image");
-      updateSubTask(index, { isUploading: false });
     }
   };
 
   const handleRemoveSubTaskImage = (index: number) => {
-    const subTask = subTasks[index];
-    if (subTask.contentType === "IMAGE" && subTask.imagePreview) {
-      URL.revokeObjectURL(subTask.imagePreview);
-    }
     updateSubTask(index, { imagePreview: null, imageKey: null });
   };
 
   const clearFormData = (newlyCreatedTaskId?: string) => {
-    subTasks.forEach((subTask) => {
-      if (subTask.contentType === "IMAGE" && subTask.imagePreview) {
-        URL.revokeObjectURL(subTask.imagePreview);
-      }
-    });
     setSubTasks([]);
     form.reset();
     onCancel(newlyCreatedTaskId);

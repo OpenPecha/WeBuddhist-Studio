@@ -23,7 +23,6 @@ interface ImageSubTask {
   contentType: "IMAGE";
   imagePreview: string | null;
   imageKey: string | null;
-  isUploading: boolean;
 }
 
 export type SubTask = VideoSubTask | TextSubTask | AudioSubTask | ImageSubTask;
@@ -108,16 +107,11 @@ const ImageSubtask = ({
   onRemoveImage: (index: number) => void;
 }) => (
   <>
-    {!subTask.imagePreview && !subTask.isUploading && (
+    {!subTask.imagePreview && (
       <InlineImageUpload
         onUpload={(file) => onImageUpload(index, file)}
         uploadedImage={subTask.imagePreview}
       />
-    )}
-    {subTask.isUploading && (
-      <div className="flex items-center justify-center h-32 border border-dashed border-gray-300 rounded-lg">
-        <span className="text-gray-600">Uploading image...</span>
-      </div>
     )}
     {subTask.imagePreview && (
       <div className="mt-4 flex w-full justify-center">
