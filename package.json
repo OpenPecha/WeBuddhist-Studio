@@ -1,7 +1,7 @@
 {
   "name": "pechastudio",
   "private": true,
-  "version": "0.0.0",
+  "version": "2025.10.22.0628",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,11 @@
     "shad": "npx shadcn@latest add",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "mac:coverage": "vitest run --coverage && open coverage/index.html"
+    "mac:coverage": "vitest run --coverage && open coverage/index.html",
+    "release:sprint": "node scripts/release-sprint.js --type sprint",
+    "release:hotfix": "node scripts/release-sprint.js --type hotfix",
+    "release:major": "node scripts/release-sprint.js --type release",
+    "release:dry-run": "node scripts/release-sprint.js --dry-run --type sprint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -32,8 +36,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "react-dropzone": "^14.3.8",
     "react-easy-crop": "^5.5.0",
     "react-hook-form": "^7.62.0",
@@ -51,8 +55,8 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.3.0",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-istanbul": "^3.2.4",
