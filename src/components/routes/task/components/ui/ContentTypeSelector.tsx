@@ -73,4 +73,3 @@ export const ContentTypeSelector = ({
     </div>
   );
 };
-

@@ -84,4 +84,3 @@ export const ImageContent = ({ content }: { content: string }) => (
     </div>
   </div>
 );
-

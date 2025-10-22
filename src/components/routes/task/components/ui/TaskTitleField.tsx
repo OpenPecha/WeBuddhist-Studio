@@ -1,5 +1,5 @@
 import { Pecha } from "@/components/ui/shadimport";
-import type { Control} from "react-hook-form";
+import type { Control } from "react-hook-form";
 
 interface TaskTitleFieldProps {
   isEditMode: boolean;
@@ -85,4 +85,3 @@ export const TaskTitleField = ({
     />
   );
 };
-

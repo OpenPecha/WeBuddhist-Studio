@@ -7,13 +7,11 @@ interface CreateTaskPayload {
   estimated_time: number;
 }
 
-export const createTask = async (
-  taskData: CreateTaskPayload,
-) => {
+export const createTask = async (taskData: CreateTaskPayload) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
     `/api/v1/cms/tasks`,
-    { ...taskData},
+    { ...taskData },
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -83,4 +81,3 @@ export const fetchTaskDetails = async (task_id: string) => {
   });
   return data;
 };
-

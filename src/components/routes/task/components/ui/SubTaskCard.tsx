@@ -6,18 +6,17 @@ import { FaMinus } from "react-icons/fa6";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
 import { VideoContent, AudioContent } from "./ContentComponents";
 
-
-interface VideoSubTask  {
+interface VideoSubTask {
   contentType: "video";
   videoUrl: string;
 }
 
-interface TextSubTask  {
+interface TextSubTask {
   contentType: "text";
   textContent: string;
 }
 
-interface AudioSubTask  {
+interface AudioSubTask {
   contentType: "audio";
   musicUrl: string;
 }
@@ -40,7 +39,11 @@ interface SubTaskCardProps {
   onRemoveImage: (index: number) => void;
 }
 
-const SubTaskIcon = ({ contentType }: { contentType: SubTask["contentType"] }) => {
+const SubTaskIcon = ({
+  contentType,
+}: {
+  contentType: SubTask["contentType"];
+}) => {
   const iconClass = "w-4 h-4 text-gray-600";
 
   switch (contentType) {
@@ -173,11 +176,17 @@ export const SubTaskCard = ({
   const renderContent = () => {
     switch (subTask.contentType) {
       case "video":
-        return <VideoSubtask subTask={subTask} index={index} onUpdate={onUpdate} />;
+        return (
+          <VideoSubtask subTask={subTask} index={index} onUpdate={onUpdate} />
+        );
       case "text":
-        return <TextSubtask subTask={subTask} index={index} onUpdate={onUpdate} />;
+        return (
+          <TextSubtask subTask={subTask} index={index} onUpdate={onUpdate} />
+        );
       case "audio":
-        return <AudioSubtask subTask={subTask} index={index} onUpdate={onUpdate} />;
+        return (
+          <AudioSubtask subTask={subTask} index={index} onUpdate={onUpdate} />
+        );
       case "image":
         return (
           <ImageSubtask
@@ -213,4 +222,3 @@ export const SubTaskCard = ({
     </div>
   );
 };
-

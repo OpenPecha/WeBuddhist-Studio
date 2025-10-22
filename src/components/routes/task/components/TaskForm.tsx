@@ -87,7 +87,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   });
 
   const createTaskMutation = useMutation({
-    mutationFn: async ({ taskData, subTasksData }: { taskData: any; subTasksData: SubTask[] }) => {
+    mutationFn: async ({
+      taskData,
+      subTasksData,
+    }: {
+      taskData: any;
+      subTasksData: SubTask[];
+    }) => {
       const taskResponse = await createTask(taskData);
 
       if (subTasksData.length > 0) {
@@ -133,7 +139,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     if (editingTask && taskDetails.id === editingTask.id) {
       form.setValue("title", editingTask.title);
       const subTasksData = taskDetails.subtasks.map((data: any) => {
-        const contentType = CONTENT_TYPE_MAP[data.content_type]; // dont really need this. 
+        const contentType = CONTENT_TYPE_MAP[data.content_type]; // dont really need this.
         switch (contentType) {
           case "video":
             return {
@@ -153,7 +159,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           case "image":
             return {
               contentType: "image",
-              imagePreview: data.content , //why we are keeping it here/
+              imagePreview: data.content, //why we are keeping it here/
               imageKey: data.image_key,
               isUploading: false, // ?
             };
@@ -165,14 +171,14 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         }
       });
       setSubTasks(subTasksData);
-    } 
+    }
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
   const handleAddSubTask = (
     contentType: "image" | "video" | "audio" | "text",
   ) => {
     let newSubTask: SubTask;
-    
+
     switch (contentType) {
       case "video":
         newSubTask = {
@@ -201,7 +207,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         };
         break;
     }
-    
+
     setSubTasks([...subTasks, newSubTask]);
   };
 
@@ -226,7 +232,11 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     updateSubTask(index, { isUploading: true });
     try {
       const { url, key } = await uploadImageToS3(file, plan_id || "");
-      updateSubTask(index, { imagePreview: url, imageKey: key, isUploading: false });
+      updateSubTask(index, {
+        imagePreview: url,
+        imageKey: key,
+        isUploading: false,
+      });
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image");
@@ -258,8 +268,8 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     const taskData: any = {
       plan_id: plan_id!,
       day_id: currentDayData!.id,
-      title: data.title, 
-      estimated_time: 30,//doubt here 
+      title: data.title,
+      estimated_time: 30, //doubt here
     };
     if (isEditMode) {
       updateTaskMutation.mutate();
@@ -309,8 +319,8 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           )}
 
           <div className="pt-6 flex gap-3">
-            <Activity mode={isEditMode?"visible":"hidden"}>
-            <Pecha.Button
+            <Activity mode={isEditMode ? "visible" : "hidden"}>
+              <Pecha.Button
                 variant="outline"
                 type="button"
                 onClick={() => clearFormData()}
