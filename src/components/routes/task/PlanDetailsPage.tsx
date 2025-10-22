@@ -1,7 +1,7 @@
 import { useState } from "react";
-import TaskForm from "./components/TaskForm";
+import TaskForm from "./components/view/TaskForm";
 import SideBar from "./components/molecules/SideBar";
-import TaskView from "./components/TaskView";
+import TaskView from "./components/view/TaskView";
 
 const PlanDetailsPage = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);

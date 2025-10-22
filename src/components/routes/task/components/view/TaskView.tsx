@@ -6,7 +6,7 @@ import {
   VideoContent,
   AudioContent,
   ImageContent,
-} from "./ui/ContentComponents";
+} from "../ui/ContentComponents";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO";
 

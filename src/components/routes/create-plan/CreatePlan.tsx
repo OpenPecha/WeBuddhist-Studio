@@ -14,21 +14,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
+import { uploadImageToS3 } from "../task/api/taskApi";
 
-export const UploadImageToS3 = async (file: File, plan_id: string) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  const { data } = await axiosInstance.post(
-    `/api/v1/cms/media/upload`,
-    formData,
-    {
-      params: {
-        ...(plan_id && { plan_id: plan_id }),
-      },
-    },
-  );
-  return data;
-};
 export const getPlan = async (plan_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
@@ -174,7 +161,7 @@ const Createplan = () => {
   };
   const handleImageUpload = async (file: File) => {
     try {
-      const { url, key } = await UploadImageToS3(
+      const { url, key } = await uploadImageToS3(
         file,
         plan_id === "new" ? "" : plan_id || "",
       );

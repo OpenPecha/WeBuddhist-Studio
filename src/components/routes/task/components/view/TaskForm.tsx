@@ -7,17 +7,17 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { taskSchema } from "@/schema/TaskSchema";
-import { SubTaskCard } from "./ui/SubTaskCard";
-import type { SubTask } from "./ui/SubTaskCard";
-import { TaskTitleField } from "./ui/TaskTitleField";
-import { ContentTypeSelector } from "./ui/ContentTypeSelector";
+import { SubTaskCard } from "../ui/SubTaskCard";
+import type { SubTask } from "../ui/SubTaskCard";
+import { TaskTitleField } from "../ui/TaskTitleField";
+import { ContentTypeSelector } from "../ui/ContentTypeSelector";
 import {
   createTask,
   uploadImageToS3,
   createSubTasks,
   updateSubTasks,
   fetchTaskDetails,
-} from "../api/taskApi";
+} from "../../api/taskApi";
 
 interface TaskFormProps {
   selectedDay: number;
