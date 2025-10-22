@@ -237,7 +237,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       </h2>
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex w-2/3 justify-between items-center gap-4">
+          <div className="flex w-full lg:w-2/3 justify-between items-center gap-4">
             <TaskTitleField
               isEditMode={isEditMode}
               isTitleEditing={isTitleEditing}
@@ -251,7 +251,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           <ContentTypeSelector onSelectType={handleAddSubTask} />
 
           {subTasks.length > 0 && (
-            <div className="space-y-4 w-2/3">
+            <div className="space-y-4 w-full lg:w-2/3">
               {subTasks.map((subTask, index) => (
                 <SubTaskCard
                   key={index}
