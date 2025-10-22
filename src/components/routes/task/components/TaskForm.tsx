@@ -154,12 +154,7 @@ const createSubTasks = async (
 
 const updateSubTasks = async (
   task_id: string,
-  subTasksData: {
-    id: string;
-    content: string;
-    content_type: string;
-    display_order: number;
-  }[],
+  subTasksData: any,
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   await axiosInstance.put(
@@ -187,9 +182,9 @@ const fetchTaskDetails = async (task_id: string) => {
 };
 
 const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
-  const { plan_id } = useParams<{ plan_id: string }>();
+  const { plan_id } = useParams();
   const queryClient = useQueryClient();
-  const form = useForm<TaskFormData>({
+  const form = useForm({
     resolver: zodResolver(taskSchema),
     mode: "onTouched",
     defaultValues: {
@@ -200,9 +195,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const [showContentTypes, setShowContentTypes] = useState(false);
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const formValues = form.watch();
-  const isFormValid = formValues.title.trim().length > 0;
-
-  const getDayKey = (key: string) => `day_${selectedDay}_${key}`;
   const isEditMode = !!editingTask;
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
@@ -229,15 +221,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       );
 
       if (subTasks.length > 0) {
-        const subTasksPayload = subTasks
-          .map(transformSubTask)
-          .filter((st) => st.content.trim() !== "");
-
-        if (subTasksPayload.length > 0) {
-          await createSubTasks(taskResponse.id, subTasksPayload);
-        }
+        const subTasksPayload = subTasks.map(transformSubTask);
+        await createSubTasks(taskResponse.id, subTasksPayload);
       }
-
       return taskResponse;
     },
     onSuccess: (taskResponse) => {
@@ -259,49 +245,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       if (!editingTask?.id) {
         throw new Error("Task ID not found");
       }
-      const newSubtasks = subTasks.filter((st) => st.id === null);
-      let createdSubTasks: any[] = [];
-      if (newSubtasks.length > 0) {
-        const newSubTasksPayload = newSubtasks
-          .map(transformSubTask)
-          .filter((st) => st.content.trim() !== "");
-        if (newSubTasksPayload.length > 0) {
-          const createResponse = await createSubTasks(
-            editingTask.id,
-            newSubTasksPayload,
-          );
-          createdSubTasks = createResponse.sub_tasks || [];
-        }
-      }
-      let createdIndex = 0;
-      const updatePayload = subTasks.map((st, index) => {
-        if (st.id !== null) {
-          const { content, content_type } = transformSubTask(st);
-          return {
-            id: st.id,
-            content,
-            content_type,
-            display_order: index + 1,
-          };
-        }
-        const createdSubTask = createdSubTasks[createdIndex];
-        if (!createdSubTask) {
-          throw new Error(
-            `Could not find created subtask at position ${index + 1}`,
-          );
-        }
-        createdIndex++;
-        return {
-          id: createdSubTask.id,
-          content:
-            createdSubTask.content_type === "IMAGE"
-              ? createdSubTask.image_key
-              : createdSubTask.content,
-          content_type: createdSubTask.content_type,
-          display_order: index + 1,
-        };
-      });
-      await updateSubTasks(editingTask.id, updatePayload);
+      await updateSubTasks(editingTask.id, subTasks);
     },
     onSuccess: () => {
       toast.success("Task updated successfully!");
@@ -336,12 +280,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
       setSubTasks(transformedSubTasks);
     } else if (!editingTask) {
-      const savedTitle = localStorage.getItem(getDayKey("title"));
-      if (savedTitle) {
-        form.setValue("title", savedTitle);
-      } else {
-        form.reset();
-      }
+      form.reset();
       setSubTasks([]);
     }
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
@@ -408,7 +347,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         URL.revokeObjectURL(subTask.imagePreview);
       }
     });
-    localStorage.removeItem(getDayKey("title"));
     setSubTasks([]);
     setShowContentTypes(false);
     form.reset();
@@ -416,6 +354,18 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   };
 
   const onSubmit = (data: TaskFormData) => {
+    if (subTasks.length > 0) {
+      const validation = taskSchema.safeParse({
+        title: data.title,
+        subTasks: subTasks,
+      });
+
+      if (!validation.success) {
+        toast.error("Please fill in all subtask content or remove empty subtasks");
+        return;
+      }
+    }
+
     const taskData: CreateTaskPayload = {
       plan_id: plan_id!,
       day_id: currentDayData!.id,
@@ -717,7 +667,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               type="submit"
               data-testid="submit-button"
               disabled={
-                !isFormValid ||
                 createTaskMutation.isPending ||
                 updateTaskMutation.isPending
               }
