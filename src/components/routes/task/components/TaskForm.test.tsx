@@ -116,7 +116,7 @@ describe("TaskForm Component", () => {
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
     expect(screen.getByTestId("image-button")).toBeInTheDocument();
-    expect(screen.getByTestId("music-button")).toBeInTheDocument();
+    expect(screen.getByTestId("audio-button")).toBeInTheDocument();
     expect(screen.getByTestId("video-button")).toBeInTheDocument();
     expect(screen.getByTestId("text-button")).toBeInTheDocument();
     expect(screen.getByTestId("pecha-button")).toBeInTheDocument();
@@ -151,12 +151,12 @@ describe("TaskForm Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows music input when music content type is selected", () => {
+  it("shows audio input when audio content type is selected", () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
-    const musicButton = screen.getByTestId("music-button");
-    fireEvent.click(musicButton);
+    const audioButton = screen.getByTestId("audio-button");
+    fireEvent.click(audioButton);
     expect(
       screen.getByPlaceholderText("Enter Spotify or SoundCloud URL"),
     ).toBeInTheDocument();
@@ -177,8 +177,8 @@ describe("TaskForm Component", () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
-    const musicButton = screen.getByTestId("music-button");
-    fireEvent.click(musicButton);
+    const audioButton = screen.getByTestId("audio-button");
+    fireEvent.click(audioButton);
     const musicInput = screen.getByPlaceholderText(
       "Enter Spotify or SoundCloud URL",
     );
@@ -249,8 +249,8 @@ describe("TaskForm Component", () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={() => {}} />);
     const addButton = screen.getByTestId("add-content-button");
     fireEvent.click(addButton);
-    const musicButton = screen.getByTestId("music-button");
-    fireEvent.click(musicButton);
+    const audioButton = screen.getByTestId("audio-button");
+    fireEvent.click(audioButton);
     const musicInput = screen.getByPlaceholderText(
       "Enter Spotify or SoundCloud URL",
     );

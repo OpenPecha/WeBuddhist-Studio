@@ -152,9 +152,7 @@ describe("PlanDetailsPanel Component", () => {
         screen.getByText("Meaningful Living Practice"),
       ).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText("Morning Intention Setting"),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText("Morning Intention Setting")).toBeInTheDocument();
   });
 
   it("calls API when Add New Day button is clicked", async () => {
@@ -225,8 +223,8 @@ describe("PlanDetailsPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
-    const addButton = screen.getByTestId("add-task-button");
-    fireEvent.click(addButton);
+    const addButtons = screen.getAllByTestId("add-task-button");
+    fireEvent.click(addButtons[0]); 
     await waitFor(() => {
       expect(screen.getByText("Add Task")).toBeInTheDocument();
     });

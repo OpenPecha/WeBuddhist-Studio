@@ -23,9 +23,12 @@ const PlanDetailsPage = () => {
     setSelectedTaskId(null);
   };
 
-  const handleCancelTaskForm = () => {
+  const handleCancelTaskForm = (newlyCreatedTaskId?: string) => {
     setShowTaskForm(false);
     setEditingTask(null);
+    if (newlyCreatedTaskId) {
+      setSelectedTaskId(newlyCreatedTaskId);
+    }
   };
 
   return (
@@ -47,7 +50,6 @@ const PlanDetailsPage = () => {
         {selectedTaskId ? (
           <TaskView
             taskId={selectedTaskId}
-            onClose={() => setSelectedTaskId(null)}
           />
         ) : showTaskForm ? (
           <TaskForm
@@ -56,7 +58,10 @@ const PlanDetailsPage = () => {
             onCancel={handleCancelTaskForm}
           />
         ) : (
-          <DefaultDayView selectedDay={selectedDay} />
+          <DefaultDayView 
+            selectedDay={selectedDay} 
+            onFirstTaskSelect={(taskId) => setSelectedTaskId(taskId)}
+          />
         )}
       </div>
     </div>

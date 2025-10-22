@@ -4,12 +4,10 @@ import axiosInstance from "@/config/axios-config";
 import { IoMdVideocam } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
-import { IoMdClose } from "react-icons/io";
 import { getYouTubeVideoId, extractSpotifyId } from "@/lib/utils";
 
 interface TaskViewProps {
   taskId: string;
-  onClose: () => void;
 }
 
 const fetchTaskDetails = async (task_id: string) => {
@@ -20,7 +18,7 @@ const fetchTaskDetails = async (task_id: string) => {
   return data;
 };
 
-const TaskView = ({ taskId, onClose }: TaskViewProps) => {
+const TaskView = ({ taskId }: TaskViewProps) => {
   const { data: taskDetails, isLoading } = useQuery({
     queryKey: ["taskDetails", taskId],
     queryFn: () => fetchTaskDetails(taskId),
@@ -31,13 +29,6 @@ const TaskView = ({ taskId, onClose }: TaskViewProps) => {
     <div className="w-full h-full border p-4 space-y-4 overflow-y-auto">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Task</h2>
-        <Pecha.Button
-          variant="outline"
-          onClick={onClose}
-          className="h-8 w-8 p-0"
-        >
-          <IoMdClose className="w-4 h-4" />
-        </Pecha.Button>
       </div>
       <div className="h-12 text-base flex items-center px-3 border rounded-md">
         {isLoading ? (
@@ -71,7 +62,7 @@ const TaskView = ({ taskId, onClose }: TaskViewProps) => {
                     {contentType === "text" && (
                       <IoTextOutline className="w-4 h-4 text-gray-600" />
                     )}
-                    {contentType === "music" && (
+                    {contentType === "audio" && (
                       <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />
                     )}
                     {contentType === "image" && (
@@ -100,7 +91,7 @@ const TaskView = ({ taskId, onClose }: TaskViewProps) => {
                     </div>
                   )}
 
-                  {contentType === "music" && content && (
+                  {contentType === "audio" && content && (
                     <div className="mt-4">
                       {content.includes("spotify.com") &&
                         (() => {

@@ -19,12 +19,12 @@ import { FaMinus } from "react-icons/fa6";
 interface TaskFormProps {
   selectedDay: number;
   editingTask?: any;
-  onCancel: () => void;
+  onCancel: (newlyCreatedTaskId?: string) => void;
 }
 
 interface SubTask {
   id: string | null;
-  contentType: "image" | "video" | "music" | "text";
+  contentType: "image" | "video" | "audio" | "text";
   videoUrl: string;
   textContent: string;
   musicUrl: string;
@@ -51,9 +51,9 @@ const contentTypes = [
     testid: "image-button",
   },
   {
-    key: "music",
+    key: "audio",
     icon: <IoMusicalNotesSharp className="w-4 h-4 text-gray-400" />,
-    testid: "music-button",
+    testid: "audio-button",
   },
   {
     key: "video",
@@ -75,14 +75,14 @@ const contentTypes = [
 const SUBTASK_CONTENT_MAP = {
   video: { field: "videoUrl", type: "VIDEO" },
   text: { field: "textContent", type: "TEXT" },
-  music: { field: "musicUrl", type: "AUDIO" },
+  audio: { field: "musicUrl", type: "AUDIO" },
   image: { field: "imageKey", type: "IMAGE" },
 } as const;
 
 const CONTENT_TYPE_MAP: { [key: string]: SubTask["contentType"] } = {
   VIDEO: "video",
   TEXT: "text",
-  AUDIO: "music",
+  AUDIO: "audio",
   IMAGE: "image",
 };
 
@@ -259,11 +259,11 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
       return taskResponse;
     },
-    onSuccess: () => {
+    onSuccess: (taskResponse) => {
       toast.success("Task created successfully!", {
         description: "Your task has been added to the day.",
       });
-      clearFormData();
+      clearFormData(taskResponse.id);
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: Error) => {
@@ -328,7 +328,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       queryClient.invalidateQueries({
         queryKey: ["taskDetails", editingTask?.id],
       });
-      clearFormData();
+      clearFormData(editingTask?.id);
     },
     onError: (error: any) => {
       console.error("Update failed:", error);
@@ -371,7 +371,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
   const handleAddSubTask = (
-    contentType: "image" | "video" | "music" | "text",
+    contentType: "image" | "video" | "audio" | "text",
   ) => {
     const newSubTask: SubTask = {
       id: null,
@@ -426,7 +426,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     updateSubTask(index, "imageKey", null);
   };
 
-  const clearFormData = () => {
+  const clearFormData = (newlyCreatedTaskId?: string) => {
     subTasks.forEach((subTask) => {
       if (subTask.imagePreview) {
         URL.revokeObjectURL(subTask.imagePreview);
@@ -436,7 +436,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     setSubTasks([]);
     setShowContentTypes(false);
     form.reset();
-    onCancel();
+    onCancel(newlyCreatedTaskId);
   };
 
   const onSubmit = (data: TaskFormData) => {
@@ -532,7 +532,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                       {subTask.contentType === "text" && (
                         <IoTextOutline className="w-4 h-4 text-gray-600" />
                       )}
-                      {subTask.contentType === "music" && (
+                      {subTask.contentType === "audio" && (
                         <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />
                       )}
                       {subTask.contentType === "image" && (
@@ -585,7 +585,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                     />
                   )}
 
-                  {subTask.contentType === "music" && (
+                  {subTask.contentType === "audio" && (
                     <>
                       <Pecha.Input
                         type="url"
@@ -679,7 +679,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               <Pecha.Button
                 variant="outline"
                 type="button"
-                onClick={clearFormData}
+                onClick={() => clearFormData()}
                 data-testid="cancel-button"
               >
                 Cancel
