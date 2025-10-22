@@ -24,9 +24,7 @@ export const ContentIcon = ({ type }: { type: ContentType }) => {
 
 export const VideoContent = ({ content }: { content: string }) => {
   const videoId = getYouTubeVideoId(content);
-
   if (!videoId) return null;
-
   return (
     <div className="mt-4">
       <iframe

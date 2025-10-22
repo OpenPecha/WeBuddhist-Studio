@@ -1,10 +1,8 @@
 import { Pecha } from "@/components/ui/shadimport";
-import { IoMdVideocam, IoMdClose } from "react-icons/io";
-import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
-import { MdOutlineImage } from "react-icons/md";
+import { IoMdClose } from "react-icons/io";
 import { FaMinus } from "react-icons/fa6";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
-import { VideoContent, AudioContent } from "./ContentComponents";
+import { VideoContent, AudioContent, ContentIcon } from "./ContentComponents";
 
 interface VideoSubTask {
   contentType: "VIDEO";
@@ -38,27 +36,6 @@ interface SubTaskCardProps {
   onImageUpload: (index: number, file: File) => void;
   onRemoveImage: (index: number) => void;
 }
-
-const SubTaskIcon = ({
-  contentType,
-}: {
-  contentType: SubTask["contentType"];
-}) => {
-  const iconClass = "w-4 h-4 text-gray-600";
-
-  switch (contentType) {
-    case "VIDEO":
-      return <IoMdVideocam className={iconClass} />;
-    case "TEXT":
-      return <IoTextOutline className={iconClass} />;
-    case "AUDIO":
-      return <IoMusicalNotesSharp className={iconClass} />;
-    case "IMAGE":
-      return <MdOutlineImage className={iconClass} />;
-    default:
-      return null;
-  }
-};
 
 const VideoSubtask = ({
   subTask,
@@ -196,19 +173,17 @@ export const SubTaskCard = ({
             onRemoveImage={onRemoveImage}
           />
         );
-      default:
-        return null;
     }
   };
 
   return (
     <div
       key={index}
-      className={`border border-gray-300 ${subTask.contentType === "IMAGE" ? "w-fit" : ""} dark:border-input rounded-sm p-4 space-y-4`}
+      className={`border border-gray-300 dark:border-input rounded-sm p-4 space-y-4`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <SubTaskIcon contentType={subTask.contentType} />
+          <ContentIcon type={subTask.contentType} />
         </div>
         <Pecha.Button
           variant="outline"
