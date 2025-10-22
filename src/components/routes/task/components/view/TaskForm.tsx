@@ -63,7 +63,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     },
   });
   const [subTasks, setSubTasks] = useState<SubTask[]>([]);
-  const [showContentTypes, setShowContentTypes] = useState(false);
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const formValues = form.watch();
   const isEditMode = Boolean(editingTask);
@@ -251,7 +250,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       }
     });
     setSubTasks([]);
-    setShowContentTypes(false);
     form.reset();
     onCancel(newlyCreatedTaskId);
   };
@@ -288,11 +286,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               onCancel={() => setIsTitleEditing(false)}
             />
           </div>
-          <ContentTypeSelector
-            showContentTypes={showContentTypes}
-            onToggle={() => setShowContentTypes(!showContentTypes)}
-            onSelectType={handleAddSubTask}
-          />
+          <ContentTypeSelector onSelectType={handleAddSubTask} />
 
           {subTasks.length > 0 && (
             <div className="space-y-4 w-2/3">
@@ -316,7 +310,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                 variant="outline"
                 type="button"
                 onClick={() => clearFormData()}
-                data-testid="cancel-button"
               >
                 Cancel
               </Pecha.Button>
@@ -326,7 +319,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               variant="destructive"
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
-              data-testid="submit-button"
               disabled={
                 createTaskMutation.isPending || updateTaskMutation.isPending
               }

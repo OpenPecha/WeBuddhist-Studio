@@ -39,48 +39,40 @@ export const VideoContent = ({ content }: { content: string }) => {
 };
 
 export const AudioContent = ({ content }: { content: string }) => {
-  if (content.includes("spotify.com")) {
-    const spotifyData = extractSpotifyId(content);
-    if (!spotifyData) return null;
+  const getEmbedSrc = () => {
+    if (content.includes("spotify.com")) {
+      const data = extractSpotifyId(content);
+      return data
+        ? `https://open.spotify.com/embed/${data.type}/${data.id}?utm_source=generator`
+        : null;
+    }
+    if (content.includes("soundcloud.com")) {
+      return `https://w.soundcloud.com/player/?url=${encodeURIComponent(content)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`;
+    }
+    return null;
+  };
 
-    return (
-      <div className="mt-4 w-full rounded-md overflow-hidden">
-        <iframe
-          src={`https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}?utm_source=generator`}
-          allowFullScreen
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          title="Spotify preview"
-          className="w-full h-40 border-0"
-        />
-      </div>
-    );
-  }
-
-  if (content.includes("soundcloud.com")) {
-    return (
-      <div className="mt-4 w-full rounded-md overflow-hidden">
-        <iframe
-          allow="autoplay"
-          src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(content)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`}
-          title="SoundCloud preview"
-          className="w-full h-40 border-0"
-        />
-      </div>
-    );
-  }
-
-  return null;
+  const src = getEmbedSrc();
+  if (!src) return null;
+  return (
+    <div className="mt-4 w-full rounded-md overflow-hidden">
+      <iframe
+        src={src}
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        allowFullScreen
+        loading="lazy"
+        className="w-full h-40 border-0"
+      />
+    </div>
+  );
 };
 
 export const ImageContent = ({ content }: { content: string }) => (
   <div className="mt-4 flex w-full justify-center">
-    <div className="relative">
-      <img
-        src={content}
-        alt="Task content"
-        className="w-full h-48 object-cover rounded-lg border"
-      />
-    </div>
+    <img
+      src={content}
+      alt="Task content"
+      className="w-full h-48 object-cover rounded-lg border"
+    />
   </div>
 );

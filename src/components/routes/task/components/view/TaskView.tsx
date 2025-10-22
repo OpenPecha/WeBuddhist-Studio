@@ -46,8 +46,6 @@ const SubtaskContent = ({
       return <AudioContent content={content} />;
     case "IMAGE":
       return <ImageContent content={content} />;
-    default:
-      return null;
   }
 };
 
