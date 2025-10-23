@@ -17,6 +17,7 @@ import {
   createSubTasks,
   updateSubTasks,
   fetchTaskDetails,
+  updateTaskTitle,
 } from "../../api/taskApi";
 
 interface TaskFormProps {
@@ -109,8 +110,27 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     },
   });
 
+  const updateTitleMutation = useMutation({
+    mutationFn: async (title: string) => {
+      await updateTaskTitle(editingTask.id, title);
+    },
+    onSuccess: () => {
+      toast.success("Title updated successfully!");
+      setIsTitleEditing(false);
+      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+      queryClient.invalidateQueries({
+        queryKey: ["taskDetails", editingTask?.id],
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to update title", {
+        description: error?.message || "Something went wrong",
+      });
+    },
+  });
+
   useEffect(() => {
-    if (editingTask) {
+    if (editingTask && taskDetails) {
       form.setValue("title", editingTask.title);
       const subTasksData = taskDetails.subtasks.map((data: any) => {
         switch (data.content_type) {
@@ -210,6 +230,15 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     updateSubTask(index, { imagePreview: null, content: null });
   };
 
+  const handleSaveTitle = async () => {
+    const currentTitle = form.getValues("title");
+    if (!currentTitle || currentTitle.trim() === "") {
+      toast.error("Title cannot be empty");
+      return;
+    }
+    updateTitleMutation.mutate(currentTitle);
+  };
+
   const clearFormData = (newlyCreatedTaskId?: string) => {
     setSubTasks([]);
     form.reset();
@@ -244,7 +273,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               formValue={formValues.title}
               control={form.control}
               onEdit={() => setIsTitleEditing(true)}
-              onSave={() => {}}
+              onSave={handleSaveTitle}
               onCancel={() => setIsTitleEditing(false)}
             />
           </div>
@@ -266,8 +295,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             </div>
           )}
 
-          <div className="pt-6 flex border gap-3">
-            {/* <Pecha.dr */}
+          <div className="pt-6 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
               <Pecha.Button
                 variant="outline"

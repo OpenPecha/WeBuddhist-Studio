@@ -12,6 +12,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectGroup,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/atoms/select";
@@ -83,6 +85,8 @@ export const Pecha = {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
   Dialog,
   DialogContent,
   DialogHeader,
