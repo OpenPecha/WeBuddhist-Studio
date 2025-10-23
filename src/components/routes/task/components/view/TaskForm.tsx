@@ -19,7 +19,6 @@ import {
   fetchTaskDetails,
   updateTaskTitle,
 } from "../../api/taskApi";
-import DaySelector from "../ui/DaySelector";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -298,7 +297,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
           <div className="pt-6 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
-              <DaySelector selectedDay={selectedDay} />
               <Pecha.Button
                 variant="outline"
                 type="button"

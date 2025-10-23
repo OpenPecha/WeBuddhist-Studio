@@ -38,7 +38,7 @@ const PlanDetailsPage = () => {
       />
       <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
         {selectedTaskId ? (
-          <TaskView taskId={selectedTaskId} />
+          <TaskView taskId={selectedTaskId} selectedDay={selectedDay} />
         ) : (
           <TaskForm
             selectedDay={selectedDay}
