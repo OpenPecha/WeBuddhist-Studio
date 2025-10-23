@@ -133,7 +133,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             return {
               content_type: "IMAGE",
               imagePreview: data.content,
-              content: data.image_key,
+              content: data.image_url,
             };
           default:
             return {
@@ -266,7 +266,8 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             </div>
           )}
 
-          <div className="pt-6 flex gap-3">
+          <div className="pt-6 flex border gap-3">
+            {/* <Pecha.dr */}
             <Activity mode={isEditMode ? "visible" : "hidden"}>
               <Pecha.Button
                 variant="outline"
