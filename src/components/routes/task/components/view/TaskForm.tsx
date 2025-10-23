@@ -18,6 +18,7 @@ import {
   updateSubTasks,
   fetchTaskDetails,
 } from "../../api/taskApi";
+import DaySelector from "../ui/DaySelector";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -110,7 +111,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   });
 
   useEffect(() => {
-    if (editingTask) {
+    if (editingTask && taskDetails) {
       form.setValue("title", editingTask.title);
       const subTasksData = taskDetails.subtasks.map((data: any) => {
         switch (data.content_type) {
@@ -266,9 +267,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             </div>
           )}
 
-          <div className="pt-6 flex border gap-3">
-            {/* <Pecha.dr */}
+          <div className="pt-6 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
+              <DaySelector selectedDay={selectedDay} />
               <Pecha.Button
                 variant="outline"
                 type="button"
