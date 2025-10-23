@@ -17,6 +17,7 @@ import {
   createSubTasks,
   updateSubTasks,
   fetchTaskDetails,
+  updateTaskTitle,
 } from "../../api/taskApi";
 import DaySelector from "../ui/DaySelector";
 
@@ -105,6 +106,25 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     },
     onError: (error: any) => {
       toast.error("Failed to update task", {
+        description: error?.message || "Something went wrong",
+      });
+    },
+  });
+
+  const updateTitleMutation = useMutation({
+    mutationFn: async (title: string) => {
+      await updateTaskTitle(editingTask.id, title);
+    },
+    onSuccess: () => {
+      toast.success("Title updated successfully!");
+      setIsTitleEditing(false);
+      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+      queryClient.invalidateQueries({
+        queryKey: ["taskDetails", editingTask?.id],
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to update title", {
         description: error?.message || "Something went wrong",
       });
     },
@@ -211,6 +231,15 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     updateSubTask(index, { imagePreview: null, content: null });
   };
 
+  const handleSaveTitle = async () => {
+    const currentTitle = form.getValues("title");
+    if (!currentTitle || currentTitle.trim() === "") {
+      toast.error("Title cannot be empty");
+      return;
+    }
+    updateTitleMutation.mutate(currentTitle);
+  };
+
   const clearFormData = (newlyCreatedTaskId?: string) => {
     setSubTasks([]);
     form.reset();
@@ -245,7 +274,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               formValue={formValues.title}
               control={form.control}
               onEdit={() => setIsTitleEditing(true)}
-              onSave={() => {}}
+              onSave={handleSaveTitle}
               onCancel={() => setIsTitleEditing(false)}
             />
           </div>

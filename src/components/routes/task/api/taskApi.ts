@@ -81,3 +81,17 @@ export const fetchTaskDetails = async (task_id: string) => {
   });
   return data;
 };
+
+export const updateTaskTitle = async (task_id: string, title: string) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.patch(
+    `/api/v1/cms/tasks/${task_id}/title`,
+    { title },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  return data;
+};
