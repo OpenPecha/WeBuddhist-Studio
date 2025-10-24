@@ -330,6 +330,8 @@ describe("TaskForm Component", () => {
         {
           content: "Test content",
           content_type: "TEXT",
+          display_order: 1,
+          id: "subtask-1",
         },
       ]);
     });
