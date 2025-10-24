@@ -72,8 +72,8 @@ const TaskView = ({ taskId, selectedDay }: TaskViewProps) => {
   });
 
   return (
-    <div className="w-full h-full border">
-      <div className="w-3/4 p-4 space-y-4 overflow-y-auto">
+    <div className="w-full border">
+      <div className="w-3/4 p-4 space-y-4  overflow-y-auto">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Task</h2>
           <DaySelector selectedDay={selectedDay} taskId={taskId} />
