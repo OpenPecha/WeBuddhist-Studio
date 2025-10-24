@@ -72,10 +72,9 @@ export function SortableItem({ id, children, className = "", ...props }: any) {
       style={style}
       className={`${className} ${isDragging && "z-50"}`}
       {...attributes}
-      {...listeners}
       {...props}
     >
-      {children}
+      {typeof children === "function" ? children({ listeners }) : children}
     </div>
   );
 }

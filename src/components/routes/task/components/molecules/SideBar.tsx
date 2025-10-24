@@ -14,7 +14,7 @@ import { useParams } from "react-router-dom";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 import { reorderTasks } from "../../api/taskApi";
 import type { UniqueIdentifier } from "@dnd-kit/core";
-
+import { PiDotsSixVertical } from "react-icons/pi";
 interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
@@ -288,40 +288,48 @@ const SideBar = ({
                         <SortableItem
                           key={task.id}
                           id={task.id}
-                          className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground cursor-grab active:cursor-grabbing"
+                          className="flex items-center gap-x-2 border-b border-gray-200 dark:border-input/40 justify-between py-2 pr-3 pl-1 text-sm text-foreground"
                         >
-                          <span
-                            className="cursor-pointer w-full"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTaskClick?.(task.id);
-                            }}
-                          >
-                            {task.title}
-                          </span>
-                          <Pecha.DropdownMenu>
-                            <Pecha.DropdownMenuTrigger asChild>
-                              <BsThreeDots
-                                className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer"
-                                onClick={(e) => e.stopPropagation()}
+                          {({ listeners }: any) => (
+                            <>
+                              <PiDotsSixVertical
+                                className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
+                                {...listeners}
                               />
-                            </Pecha.DropdownMenuTrigger>
-                            <Pecha.DropdownMenuContent side="right">
-                              <Pecha.DropdownMenuItem
-                                className="gap-2 cursor-pointer"
-                                onClick={() => onEditTask(task)}
+                              <span
+                                className="cursor-pointer w-full"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onTaskClick?.(task.id);
+                                }}
                               >
-                                <FaPen className="h-4 w-4" />
-                                Edit
-                              </Pecha.DropdownMenuItem>
-                              <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                                <TaskDeleteDialog
-                                  taskId={task.id}
-                                  onDelete={handleDeleteTask}
-                                />
-                              </Pecha.DropdownMenuItem>
-                            </Pecha.DropdownMenuContent>
-                          </Pecha.DropdownMenu>
+                                {task.title}
+                              </span>
+                              <Pecha.DropdownMenu>
+                                <Pecha.DropdownMenuTrigger asChild>
+                                  <BsThreeDots
+                                    className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </Pecha.DropdownMenuTrigger>
+                                <Pecha.DropdownMenuContent side="right">
+                                  <Pecha.DropdownMenuItem
+                                    className="gap-2 cursor-pointer"
+                                    onClick={() => onEditTask(task)}
+                                  >
+                                    <FaPen className="h-4 w-4" />
+                                    Edit
+                                  </Pecha.DropdownMenuItem>
+                                  <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                                    <TaskDeleteDialog
+                                      taskId={task.id}
+                                      onDelete={handleDeleteTask}
+                                    />
+                                  </Pecha.DropdownMenuItem>
+                                </Pecha.DropdownMenuContent>
+                              </Pecha.DropdownMenu>
+                            </>
+                          )}
                         </SortableItem>
                       ))}
                     </SortableList>
