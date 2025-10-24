@@ -11,6 +11,9 @@ import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskD
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
 import axiosInstance from "@/config/axios-config";
 import { useParams } from "react-router-dom";
+import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
+import { reorderTasks } from "../../api/taskApi";
+import type { UniqueIdentifier } from "@dnd-kit/core";
 
 interface SideBarProps {
   selectedDay: number;
@@ -122,6 +125,24 @@ const SideBar = ({
     },
   });
 
+  const reorderTasksMutation = useMutation({
+    mutationFn: ({
+      activeTaskId,
+      targetTaskId,
+    }: {
+      activeTaskId: string;
+      targetTaskId: string;
+    }) => reorderTasks(activeTaskId, targetTaskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to reorder tasks", {
+        description: error.response?.data?.detail || "Something went wrong",
+      });
+    },
+  });
+
   const handleDayClick = (dayNumber: number) => {
     onDaySelect(dayNumber);
     setExpandedDay(dayNumber);
@@ -138,6 +159,21 @@ const SideBar = ({
   const addNewDay = () => {
     if (!currentPlan || !plan_id) return;
     createNewDayMutation.mutate();
+  };
+
+  const handleTaskReorder = (
+    activeId: UniqueIdentifier,
+    overId: UniqueIdentifier,
+  ) => {
+    const activeTaskId = String(activeId);
+    const targetTaskId = String(overId);
+
+    if (activeTaskId === targetTaskId) return;
+
+    reorderTasksMutation.mutate({
+      activeTaskId,
+      targetTaskId,
+    });
   };
   return (
     <div className="w-80 bg-[#FAFAFA] dark:bg-[#171414] border-r border-t border-gray-200 dark:border-border h-full flex flex-col">
@@ -242,39 +278,53 @@ const SideBar = ({
                   }
                 >
                   <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
-                    {day.tasks.map((task: any) => (
-                      <div
-                        key={task.id}
-                        className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
-                      >
-                        <span
-                          className="cursor-pointer w-full"
-                          onClick={() => onTaskClick?.(task.id)}
+                    <SortableList
+                      items={day.tasks.map((task: any) => ({ id: task.id }))}
+                      onReorder={(activeId: any, overId: any) =>
+                        handleTaskReorder(activeId, overId)
+                      }
+                    >
+                      {day.tasks.map((task: any) => (
+                        <SortableItem
+                          key={task.id}
+                          id={task.id}
+                          className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground cursor-grab active:cursor-grabbing"
                         >
-                          {task.title}
-                        </span>
-                        <Pecha.DropdownMenu>
-                          <Pecha.DropdownMenuTrigger asChild>
-                            <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
-                          </Pecha.DropdownMenuTrigger>
-                          <Pecha.DropdownMenuContent side="right">
-                            <Pecha.DropdownMenuItem
-                              className="gap-2 cursor-pointer"
-                              onClick={() => onEditTask(task)}
-                            >
-                              <FaPen className="h-4 w-4" />
-                              Edit
-                            </Pecha.DropdownMenuItem>
-                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                              <TaskDeleteDialog
-                                taskId={task.id}
-                                onDelete={handleDeleteTask}
+                          <span
+                            className="cursor-pointer w-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTaskClick?.(task.id);
+                            }}
+                          >
+                            {task.title}
+                          </span>
+                          <Pecha.DropdownMenu>
+                            <Pecha.DropdownMenuTrigger asChild>
+                              <BsThreeDots
+                                className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                                onClick={(e) => e.stopPropagation()}
                               />
-                            </Pecha.DropdownMenuItem>
-                          </Pecha.DropdownMenuContent>
-                        </Pecha.DropdownMenu>
-                      </div>
-                    ))}
+                            </Pecha.DropdownMenuTrigger>
+                            <Pecha.DropdownMenuContent side="right">
+                              <Pecha.DropdownMenuItem
+                                className="gap-2 cursor-pointer"
+                                onClick={() => onEditTask(task)}
+                              >
+                                <FaPen className="h-4 w-4" />
+                                Edit
+                              </Pecha.DropdownMenuItem>
+                              <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                                <TaskDeleteDialog
+                                  taskId={task.id}
+                                  onDelete={handleDeleteTask}
+                                />
+                              </Pecha.DropdownMenuItem>
+                            </Pecha.DropdownMenuContent>
+                          </Pecha.DropdownMenu>
+                        </SortableItem>
+                      ))}
+                    </SortableList>
                   </div>
                 </Activity>
               </div>
