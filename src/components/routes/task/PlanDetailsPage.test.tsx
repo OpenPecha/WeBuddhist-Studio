@@ -80,16 +80,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 vi.mock("sonner", () => ({
-  toast: { error: vi.fn() },
-}));
-
-vi.mock("./components/TaskForm", () => ({
-  default: ({ selectedDay }: { selectedDay: number }) => (
-    <div>
-      <h2>Add Task</h2>
-      <p>Selected Day: {selectedDay}</p>
-    </div>
-  ),
+  toast: { error: vi.fn(), success: vi.fn() },
 }));
 
 Object.defineProperty(window, "sessionStorage", {
@@ -152,9 +143,7 @@ describe("PlanDetailsPanel Component", () => {
         screen.getByText("Meaningful Living Practice"),
       ).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText("Morning Intention Setting"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Morning Intention Setting")).not.toBeVisible();
   });
 
   it("calls API when Add New Day button is clicked", async () => {
@@ -175,28 +164,6 @@ describe("PlanDetailsPanel Component", () => {
           }),
         }),
       );
-    });
-  });
-
-  it("renders DefaultDayView when selected day has no tasks", async () => {
-    const { default: axiosInstance } = await import("@/config/axios-config");
-    const mockAxios = axiosInstance as any;
-    mockAxios.get.mockResolvedValue({
-      data: {
-        ...mockPlanData,
-        days: [{ id: "day-1", day_number: 1, tasks: [] }],
-      },
-    });
-    renderWithProviders(<PlanDetailsPage />);
-    await waitFor(() => {
-      expect(
-        screen.getByText("No tasks created for Day 1"),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          "Click the + icon next to the day to add your first task",
-        ),
-      ).toBeInTheDocument();
     });
   });
 
@@ -225,10 +192,48 @@ describe("PlanDetailsPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
-    const addButton = screen.getByTestId("add-task-button");
-    fireEvent.click(addButton);
+    expect(screen.getByText("Add Task")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Task Title")).toBeInTheDocument();
+  });
+
+  it("switches to task view after creating a new task", async () => {
+    const { default: axiosInstance } = await import("@/config/axios-config");
+    const mockAxios = axiosInstance as any;
+    mockAxios.post.mockResolvedValueOnce({
+      data: {
+        id: "newly-created-task-123",
+        title: "New Task",
+        display_order: 1,
+        estimated_time: 30,
+      },
+    });
+    mockAxios.get.mockImplementation((url: string) => {
+      if (url.includes("/tasks/newly-created-task-123")) {
+        return Promise.resolve({
+          data: {
+            id: "newly-created-task-123",
+            title: "New Task",
+            display_order: 1,
+            estimated_time: 30,
+            subtasks: [],
+          },
+        });
+      }
+      return Promise.resolve({ data: mockPlanData });
+    });
+    renderWithProviders(<PlanDetailsPage />);
     await waitFor(() => {
-      expect(screen.getByText("Add Task")).toBeInTheDocument();
+      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
+    });
+    const titleInput = screen.getByPlaceholderText("Task Title");
+    fireEvent.change(titleInput, { target: { value: "New Task" } });
+    fireEvent.click(screen.getByText("Submit"));
+    await waitFor(() => {
+      expect(screen.queryByText("Add Task")).not.toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Task")).toBeInTheDocument();
+      expect(screen.getByText("New Task")).toBeInTheDocument();
     });
   });
 });
