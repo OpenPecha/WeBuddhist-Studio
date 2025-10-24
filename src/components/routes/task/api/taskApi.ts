@@ -38,7 +38,11 @@ export const uploadImageToS3 = async (file: File, plan_id: string) => {
 
 export const createSubTasks = async (
   task_id: string,
-  subTasksData: { content: string | null; content_type: string }[],
+  subTasksData: {
+    content: string | null;
+    content_type: string;
+    display_order: number;
+  }[],
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
@@ -56,7 +60,15 @@ export const createSubTasks = async (
   return data;
 };
 
-export const updateSubTasks = async (task_id: string, subTasksData: any) => {
+export const updateSubTasks = async (
+  task_id: string,
+  subTasksData: {
+    id: string | null;
+    content: string | null;
+    content_type: string;
+    display_order: number;
+  }[],
+) => {
   const accessToken = sessionStorage.getItem("accessToken");
   await axiosInstance.put(
     `/api/v1/cms/sub-tasks`,

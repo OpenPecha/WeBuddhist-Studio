@@ -65,9 +65,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       const taskResponse = await createTask(taskData);
 
       if (subTasksData.length > 0) {
-        const subTasksPayload = subTasksData.map((subTask) => ({
+        const subTasksPayload = subTasksData.map((subTask, index) => ({
           content: subTask.content,
           content_type: subTask.content_type,
+          display_order: index + 1,
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
@@ -89,9 +90,11 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const updateTaskMutation = useMutation({
     mutationFn: async () => {
-      const subTasksPayload = subTasks.map((subTask) => ({
+      const subTasksPayload = subTasks.map((subTask, index) => ({
+        id: subTask.id || null,
         content: subTask.content,
         content_type: subTask.content_type,
+        display_order: index + 1,
       }));
       await updateSubTasks(editingTask.id, subTasksPayload);
     },
@@ -136,27 +139,32 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         switch (data.content_type) {
           case "VIDEO":
             return {
+              id: data.id,
               content_type: "VIDEO",
               content: data.content,
             };
           case "TEXT":
             return {
+              id: data.id,
               content_type: "TEXT",
               content: data.content,
             };
           case "AUDIO":
             return {
+              id: data.id,
               content_type: "AUDIO",
               content: data.content,
             };
           case "IMAGE":
             return {
+              id: data.id,
               content_type: "IMAGE",
               imagePreview: data.content,
               content: data.image_url,
             };
           default:
             return {
+              id: data.id,
               content_type: "TEXT",
               content: data.content,
             };
@@ -172,24 +180,28 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     switch (content_type) {
       case "VIDEO":
         newSubTask = {
+          id: null,
           content_type: "VIDEO",
           content: "",
         };
         break;
       case "TEXT":
         newSubTask = {
+          id: null,
           content_type: "TEXT",
           content: "",
         };
         break;
       case "AUDIO":
         newSubTask = {
+          id: null,
           content_type: "AUDIO",
           content: "",
         };
         break;
       case "IMAGE":
         newSubTask = {
+          id: null,
           content_type: "IMAGE",
           imagePreview: null,
           content: null,

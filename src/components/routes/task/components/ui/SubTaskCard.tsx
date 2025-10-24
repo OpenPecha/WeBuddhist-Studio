@@ -5,24 +5,32 @@ import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImage
 import { VideoContent, AudioContent, ContentIcon } from "./ContentComponents";
 
 interface VideoSubTask {
+  id?: string | null;
   content_type: "VIDEO";
   content: string;
+  display_order?: number;
 }
 
 interface TextSubTask {
+  id?: string | null;
   content_type: "TEXT";
   content: string;
+  display_order?: number;
 }
 
 interface AudioSubTask {
+  id?: string | null;
   content_type: "AUDIO";
   content: string;
+  display_order?: number;
 }
 
 interface ImageSubTask {
+  id?: string | null;
   content_type: "IMAGE";
   content: string | null;
   imagePreview: string | null;
+  display_order?: number;
 }
 
 export type SubTask = VideoSubTask | TextSubTask | AudioSubTask | ImageSubTask;
