@@ -3,6 +3,7 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
+import { FaPen } from "react-icons/fa";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
@@ -14,7 +15,8 @@ import { useParams } from "react-router-dom";
 interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
-  onAddTaskClick: () => void;
+  onTaskClick?: (taskId: string) => void;
+  onEditTask: (task: any) => void;
 }
 
 const fetchPlanDetails = async (plan_id: string) => {
@@ -63,7 +65,8 @@ const deleteDay = async (plan_id: string, day_id: string) => {
 const SideBar = ({
   selectedDay,
   onDaySelect,
-  onAddTaskClick,
+  onTaskClick,
+  onEditTask,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const queryClient = useQueryClient();
@@ -196,14 +199,6 @@ const SideBar = ({
                     mode={selectedDay === day.day_number ? "visible" : "hidden"}
                   >
                     <div className="flex items-center gap-2">
-                      <IoMdAdd
-                        className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
-                        data-testid="add-task-button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddTaskClick();
-                        }}
-                      />
                       <Activity
                         mode={day.tasks.length > 0 ? "visible" : "hidden"}
                       >
@@ -252,12 +247,24 @@ const SideBar = ({
                         key={task.id}
                         className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
                       >
-                        <span>{task.title}</span>
+                        <span
+                          className="cursor-pointer w-full"
+                          onClick={() => onTaskClick?.(task.id)}
+                        >
+                          {task.title}
+                        </span>
                         <Pecha.DropdownMenu>
                           <Pecha.DropdownMenuTrigger asChild>
                             <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                           </Pecha.DropdownMenuTrigger>
                           <Pecha.DropdownMenuContent side="right">
+                            <Pecha.DropdownMenuItem
+                              className="gap-2 cursor-pointer"
+                              onClick={() => onEditTask(task)}
+                            >
+                              <FaPen className="h-4 w-4" />
+                              Edit
+                            </Pecha.DropdownMenuItem>
                             <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
                               <TaskDeleteDialog
                                 taskId={task.id}

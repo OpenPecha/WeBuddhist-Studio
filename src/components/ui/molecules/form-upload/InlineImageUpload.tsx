@@ -5,7 +5,7 @@ import ImageCropContent from "../modals/image-upload/image-crop/ImageCropModal";
 
 interface InlineImageUploadProps {
   onUpload?: (file: File) => void;
-  uploadedImage?: File | null;
+  uploadedImage?: string | null;
 }
 
 const InlineImageUpload = ({
