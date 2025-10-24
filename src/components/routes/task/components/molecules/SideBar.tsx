@@ -89,7 +89,9 @@ const SideBar = ({
   const deleteTaskMutation = useMutation({
     mutationFn: (task_id: string) => deleteTask(task_id),
     onSuccess: () => {
-      toast.success("Task deleted successfully");
+      toast.success("Task deleted successfully!", {
+        description: "The task has been deleted.",
+      });
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
@@ -102,6 +104,9 @@ const SideBar = ({
   const deleteDayMutation = useMutation({
     mutationFn: (day_id: string) => deleteDay(plan_id!, day_id),
     onSuccess: () => {
+      toast.success("Day deleted successfully!", {
+        description: "The day has been deleted.",
+      });
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
