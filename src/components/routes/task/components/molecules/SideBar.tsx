@@ -199,7 +199,7 @@ const SideBar = ({
           <span className="text-sm  text-foreground">Days</span>
         </div>
 
-        <div className="space-y-1 h-[calc(100vh-300px)] overflow-auto">
+        <div className="space-y-1 h-[calc(100vh-200px)] overflow-auto">
           {_isLoading ? (
             <>
               {[1, 2, 3].map((index) => (
@@ -351,7 +351,7 @@ const SideBar = ({
             onClick={addNewDay}
             disabled={createNewDayMutation.isPending}
             variant="destructive"
-            className="cursor-pointer mt-3 rounded-none disabled:opacity-50 w-full disabled:cursor-not-allowed"
+            className="cursor-pointer mt-1 disabled:opacity-50 w-full disabled:cursor-not-allowed"
           >
             <IoMdAdd className="w-4 h-4" />
             <span className="text-sm font-medium">

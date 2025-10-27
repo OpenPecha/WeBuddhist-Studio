@@ -289,7 +289,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               onSave={handleSaveTitle}
               onCancel={() => setIsTitleEditing(false)}
             />
-            <DaySelector selectedDay={selectedDay} taskId={editingTask?.id} />
+            {isEditMode && (
+              <DaySelector selectedDay={selectedDay} taskId={editingTask?.id} />
+            )}
           </div>
 
           <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />

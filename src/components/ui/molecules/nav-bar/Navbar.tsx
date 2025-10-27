@@ -8,6 +8,7 @@ import { useTranslate } from "@tolgee/react";
 import { Pecha } from "@/components/ui/shadimport";
 
 import { IoMdMenu } from "react-icons/io";
+import AuthLogout from "../auth-logout/AuthLogout";
 const navItems = [
   {
     icon: <MdDashboard className="w-4 h-4" />,
@@ -51,6 +52,7 @@ const Navbar = () => {
       <div className="flex  flex-col items-center space-y-2">
         <ModeToggle />
         <LanguageToggle />
+        <AuthLogout />
         <Pecha.Sheet>
           <Pecha.SheetTrigger className="md:hidden p-2">
             <IoMdMenu className="h-5 w-5" />
