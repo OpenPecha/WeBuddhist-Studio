@@ -8,13 +8,11 @@ import {
   ImageContent,
   TextContent,
 } from "../ui/ContentComponents";
-import DaySelector from "../ui/DaySelector";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO";
 
 interface TaskViewProps {
   taskId: string;
-  selectedDay: number;
 }
 
 const fetchTaskDetails = async (task_id: string) => {
@@ -59,7 +57,7 @@ const SubtaskCard = ({ subtask }: { subtask: any }) => {
   );
 };
 
-const TaskView = ({ taskId, selectedDay }: TaskViewProps) => {
+const TaskView = ({ taskId }: TaskViewProps) => {
   const { data: taskDetails, isLoading } = useQuery({
     queryKey: ["taskDetails", taskId],
     queryFn: () => fetchTaskDetails(taskId),
@@ -71,7 +69,6 @@ const TaskView = ({ taskId, selectedDay }: TaskViewProps) => {
       <div className=" space-y-4  overflow-y-auto">
         <div className="flex p-4 items-center justify-between">
           <h2 className="text-xl font-semibold">Task</h2>
-          <DaySelector selectedDay={selectedDay} taskId={taskId} />
         </div>
         <div className="p-4">
           <div className="h-12 p-4 bg-white dark:bg-[#161616] rounded-md w-3/4 text-base flex items-center border">

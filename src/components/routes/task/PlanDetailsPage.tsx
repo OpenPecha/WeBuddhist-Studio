@@ -38,7 +38,7 @@ const PlanDetailsPage = () => {
       />
       <div className=" w-full pl-4 rounded-l-2xl overflow-y-auto">
         {selectedTaskId ? (
-          <TaskView taskId={selectedTaskId} selectedDay={selectedDay} />
+          <TaskView taskId={selectedTaskId} />
         ) : (
           <TaskForm
             selectedDay={selectedDay}

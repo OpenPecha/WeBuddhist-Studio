@@ -19,6 +19,7 @@ import {
   fetchTaskDetails,
   updateTaskTitle,
 } from "../../api/taskApi";
+import DaySelector from "../ui/DaySelector";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -288,7 +289,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               onSave={handleSaveTitle}
               onCancel={() => setIsTitleEditing(false)}
             />
+            <DaySelector selectedDay={selectedDay} taskId={editingTask?.id} />
           </div>
+
           <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
           <div className=" px-4 flex items-center">
             <h2 className="text-xl font-semibold">Add Subtask</h2>
