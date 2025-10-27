@@ -96,7 +96,7 @@ export const fetchTaskDetails = async (task_id: string) => {
 
 export const updateTaskTitle = async (task_id: string, title: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.patch(
+  const { data } = await axiosInstance.put(
     `/api/v1/cms/tasks/${task_id}/title`,
     { title },
     {
