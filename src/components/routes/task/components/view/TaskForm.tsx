@@ -272,7 +272,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   };
 
   return (
-    <div className="w-full my-4 h-[calc(100vh-40px)] dark:bg-[#181818] rounded-l-2xl border border-dashed xwspace-y-4 overflow-y-auto">
+    <div className="w-full my-4 h-[calc(100vh-40px)] bg-[#F5F5F5] dark:bg-[#181818] rounded-l-2xl border border-dashed xwspace-y-4 overflow-y-auto">
       <h2 className="text-xl font-semibold p-4">
         {isEditMode ? "Edit Task" : "Add Task"}
       </h2>

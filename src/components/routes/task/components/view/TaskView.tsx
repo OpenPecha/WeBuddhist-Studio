@@ -6,6 +6,7 @@ import {
   VideoContent,
   AudioContent,
   ImageContent,
+  TextContent,
 } from "../ui/ContentComponents";
 import DaySelector from "../ui/DaySelector";
 
@@ -23,12 +24,6 @@ const fetchTaskDetails = async (task_id: string) => {
   });
   return data;
 };
-
-const TextContent = ({ content }: { content: string }) => (
-  <div className="w-full min-h-24  whitespace-pre-wrap text-base p-3 border rounded-md">
-    {content}
-  </div>
-);
 
 const SubtaskContent = ({
   type,
@@ -54,10 +49,10 @@ const SubtaskContent = ({
 const SubtaskCard = ({ subtask }: { subtask: any }) => {
   return (
     <div
-      className={`border dark:bg-sidebar-secondary bg-[#FAFAFA] border-gray-300 dark:border-input p-4 space-y-4`}
+      className={`border  rounded-xl bg-[#ffffff] dark:bg-[#161616] border-gray-300 dark:border-input p-2 space-y-2`}
     >
-      <div className="flex items-center gap-2">
-        <ContentIcon type={subtask.content_type} />
+      <div className="flex items-center border w-fit bg-[#F7F7F7]  dark:bg-sidebar-secondary  px-2 py-1 text-sm rounded-md border-dashed gap-2">
+        <ContentIcon type={subtask.content_type} /> {subtask.content_type}
       </div>
       <SubtaskContent type={subtask.content_type} content={subtask.content} />
     </div>
@@ -72,14 +67,14 @@ const TaskView = ({ taskId, selectedDay }: TaskViewProps) => {
   });
 
   return (
-    <div className="w-full my-4 h-[calc(100vh-40px)] dark:bg-[#181818] rounded-l-2xl border overflow-y-auto">
+    <div className="w-full my-4 h-[calc(100vh-40px)] bg-[#F5F5F5] border-dashed dark:bg-[#181818]  rounded-l-2xl border overflow-y-auto">
       <div className=" space-y-4  overflow-y-auto">
         <div className="flex p-4 items-center justify-between">
           <h2 className="text-xl font-semibold">Task</h2>
           <DaySelector selectedDay={selectedDay} taskId={taskId} />
         </div>
         <div className="p-4">
-          <div className="h-12 p-4 w-3/4 text-base flex items-center border">
+          <div className="h-12 p-4 bg-white dark:bg-[#161616] rounded-md w-3/4 text-base flex items-center border">
             {isLoading ? (
               <Pecha.Skeleton className="h-6  w-1/2 rounded" />
             ) : (

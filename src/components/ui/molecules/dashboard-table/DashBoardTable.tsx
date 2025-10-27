@@ -146,7 +146,7 @@ export function DashBoardTable({
     ));
   };
   return (
-    <Pecha.Table>
+    <Pecha.Table className="bg-white dark:bg-[#181818]">
       <Pecha.TableHeader className="dark:bg-[#1d1d1f]">
         <Pecha.TableRow className="font-dynamic">
           <Pecha.TableHead className="w-[100px] font-bold">

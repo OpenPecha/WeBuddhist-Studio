@@ -26,7 +26,7 @@ export const VideoContent = ({ content }: { content: string }) => {
   return (
     <div className="mt-4">
       <iframe
-        className="w-full aspect-video rounded-md border"
+        className="w-full aspect-video rounded-md border bg-[#FAFAFA] dark:bg-sidebar-secondary "
         src={`https://www.youtube.com/embed/${videoId}`}
         title="YouTube preview"
       />
@@ -51,7 +51,7 @@ export const AudioContent = ({ content }: { content: string }) => {
   const src = getEmbedSrc();
   if (!src) return null;
   return (
-    <div className="mt-4 w-full rounded-md overflow-hidden">
+    <div className="mt-4 w-full rounded-md overflow-hidden bg-[#FAFAFA] dark:bg-sidebar-secondary ">
       <iframe
         src={src}
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -64,11 +64,17 @@ export const AudioContent = ({ content }: { content: string }) => {
 };
 
 export const ImageContent = ({ content }: { content: string }) => (
-  <div className="mt-4 flex w-full justify-center">
+  <div className="mt-4 flex w-full justify-center bg-[#FAFAFA] dark:bg-sidebar-secondary ">
     <img
       src={content}
       alt="Task content"
       className="w-full h-48 object-cover rounded-lg border"
     />
+  </div>
+);
+
+export const TextContent = ({ content }: { content: string }) => (
+  <div className="w-full min-h-24  bg-[#FAFAFA] dark:bg-sidebar-secondary  whitespace-pre-wrap text-base p-3 border rounded-md">
+    {content}
   </div>
 );

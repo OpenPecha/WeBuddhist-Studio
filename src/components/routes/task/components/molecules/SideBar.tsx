@@ -181,7 +181,7 @@ const SideBar = ({
     });
   };
   return (
-    <div className="w-80 bg-[#FAFAFA] dark:bg-[#161616]  border-gray-200 dark:border-border h-screen flex flex-col">
+    <div className="w-80  dark:bg-[#161616]  border-gray-200 dark:border-border h-screen flex flex-col">
       <div className="p-4">
         <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
         <div className="text-sm text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
@@ -282,7 +282,7 @@ const SideBar = ({
                       : "hidden"
                   }
                 >
-                  <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
+                  <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-[#F5F5F5]">
                     <SortableList
                       items={day.tasks.map((task: any) => ({ id: task.id }))}
                       onReorder={(activeId: any, overId: any) =>
@@ -293,7 +293,7 @@ const SideBar = ({
                         <SortableItem
                           key={task.id}
                           id={task.id}
-                          className="flex items-center gap-x-2 border-b border-gray-200 dark:border-input/40 justify-between py-2 pr-3 pl-1 text-sm text-foreground"
+                          className="flex items-center gap-x-2 bg-white dark:bg-[#161616] border-b border-gray-200 dark:border-input/40 justify-between py-2 pr-3 pl-1 text-sm text-foreground"
                         >
                           {({ listeners }: any) => (
                             <>

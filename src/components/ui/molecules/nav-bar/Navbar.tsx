@@ -1,6 +1,5 @@
 import pechaIcon from "../../../../assets/icon/pecha_icon.png";
 import { Link, useLocation } from "react-router-dom";
-import AuthButton from "../auth-button/AuthButton";
 import { ModeToggle } from "../mode-toggle/modetoggle";
 import { IoAnalytics } from "react-icons/io5";
 import { MdDashboard } from "react-icons/md";

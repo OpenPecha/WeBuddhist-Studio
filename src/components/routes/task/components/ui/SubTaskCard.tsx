@@ -57,7 +57,7 @@ const VideoSubtask = ({
     <Pecha.Input
       type="url"
       placeholder="Enter YouTube URL"
-      className="h-12 text-base"
+      className="h-12 text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
       value={subTask.content}
       onChange={(e) => onUpdate(index, { content: e.target.value })}
     />
@@ -76,7 +76,7 @@ const TextSubtask = ({
 }) => (
   <Pecha.Textarea
     placeholder="Enter your text content"
-    className="w-full h-24 resize-none text-base"
+    className="w-full h-24 resize-none text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
     value={subTask.content}
     onChange={(e) => onUpdate(index, { content: e.target.value })}
   />
@@ -95,7 +95,7 @@ const AudioSubtask = ({
     <Pecha.Input
       type="url"
       placeholder="Enter Spotify or SoundCloud URL"
-      className="h-12 text-base"
+      className="h-12 text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
       value={subTask.content}
       onChange={(e) => onUpdate(index, { content: e.target.value })}
     />
@@ -122,7 +122,7 @@ const ImageSubtask = ({
       />
     )}
     {subTask.imagePreview && (
-      <div className="mt-4 flex w-full justify-center">
+      <div className="mt-4 flex w-full justify-center bg-[#FAFAFA] dark:bg-sidebar-secondary ">
         <div className="relative">
           <img
             src={subTask.imagePreview}
@@ -181,11 +181,12 @@ export const SubTaskCard = ({
   return (
     <div
       key={index}
-      className={`border border-gray-300 dark:border-input rounded-sm p-4 space-y-4`}
+      className={`border border-gray-300 bg-[#ffffff] dark:bg-[#161616] dark:border-input rounded-sm p-2 space-y-4`}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center bg-[#F7F7F7] border dark:bg-sidebar-secondary  px-2 py-1 text-sm rounded-md border-dashed gap-2">
           <ContentIcon type={subTask.content_type} />
+          {subTask.content_type}
         </div>
         <Pecha.Button
           variant="outline"

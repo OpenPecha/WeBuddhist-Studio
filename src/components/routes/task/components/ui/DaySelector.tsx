@@ -41,8 +41,11 @@ const DaySelector = ({ selectedDay, taskId }: DaySelectorProps) => {
   return (
     <div>
       <Pecha.Select onValueChange={handleDayChange}>
-        <Pecha.SelectTrigger className="w-32">
-          <Pecha.SelectValue placeholder={`Day ${selectedDay}`} />
+        <Pecha.SelectTrigger className="bg-white dark:bg-[#161616] w-32">
+          <Pecha.SelectValue
+            className="bg-white dark:bg-[#161616]"
+            placeholder={`Day ${selectedDay}`}
+          />
         </Pecha.SelectTrigger>
         <Pecha.SelectContent>
           <Pecha.SelectGroup>

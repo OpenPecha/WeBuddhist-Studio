@@ -72,7 +72,7 @@ const Dashboard = () => {
   const totalPages = planData ? Math.ceil(planData.total / 10) : 1;
 
   return (
-    <div className=" border h-[calc(100vh-40px)] overflow-auto dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic ">
+    <div className=" border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic ">
       <div className="mb-4  px-4 pt-10 flex items-center justify-between">
         <div className="flex  items-center space-x-2">
           <div className="border w-fit px-2 rounded-md border-gray-200 dark:border-[#313132] flex items-center">
