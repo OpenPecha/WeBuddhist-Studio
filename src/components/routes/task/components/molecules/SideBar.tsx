@@ -257,20 +257,21 @@ const SideBar = ({
                           }}
                         />
                       </Activity>
-
-                      <Pecha.DropdownMenu>
-                        <Pecha.DropdownMenuTrigger asChild>
-                          <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
-                        </Pecha.DropdownMenuTrigger>
-                        <Pecha.DropdownMenuContent side="right">
-                          <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                            <DayDeleteDialog
-                              dayId={day.id}
-                              onDelete={handleDeleteDay}
-                            />
-                          </Pecha.DropdownMenuItem>
-                        </Pecha.DropdownMenuContent>
-                      </Pecha.DropdownMenu>
+                      {currentPlan?.days.length > 1 && (
+                        <Pecha.DropdownMenu>
+                          <Pecha.DropdownMenuTrigger asChild>
+                            <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                          </Pecha.DropdownMenuTrigger>
+                          <Pecha.DropdownMenuContent side="right">
+                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                              <DayDeleteDialog
+                                dayId={day.id}
+                                onDelete={handleDeleteDay}
+                              />
+                            </Pecha.DropdownMenuItem>
+                          </Pecha.DropdownMenuContent>
+                        </Pecha.DropdownMenu>
+                      )}
                     </div>
                   </Activity>
                 </div>
