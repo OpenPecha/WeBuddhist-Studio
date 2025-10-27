@@ -127,6 +127,7 @@ const Createplan = () => {
       toast.success("Plan updated successfully!", {
         description: "Your plan has been updated and is now available.",
       });
+      navigate("/dashboard");
     },
     onError: (error) => {
       toast.error("Failed to update plan", {
