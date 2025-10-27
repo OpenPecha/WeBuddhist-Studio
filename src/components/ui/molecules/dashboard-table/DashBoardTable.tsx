@@ -45,7 +45,7 @@ export function DashBoardTable({
       );
     } else {
       return (
-        <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-blue-900 bg-[#E1F0FF] text-[#008DFF] dark:text-cyan-500">
+        <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
           In Draft
         </Pecha.Badge>
       );
@@ -114,14 +114,14 @@ export function DashBoardTable({
     }
 
     return plans.map((plan) => (
-      <Pecha.TableRow key={plan.id}>
+      <Pecha.TableRow key={plan.id} className="dark:bg-background">
         <Pecha.TableCell>
           <img
             src={plan.image_url || defaultCover}
             onError={(e) => {
               e.currentTarget.src = defaultCover;
             }}
-            alt="cover"
+            alt="Plan Cover Image"
             className="w-32 rounded border-2 h-12 object-cover"
           />
         </Pecha.TableCell>
@@ -129,7 +129,7 @@ export function DashBoardTable({
           className="cursor-pointer"
           onClick={() => navigate(`/plan/${plan.id}/plan-details`)}
         >
-          <div className="font-semibold text-base">{plan.title}</div>
+          <div className="font-semibold text-sm">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
             {plan.description}
           </div>
@@ -146,44 +146,42 @@ export function DashBoardTable({
     ));
   };
   return (
-    <div className="w-full h-[640px] overflow-auto">
-      <Pecha.Table>
-        <Pecha.TableHeader>
-          <Pecha.TableRow className="font-dynamic">
-            <Pecha.TableHead className="w-[160px] font-bold">
-              {t("studio.dashboard.cover_image")}
-            </Pecha.TableHead>
-            <Pecha.TableHead
-              className="font-bold cursor-pointer"
-              onClick={() => onSort("title")}
-            >
-              <div className="flex items-center">
-                {t("studio.dashboard.title")}
-                {getSortIcon("title")}
-              </div>
-            </Pecha.TableHead>
-            <Pecha.TableHead
-              className="w-[150px] font-bold cursor-pointer"
-              onClick={() => onSort("total_days")}
-            >
-              <div className="flex items-center">
-                {t("studio.dashboard.plan_days")}
-                {getSortIcon("total_days")}
-              </div>
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[150px] font-bold">
-              {t("studio.dashboard.plan_used")}
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[150px] font-bold">
-              Status
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[150px] font-bold">
-              {t("studio.dashboard.actions")}
-            </Pecha.TableHead>
-          </Pecha.TableRow>
-        </Pecha.TableHeader>
-        <Pecha.TableBody>{renderTableContent()}</Pecha.TableBody>
-      </Pecha.Table>
-    </div>
+    <Pecha.Table>
+      <Pecha.TableHeader className="dark:bg-[#1d1d1f]">
+        <Pecha.TableRow className="font-dynamic">
+          <Pecha.TableHead className="w-[100px] font-bold">
+            {t("studio.dashboard.cover_image")}
+          </Pecha.TableHead>
+          <Pecha.TableHead
+            className="font-bold cursor-pointer"
+            onClick={() => onSort("title")}
+          >
+            <div className="flex items-center">
+              {t("studio.dashboard.title")}
+              {getSortIcon("title")}
+            </div>
+          </Pecha.TableHead>
+          <Pecha.TableHead
+            className="w-[150px] font-bold cursor-pointer"
+            onClick={() => onSort("total_days")}
+          >
+            <div className="flex items-center">
+              {t("studio.dashboard.plan_days")}
+              {getSortIcon("total_days")}
+            </div>
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            {t("studio.dashboard.plan_used")}
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            Status
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            {t("studio.dashboard.actions")}
+          </Pecha.TableHead>
+        </Pecha.TableRow>
+      </Pecha.TableHeader>
+      <Pecha.TableBody>{renderTableContent()}</Pecha.TableBody>
+    </Pecha.Table>
   );
 }

@@ -40,7 +40,7 @@ export const ContentTypeSelector = ({
   const [showContentTypes, setShowContentTypes] = useState(false);
 
   return (
-    <div className="flex h-12 items-center gap-4">
+    <div className="flex h-12 px-4 items-center gap-4">
       <Pecha.Button
         type="button"
         variant="outline"

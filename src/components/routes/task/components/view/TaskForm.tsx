@@ -272,13 +272,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   };
 
   return (
-    <div className="w-full h-full border p-4 space-y-4 overflow-y-auto">
-      <h2 className="text-xl font-semibold">
+    <div className="w-full my-4 h-[calc(100vh-40px)] dark:bg-[#181818] rounded-l-2xl border border-dashed xwspace-y-4 overflow-y-auto">
+      <h2 className="text-xl font-semibold p-4">
         {isEditMode ? "Edit Task" : "Add Task"}
       </h2>
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex w-full lg:w-2/3 justify-between items-center gap-4">
+          <div className="flex w-full p-4 lg:w-2/3 justify-between items-center gap-4">
             <TaskTitleField
               isEditMode={isEditMode}
               isTitleEditing={isTitleEditing}
@@ -289,10 +289,14 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               onCancel={() => setIsTitleEditing(false)}
             />
           </div>
-          <ContentTypeSelector onSelectType={handleAddSubTask} />
+          <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
+          <div className=" px-4 flex items-center">
+            <h2 className="text-xl font-semibold">Add Subtask</h2>
+            <ContentTypeSelector onSelectType={handleAddSubTask} />
+          </div>
 
           {subTasks.length > 0 && (
-            <div className="space-y-4 w-full lg:w-2/3">
+            <div className="space-y-4 p-4 w-full lg:w-2/3">
               {subTasks.map((subTask, index) => (
                 <SubTaskCard
                   key={index}
@@ -307,7 +311,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
             </div>
           )}
 
-          <div className="pt-6 flex gap-3">
+          <div className="p-4 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
               <Pecha.Button
                 variant="outline"

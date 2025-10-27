@@ -36,7 +36,7 @@ const PlanDetailsPage = () => {
         }}
         onEditTask={handleEditTask}
       />
-      <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
+      <div className=" w-full pl-4 rounded-l-2xl overflow-y-auto">
         {selectedTaskId ? (
           <TaskView taskId={selectedTaskId} selectedDay={selectedDay} />
         ) : (

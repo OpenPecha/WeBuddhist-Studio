@@ -6,17 +6,15 @@ import { getYouTubeVideoId, extractSpotifyId } from "@/lib/utils";
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO";
 
 export const ContentIcon = ({ type }: { type: ContentType }) => {
-  const iconClass = "w-4 h-4 text-gray-600";
-
   switch (type) {
     case "VIDEO":
-      return <IoMdVideocam className={iconClass} />;
+      return <IoMdVideocam className="w-4 h-4 text-gray-600" />;
     case "TEXT":
-      return <IoTextOutline className={iconClass} />;
+      return <IoTextOutline className="w-4 h-4 text-gray-600" />;
     case "AUDIO":
-      return <IoMusicalNotesSharp className={iconClass} />;
+      return <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />;
     case "IMAGE":
-      return <MdOutlineImage className={iconClass} />;
+      return <MdOutlineImage className="w-4 h-4 text-gray-600" />;
     default:
       return null;
   }

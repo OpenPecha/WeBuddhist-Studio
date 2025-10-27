@@ -63,9 +63,11 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-full">
+    <div className="flex h-screen w-full">
       {!hideNavbar && <Navbar />}
-      <Outlet />
+      <div className="flex-1 overflow-auto">
+        <Outlet />
+      </div>
     </div>
   );
 }

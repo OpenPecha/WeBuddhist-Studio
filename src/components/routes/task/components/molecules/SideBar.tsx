@@ -181,7 +181,7 @@ const SideBar = ({
     });
   };
   return (
-    <div className="w-80 bg-[#FAFAFA] dark:bg-[#171414] border-r border-t border-gray-200 dark:border-border h-full flex flex-col">
+    <div className="w-80 bg-[#FAFAFA] dark:bg-[#161616]  border-gray-200 dark:border-border h-screen flex flex-col">
       <div className="p-4">
         <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
         <div className="text-sm text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
