@@ -1,7 +1,7 @@
 import pechaIcon from "../../../../assets/icon/pecha_icon.png";
 import { Link, useLocation } from "react-router-dom";
 import { ModeToggle } from "../mode-toggle/modetoggle";
-import { IoAnalytics } from "react-icons/io5";
+// import { IoAnalytics } from "react-icons/io5";
 import { MdDashboard } from "react-icons/md";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import { useTranslate } from "@tolgee/react";
@@ -15,11 +15,11 @@ const navItems = [
     label: "studio.nav.dashboard",
     path: "/dashboard",
   },
-  {
-    icon: <IoAnalytics className="w-4 h-4" />,
-    label: "studio.nav.analytics",
-    path: "/analytics",
-  },
+  // {
+  //   icon: <IoAnalytics className="w-4 h-4" />,
+  //   label: "studio.nav.analytics",
+  //   path: "/analytics",
+  // },
 ];
 const Navbar = () => {
   const location = useLocation();
