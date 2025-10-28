@@ -156,8 +156,8 @@ const ImageSubtask = ({
 );
 
 const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
-  <div className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md">
-    {subTask.content}
+  <div className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]">
+    <div dangerouslySetInnerHTML={{ __html: subTask.content }} />
   </div>
 );
 
