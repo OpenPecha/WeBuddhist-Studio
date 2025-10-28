@@ -1,7 +1,8 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { FaPen } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { IoMdTrash } from "react-icons/io";
+import { IoMdTrash, IoMdArchive } from "react-icons/io";
+import { MdRateReview } from "react-icons/md";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
@@ -29,7 +30,24 @@ export function DropdownButton({ planId }: { planId: string }) {
                 <FaPen className="h-4 w-4" />
                 Edit Plan
               </Pecha.DropdownMenuItem>
+              <Pecha.DropdownMenuSeparator />
             </Link>
+            <Pecha.DropdownMenuItem disabled>
+              Status
+            </Pecha.DropdownMenuItem>
+          </Pecha.DropdownMenuGroup>
+          <Pecha.DropdownMenuGroup>
+            <Pecha.DropdownMenuItem>
+              <IoMdArchive className="h-4 w-4" />
+              Archive Plan
+            </Pecha.DropdownMenuItem>
+          </Pecha.DropdownMenuGroup>
+          <Pecha.DropdownMenuSeparator />
+          <Pecha.DropdownMenuGroup>
+            <Pecha.DropdownMenuItem>
+              <MdRateReview className="h-4 w-4" />
+              Review Plan
+            </Pecha.DropdownMenuItem>
           </Pecha.DropdownMenuGroup>
           <Pecha.DropdownMenuSeparator />
           <Pecha.DropdownMenuGroup>
