@@ -4,10 +4,6 @@ import { ModeToggle } from "../mode-toggle/modetoggle";
 // import { IoAnalytics } from "react-icons/io5";
 import { MdDashboard } from "react-icons/md";
 import { LanguageToggle } from "../language-toggle/languageToggle";
-import { useTranslate } from "@tolgee/react";
-import { Pecha } from "@/components/ui/shadimport";
-
-import { IoMdMenu } from "react-icons/io";
 import AuthLogout from "../auth-logout/AuthLogout";
 const navItems = [
   {
@@ -23,7 +19,6 @@ const navItems = [
 ];
 const Navbar = () => {
   const location = useLocation();
-  const { t } = useTranslate();
   return (
     <div className="font-dynamic p-2 flex flex-col justify-between items-center">
       <div className="flex flex-col space-y-10 items-center">
