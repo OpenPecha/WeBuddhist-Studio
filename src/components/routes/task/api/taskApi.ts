@@ -111,7 +111,7 @@ export const updateTaskTitle = async (task_id: string, title: string) => {
 export const ChangeTaskDay = async (task_id: string, target_day_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.put(
-    `/api/v1/cms/tasks/${task_id}`,
+    `/api/v1/cms/tasks/${task_id}/day`,
     {
       target_day_id,
     },
