@@ -25,7 +25,7 @@ const EmailVerification = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
- const {t}=useTranslate();
+  const { t } = useTranslate();
   const {
     data: verifyEmailData,
     isLoading,
@@ -89,7 +89,9 @@ const EmailVerification = () => {
         <div className="mb-6 flex justify-center">
           <IoMdCloseCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
         </div>
-        <h2 className="text-xl font-semibold text-center">{t("studio.auth.email.invalid_token")}</h2>
+        <h2 className="text-xl font-semibold text-center">
+          {t("studio.auth.email.invalid_token")}
+        </h2>
         <p className="text-center mb-8 text-sm text-red-600 dark:text-red-400">
           {t("studio.auth.email.no_verification_token")}
         </p>
@@ -108,7 +110,8 @@ const EmailVerification = () => {
       </h2>
 
       <p className={`text-center mb-8 text-sm ${getStatusColor()}`}>
-        {isLoading && t("studio.auth.email.please_wait_while_we_verify_your_email_address")}
+        {isLoading &&
+          t("studio.auth.email.please_wait_while_we_verify_your_email_address")}
         {isError && getErrorMessage()}
         {verifyEmailData?.message}
       </p>
