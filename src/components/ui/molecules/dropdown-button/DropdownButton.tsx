@@ -5,13 +5,35 @@ import { IoMdTrash } from "react-icons/io";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axiosInstance from "@/config/axios-config";
 
 export function DropdownButton({ planId }: { planId: string }) {
+  const queryClient = useQueryClient();
+  const deletePlanMutation = useMutation({
+    mutationFn: async (plan_id: string) => {
+      const { data } = await axiosInstance.delete(`/api/v1/cms/plans/${plan_id}`, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+        },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Plan deleted successfully!", {
+        description: "The plan has been deleted.",
+      });
+      queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to delete plan", {
+        description: error.response.data.detail.message,
+      });
+    },
+  });
+
   const handleDeletePlan = () => {
-    //api call
-    toast.success("Plan deleted successfully", {
-      description: "Your plan has been permanently removed.",
-    });
+    deletePlanMutation.mutate(planId);
   };
 
   return (
