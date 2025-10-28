@@ -115,7 +115,6 @@ const SideBar = ({
       });
     },
   });
-
   const createNewDayMutation = useMutation({
     mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
@@ -133,17 +132,17 @@ const SideBar = ({
   const reorderTasksMutation = useMutation({
     mutationFn: ({
       activeTaskId,
-      targetTaskId,
+      targetOrder,
     }: {
       activeTaskId: string;
-      targetTaskId: string;
-    }) => reorderTasks(activeTaskId, targetTaskId),
+      targetOrder: number;
+    }) => reorderTasks(activeTaskId, targetOrder),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast.error("Failed to reorder tasks", {
-        description: error.response?.data?.detail || "Something went wrong",
+        description: "Something went wrong",
       });
     },
   });
@@ -169,15 +168,16 @@ const SideBar = ({
   const handleTaskReorder = (
     activeId: UniqueIdentifier,
     overId: UniqueIdentifier,
+    targetDisplayOrder: number,
   ) => {
     const activeTaskId = String(activeId);
-    const targetTaskId = String(overId);
+    const overTaskId = String(overId);
 
-    if (activeTaskId === targetTaskId) return;
+    if (activeTaskId === overTaskId) return;
 
     reorderTasksMutation.mutate({
       activeTaskId,
-      targetTaskId,
+      targetOrder: targetDisplayOrder,
     });
   };
   return (
@@ -285,10 +285,22 @@ const SideBar = ({
                 >
                   <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-[#F5F5F5]">
                     <SortableList
-                      items={day.tasks.map((task: any) => ({ id: task.id }))}
-                      onReorder={(activeId: any, overId: any) =>
-                        handleTaskReorder(activeId, overId)
-                      }
+                      items={day.tasks.map((task: any) => ({
+                        id: task.id,
+                        display_order: task.display_order,
+                      }))}
+                      onReorder={(activeId: any, overId: any) => {
+                        const targetTask = day.tasks.find(
+                          (t: any) => t.id === overId,
+                        );
+                        if (targetTask) {
+                          handleTaskReorder(
+                            activeId,
+                            overId,
+                            targetTask.display_order,
+                          );
+                        }
+                      }}
                     >
                       {day.tasks.map((task: any) => (
                         <SortableItem
