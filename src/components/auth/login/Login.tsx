@@ -135,8 +135,8 @@ const Login = () => {
               disabled={emailReverifyMutation.isPending}
             >
               {emailReverifyMutation.isPending
-                ? "Sending..."
-                : "Reverify your Email"}
+                ? t("studio.login.sending")
+                : t("studio.login.reverify_your_email")}
             </Button>
           </div>
         )}
@@ -152,7 +152,7 @@ const Login = () => {
         )}
         <div className="flex justify-center">
           <Link to="/forgot-password" className="text-sm">
-            Forgot password?
+            {t("studio.login.forgot_password")}
           </Link>
         </div>
 

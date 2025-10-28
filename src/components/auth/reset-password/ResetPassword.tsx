@@ -75,9 +75,11 @@ const ResetPassword = () => {
   if (!token) {
     return (
       <StudioCard>
-        <h2 className="text-xl font-semibold text-center">Invalid Token</h2>
+        <h2 className="text-xl font-semibold text-center">
+          {t("studio.reset_password.invalid_token")}
+        </h2>
         <p className="text-center mb-8 text-sm text-red-600 dark:text-red-400">
-          No reset password token provided.
+          {t("studio.reset_password.no_reset_password_token_provided")}
         </p>
       </StudioCard>
     );

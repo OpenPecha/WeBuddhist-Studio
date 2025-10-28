@@ -1,6 +1,6 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { FaPen } from "react-icons/fa";
-import { BsThreeDots } from "react-icons/bs";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoMdTrash } from "react-icons/io";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -19,7 +19,7 @@ export function DropdownButton({ planId }: { planId: string }) {
       <Pecha.DropdownMenu>
         <Pecha.DropdownMenuTrigger asChild>
           <Pecha.Button variant="outline">
-            <BsThreeDots className="h-4 w-4" />
+            View <BsThreeDotsVertical />
           </Pecha.Button>
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">

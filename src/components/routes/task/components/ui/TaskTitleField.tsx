@@ -23,7 +23,7 @@ export const TaskTitleField = ({
   if (isEditMode && !isTitleEditing) {
     return (
       <>
-        <div className="h-12 text-base flex items-center px-3 border opacity-80 rounded-md flex-1">
+        <div className="h-12  text-base flex bg-white dark:bg-[#161616] items-center px-3 border opacity-80 rounded-md flex-1">
           {formValue}
         </div>
         <Pecha.Button variant="outline" type="button" onClick={onEdit}>
@@ -45,7 +45,7 @@ export const TaskTitleField = ({
                 <Pecha.Input
                   type="text"
                   placeholder="Task Title"
-                  className="h-12 text-base"
+                  className="h-12 text-base bg-white dark:bg-[#161616]"
                   {...field}
                 />
               </Pecha.FormControl>
@@ -75,7 +75,7 @@ export const TaskTitleField = ({
             <Pecha.Input
               type="text"
               placeholder="Task Title"
-              className="h-12 text-base"
+              className="h-12 text-base bg-white dark:bg-[#161616]"
               {...field}
             />
           </Pecha.FormControl>

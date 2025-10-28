@@ -11,7 +11,10 @@ import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskD
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
 import axiosInstance from "@/config/axios-config";
 import { useParams } from "react-router-dom";
-
+import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
+import { reorderTasks } from "../../api/taskApi";
+import type { UniqueIdentifier } from "@dnd-kit/core";
+import { PiDotsSixVertical } from "react-icons/pi";
 interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
@@ -86,7 +89,9 @@ const SideBar = ({
   const deleteTaskMutation = useMutation({
     mutationFn: (task_id: string) => deleteTask(task_id),
     onSuccess: () => {
-      toast.success("Task deleted successfully");
+      toast.success("Task deleted successfully!", {
+        description: "The task has been deleted.",
+      });
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
@@ -99,6 +104,9 @@ const SideBar = ({
   const deleteDayMutation = useMutation({
     mutationFn: (day_id: string) => deleteDay(plan_id!, day_id),
     onSuccess: () => {
+      toast.success("Day deleted successfully!", {
+        description: "The day has been deleted.",
+      });
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
@@ -107,7 +115,6 @@ const SideBar = ({
       });
     },
   });
-
   const createNewDayMutation = useMutation({
     mutationFn: () => createNewDay(plan_id!),
     onSuccess: (newDay) => {
@@ -118,6 +125,24 @@ const SideBar = ({
     onError: (error: any) => {
       toast.error("Failed to create new day", {
         description: error.response.data.detail,
+      });
+    },
+  });
+
+  const reorderTasksMutation = useMutation({
+    mutationFn: ({
+      activeTaskId,
+      targetOrder,
+    }: {
+      activeTaskId: string;
+      targetOrder: number;
+    }) => reorderTasks(activeTaskId, targetOrder),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+    },
+    onError: () => {
+      toast.error("Failed to reorder tasks", {
+        description: "Something went wrong",
       });
     },
   });
@@ -139,8 +164,24 @@ const SideBar = ({
     if (!currentPlan || !plan_id) return;
     createNewDayMutation.mutate();
   };
+
+  const handleTaskReorder = (
+    activeId: UniqueIdentifier,
+    overId: UniqueIdentifier,
+    targetDisplayOrder: number,
+  ) => {
+    const activeTaskId = String(activeId);
+    const overTaskId = String(overId);
+
+    if (activeTaskId === overTaskId) return;
+
+    reorderTasksMutation.mutate({
+      activeTaskId,
+      targetOrder: targetDisplayOrder,
+    });
+  };
   return (
-    <div className="w-80 bg-[#FAFAFA] dark:bg-[#171414] border-r border-t border-gray-200 dark:border-border h-full flex flex-col">
+    <div className="w-80  dark:bg-[#161616]  border-gray-200 dark:border-border h-screen flex flex-col">
       <div className="p-4">
         <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
         <div className="text-sm text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
@@ -158,7 +199,7 @@ const SideBar = ({
           <span className="text-sm  text-foreground">Days</span>
         </div>
 
-        <div className="space-y-1 h-[calc(100vh-300px)] overflow-auto">
+        <div className="space-y-1 h-[calc(100vh-200px)] overflow-auto">
           {_isLoading ? (
             <>
               {[1, 2, 3].map((index) => (
@@ -216,20 +257,21 @@ const SideBar = ({
                           }}
                         />
                       </Activity>
-
-                      <Pecha.DropdownMenu>
-                        <Pecha.DropdownMenuTrigger asChild>
-                          <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
-                        </Pecha.DropdownMenuTrigger>
-                        <Pecha.DropdownMenuContent side="right">
-                          <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                            <DayDeleteDialog
-                              dayId={day.id}
-                              onDelete={handleDeleteDay}
-                            />
-                          </Pecha.DropdownMenuItem>
-                        </Pecha.DropdownMenuContent>
-                      </Pecha.DropdownMenu>
+                      {currentPlan?.days.length > 1 && (
+                        <Pecha.DropdownMenu>
+                          <Pecha.DropdownMenuTrigger asChild>
+                            <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                          </Pecha.DropdownMenuTrigger>
+                          <Pecha.DropdownMenuContent side="right">
+                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                              <DayDeleteDialog
+                                dayId={day.id}
+                                onDelete={handleDeleteDay}
+                              />
+                            </Pecha.DropdownMenuItem>
+                          </Pecha.DropdownMenuContent>
+                        </Pecha.DropdownMenu>
+                      )}
                     </div>
                   </Activity>
                 </div>
@@ -241,40 +283,74 @@ const SideBar = ({
                       : "hidden"
                   }
                 >
-                  <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-gray-100">
-                    {day.tasks.map((task: any) => (
-                      <div
-                        key={task.id}
-                        className="flex items-center border-b border-gray-200 dark:border-input/40 justify-between py-2 px-3 text-sm text-foreground"
-                      >
-                        <span
-                          className="cursor-pointer w-full"
-                          onClick={() => onTaskClick?.(task.id)}
+                  <div className=" mx-2 border h-44 overflow-y-auto dark:bg-accent/30 bg-[#F5F5F5]">
+                    <SortableList
+                      items={day.tasks.map((task: any) => ({
+                        id: task.id,
+                        display_order: task.display_order,
+                      }))}
+                      onReorder={(activeId: any, overId: any) => {
+                        const targetTask = day.tasks.find(
+                          (t: any) => t.id === overId,
+                        );
+                        if (targetTask) {
+                          handleTaskReorder(
+                            activeId,
+                            overId,
+                            targetTask.display_order,
+                          );
+                        }
+                      }}
+                    >
+                      {day.tasks.map((task: any) => (
+                        <SortableItem
+                          key={task.id}
+                          id={task.id}
+                          className="flex items-center gap-x-2 bg-white dark:bg-[#161616] border-b border-gray-200 dark:border-input/40 justify-between py-2 pr-3 pl-1 text-sm text-foreground"
                         >
-                          {task.title}
-                        </span>
-                        <Pecha.DropdownMenu>
-                          <Pecha.DropdownMenuTrigger asChild>
-                            <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
-                          </Pecha.DropdownMenuTrigger>
-                          <Pecha.DropdownMenuContent side="right">
-                            <Pecha.DropdownMenuItem
-                              className="gap-2 cursor-pointer"
-                              onClick={() => onEditTask(task)}
-                            >
-                              <FaPen className="h-4 w-4" />
-                              Edit
-                            </Pecha.DropdownMenuItem>
-                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                              <TaskDeleteDialog
-                                taskId={task.id}
-                                onDelete={handleDeleteTask}
+                          {({ listeners }: any) => (
+                            <>
+                              <PiDotsSixVertical
+                                className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
+                                {...listeners}
                               />
-                            </Pecha.DropdownMenuItem>
-                          </Pecha.DropdownMenuContent>
-                        </Pecha.DropdownMenu>
-                      </div>
-                    ))}
+                              <span
+                                className="cursor-pointer w-full"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onTaskClick?.(task.id);
+                                }}
+                              >
+                                {task.title}
+                              </span>
+                              <Pecha.DropdownMenu>
+                                <Pecha.DropdownMenuTrigger asChild>
+                                  <BsThreeDots
+                                    className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </Pecha.DropdownMenuTrigger>
+                                <Pecha.DropdownMenuContent side="right">
+                                  <Pecha.DropdownMenuItem
+                                    className="gap-2 cursor-pointer"
+                                    onClick={() => onEditTask(task)}
+                                  >
+                                    <FaPen className="h-4 w-4" />
+                                    Edit
+                                  </Pecha.DropdownMenuItem>
+                                  <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                                    <TaskDeleteDialog
+                                      taskId={task.id}
+                                      onDelete={handleDeleteTask}
+                                    />
+                                  </Pecha.DropdownMenuItem>
+                                </Pecha.DropdownMenuContent>
+                              </Pecha.DropdownMenu>
+                            </>
+                          )}
+                        </SortableItem>
+                      ))}
+                    </SortableList>
                   </div>
                 </Activity>
               </div>
@@ -287,7 +363,7 @@ const SideBar = ({
             onClick={addNewDay}
             disabled={createNewDayMutation.isPending}
             variant="destructive"
-            className="cursor-pointer mt-3 rounded-none disabled:opacity-50 w-full disabled:cursor-not-allowed"
+            className="cursor-pointer mt-1 disabled:opacity-50 w-full disabled:cursor-not-allowed"
           >
             <IoMdAdd className="w-4 h-4" />
             <span className="text-sm font-medium">

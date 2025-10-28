@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 import axiosInstance from "@/config/axios-config";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslate } from "@tolgee/react";
 
 const verifyEmail = async (token: string) => {
   const response = await axiosInstance.get(`/api/v1/cms/auth/verify-email`, {
@@ -24,7 +25,7 @@ const EmailVerification = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-
+  const { t } = useTranslate();
   const {
     data: verifyEmailData,
     isLoading,
@@ -49,7 +50,7 @@ const EmailVerification = () => {
       }
     }
 
-    return "There was an error verifying your email. Please try again or contact support.";
+    return t("studio.auth.email.there_was_an_error");
   };
 
   const getStatusIcon = () => {
@@ -88,9 +89,11 @@ const EmailVerification = () => {
         <div className="mb-6 flex justify-center">
           <IoMdCloseCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
         </div>
-        <h2 className="text-xl font-semibold text-center">Invalid Token</h2>
+        <h2 className="text-xl font-semibold text-center">
+          {t("studio.auth.email.invalid_token")}
+        </h2>
         <p className="text-center mb-8 text-sm text-red-600 dark:text-red-400">
-          No verification token provided.
+          {t("studio.auth.email.no_verification_token")}
         </p>
       </StudioCard>
     );
@@ -101,13 +104,14 @@ const EmailVerification = () => {
       <div className="mb-6 flex justify-center">{getStatusIcon()}</div>
 
       <h2 className="text-xl font-semibold text-center">
-        {isLoading && "Verifying Email..."}
-        {isError && "Verification Failed"}
-        {verifyEmailData && "Email Verified!"}
+        {isLoading && t("studio.auth.email.verifying_email")}
+        {isError && t("studio.auth.email.verification_failed")}
+        {verifyEmailData && t("studio.auth.email.email_verified")}
       </h2>
 
       <p className={`text-center mb-8 text-sm ${getStatusColor()}`}>
-        {isLoading && "Please wait while we verify your email address."}
+        {isLoading &&
+          t("studio.auth.email.please_wait_while_we_verify_your_email_address")}
         {isError && getErrorMessage()}
         {verifyEmailData?.message}
       </p>
@@ -119,7 +123,7 @@ const EmailVerification = () => {
             className="w-full"
             variant="outline"
           >
-            Continue to Login
+            {t("studio.auth.email.continue_to_login")}
           </Button>
         )}
       </div>

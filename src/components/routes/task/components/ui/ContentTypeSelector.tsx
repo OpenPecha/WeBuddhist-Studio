@@ -40,7 +40,7 @@ export const ContentTypeSelector = ({
   const [showContentTypes, setShowContentTypes] = useState(false);
 
   return (
-    <div className="flex h-12 items-center gap-4">
+    <div className="flex h-12 px-4 items-center gap-4">
       <Pecha.Button
         type="button"
         variant="outline"
@@ -53,7 +53,7 @@ export const ContentTypeSelector = ({
       </Pecha.Button>
 
       {showContentTypes && (
-        <div className="flex border h-full items-center px-1 border-gray-300 dark:border-input rounded-sm overflow-visible animate-in zoom-in-90 slide-in-from-left-3 duration-300 ease-out">
+        <div className="flex border h-full bg-white dark:bg-[#161616] items-center px-1 border-gray-300 dark:border-input rounded-sm overflow-visible animate-in zoom-in-90 slide-in-from-left-3 duration-300 ease-out">
           {contentTypes.map(({ key, icon }, index) => (
             <Pecha.Button
               key={key}

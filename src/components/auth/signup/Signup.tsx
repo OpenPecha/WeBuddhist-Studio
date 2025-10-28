@@ -146,7 +146,7 @@ const Signup = () => {
             disabled={signupMutation.isPending}
           >
             {signupMutation.isPending
-              ? "Signing up..."
+              ? t("studio.signup.signing_up")
               : t("common.button.submit")}
           </Button>
         </div>

@@ -127,6 +127,7 @@ const Createplan = () => {
       toast.success("Plan updated successfully!", {
         description: "Your plan has been updated and is now available.",
       });
+      navigate("/dashboard");
     },
     onError: (error) => {
       toast.error("Failed to update plan", {
@@ -191,7 +192,7 @@ const Createplan = () => {
     }
   };
   return (
-    <div className="w-full h-full font-dynamic flex max-sm:flex-col">
+    <div className="w-full border my-4 h-[calc(100vh-40px)] dark:bg-[#181818] rounded-l-2xl font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
         <h1 className="text-xl font-bold my-4">
           {t("studio.plan.form_field.details")}

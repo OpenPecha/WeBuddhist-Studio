@@ -24,9 +24,7 @@ const ForgotPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      setSuccess(
-        "Email with reset password link is sent to your email address",
-      );
+      setSuccess(t("studio.auth.forgot_password.email_sent"));
     },
     onError: (error: any) => {
       setError(error.message);
