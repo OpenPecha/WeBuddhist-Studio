@@ -130,7 +130,7 @@ export const reorderTasks = async (
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.put(
-    `/api/v1/cms/tasks/${activeTaskId}`,
+    `/api/v1/cms/tasks/${activeTaskId}/order`,
     {
       target_order: targetOrder,
     },
