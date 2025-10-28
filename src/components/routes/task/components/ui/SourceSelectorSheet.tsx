@@ -113,7 +113,7 @@ export const SourceSelectorSheet = ({
         </div>
         <div className="p-4 space-y-4 border-y border-dashed border-gray-300 dark:border-input h-[540px] overflow-y-auto">
           {isLoading ? (
-            <div className="state-message loading">
+            <div className="w-full flex items-center justify-center h-full">
               <p>Loading segments...</p>
             </div>
           ) : (
