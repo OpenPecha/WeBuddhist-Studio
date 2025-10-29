@@ -7,9 +7,10 @@ import {
   AudioContent,
   ImageContent,
   TextContent,
+  SourceReferenceContent,
 } from "../ui/ContentComponents";
 
-type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO";
+type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
 interface TaskViewProps {
   taskId: string;
@@ -41,6 +42,8 @@ const SubtaskContent = ({
       return <AudioContent content={content} />;
     case "IMAGE":
       return <ImageContent content={content} />;
+    case "SOURCE_REFERENCE":
+      return <SourceReferenceContent content={content} />;
   }
 };
 
