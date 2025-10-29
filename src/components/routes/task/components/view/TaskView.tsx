@@ -8,7 +8,7 @@ import {
   ImageContent,
   TextContent,
   SourceReferenceContent,
-} from "../ui/ContentComponents";
+} from "../../../../ui/molecules/content-sub/ContentComponents";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
@@ -74,7 +74,7 @@ const TaskView = ({ taskId }: TaskViewProps) => {
           <h2 className="text-xl font-semibold">Task</h2>
         </div>
         <div className="p-4">
-          <div className="h-12 p-4 bg-white dark:bg-[#161616] rounded-md w-3/4 text-base flex items-center border">
+          <div className="h-12 p-4 bg-white dark:bg-input/30 rounded-md lg:w-2/3 w-full text-base flex items-center border">
             {isLoading ? (
               <Pecha.Skeleton className="h-6  w-1/2 rounded" />
             ) : (

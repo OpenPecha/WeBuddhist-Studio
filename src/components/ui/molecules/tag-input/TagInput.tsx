@@ -28,7 +28,7 @@ const TagInput = ({ value = [], onChange }: TagInputProps) => {
       <div className=" w-full border p-2 h-100 overflow-auto space-y-4 rounded-md">
         <Input
           placeholder="Add a tag"
-          className=" border-none shadow-none"
+          className=" border-none shadow-none bg-white"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
