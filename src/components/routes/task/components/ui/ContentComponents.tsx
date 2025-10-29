@@ -80,3 +80,9 @@ export const TextContent = ({ content }: { content: string }) => (
     {content}
   </div>
 );
+
+export const SourceReferenceContent = ({ content }: { content: string }) => (
+  <div className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]">
+    <div dangerouslySetInnerHTML={{ __html: content }} />
+  </div>
+);
