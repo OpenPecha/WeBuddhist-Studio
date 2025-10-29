@@ -12,11 +12,14 @@ export function DropdownButton({ planId }: { planId: string }) {
   const queryClient = useQueryClient();
   const deletePlanMutation = useMutation({
     mutationFn: async (plan_id: string) => {
-      const { data } = await axiosInstance.delete(`/api/v1/cms/plans/${plan_id}`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+      const { data } = await axiosInstance.delete(
+        `/api/v1/cms/plans/${plan_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+          },
         },
-      });
+      );
       return data;
     },
     onSuccess: () => {
