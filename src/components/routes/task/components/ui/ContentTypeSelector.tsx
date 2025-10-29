@@ -8,7 +8,7 @@ import { SourceSelectorSheet } from "./SourceSelectorSheet";
 
 interface ContentTypeSelectorProps {
   onSelectType: (
-    type: "IMAGE" | "VIDEO" | "AUDIO" | "TEXT" | "SOURCE",
+    type: "IMAGE" | "VIDEO" | "AUDIO" | "TEXT" | "SOURCE_REFERENCE",
     sourceContent?: string,
   ) => void;
 }
@@ -33,7 +33,7 @@ const contentTypes = [
     icon: <IoTextOutline className={iconClassName} />,
   },
   {
-    key: "SOURCE",
+    key: "SOURCE_REFERENCE",
     icon: <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />,
   },
 ];
@@ -45,7 +45,7 @@ export const ContentTypeSelector = ({
   const [isSourceSheetOpen, setIsSourceSheetOpen] = useState(false);
 
   const handleContentTypeClick = (type: string) => {
-    if (type === "SOURCE") {
+    if (type === "SOURCE_REFERENCE") {
       setIsSourceSheetOpen(true);
       setShowContentTypes(false);
     } else {
@@ -54,7 +54,7 @@ export const ContentTypeSelector = ({
   };
 
   const handleAddSource = (sourceContent: string) => {
-    onSelectType("SOURCE", sourceContent);
+    onSelectType("SOURCE_REFERENCE", sourceContent);
     setIsSourceSheetOpen(false);
   };
 

@@ -35,7 +35,7 @@ interface ImageSubTask {
 
 interface SourceSubTask {
   id?: string | null;
-  content_type: "SOURCE";
+  content_type: "SOURCE_REFERENCE";
   content: string;
   display_order?: number;
 }
@@ -192,7 +192,7 @@ export const SubTaskCard = ({
             onRemoveImage={onRemoveImage}
           />
         );
-      case "SOURCE":
+      case "SOURCE_REFERENCE":
         return <SourceSubtask subTask={subTask} />;
     }
   };

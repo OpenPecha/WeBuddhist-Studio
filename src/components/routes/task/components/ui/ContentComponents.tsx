@@ -3,7 +3,7 @@ import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
 import { getYouTubeVideoId, extractSpotifyId } from "@/lib/utils";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
-type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE";
+type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
 export const ContentIcon = ({ type }: { type: ContentType }) => {
   switch (type) {
@@ -15,7 +15,7 @@ export const ContentIcon = ({ type }: { type: ContentType }) => {
       return <IoMusicalNotesSharp className="w-4 h-4 text-gray-600" />;
     case "IMAGE":
       return <MdOutlineImage className="w-4 h-4 text-gray-600" />;
-    case "SOURCE":
+    case "SOURCE_REFERENCE":
       return <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />;
     default:
       return null;

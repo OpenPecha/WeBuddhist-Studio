@@ -163,10 +163,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               imagePreview: data.content,
               content: data.image_url,
             };
-          case "SOURCE":
+          case "SOURCE_REFERENCE":
             return {
               id: data.id,
-              content_type: "SOURCE",
+              content_type: "SOURCE_REFERENCE",
               content: data.content,
             };
           default:
@@ -214,10 +214,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           content: null,
         };
         break;
-      case "SOURCE":
+      case "SOURCE_REFERENCE":
         newSubTask = {
           id: null,
-          content_type: "SOURCE",
+          content_type: "SOURCE_REFERENCE",
           content: sourceContent || "",
         };
         break;
