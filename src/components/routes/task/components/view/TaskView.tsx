@@ -80,7 +80,7 @@ const TaskView = ({ taskId }: TaskViewProps) => {
           </div>
         </div>
         <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
-        <div className="space-y-4 w-3/4 p-4 ">
+        <div className="space-y-4 w-full lg:w-2/3 p-4 ">
           {taskDetails?.subtasks.length > 0 && (
             <h2 className="text-xl font-semibold">Subtask</h2>
           )}

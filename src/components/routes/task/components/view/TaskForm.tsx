@@ -163,6 +163,12 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               imagePreview: data.content,
               content: data.image_url,
             };
+          case "SOURCE":
+            return {
+              id: data.id,
+              content_type: "SOURCE",
+              content: data.content,
+            };
           default:
             return {
               id: data.id,
@@ -175,7 +181,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     }
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
-  const handleAddSubTask = (content_type: any) => {
+  const handleAddSubTask = (content_type: any, sourceContent?: string) => {
     let newSubTask: SubTask;
 
     switch (content_type) {
@@ -206,6 +212,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           content_type: "IMAGE",
           imagePreview: null,
           content: null,
+        };
+        break;
+      case "SOURCE":
+        newSubTask = {
+          id: null,
+          content_type: "SOURCE",
+          content: sourceContent || "",
         };
         break;
     }
