@@ -1,5 +1,9 @@
 import axiosInstance from "@/config/axios-config";
 
+const getAuthHeaders = () => ({
+  Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+});
+
 interface CreateTaskPayload {
   plan_id: string;
   day_id: string;
@@ -8,14 +12,11 @@ interface CreateTaskPayload {
 }
 
 export const createTask = async (taskData: CreateTaskPayload) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
     `/api/v1/cms/tasks`,
     { ...taskData },
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: getAuthHeaders(),
     },
   );
   return data;
@@ -44,7 +45,6 @@ export const createSubTasks = async (
     display_order: number;
   }[],
 ) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
     `/api/v1/cms/sub-tasks`,
     {
@@ -52,9 +52,7 @@ export const createSubTasks = async (
       sub_tasks: subTasksData,
     },
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: getAuthHeaders(),
     },
   );
   return data;
@@ -69,7 +67,6 @@ export const updateSubTasks = async (
     display_order: number;
   }[],
 ) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   await axiosInstance.put(
     `/api/v1/cms/sub-tasks`,
     {
@@ -77,48 +74,37 @@ export const updateSubTasks = async (
       sub_tasks: subTasksData,
     },
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: getAuthHeaders(),
     },
   );
 };
 
 export const fetchTaskDetails = async (task_id: string) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(`/api/v1/cms/tasks/${task_id}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers: getAuthHeaders(),
   });
   return data;
 };
 
 export const updateTaskTitle = async (task_id: string, title: string) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.put(
     `/api/v1/cms/tasks/${task_id}`,
     { title },
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: getAuthHeaders(),
     },
   );
   return data;
 };
 
 export const ChangeTaskDay = async (task_id: string, target_day_id: string) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.patch(
     `/api/v1/cms/tasks/${task_id}`,
     {
       target_day_id,
     },
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: getAuthHeaders(),
     },
   );
   return data;
@@ -128,16 +114,13 @@ export const reorderTasks = async (
   activeTaskId: string,
   targetOrder: number,
 ) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.put(
     `/api/v1/cms/tasks/${activeTaskId}/order`,
     {
       target_order: targetOrder,
     },
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: getAuthHeaders(),
     },
   );
   return data;
