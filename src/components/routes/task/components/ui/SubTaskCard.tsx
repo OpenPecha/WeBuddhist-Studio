@@ -33,7 +33,18 @@ interface ImageSubTask {
   display_order?: number;
 }
 
-export type SubTask = VideoSubTask | TextSubTask | AudioSubTask | ImageSubTask;
+interface SourceSubTask {
+  id?: string | null;
+  content_type: "SOURCE_REFERENCE";
+  content: string;
+  display_order?: number;
+}
+export type SubTask =
+  | VideoSubTask
+  | TextSubTask
+  | AudioSubTask
+  | ImageSubTask
+  | SourceSubTask;
 
 interface SubTaskCardProps {
   subTask: SubTask;
@@ -144,6 +155,12 @@ const ImageSubtask = ({
   </>
 );
 
+const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
+  <div className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]">
+    <div dangerouslySetInnerHTML={{ __html: subTask.content }} />
+  </div>
+);
+
 export const SubTaskCard = ({
   subTask,
   index,
@@ -175,6 +192,8 @@ export const SubTaskCard = ({
             onRemoveImage={onRemoveImage}
           />
         );
+      case "SOURCE_REFERENCE":
+        return <SourceSubtask subTask={subTask} />;
     }
   };
 

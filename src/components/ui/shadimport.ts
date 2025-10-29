@@ -69,6 +69,9 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/atoms/sheet";
 
 export const Pecha = {
@@ -101,6 +104,9 @@ export const Pecha = {
   AlertDialogTitle,
   AlertDialogTrigger,
   Sheet,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
   SheetContent,
   SheetTrigger,
   SheetClose,
