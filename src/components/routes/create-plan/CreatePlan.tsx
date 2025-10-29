@@ -192,7 +192,7 @@ const Createplan = () => {
     }
   };
   return (
-    <div className="w-full border my-4 h-[calc(100vh-40px)] dark:bg-[#181818] rounded-l-2xl font-dynamic flex max-sm:flex-col">
+    <div className="w-full border my-4 h-[calc(100vh-40px)] dark:bg-[#181818] bg-[#F5F5F5] rounded-l-2xl font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
         <h1 className="text-xl font-bold my-4">
           {t("studio.plan.form_field.details")}
@@ -208,7 +208,7 @@ const Createplan = () => {
                   <Pecha.FormControl>
                     <Pecha.Input
                       placeholder={t("studio.plan.form.placeholder.title")}
-                      className="h-12 text-base"
+                      className="h-12 text-base bg-white"
                       {...field}
                     />
                   </Pecha.FormControl>
@@ -251,7 +251,7 @@ const Createplan = () => {
                       placeholder={t(
                         "studio.plan.form.placeholder.number_of_days",
                       )}
-                      className="h-12 text-base"
+                      className="h-12 text-base bg-white"
                       min="1"
                       max="365"
                       {...field}
@@ -372,7 +372,7 @@ const Createplan = () => {
                   >
                     <Pecha.FormControl>
                       <Pecha.SelectTrigger
-                        className="h-12"
+                        className="h-12 bg-white"
                         data-testid="select-trigger"
                       >
                         <Pecha.SelectValue

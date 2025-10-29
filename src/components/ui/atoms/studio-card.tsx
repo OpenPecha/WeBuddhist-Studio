@@ -12,7 +12,7 @@ const StudioCard = ({ children, title }: StudioCardProps) => {
     <div className="min-h-screen font-dynamic relative flex items-center justify-center p-4">
       {theme === "light" ? <LightThemeOverlay /> : <DarkThemeOverlay />}
       <div className="rounded-sm w-[500px] flex flex-col items-center justify-center p-8 relative z-10">
-        <div className="flex items-center mb-4 relative z-10">
+        <div className="flex space-x-2 items-center mb-4 relative z-10">
           <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center">
             <img
               src={pechaIcon}
@@ -21,16 +21,16 @@ const StudioCard = ({ children, title }: StudioCardProps) => {
             />
           </div>
           <div>
-            <h1 className="font-semibold font-inter text-xl">
+            <h1 className="font-semibold font-inter text-lg md:text-xl">
               Webuddhist Studio
             </h1>
-            <p className="text-sm text-center font-inter">
+            <p className="text-sm text-left font-inter">
               Learn, live and share Buddhist wisdom daily
             </p>
           </div>
         </div>
         {title && (
-          <div className="text-sm text-gray-400 mb-2.5 text-center w-full relative z-10">
+          <div className="text-sm text-[#c4c4c4] mb-2.5 text-center w-full relative z-10">
             {title}
           </div>
         )}

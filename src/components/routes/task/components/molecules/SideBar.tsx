@@ -181,12 +181,14 @@ const SideBar = ({
     });
   };
   return (
-    <div className="w-80  dark:bg-[#161616]  border-gray-200 dark:border-border h-screen flex flex-col">
+    <div className=" w-96 dark:bg-[#161616] border-gray-200 dark:border-border h-screen flex flex-col">
       <div className="p-4">
-        <div className="text-[#A51C21] text-md font-bold">Current Plan</div>
-        <div className="text-sm text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="dark:text-[#bebebe] text-[#4d4d4d] text-md font-bold">
+          Current Plan
+        </div>
+        <div className="text-sm w-80 text-black dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">
           {_isLoading ? (
-            <Pecha.Skeleton className="h-6 w-9/12 rounded" />
+            <Pecha.Skeleton className="h-6 w-full rounded" />
           ) : (
             currentPlan?.title
           )}
@@ -212,7 +214,7 @@ const SideBar = ({
             currentPlan?.days.map((day: any) => (
               <div key={day.id} className="group space-y-2">
                 <div
-                  className="flex items-center justify-between px-4 py-2 border-b cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
+                  className="flex items-center justify-between px-4 py-2 border-b  border-dashed cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
                   onClick={() => {
                     handleDayClick(day.day_number);
                   }}
