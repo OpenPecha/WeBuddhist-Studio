@@ -53,6 +53,7 @@ export const SourceSelectorSheet = ({
     ],
     queryFn: () => fetchSegments(debouncedSearchFilter, pagination.limit, skip),
     refetchOnWindowFocus: false,
+    enabled: isOpen,
   });
   const totalSegments = searchData?.total || 0;
   const totalPages = Math.ceil(totalSegments / pagination.limit);
