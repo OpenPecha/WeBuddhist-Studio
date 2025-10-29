@@ -38,4 +38,3 @@ export const deleteTask = async (task_id: string) => {
   });
   return data;
 };
-

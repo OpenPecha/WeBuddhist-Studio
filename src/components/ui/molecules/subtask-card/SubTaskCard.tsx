@@ -2,7 +2,11 @@ import { Pecha } from "@/components/ui/shadimport";
 import { IoMdClose } from "react-icons/io";
 import { FaMinus } from "react-icons/fa6";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
-import { VideoContent, AudioContent, ContentIcon } from "./ContentComponents";
+import {
+  VideoContent,
+  AudioContent,
+  ContentIcon,
+} from "../content-sub/ContentComponents";
 
 interface VideoSubTask {
   id?: string | null;

@@ -2,7 +2,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ChangeTaskDay } from "../../api/taskApi";
+import { ChangeTaskDay } from "@/components/routes/task/api/taskApi";
 
 interface DaySelectorProps {
   selectedDay: number;

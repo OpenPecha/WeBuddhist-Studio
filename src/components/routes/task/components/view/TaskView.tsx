@@ -8,7 +8,7 @@ import {
   ImageContent,
   TextContent,
   SourceReferenceContent,
-} from "../ui/ContentComponents";
+} from "../../../../ui/molecules/content-sub/ContentComponents";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 

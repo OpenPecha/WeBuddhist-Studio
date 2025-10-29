@@ -4,7 +4,7 @@ import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useState } from "react";
-import { SourceSelectorSheet } from "./SourceSelectorSheet";
+import { SourceSelectorSheet } from "../webuddhist-source/SourceSelectorSheet";
 
 interface ContentTypeSelectorProps {
   onSelectType: (

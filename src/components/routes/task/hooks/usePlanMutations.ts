@@ -15,7 +15,8 @@ export const usePlanMutations = (plan_id: string | undefined) => {
     },
     onError: (error: any) => {
       toast.error("Failed to delete task", {
-        description: error.response?.data?.detail?.message || "Something went wrong",
+        description:
+          error.response?.data?.detail?.message || "Something went wrong",
       });
     },
   });
@@ -50,4 +51,3 @@ export const usePlanMutations = (plan_id: string | undefined) => {
     createNewDay: createNewDayMutation,
   };
 };
-

@@ -36,7 +36,10 @@ const SideBar = ({
     refetchOnWindowFocus: false,
   });
   const { deleteTask, deleteDay, createNewDay } = usePlanMutations(plan_id);
-  const { handleTaskReorder, getDisplayTasks } = useTaskReorder(currentPlan, plan_id);
+  const { handleTaskReorder, getDisplayTasks } = useTaskReorder(
+    currentPlan,
+    plan_id,
+  );
 
   const handleDayClick = (dayNumber: number) => {
     onDaySelect(dayNumber);

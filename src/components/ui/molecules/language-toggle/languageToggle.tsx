@@ -2,7 +2,7 @@ import { IoLanguage } from "react-icons/io5";
 import { useTolgee } from "@tolgee/react";
 import { Pecha } from "@/components/ui/shadimport";
 import { LANGUAGE } from "../../../../lib/constant";
-import { setFontVariables } from "../../../../lib/font-config";
+import { setFontVariables } from "../../../../config/font-config";
 
 export function LanguageToggle() {
   const tolgee = useTolgee(["language"]);

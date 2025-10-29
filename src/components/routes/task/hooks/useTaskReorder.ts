@@ -21,8 +21,13 @@ interface Plan {
   [key: string]: any;
 }
 
-export const useTaskReorder = (currentPlan: Plan | undefined, plan_id: string | undefined) => {
-  const [optimisticTasks, setOptimisticTasks] = useState<{ [dayId: string]: Task[] }>({});
+export const useTaskReorder = (
+  currentPlan: Plan | undefined,
+  plan_id: string | undefined,
+) => {
+  const [optimisticTasks, setOptimisticTasks] = useState<{
+    [dayId: string]: Task[];
+  }>({});
   const queryClient = useQueryClient();
 
   // Initialize optimistic tasks when plan loads
@@ -30,7 +35,9 @@ export const useTaskReorder = (currentPlan: Plan | undefined, plan_id: string | 
     if (currentPlan?.days) {
       const initialTasks: { [dayId: string]: Task[] } = {};
       currentPlan.days.forEach((day: Day) => {
-        initialTasks[day.id] = [...day.tasks].sort((a, b) => a.display_order - b.display_order);
+        initialTasks[day.id] = [...day.tasks].sort(
+          (a, b) => a.display_order - b.display_order,
+        );
       });
       setOptimisticTasks(initialTasks);
     }
@@ -56,23 +63,34 @@ export const useTaskReorder = (currentPlan: Plan | undefined, plan_id: string | 
   });
 
   //logic is ai generated so might be messy to review
-  const handleTaskReorder = (activeId: UniqueIdentifier, overId: UniqueIdentifier) => {
+  const handleTaskReorder = (
+    activeId: UniqueIdentifier,
+    overId: UniqueIdentifier,
+  ) => {
     const activeTaskId = String(activeId);
     const overTaskId = String(overId);
 
     if (activeTaskId === overTaskId) return;
 
     const dayContainingActiveTask = currentPlan?.days.find((day: Day) =>
-      day.tasks.some((task: Task) => task.id === activeTaskId)
+      day.tasks.some((task: Task) => task.id === activeTaskId),
     );
 
     if (!dayContainingActiveTask) return;
 
     const dayId = dayContainingActiveTask.id;
-    const currentTasks = optimisticTasks[dayId] || [...dayContainingActiveTask.tasks].sort((a, b) => a.display_order - b.display_order);
+    const currentTasks =
+      optimisticTasks[dayId] ||
+      [...dayContainingActiveTask.tasks].sort(
+        (a, b) => a.display_order - b.display_order,
+      );
 
-    const activeTaskIndex = currentTasks.findIndex((task) => task.id === activeTaskId);
-    const overTaskIndex = currentTasks.findIndex((task) => task.id === overTaskId);
+    const activeTaskIndex = currentTasks.findIndex(
+      (task) => task.id === activeTaskId,
+    );
+    const overTaskIndex = currentTasks.findIndex(
+      (task) => task.id === overTaskId,
+    );
 
     if (activeTaskIndex === -1 || overTaskIndex === -1) return;
 
@@ -112,4 +130,3 @@ export const useTaskReorder = (currentPlan: Plan | undefined, plan_id: string | 
     getDisplayTasks,
   };
 };
-
