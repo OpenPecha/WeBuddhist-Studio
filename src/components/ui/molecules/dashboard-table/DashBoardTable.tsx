@@ -37,18 +37,37 @@ export function DashBoardTable({
   const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
-    if (status === "Published") {
-      return (
-        <Pecha.Badge className="bg-green-100  dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
-          Published
-        </Pecha.Badge>
-      );
-    } else {
-      return (
-        <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
-          In Draft
-        </Pecha.Badge>
-      );
+    switch (status) {
+      case "PUBLISHED":
+        return (
+          <Pecha.Badge className="bg-green-100  dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
+            Published
+          </Pecha.Badge>
+        );
+      case "DRAFT":
+        return (
+          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
+            In Draft
+          </Pecha.Badge>
+        );
+      case "ARCHIVED":
+        return (
+          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            Archived
+          </Pecha.Badge>
+        );
+      case "UNDER_REVIEW":
+        return (
+          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-400">
+            Reviewed
+          </Pecha.Badge>
+        );
+      default:
+        return (
+          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
+            DRAFT
+          </Pecha.Badge>
+        );
     }
   };
 
@@ -139,7 +158,7 @@ export function DashBoardTable({
         <Pecha.TableCell>{getStatusBadge(plan.status)}</Pecha.TableCell>
         <Pecha.TableCell>
           <div className="flex items-center gap-2">
-            <DropdownButton planId={plan.id} />
+            <DropdownButton planId={plan.id} currentStatus={plan.status} />
           </div>
         </Pecha.TableCell>
       </Pecha.TableRow>
