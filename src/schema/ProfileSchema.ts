@@ -10,11 +10,7 @@ export const profileSchema = z.object({
     .min(1, "Last name is required")
     .min(2, "Last name must be at least 2 characters"),
   bio: z.string().optional(),
-  image_url: z
-    .string()
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
+  image_url: z.string().optional(),
 });
 
 export const socialProfileSchema = z.object({
