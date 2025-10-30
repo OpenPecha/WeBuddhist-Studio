@@ -16,7 +16,7 @@ const AuthButton = () => {
 
   if (isLoggedIn) {
     return (
-      <Link to="/profile">
+      <Link to={`/profile/${userInfo?.id}`}>
         <div className="flex items-center font-dynamic gap-2">
           <img
             src={userInfo?.avatar_url || NO_PROFILE_IMAGE}
