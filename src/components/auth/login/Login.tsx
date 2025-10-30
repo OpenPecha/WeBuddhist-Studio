@@ -87,82 +87,85 @@ const Login = () => {
   };
 
   return (
-    <StudioCard title={t("studio.login.title")}>
-      <form className="w-full max-w-[425px] space-y-4" onSubmit={handleLogin}>
-        <div className="text-sm space-y-2">
-          <Label htmlFor="email" className="font-medium">
-            {t("common.email")}
-          </Label>
-          <Input
-            type="email"
-            placeholder={t("studio.login.placeholder.email")}
-            className="  placeholder:text-[#b1b1b1]"
-            required
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-            }}
-          />
-        </div>
+    <div className="flex">
+      <StudioCard title={t("studio.login.title")}>
+        <form className="w-full max-w-[425px] space-y-4" onSubmit={handleLogin}>
+          <div className="text-sm space-y-2">
+            <Label htmlFor="email" className="font-medium">
+              {t("common.email")}
+            </Label>
+            <Input
+              type="email"
+              placeholder={t("studio.login.placeholder.email")}
+              className="  placeholder:text-[#b1b1b1]"
+              required
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+            />
+          </div>
 
-        <div className="text-sm space-y-2">
-          <Label htmlFor="password" className="font-medium">
-            {t("common.password")}
-          </Label>
-          <Input
-            type="password"
-            placeholder={t("studio.login.placeholder.password")}
-            className=" placeholder:text-[#b1b1b1]"
-            required
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
-          />
-        </div>
-        <div className="flex mt-4 justify-center ">
-          <Button type="submit" variant="outline" className="w-full text-sm ">
-            {t("common.button.submit")}
-          </Button>
-        </div>
-        {showEmailReverify && (
-          <div>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full text-sm"
-              onClick={handleEmailReverify}
-              disabled={emailReverifyMutation.isPending}
-            >
-              {emailReverifyMutation.isPending
-                ? t("studio.login.sending")
-                : t("studio.login.reverify_your_email")}
+          <div className="text-sm space-y-2">
+            <Label htmlFor="password" className="font-medium">
+              {t("common.password")}
+            </Label>
+            <Input
+              type="password"
+              placeholder={t("studio.login.placeholder.password")}
+              className=" placeholder:text-[#b1b1b1]"
+              required
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            />
+          </div>
+          <div className="flex mt-4 justify-center ">
+            <Button type="submit" variant="outline" className="w-full text-sm ">
+              {t("common.button.submit")}
             </Button>
           </div>
-        )}
-        {errors && (
-          <div className="text-red-800 text-center dark:text-red-400 text-sm">
-            {errors}
+          {showEmailReverify && (
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full text-sm"
+                onClick={handleEmailReverify}
+                disabled={emailReverifyMutation.isPending}
+              >
+                {emailReverifyMutation.isPending
+                  ? t("studio.login.sending")
+                  : t("studio.login.reverify_your_email")}
+              </Button>
+            </div>
+          )}
+          {errors && (
+            <div className="text-red-800 text-center dark:text-red-400 text-sm">
+              {errors}
+            </div>
+          )}
+          {successMessage && (
+            <div className="text-green-800 text-center dark:text-green-400 text-sm">
+              {successMessage}
+            </div>
+          )}
+          <div className="flex justify-center">
+            <Link to="/forgot-password" className="text-sm">
+              {t("studio.login.forgot_password")}
+            </Link>
           </div>
-        )}
-        {successMessage && (
-          <div className="text-green-800 text-center dark:text-green-400 text-sm">
-            {successMessage}
-          </div>
-        )}
-        <div className="flex justify-center">
-          <Link to="/forgot-password" className="text-sm">
-            {t("studio.login.forgot_password")}
-          </Link>
-        </div>
 
-        <div className="flex justify-center">
-          <Link to="/signup" className="text-sm">
-            {t("studio.login.no_account")}
-          </Link>
-        </div>
-      </form>
-    </StudioCard>
+          <div className="flex justify-center">
+            <Link to="/signup" className="text-sm">
+              {t("studio.login.no_account")}
+            </Link>
+          </div>
+        </form>
+      </StudioCard>
+      <div className="flex-1 border flex items-center justify-center ">hi</div>
+    </div>
   );
 };
 

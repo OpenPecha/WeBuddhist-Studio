@@ -9,11 +9,10 @@ interface StudioCardProps {
 const StudioCard = ({ children, title }: StudioCardProps) => {
   const { theme } = useTheme();
   return (
-    <div className="min-h-screen font-dynamic relative flex items-center justify-center p-4">
-      {theme === "light" ? <LightThemeOverlay /> : <DarkThemeOverlay />}
-      <div className="rounded-sm w-[500px] flex flex-col items-center justify-center p-8 relative z-10">
-        <div className="flex space-x-2 items-center mb-4 relative z-10">
-          <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center">
+    <div className="min-h-screen font-dynamic border relative flex flex-col items-center justify-between p-4">
+      <div className=" w-full  flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center">
             <img
               src={pechaIcon}
               alt="Pecha Studio Logo"
@@ -21,7 +20,7 @@ const StudioCard = ({ children, title }: StudioCardProps) => {
             />
           </div>
           <div>
-            <h1 className="font-semibold font-inter text-lg md:text-xl">
+            <h1 className="font-semibold font-inter text-sm">
               Webuddhist Studio
             </h1>
             <p className="text-sm text-left font-inter">
@@ -29,30 +28,24 @@ const StudioCard = ({ children, title }: StudioCardProps) => {
             </p>
           </div>
         </div>
+      </div>
+      {theme === "light" && <LightThemeOverlay />}
+      <div className="rounded-sm w-[500px] flex flex-col items-left justify-center p-8 relative z-10">
+        <p className="text-xl">Welcome to Webuddhist Studio</p>
         {title && (
-          <div className="text-sm text-[#c4c4c4] mb-2.5 text-center w-full relative z-10">
+          <div className="text-sm text-[#919191] mb-6 text-left w-full relative z-10">
             {title}
           </div>
         )}
         <div className="relative z-10 w-full">{children}</div>
       </div>
+      <div />
     </div>
   );
 };
 
 export default StudioCard;
 
-const DarkThemeOverlay = () => {
-  return (
-    <div
-      className="absolute inset-0 z-0 pointer-events-none"
-      style={{
-        background:
-          "radial-gradient(125% 125% at 50% 10%, #000000 40%, #2b0707 100%)",
-      }}
-    />
-  );
-};
 const LightThemeOverlay = () => {
   return (
     <div
