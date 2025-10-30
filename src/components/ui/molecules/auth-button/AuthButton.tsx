@@ -2,6 +2,7 @@ import { useAuth } from "@/config/auth-context";
 import axiosInstance from "@/config/axios-config";
 import { NO_PROFILE_IMAGE } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 export const fetchUserInfo = async () => {
   const { data } = await axiosInstance.get(`/api/v1/authors/info`);
   return data;
@@ -15,19 +16,21 @@ const AuthButton = () => {
 
   if (isLoggedIn) {
     return (
-      <div className="flex items-center font-dynamic gap-2">
-        <img
-          src={userInfo?.avatar_url || NO_PROFILE_IMAGE}
-          alt="user"
-          className="w-8 h-8 hidden md:block rounded-full"
-        />
-        <div className="md:flex hidden flex-col">
-          <span className="text-sm font-medium">
-            {userInfo?.firstname} {userInfo?.lastname}
-          </span>
-          <span className="text-xs text-[#8a8a8a]">{userInfo?.email}</span>
+      <Link to="/profile">
+        <div className="flex items-center font-dynamic gap-2">
+          <img
+            src={userInfo?.avatar_url || NO_PROFILE_IMAGE}
+            alt="user"
+            className="w-8 h-8 hidden md:block rounded-full"
+          />
+          <div className="md:flex hidden flex-col">
+            <span className="text-sm font-medium">
+              {userInfo?.firstname} {userInfo?.lastname}
+            </span>
+            <span className="text-xs text-[#8a8a8a]">{userInfo?.email}</span>
+          </div>
         </div>
-      </div>
+      </Link>
     );
   }
 };
