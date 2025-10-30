@@ -21,7 +21,7 @@ const AuthButton = () => {
           <img
             src={userInfo?.image_url || NO_PROFILE_IMAGE}
             alt="user"
-            className="w-8 h-8 hidden md:block rounded-full"
+            className="hidden w-10 h-10 object-cover md:block rounded-full"
           />
           <div className="md:flex hidden flex-col">
             <span className="text-sm font-medium">

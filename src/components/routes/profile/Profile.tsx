@@ -47,12 +47,10 @@ const Profile = () => {
   }
 
   return (
-    <div className="container flex items-center justify-center  mx-auto p-6">
-      <div
-        className={`border w-full border-dashed rounded-lg space-y-6 ${!isEditing && "max-w-2xl"}`}
-      >
+    <div className="container flex items-center justify-center mx-auto p-6">
+      <div className={`border w-full border-dashed rounded-lg space-y-6 `}>
         <div className="flex h-full  border-b border-dashed border-gray-300 dark:border-input justify-between items-center p-4">
-          <h1 className="text-xl font-semibold font-mono">Profile</h1>
+          <h1 className="text-xl font-semibold font-instrument">Profile</h1>
           {!isEditing ? (
             <Pecha.Button variant="outline" onClick={handleEdit}>
               Edit

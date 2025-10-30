@@ -17,6 +17,11 @@ const UserCard = ({ userInfo }: any) => {
             {userInfo.firstname} {userInfo.lastname}
           </h2>
           <p className="text-sm text-muted-foreground">{userInfo.email}</p>
+          {userInfo.bio && (
+            <p className="text-gray-700 mt-2 font-mono text-sm dark:text-white">
+              {userInfo.bio}
+            </p>
+          )}
           {userInfo.social_profiles?.length > 0 && (
             <div className="flex mt-2 items-center gap-2 flex-wrap">
               {userInfo.social_profiles.map((social: any, i: number) => {
@@ -37,11 +42,6 @@ const UserCard = ({ userInfo }: any) => {
           )}
         </div>
       </div>
-      {userInfo.bio && (
-        <p className="text-gray-700 font-mono text-sm dark:text-gray-300">
-          {userInfo.bio}
-        </p>
-      )}
     </div>
   );
 };
