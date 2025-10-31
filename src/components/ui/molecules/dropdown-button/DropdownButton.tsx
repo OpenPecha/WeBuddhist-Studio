@@ -80,8 +80,7 @@ export function DropdownButton({
   };
 
   const allowedStatuses =
-    ALLOWED_TRANSITIONS[currentStatus as keyof typeof ALLOWED_TRANSITIONS] ||
-    [];
+    ALLOWED_TRANSITIONS[currentStatus as keyof typeof ALLOWED_TRANSITIONS];
   const availableTransitions = STATUS_TRANSITIONS.filter((status) =>
     allowedStatuses.includes(status.value),
   );
@@ -115,7 +114,7 @@ export function DropdownButton({
           <Pecha.DropdownMenuGroup>
             {availableTransitions.map((status) => {
               const IconComponent =
-                STATUS_ICONS[status.value as keyof typeof STATUS_ICONS]
+                STATUS_ICONS[status.value as keyof typeof STATUS_ICONS];
               return (
                 <Pecha.DropdownMenuItem
                   key={status.value}

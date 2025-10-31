@@ -13,7 +13,7 @@ export const DIFFICULTY = [
 ];
 
 export const STATUS_TRANSITIONS = [
-  { label: "Draft", value: "DRAFT" }, 
+  { label: "Draft", value: "DRAFT" },
   { label: "Publish", value: "PUBLISHED" },
   { label: "Unpublish", value: "UNPUBLISHED" },
   { label: "Archive", value: "ARCHIVED" },
