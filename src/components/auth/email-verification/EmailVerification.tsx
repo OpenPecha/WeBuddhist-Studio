@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/atoms/button";
-import StudioCard from "@/components/ui/atoms/studio-card";
+import ContainerLayout from "@/components/ui/atoms/studio-card";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
 import axiosInstance from "@/config/axios-config";
@@ -85,7 +85,7 @@ const EmailVerification = () => {
 
   if (!token) {
     return (
-      <StudioCard>
+      <ContainerLayout>
         <div className="mb-6 flex justify-center">
           <IoMdCloseCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
         </div>
@@ -95,12 +95,12 @@ const EmailVerification = () => {
         <p className="text-center mb-8 text-sm text-red-600 dark:text-red-400">
           {t("studio.auth.email.no_verification_token")}
         </p>
-      </StudioCard>
+      </ContainerLayout>
     );
   }
 
   return (
-    <StudioCard>
+    <ContainerLayout>
       <div className="mb-6 flex justify-center">{getStatusIcon()}</div>
 
       <h2 className="text-xl font-semibold text-center">
@@ -127,7 +127,7 @@ const EmailVerification = () => {
           </Button>
         )}
       </div>
-    </StudioCard>
+    </ContainerLayout>
   );
 };
 

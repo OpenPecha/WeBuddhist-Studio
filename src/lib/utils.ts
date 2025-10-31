@@ -1,6 +1,8 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import sha256 from "crypto-js/sha256";
+import { IoMdMail } from "react-icons/io";
+import { FaFacebook, FaTwitter, FaLinkedin, FaYoutube } from "react-icons/fa";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,4 +24,16 @@ export const getYouTubeVideoId = (url: string) => {
 export const extractSpotifyId = (url: string) => {
   const match = url.match(/spotify\.com\/(track|album)\/([a-zA-Z0-9]+)/);
   return match ? { type: match[1], id: match[2] } : null;
+};
+
+export const getIcon = (platform: string) => {
+  const iconMap: any = {
+    facebook: FaFacebook,
+    "x.com": FaTwitter,
+    linkedin: FaLinkedin,
+    youtube: FaYoutube,
+    email: IoMdMail,
+  };
+  const IconComponent = iconMap[platform];
+  return IconComponent;
 };

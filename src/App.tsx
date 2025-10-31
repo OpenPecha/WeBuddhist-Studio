@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/ui/molecules/nav-bar/Navbar";
-import { setFontVariables } from "./lib/font-config";
+import { setFontVariables } from "./config/font-config";
 import { useEffect, useState } from "react";
 import { ACCESS_TOKEN, LANGUAGE, REFRESH_TOKEN } from "./lib/constant";
 import { useAuth } from "./config/auth-context";
