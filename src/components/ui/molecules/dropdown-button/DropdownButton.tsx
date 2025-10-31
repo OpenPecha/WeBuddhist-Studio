@@ -73,9 +73,7 @@ export function DropdownButton({
       toast.success(`Status updated to ${newStatus}`);
       queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
     } catch (error: any) {
-      toast.error(
-        error.response.data.detail.message,
-      );
+      toast.error(error.response.data.detail.message);
     }
   };
 
