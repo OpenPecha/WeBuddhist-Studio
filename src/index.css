@@ -9,8 +9,15 @@
   --font-jetbrains: "JetBrainsMono-Regular", monospace;
   --font-monlam: "MonlamUniOuChan2", sans-serif;
   --font-inter: "InterRegular", sans-serif;
+  --font-dutsa: "dutsa-regular", sans-serif;
 }
 
+@font-face {
+  font-family: "dutsa-regular";
+  src: url("./assets/fonts/dutsa.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
 @font-face {
   font-family: "InstrumentSerif-Regular";
   src: url("./assets/fonts/InstrumentSerif-Regular.ttf") format("truetype");

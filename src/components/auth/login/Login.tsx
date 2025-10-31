@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
-import StudioCard from "@/components/ui/atoms/studio-card";
+import ContainerLayout from "@/components/ui/atoms/studio-card";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
@@ -87,7 +87,7 @@ const Login = () => {
   };
 
   return (
-    <StudioCard title={t("studio.login.title")}>
+    <ContainerLayout title={t("studio.login.title")}>
       <form className="w-full max-w-[425px] space-y-4" onSubmit={handleLogin}>
         <div className="text-sm space-y-2">
           <Label htmlFor="email" className="font-medium">
@@ -96,7 +96,7 @@ const Login = () => {
           <Input
             type="email"
             placeholder={t("studio.login.placeholder.email")}
-            className="  placeholder:text-[#b1b1b1]"
+            className=" placeholder:text-[#b1b1b1]"
             required
             value={email}
             onChange={(e) => {
@@ -162,7 +162,7 @@ const Login = () => {
           </Link>
         </div>
       </form>
-    </StudioCard>
+    </ContainerLayout>
   );
 };
 
