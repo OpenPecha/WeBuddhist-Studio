@@ -17,6 +17,8 @@ export const SOCIAL_PLATFORMS = [
   { value: "linkedin", label: "LinkedIn", icon: "Linkedin" },
   { value: "youtube", label: "YouTube", icon: "Youtube" },
   { value: "email", label: "Email", icon: "Mail" },
+];
+
 export const TIBETAN_LETTERS = [
   "ཀ",
   "ཁ",
