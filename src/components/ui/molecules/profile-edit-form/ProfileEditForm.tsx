@@ -47,9 +47,20 @@ const ProfileEditForm = ({
   onSuccess,
 }: ProfileEditFormProps) => {
   const queryClient = useQueryClient();
-  const [socialProfiles, setSocialProfiles] = useState<SocialProfile[]>(
-    userInfo?.social_profiles || [],
-  );
+  const [socialProfiles, setSocialProfiles] = useState<SocialProfile[]>(() => {
+    const existingProfiles = userInfo?.social_profiles || [];
+    const hasEmail = existingProfiles.some(
+      (sp: SocialProfile) =>
+        sp.account === "email" && sp.url === userInfo?.email,
+    );
+
+    return [
+      ...(userInfo?.email && !hasEmail
+        ? [{ account: "email", url: userInfo.email }]
+        : []),
+      ...existingProfiles,
+    ];
+  });
   const [imagePreview, setImagePreview] = useState<string | null>(
     userInfo?.image_url || null,
   );
@@ -260,6 +271,10 @@ const ProfileEditForm = ({
                             onValueChange={(value) =>
                               handleSocialProfileChange(index, "account", value)
                             }
+                            disabled={
+                              social.account === "email" &&
+                              social.url === userInfo?.email
+                            }
                           >
                             <Pecha.SelectTrigger
                               id={`social-platform-${index}`}
@@ -291,6 +306,10 @@ const ProfileEditForm = ({
                           variant="outline"
                           size="sm"
                           onClick={() => handleRemoveSocialProfile(index)}
+                          disabled={
+                            social.account === "email" &&
+                            social.url === userInfo?.email
+                          }
                         >
                           <IoMdClose className="w-4 h-4" />
                         </Pecha.Button>
@@ -310,6 +329,10 @@ const ProfileEditForm = ({
                             )
                           }
                           placeholder="https://example.com/yourprofile"
+                          disabled={
+                            social.account === "email" &&
+                            social.url === userInfo?.email
+                          }
                         />
                       </div>
                     </div>

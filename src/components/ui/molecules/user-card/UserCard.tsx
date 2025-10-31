@@ -26,12 +26,22 @@ const UserCard = ({ userInfo }: any) => {
             <div className="flex mt-2 items-center gap-2 flex-wrap">
               {userInfo.social_profiles.map((social: any, i: number) => {
                 const Icon = getIcon(social.account);
+                const href =
+                  social.account === "email"
+                    ? `mailto:${social.url}`
+                    : social.url;
+                const target =
+                  social.account === "email" ? undefined : "_blank";
                 return (
                   <a
                     key={i}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={href}
+                    target={target}
+                    rel={
+                      social.account === "email"
+                        ? undefined
+                        : "noopener noreferrer"
+                    }
                     className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-input/30 rounded-md hover:bg-gray-100 dark:hover:bg-input transition-colors group"
                   >
                     <Icon />
