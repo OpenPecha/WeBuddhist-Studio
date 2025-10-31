@@ -54,3 +54,17 @@ export const TIBETAN_LETTERS = [
   "།",
   "༄",
 ];
+
+export const STATUS_TRANSITIONS = [
+  { label: "Draft", value: "DRAFT" },
+  { label: "Publish", value: "PUBLISHED" },
+  { label: "Unpublish", value: "UNPUBLISHED" },
+  { label: "Archive", value: "ARCHIVED" },
+];
+
+export const ALLOWED_TRANSITIONS = {
+  DRAFT: ["PUBLISHED", "ARCHIVED"],
+  PUBLISHED: ["UNPUBLISHED"],
+  UNPUBLISHED: ["PUBLISHED", "DRAFT", "ARCHIVED"],
+  ARCHIVED: ["DRAFT"],
+};
