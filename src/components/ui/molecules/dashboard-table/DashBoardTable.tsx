@@ -44,6 +44,12 @@ export function DashBoardTable({
             Published
           </Pecha.Badge>
         );
+      case "UNPUBLISHED":
+        return (
+          <Pecha.Badge className="bg-red-100  dark:bg-red-900 text-red-500 px-3 py-1.5 text-sm font-bold">
+            Unpublished
+          </Pecha.Badge>
+        );
       case "DRAFT":
         return (
           <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
@@ -56,16 +62,10 @@ export function DashBoardTable({
             Archived
           </Pecha.Badge>
         );
-      case "UNDER_REVIEW":
-        return (
-          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-400">
-            Reviewed
-          </Pecha.Badge>
-        );
       default:
         return (
           <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
-            DRAFT
+            In Draft
           </Pecha.Badge>
         );
     }
