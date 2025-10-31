@@ -11,6 +11,14 @@ export const DIFFICULTY = [
   { label: "Intermediate", value: "INTERMEDIATE" },
   { label: "Advanced", value: "ADVANCED" },
 ];
+export const SOCIAL_PLATFORMS = [
+  { value: "facebook", label: "Facebook", icon: "Facebook" },
+  { value: "x.com", label: "X (Twitter)", icon: "Twitter" },
+  { value: "linkedin", label: "LinkedIn", icon: "Linkedin" },
+  { value: "youtube", label: "YouTube", icon: "Youtube" },
+  { value: "email", label: "Email", icon: "Mail" },
+];
+
 export const TIBETAN_LETTERS = [
   "ཀ",
   "ཁ",
