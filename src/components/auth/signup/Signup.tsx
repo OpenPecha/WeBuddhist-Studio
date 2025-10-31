@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
-import StudioCard from "@/components/ui/atoms/studio-card";
+import ContainerLayout from "@/components/ui/atoms/studio-card";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslate } from "@tolgee/react";
 import axiosInstance from "@/config/axios-config";
@@ -75,7 +75,7 @@ const Signup = () => {
     }
   };
   return (
-    <StudioCard title={t("studio.signup.title")}>
+    <ContainerLayout title={t("studio.signup.title")}>
       <form className="w-full max-w-[425px] space-y-4" onSubmit={handleSubmit}>
         <div className="text-sm space-y-2">
           <Label htmlFor="email" className="font-medium">
@@ -85,7 +85,7 @@ const Signup = () => {
             type="email"
             name="email"
             placeholder={t("studio.login.placeholder.email")}
-            className="  placeholder:text-[#b1b1b1]"
+            className=" placeholder:text-[#b1b1b1]"
             required
           />
         </div>
@@ -97,7 +97,7 @@ const Signup = () => {
             type="text"
             name="first_name"
             placeholder={t("studio.signup.placeholder.first_name")}
-            className="  placeholder:text-[#b1b1b1]"
+            className="placeholder:text-[#b1b1b1]"
             required
           />
         </div>
@@ -109,7 +109,7 @@ const Signup = () => {
             type="text"
             name="last_name"
             placeholder={t("studio.signup.placeholder.last_name")}
-            className="  placeholder:text-[#b1b1b1]"
+            className="placeholder:text-[#b1b1b1]"
             required
           />
         </div>
@@ -167,7 +167,7 @@ const Signup = () => {
           </Link>
         </div>
       </form>
-    </StudioCard>
+    </ContainerLayout>
   );
 };
 
