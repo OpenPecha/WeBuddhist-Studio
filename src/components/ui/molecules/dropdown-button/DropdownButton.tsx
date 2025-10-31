@@ -74,7 +74,7 @@ export function DropdownButton({
       queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
     } catch (error: any) {
       toast.error(
-        error.response?.data?.detail?.message || "Failed to update status",
+        error.response.data.detail.message,
       );
     }
   };
