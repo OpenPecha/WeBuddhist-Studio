@@ -53,7 +53,7 @@ export function DashBoardTable({
       case "DRAFT":
         return (
           <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
-            In Draft
+            Draft
           </Pecha.Badge>
         );
       case "ARCHIVED":
@@ -65,7 +65,7 @@ export function DashBoardTable({
       default:
         return (
           <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
-            In Draft
+            Draft
           </Pecha.Badge>
         );
     }

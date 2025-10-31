@@ -4,6 +4,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoMdTrash, IoMdArchive } from "react-icons/io";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { IoEyeOffSharp } from "react-icons/io5";
+import { RiDraftLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
@@ -15,7 +16,7 @@ const STATUS_ICONS = {
   PUBLISHED: MdOutlineFileUpload,
   UNPUBLISHED: IoEyeOffSharp,
   ARCHIVED: IoMdArchive,
-  DRAFT: FaPen,
+  DRAFT: RiDraftLine,
 };
 
 export function DropdownButton({
