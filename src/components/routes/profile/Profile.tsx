@@ -40,7 +40,7 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 max-w-2xl">
+      <div className="container mx-auto p-6 w-full">
         <Pecha.Skeleton className="h-64 w-full" />
       </div>
     );
@@ -50,7 +50,7 @@ const Profile = () => {
     <div className="container flex items-center justify-center mx-auto p-6">
       <div className={`border w-full border-dashed rounded-lg space-y-6 `}>
         <div className="flex h-full  border-b border-dashed border-gray-300 dark:border-input justify-between items-center p-4">
-          <h1 className="text-xl font-semibold font-instrument">Profile</h1>
+          <h1 className="text-xl font-semibold">Profile</h1>
           {!isEditing ? (
             <Pecha.Button variant="outline" onClick={handleEdit}>
               Edit
