@@ -197,7 +197,7 @@ describe("EmailVerification Component", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("studio.auth.email.there_was_an_error"),
+        screen.getByText("studio.auth.email.verification_failed"),
       ).toBeInTheDocument();
     });
 
