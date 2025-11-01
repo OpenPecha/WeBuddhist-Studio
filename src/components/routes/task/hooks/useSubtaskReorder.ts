@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import { reorderSubtasks } from "../api/taskApi";
+import { reorderArray } from "@/lib/utils";
 
 interface Subtask {
   id: string;
@@ -72,18 +73,13 @@ export const useSubtaskReorder = (
             (a, b) => a.display_order - b.display_order,
           );
 
-    const activeSubtaskIndex = currentSubtasks.findIndex(
-      (subtask) => subtask.id === activeSubtaskId,
-    );
-    const overSubtaskIndex = currentSubtasks.findIndex(
-      (subtask) => subtask.id === overSubtaskId,
+    const newSubtasks = reorderArray(
+      currentSubtasks,
+      activeSubtaskId,
+      overSubtaskId,
     );
 
-    if (activeSubtaskIndex === -1 || overSubtaskIndex === -1) return;
-
-    const newSubtasks = [...currentSubtasks];
-    const [movedSubtask] = newSubtasks.splice(activeSubtaskIndex, 1);
-    newSubtasks.splice(overSubtaskIndex, 0, movedSubtask);
+    if (!newSubtasks) return;
 
     setOptimisticSubtasks(newSubtasks);
 
