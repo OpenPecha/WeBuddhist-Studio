@@ -125,3 +125,19 @@ export const reorderTasks = async (
   );
   return data;
 };
+
+export const reorderSubtasks = async (
+  task_id: string,
+  subtasks: Array<{ sub_task_id: string; display_order: number }>,
+) => {
+  const { data } = await axiosInstance.put(
+    `/api/v1/cms/subtask/${task_id}`,
+    {
+      sub_tasks: subtasks,
+    },
+    {
+      headers: getAuthHeaders(),
+    },
+  );
+  return data;
+};
