@@ -129,7 +129,7 @@ describe("EmailVerification Component", () => {
       expect(screen.getByText("studio.auth.email.continue_to_login")).toBeInTheDocument();
     });
 
-    const loginButton = screen.getByText("Continue to Login");
+    const loginButton = screen.getByText("studio.auth.email.continue_to_login");
     fireEvent.click(loginButton);
 
     expect(mockNavigate).toHaveBeenCalledWith("/login");
@@ -182,12 +182,12 @@ describe("EmailVerification Component", () => {
     renderWithProviders(<EmailVerification />);
 
     await waitFor(() => {
-      expect(screen.getByText("studio.auth.email.verification_failed")).toBeInTheDocument();
+      expect(screen.getByText("studio.auth.email.there_was_an_error")).toBeInTheDocument();
     });
 
     expect(
       screen.getByText(
-        "studio.auth.email.there_was_an_error_verifying_your_email_please_try_again_or_contact_support",
+        "studio.auth.email.there_was_an_error",
       ),
     ).toBeInTheDocument();
   });

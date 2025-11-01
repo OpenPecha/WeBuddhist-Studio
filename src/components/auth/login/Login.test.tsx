@@ -291,13 +291,13 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+        expect(screen.getByText("studio.login.reverify_your_email")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("Reverify your Email"));
+      await user.click(screen.getByText("studio.login.reverify_your_email"));
 
-      expect(screen.getByText("Sending...")).toBeInTheDocument();
-      expect(screen.getByText("Sending...")).toBeDisabled();
+      expect(screen.getByText("studio.login.sending")).toBeInTheDocument();
+      expect(screen.getByText("studio.login.sending")).toBeDisabled();
     });
 
     it("handles case-insensitive error message detection", async () => {
