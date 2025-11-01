@@ -81,7 +81,7 @@ vi.mock("@/components/routes/task/api/taskApi", () => ({
   fetchTaskDetails: vi.fn(),
 }));
 
-vi.mock("@/components/routes/task/components/ui/ContentTypeSelector", () => ({
+vi.mock("@/components/ui/molecules/content-sub/ContentTypeSelector", () => ({
   ContentTypeSelector: ({ onSelectType }: any) => (
     <div>
       <button onClick={() => onSelectType("TEXT")}>Add Text</button>
@@ -98,7 +98,7 @@ vi.mock("@/components/routes/task/components/ui/TaskTitleField", () => ({
   ),
 }));
 
-vi.mock("@/components/routes/task/components/ui/SubTaskCard", () => ({
+vi.mock("@/components/ui/molecules/subtask-card/SubTaskCard", () => ({
   SubTaskCard: ({
     subTask,
     onImageUpload,
@@ -292,7 +292,7 @@ describe("TaskForm Component", () => {
       },
     );
     await waitFor(() => {
-      expect(screen.getByDisplayValue("Editing Task")).toBeInTheDocument();
+      expect(screen.getByText("Editing Task")).toBeInTheDocument();
     });
     await waitFor(() => {
       expect(

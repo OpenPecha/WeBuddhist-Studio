@@ -16,6 +16,8 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => {
   return (
     <div
+      role="navigation"
+      aria-label="pagination"
       className={"flex p-4 w-full items-center justify-between " + className}
     >
       <div className="text-sm text-muted-foreground">
