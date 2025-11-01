@@ -270,7 +270,9 @@ describe("SideBar Component", () => {
       );
     });
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith("Task deleted successfully");
+      expect(toast.success).toHaveBeenCalledWith("Task deleted successfully!", {
+        description: "The task has been deleted.",
+      });
     });
   });
 
