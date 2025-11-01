@@ -61,6 +61,18 @@ const mockEditingTask = {
   title: "Editing Task",
 };
 
+const mockTaskWithUnknownType = {
+  id: "task-123",
+  title: "Test Task",
+  subtasks: [
+    {
+      id: "sub-unknown",
+      content: "Some content",
+      content_type: "UNKNOWN_TYPE",
+    },
+  ],
+};
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
@@ -425,6 +437,75 @@ describe("TaskForm Component", () => {
       expect(
         screen.queryByPlaceholderText("Enter your text content"),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows error message when task update fails", async () => {
+    const { updateSubTasks, fetchTaskDetails } = await import(
+      "../../api/taskApi"
+    );
+    const { toast } = await import("sonner");
+    vi.mocked(fetchTaskDetails).mockResolvedValue(mockTaskDetails);
+    vi.mocked(updateSubTasks).mockRejectedValue(
+      new Error("Failed to update task"),
+    );
+    renderWithProviders(
+      <TaskForm
+        selectedDay={1}
+        editingTask={mockEditingTask}
+        onCancel={mockOnCancel}
+      />,
+      {
+        '["taskDetails","task-123"]': mockTaskDetails,
+      },
+    );
+    await waitFor(() => {
+      expect(screen.getByText("Update")).toBeInTheDocument();
+    });
+    const updateButton = screen.getByText("Update");
+    fireEvent.click(updateButton);
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to update task", {
+        description: "Failed to update task",
+      });
+    });
+  });
+
+  it("shows error message when image upload fails", async () => {
+    const { uploadImageToS3 } = await import("../../api/taskApi");
+    const { toast } = await import("sonner");
+    vi.mocked(uploadImageToS3).mockRejectedValue(new Error("Upload failed"));
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
+    const addImageButton = screen.getByText("Add Image");
+    fireEvent.click(addImageButton);
+    await waitFor(() => {
+      const imageInput = screen.getByTestId("image-upload-input");
+      const file = new File(["image"], "test.jpg", { type: "image/jpeg" });
+      fireEvent.change(imageInput, { target: { files: [file] } });
+    });
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to upload image");
+    });
+  });
+
+  it("handles unknown content type with default case", async () => {
+    const { fetchTaskDetails } = await import("../../api/taskApi");
+    vi.mocked(fetchTaskDetails).mockResolvedValue(mockTaskWithUnknownType);
+    renderWithProviders(
+      <TaskForm
+        selectedDay={1}
+        editingTask={mockEditingTask}
+        onCancel={mockOnCancel}
+      />,
+      {
+        '["taskDetails","task-123"]': mockTaskWithUnknownType,
+      },
+    );
+    await waitFor(() => {
+      expect(screen.getByText("Edit Task")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Enter your text content"),
+      ).toBeInTheDocument();
     });
   });
 });

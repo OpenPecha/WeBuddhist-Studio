@@ -58,8 +58,14 @@ describe("ResetPassword Component", () => {
   it("displays invalid token message when no token is provided", () => {
     renderWithProviders(<ResetPassword />, ["/reset-password"]);
 
-    expect(screen.getByText("studio.reset_password.invalid_token")).toBeDefined();
-    expect(screen.getByText("studio.reset_password.no_reset_password_token_provided")).toBeDefined();
+    expect(
+      screen.getByText("studio.reset_password.invalid_token"),
+    ).toBeDefined();
+    expect(
+      screen.getByText(
+        "studio.reset_password.no_reset_password_token_provided",
+      ),
+    ).toBeDefined();
   });
 
   it("shows back to login link", () => {

@@ -137,7 +137,9 @@ describe("Login Component", () => {
 
       await waitFor(() => {
         expect(screen.getByText("Author not verified")).toBeInTheDocument();
-        expect(screen.getByText("studio.login.reverify_your_email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -201,7 +203,9 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("studio.login.reverify_your_email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
 
       await user.click(screen.getByText("studio.login.reverify_your_email"));
@@ -248,7 +252,9 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("studio.login.reverify_your_email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
 
       await user.click(screen.getByText("studio.login.reverify_your_email"));
@@ -291,7 +297,9 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("studio.login.reverify_your_email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
 
       await user.click(screen.getByText("studio.login.reverify_your_email"));
@@ -324,7 +332,9 @@ describe("Login Component", () => {
 
       await waitFor(() => {
         expect(screen.getByText("AUTHOR NOT VERIFIED")).toBeInTheDocument();
-        expect(screen.getByText("studio.login.reverify_your_email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -365,7 +375,9 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("studio.login.reverify_your_email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
       await user.click(screen.getByText("studio.login.reverify_your_email"));
 
