@@ -45,12 +45,12 @@ export const useTaskReorder = (
 
   const reorderMutation = useMutation({
     mutationFn: ({
-      activeTaskId,
-      targetOrder,
+      dayId,
+      tasks,
     }: {
-      activeTaskId: string;
-      targetOrder: number;
-    }) => reorderTasks(activeTaskId, targetOrder),
+      dayId: string;
+      tasks: Array<{ task_id: string; display_order: number }>;
+    }) => reorderTasks(dayId, tasks),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
     },
@@ -94,27 +94,23 @@ export const useTaskReorder = (
 
     if (activeTaskIndex === -1 || overTaskIndex === -1) return;
 
-    const targetDisplayOrder = currentTasks[overTaskIndex].display_order;
-
-    // Optimistically update UI
     const newTasks = [...currentTasks];
     const [movedTask] = newTasks.splice(activeTaskIndex, 1);
     newTasks.splice(overTaskIndex, 0, movedTask);
 
-    const updatedTasks = newTasks.map((task, index) => ({
-      ...task,
-      display_order: index,
-    }));
-
     setOptimisticTasks((prev) => ({
       ...prev,
-      [dayId]: updatedTasks,
+      [dayId]: newTasks,
     }));
 
-    // Persist to backend
+    const tasksPayload = newTasks.map((task) => ({
+      task_id: task.id,
+      display_order: task.display_order,
+    }));
+
     reorderMutation.mutate({
-      activeTaskId,
-      targetOrder: targetDisplayOrder,
+      dayId,
+      tasks: tasksPayload,
     });
   };
 

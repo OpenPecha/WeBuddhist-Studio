@@ -111,13 +111,13 @@ export const ChangeTaskDay = async (task_id: string, target_day_id: string) => {
 };
 
 export const reorderTasks = async (
-  activeTaskId: string,
-  targetOrder: number,
+  day_id: string,
+  tasks: Array<{ task_id: string; display_order: number }>,
 ) => {
   const { data } = await axiosInstance.put(
-    `/api/v1/cms/tasks/${activeTaskId}/order`,
+    `/api/v1/cms/tasks/${day_id}`,
     {
-      target_order: targetOrder,
+      tasks,
     },
     {
       headers: getAuthHeaders(),
