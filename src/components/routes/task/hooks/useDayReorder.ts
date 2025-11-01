@@ -38,7 +38,7 @@ export const useDayReorder = (
       days,
     }: {
       planId: string;
-      days: Array<{ day_id: string; day_number: number }>;
+      days: Array<{ id: string; day_number: number }>;
     }) => reorderDays(planId, days),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
@@ -80,7 +80,7 @@ export const useDayReorder = (
     setOptimisticDays(newDays);
 
     const daysPayload = newDays.map((day) => ({
-      day_id: day.id,
+      id: day.id,
       day_number: day.day_number,
     }));
 
