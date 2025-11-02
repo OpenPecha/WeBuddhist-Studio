@@ -1,7 +1,7 @@
 import { IoMdVideocam } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
-import { getYouTubeVideoId, extractSpotifyId } from "@/lib/utils";
+import { getYouTubeVideoId, getYouTubeShortsId, extractSpotifyId } from "@/lib/utils";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
@@ -23,12 +23,21 @@ export const ContentIcon = ({ type }: { type: ContentType }) => {
 };
 
 export const VideoContent = ({ content }: { content: string }) => {
-  const videoId = getYouTubeVideoId(content);
+  const regularVideoId = getYouTubeVideoId(content);
+  const shortsVideoId = getYouTubeShortsId(content);
+  const videoId = regularVideoId || shortsVideoId;
+  const isShorts = !!shortsVideoId;
+  
   if (!videoId) return null;
+  
   return (
     <div className="mt-4">
       <iframe
-        className="w-full aspect-video rounded-md border bg-[#FAFAFA] dark:bg-sidebar-secondary "
+        className={`rounded-md border bg-[#FAFAFA] dark:bg-sidebar-secondary ${
+          isShorts 
+            ? "w-full max-w-[330px] aspect-[9/16] mx-auto" 
+            : "w-full aspect-video"
+        }`}
         src={`https://www.youtube.com/embed/${videoId}`}
         title="YouTube preview"
       />
