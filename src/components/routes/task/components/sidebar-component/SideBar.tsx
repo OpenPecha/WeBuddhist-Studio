@@ -116,12 +116,7 @@ const SideBar = ({
                 <SortableItem key={day.id} id={day.id}>
                   {({ listeners }: any) => (
                     <div className="group space-y-2">
-                      <div
-                        className="flex items-center justify-between px-4 py-2 border-b  border-dashed cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
-                        onClick={() => {
-                          handleDayClick(day.day_number);
-                        }}
-                      >
+                      <div className="flex items-center justify-between px-4 py-2 border-b  border-dashed cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10">
                         <div className="flex items-center gap-3">
                           <PiDotsSixVertical
                             className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
@@ -173,6 +168,12 @@ const SideBar = ({
                                 }}
                               />
                             </Activity>
+                            <IoMdAdd
+                              className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                              onClick={() => {
+                                handleDayClick(day.day_number);
+                              }}
+                            />
                             {currentPlan?.days.length > 1 && (
                               <Pecha.DropdownMenu>
                                 <Pecha.DropdownMenuTrigger asChild>
