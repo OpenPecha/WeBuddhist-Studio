@@ -49,7 +49,7 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
                   className="border border-dashed border-gray-300 h-32 hover:border-gray-400 transition-colors rounded-lg p-6 flex items-center justify-center cursor-pointer mb-4"
                 >
                   <input {...getInputProps()} />
-                  <p>Drag 'n' drop an image here, or click to select</p>
+                  <p>Drag & drop an image here, or click to select</p>
                 </div>
               </section>
             )}
