@@ -1,6 +1,6 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { IoMdAdd, IoMdVideocam } from "react-icons/io";
-import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
+import { IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useState } from "react";
