@@ -105,8 +105,8 @@ const ProfileEditForm = ({
   };
 
   const handleAddSocialProfile = () => {
-    if (socialProfiles.length < 5) {
-      setSocialProfiles([...socialProfiles, { account: "", url: "" }]);
+    if (socialProfiles.length < 7) {
+      setSocialProfiles([{ account: "", url: "" }, ...socialProfiles]);
     }
   };
 
@@ -237,13 +237,13 @@ const ProfileEditForm = ({
         <div className="flex-1">
           <div className="space-y-4 border border-dashed rounded-md p-4">
             <div className="flex justify-between items-center">
-              <Label>Social Links (Max 5)</Label>
+              <Label>Social Links (Max 7)</Label>
               <Pecha.Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleAddSocialProfile}
-                disabled={socialProfiles.length >= 5}
+                disabled={socialProfiles.length >= 7}
               >
                 Add Social Link
               </Pecha.Button>
