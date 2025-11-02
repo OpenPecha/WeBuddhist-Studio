@@ -20,10 +20,10 @@ const contentTypes = [
     key: "IMAGE",
     icon: <MdOutlineImage className={iconClassName} />,
   },
-  {
-    key: "AUDIO",
-    icon: <IoMusicalNotesSharp className={iconClassName} />,
-  },
+  // {
+  //   key: "AUDIO",
+  //   icon: <IoMusicalNotesSharp className={iconClassName} />,
+  // },
   {
     key: "VIDEO",
     icon: <IoMdVideocam className={iconClassName} />,
