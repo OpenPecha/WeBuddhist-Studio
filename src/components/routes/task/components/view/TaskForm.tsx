@@ -45,6 +45,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const formValues = form.watch();
   const isEditMode = Boolean(editingTask);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
   const currentDayData = currentPlan?.days?.find(
@@ -242,6 +243,11 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   };
 
   const handleSubTaskImageUpload = async (index: number, file: File) => {
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 1) {
+      setImageUploadError("File size exceeds 1MB limit. Please select a smaller image.");
+      return;
+    }
     try {
       const { url, key } = await uploadImageToS3(file, plan_id || "");
       updateSubTask(index, {
@@ -328,6 +334,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
                 />
               ))}
             </div>
+          )}
+          {imageUploadError && (
+            <div className="text-red-500 text-sm ml-4">{imageUploadError}</div>
           )}
           <ContentTypeSelector onSelectType={handleAddSubTask} />
 
