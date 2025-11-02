@@ -38,7 +38,7 @@ export const useSubtaskReorder = (
       subtasks,
     }: {
       taskId: string;
-      subtasks: Array<{ sub_task_id: string; display_order: number }>;
+      subtasks: Array<{ id: string; display_order: number }>;
     }) => reorderSubtasks(taskId, subtasks),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["taskDetails", task_id] });
@@ -83,9 +83,9 @@ export const useSubtaskReorder = (
 
     setOptimisticSubtasks(newSubtasks);
 
-    const subtasksPayload = newSubtasks.map((subtask) => ({
-      sub_task_id: subtask.id,
-      display_order: subtask.display_order,
+    const subtasksPayload = newSubtasks.map((subtask, index) => ({
+      id: subtask.id,
+      display_order: index + 1,
     }));
 
     if (task_id) {

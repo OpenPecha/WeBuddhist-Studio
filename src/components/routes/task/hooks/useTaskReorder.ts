@@ -50,7 +50,7 @@ export const useTaskReorder = (
       tasks,
     }: {
       dayId: string;
-      tasks: Array<{ task_id: string; display_order: number }>;
+      tasks: Array<{ id: string; display_order: number }>;
     }) => reorderTasks(dayId, tasks),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
@@ -95,9 +95,9 @@ export const useTaskReorder = (
       [dayId]: newTasks,
     }));
 
-    const tasksPayload = newTasks.map((task) => ({
-      task_id: task.id,
-      display_order: task.display_order,
+    const tasksPayload = newTasks.map((task, index) => ({
+      id: task.id,
+      display_order: index + 1,
     }));
 
     reorderMutation.mutate({

@@ -79,9 +79,9 @@ export const useDayReorder = (
 
     setOptimisticDays(newDays);
 
-    const daysPayload = newDays.map((day) => ({
+    const daysPayload = newDays.map((day, index) => ({
       id: day.id,
-      day_number: day.day_number,
+      day_number: index + 1,
     }));
 
     if (plan_id) {
