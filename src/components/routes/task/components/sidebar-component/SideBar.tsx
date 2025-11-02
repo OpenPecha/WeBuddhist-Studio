@@ -10,7 +10,7 @@ import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDele
 import { useParams } from "react-router-dom";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 import { PiDotsSixVertical } from "react-icons/pi";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchPlanDetails } from "../../api/planApi";
 import { usePlanMutations } from "../../hooks/usePlanMutations";
 import { useTaskReorder } from "../../hooks/useTaskReorder";
@@ -30,6 +30,7 @@ const SideBar = ({
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const { plan_id } = useParams<{ plan_id: string }>();
+  const queryClient = useQueryClient();
   const { data: currentPlan, isLoading } = useQuery({
     queryKey: ["planDetails", plan_id],
     queryFn: () => fetchPlanDetails(plan_id!),
@@ -67,6 +68,7 @@ const SideBar = ({
       onSuccess: (newDay) => {
         onDaySelect(newDay.day_number);
         setExpandedDay(newDay.day_number);
+        queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
       },
     });
   };
