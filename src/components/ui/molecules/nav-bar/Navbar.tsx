@@ -58,7 +58,7 @@ const Navbar = () => {
             ))}
           </div>
         </div>
-        <div className="flex flex-col items-center space-y-2">
+        <div className="flex flex-col items-center h-32 space-y-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
