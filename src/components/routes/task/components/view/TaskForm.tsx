@@ -246,7 +246,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
   const handleSubTaskImageUpload = async (index: number, file: File) => {
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > 1) {
-      setImageUploadError("File size exceeds 1MB limit. Please select a smaller image.");
+      setImageUploadError(
+        "File size exceeds 1MB limit. Please select a smaller image.",
+      );
       return;
     }
     try {

@@ -116,9 +116,7 @@ const SideBar = ({
                 <SortableItem key={day.id} id={day.id}>
                   {({ listeners }: any) => (
                     <div className="group space-y-2">
-                      <div
-                        className="flex items-center justify-between px-4 py-2 border-b  border-dashed cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
-                      >
+                      <div className="flex items-center justify-between px-4 py-2 border-b  border-dashed cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10">
                         <div className="flex items-center gap-3">
                           <PiDotsSixVertical
                             className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
@@ -143,51 +141,57 @@ const SideBar = ({
                           </span>
                         </div>
 
-                  <Activity
-                    mode={selectedDay === day.day_number ? "visible" : "hidden"}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Activity
-                        mode={day.tasks.length > 0 ? "visible" : "hidden"}
-                      >
-                        <MdExpandMore
-                          className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
-                            expandedDay === day.day_number ? "rotate-180" : ""
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedDay(
-                              expandedDay === day.day_number
-                                ? 0
-                                : day.day_number,
-                            );
-                          }}
-                        />
-                      </Activity>
-                      <IoMdAdd 
-                      className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer" 
-                      onClick={() => {
-                        handleDayClick(day.day_number);
-                      }}
-                      />
-                      {currentPlan?.days.length > 1 && (
-                        <Pecha.DropdownMenu>
-                          <Pecha.DropdownMenuTrigger asChild>
-                            <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
-                          </Pecha.DropdownMenuTrigger>
-                          <Pecha.DropdownMenuContent side="right">
-                            <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                              <DayDeleteDialog
-                                dayId={day.id}
-                                onDelete={handleDeleteDay}
+                        <Activity
+                          mode={
+                            selectedDay === day.day_number
+                              ? "visible"
+                              : "hidden"
+                          }
+                        >
+                          <div className="flex items-center gap-2">
+                            <Activity
+                              mode={day.tasks.length > 0 ? "visible" : "hidden"}
+                            >
+                              <MdExpandMore
+                                className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
+                                  expandedDay === day.day_number
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedDay(
+                                    expandedDay === day.day_number
+                                      ? 0
+                                      : day.day_number,
+                                  );
+                                }}
                               />
-                            </Pecha.DropdownMenuItem>
-                          </Pecha.DropdownMenuContent>
-                        </Pecha.DropdownMenu>
-                      )}
-                    </div>
-                  </Activity>
-                </div>
+                            </Activity>
+                            <IoMdAdd
+                              className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                              onClick={() => {
+                                handleDayClick(day.day_number);
+                              }}
+                            />
+                            {currentPlan?.days.length > 1 && (
+                              <Pecha.DropdownMenu>
+                                <Pecha.DropdownMenuTrigger asChild>
+                                  <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                                </Pecha.DropdownMenuTrigger>
+                                <Pecha.DropdownMenuContent side="right">
+                                  <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                                    <DayDeleteDialog
+                                      dayId={day.id}
+                                      onDelete={handleDeleteDay}
+                                    />
+                                  </Pecha.DropdownMenuItem>
+                                </Pecha.DropdownMenuContent>
+                              </Pecha.DropdownMenu>
+                            )}
+                          </div>
+                        </Activity>
+                      </div>
 
                       <Activity
                         mode={
