@@ -44,3 +44,20 @@ export const getIcon = (platform: string) => {
   const IconComponent = iconMap[platform];
   return IconComponent;
 };
+
+export const reorderArray = <T extends { id: string }>(
+  items: T[],
+  activeId: string,
+  overId: string,
+): T[] | null => {
+  const activeIndex = items.findIndex((item) => item.id === activeId);
+  const overIndex = items.findIndex((item) => item.id === overId);
+
+  if (activeIndex === -1 || overIndex === -1) return null;
+
+  const newItems = [...items];
+  const [movedItem] = newItems.splice(activeIndex, 1);
+  newItems.splice(overIndex, 0, movedItem);
+
+  return newItems;
+};

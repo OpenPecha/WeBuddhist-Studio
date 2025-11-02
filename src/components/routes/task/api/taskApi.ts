@@ -112,12 +112,28 @@ export const ChangeTaskDay = async (task_id: string, target_day_id: string) => {
 
 export const reorderTasks = async (
   day_id: string,
-  tasks: Array<{ task_id: string; display_order: number }>,
+  tasks: Array<{ id: string; display_order: number }>,
 ) => {
   const { data } = await axiosInstance.put(
-    `/api/v1/cms/tasks/${day_id}`,
+    `/api/v1/cms/tasks/${day_id}/order`,
     {
       tasks,
+    },
+    {
+      headers: getAuthHeaders(),
+    },
+  );
+  return data;
+};
+
+export const reorderSubtasks = async (
+  task_id: string,
+  subtasks: Array<{ id: string; display_order: number }>,
+) => {
+  const { data } = await axiosInstance.put(
+    `/api/v1/cms/sub-tasks/${task_id}/order`,
+    {
+      subtasks: subtasks,
     },
     {
       headers: getAuthHeaders(),

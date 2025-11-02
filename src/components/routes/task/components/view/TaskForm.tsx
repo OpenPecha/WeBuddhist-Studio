@@ -312,7 +312,6 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
           <div className=" px-4 flex items-center">
             <h2 className="text-xl font-semibold">Add Subtask</h2>
-            <ContentTypeSelector onSelectType={handleAddSubTask} />
           </div>
 
           {subTasks.length > 0 && (
@@ -330,6 +329,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               ))}
             </div>
           )}
+          <ContentTypeSelector onSelectType={handleAddSubTask} />
 
           <div className="p-4 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>

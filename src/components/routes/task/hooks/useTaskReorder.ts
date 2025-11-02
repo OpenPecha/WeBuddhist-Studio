@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import { reorderTasks } from "../api/taskApi";
+import { reorderArray } from "@/lib/utils";
 
 interface Task {
   id: string;
@@ -49,7 +50,7 @@ export const useTaskReorder = (
       tasks,
     }: {
       dayId: string;
-      tasks: Array<{ task_id: string; display_order: number }>;
+      tasks: Array<{ id: string; display_order: number }>;
     }) => reorderTasks(dayId, tasks),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
@@ -85,27 +86,18 @@ export const useTaskReorder = (
         (a, b) => a.display_order - b.display_order,
       );
 
-    const activeTaskIndex = currentTasks.findIndex(
-      (task) => task.id === activeTaskId,
-    );
-    const overTaskIndex = currentTasks.findIndex(
-      (task) => task.id === overTaskId,
-    );
+    const newTasks = reorderArray(currentTasks, activeTaskId, overTaskId);
 
-    if (activeTaskIndex === -1 || overTaskIndex === -1) return;
-
-    const newTasks = [...currentTasks];
-    const [movedTask] = newTasks.splice(activeTaskIndex, 1);
-    newTasks.splice(overTaskIndex, 0, movedTask);
+    if (!newTasks) return;
 
     setOptimisticTasks((prev) => ({
       ...prev,
       [dayId]: newTasks,
     }));
 
-    const tasksPayload = newTasks.map((task) => ({
-      task_id: task.id,
-      display_order: task.display_order,
+    const tasksPayload = newTasks.map((task, index) => ({
+      id: task.id,
+      display_order: index + 1,
     }));
 
     reorderMutation.mutate({

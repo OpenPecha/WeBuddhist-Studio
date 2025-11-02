@@ -9,6 +9,9 @@ import {
   TextContent,
   SourceReferenceContent,
 } from "../../../../ui/molecules/content-sub/ContentComponents";
+import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
+import { PiDotsSixVertical } from "react-icons/pi";
+import { useSubtaskReorder } from "../../hooks/useSubtaskReorder";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
@@ -47,13 +50,27 @@ const SubtaskContent = ({
   }
 };
 
-const SubtaskCard = ({ subtask }: { subtask: any }) => {
+const SubtaskCard = ({
+  subtask,
+  listeners,
+}: {
+  subtask: any;
+  listeners?: any;
+}) => {
   return (
     <div
-      className={`border  rounded-xl bg-[#ffffff] dark:bg-[#161616] border-gray-300 dark:border-input p-2 space-y-2`}
+      className={`border rounded-xl bg-[#ffffff] dark:bg-[#161616] border-gray-300 dark:border-input p-2 space-y-2`}
     >
-      <div className="flex items-center border w-fit bg-[#F7F7F7]  dark:bg-sidebar-secondary  px-2 py-1 text-sm rounded-md border-dashed gap-2">
-        <ContentIcon type={subtask.content_type} /> {subtask.content_type}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center border w-fit bg-[#F7F7F7] dark:bg-sidebar-secondary px-2 py-1 text-sm rounded-md border-dashed gap-2">
+          <ContentIcon type={subtask.content_type} /> {subtask.content_type}
+        </div>
+        {listeners && (
+          <PiDotsSixVertical
+            className="w-5 h-5 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
+            {...listeners}
+          />
+        )}
       </div>
       <SubtaskContent type={subtask.content_type} content={subtask.content} />
     </div>
@@ -66,6 +83,13 @@ const TaskView = ({ taskId }: TaskViewProps) => {
     queryFn: () => fetchTaskDetails(taskId),
     enabled: !!taskId,
   });
+
+  const { handleSubtaskReorder, getDisplaySubtasks } = useSubtaskReorder(
+    taskDetails,
+    taskId,
+  );
+
+  const displaySubtasks = getDisplaySubtasks();
 
   return (
     <div className="w-full my-4 h-[calc(100vh-40px)] bg-[#F5F5F5] border-dashed dark:bg-[#181818]  rounded-l-2xl border overflow-y-auto">
@@ -93,9 +117,23 @@ const TaskView = ({ taskId }: TaskViewProps) => {
               <Pecha.Skeleton className="h-32 w-full rounded" />
             </>
           ) : (
-            taskDetails?.subtasks.map((subtask: any) => (
-              <SubtaskCard key={subtask.id} subtask={subtask} />
-            ))
+            <SortableList
+              items={displaySubtasks.map((subtask: any) => ({
+                id: subtask.id,
+                display_order: subtask.display_order,
+              }))}
+              onReorder={(activeId: any, overId: any) => {
+                handleSubtaskReorder(activeId, overId);
+              }}
+            >
+              {displaySubtasks.map((subtask: any) => (
+                <SortableItem key={subtask.id} id={subtask.id}>
+                  {({ listeners }: any) => (
+                    <SubtaskCard subtask={subtask} listeners={listeners} />
+                  )}
+                </SortableItem>
+              ))}
+            </SortableList>
           )}
         </div>
       </div>
