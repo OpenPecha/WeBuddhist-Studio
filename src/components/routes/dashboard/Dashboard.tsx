@@ -104,7 +104,7 @@ const Dashboard = () => {
           onSort={handleSort}
         />
       </div>
-      <Activity mode={!error ? "visible" : "hidden"}>
+      <Activity mode={planData?.plans?.length > 0 ? "visible" : "hidden"}>
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
