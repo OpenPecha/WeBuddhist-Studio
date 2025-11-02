@@ -240,6 +240,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
 
   const removeSubTask = (index: number) => {
     setSubTasks((prev) => prev.filter((_, i) => i !== index));
+    setImageUploadError(null);
   };
 
   const handleSubTaskImageUpload = async (index: number, file: File) => {
