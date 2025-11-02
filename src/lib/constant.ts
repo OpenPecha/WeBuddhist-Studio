@@ -18,6 +18,8 @@ export const SOCIAL_PLATFORMS = [
   { value: "linkedin", label: "LinkedIn", icon: "Linkedin" },
   { value: "youtube", label: "YouTube", icon: "Youtube" },
   { value: "email", label: "Email", icon: "Mail" },
+  { value: "instagram", label: "Instagram", icon: "Instagram" },
+  { value: "tiktok", label: "TikTok", icon: "TikTok" },
 ];
 
 export const TIBETAN_LETTERS = [
