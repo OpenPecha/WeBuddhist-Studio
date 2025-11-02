@@ -1,7 +1,11 @@
 import { IoMdVideocam } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
-import { getYouTubeVideoId, getYouTubeShortsId, extractSpotifyId } from "@/lib/utils";
+import {
+  getYouTubeVideoId,
+  getYouTubeShortsId,
+  extractSpotifyId,
+} from "@/lib/utils";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
@@ -25,7 +29,7 @@ export const ContentIcon = ({ type }: { type: ContentType }) => {
 export const VideoContent = ({ content }: { content: string }) => {
   const regularVideoId = getYouTubeVideoId(content);
   const shortsVideoId = getYouTubeShortsId(content);
-  
+
   if (regularVideoId && !shortsVideoId) {
     return (
       <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
@@ -35,11 +39,11 @@ export const VideoContent = ({ content }: { content: string }) => {
       </div>
     );
   }
-  
+
   const videoId = shortsVideoId;
-  
+
   if (!videoId) return null;
-  
+
   return (
     <div className="mt-4">
       <iframe
