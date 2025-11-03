@@ -135,7 +135,6 @@ const renderWithProviders = (component: React.ReactElement) => {
 describe("SideBar Component", () => {
   const mockOnDaySelect = vi.fn();
   const mockOnTaskClick = vi.fn();
-  const mockOnEditTask = vi.fn();
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -154,7 +153,6 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        onEditTask={mockOnEditTask}
       />,
     );
     expect(screen.getByText("Current Plan")).toBeInTheDocument();
@@ -173,7 +171,6 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        onEditTask={mockOnEditTask}
       />,
     );
     await waitFor(() => {
@@ -196,7 +193,6 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        onEditTask={mockOnEditTask}
       />,
     );
     await waitFor(() => {
@@ -226,7 +222,6 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        onEditTask={mockOnEditTask}
       />,
     );
     await waitFor(() => {
@@ -251,7 +246,6 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        onEditTask={mockOnEditTask}
       />,
     );
     await waitFor(() => {
@@ -283,7 +277,6 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        onEditTask={mockOnEditTask}
       />,
     );
     await waitFor(() => {

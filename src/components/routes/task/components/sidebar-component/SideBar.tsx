@@ -3,7 +3,6 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
-import { FaPen } from "react-icons/fa";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
