@@ -3,7 +3,6 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
-import { FaPen } from "react-icons/fa";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
@@ -19,14 +18,14 @@ interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
   onTaskClick?: (taskId: string) => void;
-  onEditTask: (task: any) => void;
+  onTaskDelete?: (taskId: string) => void;
 }
 
 const SideBar = ({
   selectedDay,
   onDaySelect,
   onTaskClick,
-  onEditTask,
+  onTaskDelete,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const { plan_id } = useParams<{ plan_id: string }>();
@@ -55,7 +54,11 @@ const SideBar = ({
   };
 
   const handleDeleteTask = (task_id: string) => {
-    deleteTask.mutate(task_id);
+    deleteTask.mutate(task_id, {
+      onSuccess: () => {
+        onTaskDelete?.(task_id);
+      },
+    });
   };
 
   const handleDeleteDay = (day_id: string) => {
@@ -116,7 +119,12 @@ const SideBar = ({
                 <SortableItem key={day.id} id={day.id}>
                   {({ listeners }: any) => (
                     <div className="group space-y-2">
-                      <div className="flex items-center justify-between px-4 py-2 border-b  border-dashed cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10">
+                      <div
+                        className="flex items-center justify-between px-4 py-2 border-b  border-dashed cursor-pointer transition-colors hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10"
+                        onClick={() => {
+                          handleDayClick(day.day_number);
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <PiDotsSixVertical
                             className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
@@ -239,13 +247,6 @@ const SideBar = ({
                                         />
                                       </Pecha.DropdownMenuTrigger>
                                       <Pecha.DropdownMenuContent side="right">
-                                        <Pecha.DropdownMenuItem
-                                          className="gap-2 cursor-pointer"
-                                          onClick={() => onEditTask(task)}
-                                        >
-                                          <FaPen className="h-4 w-4" />
-                                          Edit
-                                        </Pecha.DropdownMenuItem>
                                         <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
                                           <TaskDeleteDialog
                                             taskId={task.id}

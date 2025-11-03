@@ -170,7 +170,10 @@ const Createplan = () => {
       const imageKey = key;
       setImagePreview(imageUrl);
       setSelectedImage(file);
-      form.setValue("image_url", imageKey);
+      form.setValue("image_url", imageKey, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
     } catch (error) {
@@ -262,52 +265,63 @@ const Createplan = () => {
               )}
             />
 
-            <div>
-              <h3 className="text-sm font-bold">
-                {t("studio.dashboard.cover_image")}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t("studio.plan.cover_image.description")}
-              </p>
-
-              <div className="flex gap-4 mt-4 items-start">
-                {!imagePreview && (
-                  <button
-                    type="button"
-                    onClick={() => setIsImageDialogOpen(true)}
-                    className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
-                    aria-label="Upload cover image"
-                  >
-                    <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  </button>
-                )}
-
-                {imagePreview && (
-                  <div className="relative">
-                    <img
-                      src={imagePreview}
-                      alt="Cover preview"
-                      className="w-48 h-32 object-cover rounded-lg border"
-                    />
-                    <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
-                      {selectedImage && (
-                        <p className="text-xs text-white truncate max-w-32">
-                          {selectedImage.name}
-                        </p>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
-                        data-testid="image-remove"
-                      >
-                        <IoMdClose className="h-4 w-4" />
-                      </button>
-                    </div>
+            <Pecha.FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <Pecha.FormItem>
+                  <div>
+                    <h3 className="text-sm font-bold">
+                      {t("studio.dashboard.cover_image")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {t("studio.plan.cover_image.description")}
+                    </p>
                   </div>
-                )}
-              </div>
-            </div>
+                  <Pecha.FormControl>
+                    <div className="flex gap-4 mt-4 items-start">
+                      {!imagePreview && (
+                        <button
+                          type="button"
+                          onClick={() => setIsImageDialogOpen(true)}
+                          className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
+                          aria-label="Upload cover image"
+                        >
+                          <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                        </button>
+                      )}
+
+                      {imagePreview && (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Cover preview"
+                            className="w-48 h-32 object-cover rounded-lg border"
+                          />
+                          <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
+                            {selectedImage && (
+                              <p className="text-xs text-white truncate max-w-32">
+                                {selectedImage.name}
+                              </p>
+                            )}
+                            <button
+                              type="button"
+                              onClick={handleRemoveImage}
+                              className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
+                              data-testid="image-remove"
+                            >
+                              <IoMdClose className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <input type="hidden" {...field} />
+                    </div>
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
+              )}
+            />
             <Pecha.Dialog
               open={isImageDialogOpen}
               onOpenChange={setIsImageDialogOpen}

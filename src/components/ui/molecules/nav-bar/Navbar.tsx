@@ -24,6 +24,23 @@ const navItems = [
   //   path: "/analytics",
   // },
 ];
+const tooltipItems = [
+  {
+    id: "theme",
+    component: <ModeToggle />,
+    label: "Change theme",
+  },
+  {
+    id: "language",
+    component: <LanguageToggle />,
+    label: "Change language",
+  },
+  {
+    id: "logout",
+    component: <AuthLogout />,
+    label: "Logout",
+  },
+];
 const Navbar = () => {
   const location = useLocation();
   return (
@@ -59,36 +76,14 @@ const Navbar = () => {
           </div>
         </div>
         <div className="flex flex-col items-center h-32 space-y-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <ModeToggle />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>Change theme</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <LanguageToggle />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>Change language</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <AuthLogout />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>Logout</p>
-            </TooltipContent>
-          </Tooltip>
+          {tooltipItems.map((item, index) => (
+            <Tooltip key={index}>
+              <TooltipTrigger asChild>
+                <div>{item.component}</div>
+              </TooltipTrigger>
+              <TooltipContent side="right">{item.label}</TooltipContent>
+            </Tooltip>
+          ))}
         </div>
       </div>
     </TooltipProvider>

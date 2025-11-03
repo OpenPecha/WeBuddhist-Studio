@@ -44,6 +44,7 @@ const renderWithProviders = (component: React.ReactElement) => {
 };
 
 describe("TaskView Component", () => {
+  const mockOnEditTask = vi.fn();
   beforeEach(async () => {
     vi.clearAllMocks();
     const { default: axiosInstance } = await import("@/config/axios-config");
@@ -52,13 +53,17 @@ describe("TaskView Component", () => {
   });
 
   it("renders loading skeleton when data is loading", () => {
-    const { container } = renderWithProviders(<TaskView taskId="task-123" />);
+    const { container } = renderWithProviders(
+      <TaskView onEditTask={mockOnEditTask} taskId="task-123" />,
+    );
     const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("renders task title and subtasks after loading", async () => {
-    renderWithProviders(<TaskView taskId="task-123" />);
+    renderWithProviders(
+      <TaskView onEditTask={mockOnEditTask} taskId="task-123" />,
+    );
     await waitFor(() => {
       expect(screen.getByText("Test Task Title")).toBeInTheDocument();
     });
@@ -74,7 +79,7 @@ describe("TaskView Component", () => {
   });
 
   it("does not fetch when taskId is not provided", () => {
-    renderWithProviders(<TaskView taskId="" />);
+    renderWithProviders(<TaskView onEditTask={mockOnEditTask} taskId="" />);
     expect(axiosInstance.get).not.toHaveBeenCalled();
   });
 
@@ -98,7 +103,9 @@ describe("TaskView Component", () => {
     vi.mocked(axiosInstance.get).mockResolvedValueOnce({
       data: mockTaskWithEmptyContent,
     });
-    renderWithProviders(<TaskView taskId="task-123" />);
+    renderWithProviders(
+      <TaskView onEditTask={mockOnEditTask} taskId="task-123" />,
+    );
     await waitFor(() => {
       expect(screen.getByText("Task With Empty Content")).toBeInTheDocument();
     });

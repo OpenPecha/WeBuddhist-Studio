@@ -12,11 +12,13 @@ import {
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 import { PiDotsSixVertical } from "react-icons/pi";
 import { useSubtaskReorder } from "../../hooks/useSubtaskReorder";
+import { FaPen } from "react-icons/fa";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
 interface TaskViewProps {
   taskId: string;
+  onEditTask: (task: any) => void;
 }
 
 const fetchTaskDetails = async (task_id: string) => {
@@ -77,7 +79,7 @@ const SubtaskCard = ({
   );
 };
 
-const TaskView = ({ taskId }: TaskViewProps) => {
+const TaskView = ({ taskId, onEditTask }: TaskViewProps) => {
   const { data: taskDetails, isLoading } = useQuery({
     queryKey: ["taskDetails", taskId],
     queryFn: () => fetchTaskDetails(taskId),
@@ -94,8 +96,16 @@ const TaskView = ({ taskId }: TaskViewProps) => {
   return (
     <div className="w-full my-4 h-[calc(100vh-40px)] bg-[#F5F5F5] border-dashed dark:bg-[#181818]  rounded-l-2xl border overflow-y-auto">
       <div className=" space-y-4  overflow-y-auto">
-        <div className="flex p-4 items-center justify-between">
+        <div className="flex p-4 items-center justify-between w-3/4">
           <h2 className="text-xl font-semibold">Task</h2>
+          <Pecha.Button
+            variant="outline"
+            type="button"
+            onClick={() => onEditTask(taskDetails)}
+          >
+            <FaPen className="h-4 w-4" />
+            Edit
+          </Pecha.Button>
         </div>
         <div className="p-4">
           <div className="h-12 p-4 bg-white dark:bg-input/30 rounded-md lg:w-2/3 w-full text-base flex items-center border">
