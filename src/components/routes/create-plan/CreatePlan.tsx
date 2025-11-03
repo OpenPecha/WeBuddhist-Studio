@@ -179,7 +179,7 @@ const Createplan = () => {
     } catch (error: any) {
       if (error?.response?.status === 413) {
         toast.error("Failed to update Image", {
-          description: error.response.data.detail,
+          description: "file exceeds the maximum size of 1MB",
         });
       } else {
         console.error("Image upload failed:", error);
