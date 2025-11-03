@@ -176,9 +176,15 @@ const Createplan = () => {
       });
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      toast.error("Failed to upload image");
+    } catch (error: any) {
+      if (error?.response?.status === 413) {
+        toast.error("Failed to update Image", {
+          description: error.response.data.detail,
+        });
+      } else {
+        console.error("Image upload failed:", error);
+        toast.error("Failed to upload image");
+      }
     }
   };
 
