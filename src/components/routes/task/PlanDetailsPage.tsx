@@ -26,6 +26,15 @@ const PlanDetailsPage = () => {
     }
   };
 
+  const handleTaskDelete = (taskId: string) => {
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
+    }
+    if (editingTask?.id === taskId) {
+      setEditingTask(null);
+    }
+  };
+
   return (
     <div className="flex flex-1 overflow-hidden">
       <SideBar
@@ -35,6 +44,7 @@ const PlanDetailsPage = () => {
           setSelectedTaskId(taskId);
         }}
         onEditTask={handleEditTask}
+        onTaskDelete={handleTaskDelete}
       />
       <div className=" w-full pl-4 rounded-l-2xl overflow-y-auto">
         {selectedTaskId ? (

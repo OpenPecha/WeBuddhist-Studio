@@ -20,6 +20,7 @@ interface SideBarProps {
   onDaySelect: (dayNumber: number) => void;
   onTaskClick?: (taskId: string) => void;
   onEditTask: (task: any) => void;
+  onTaskDelete?: (taskId: string) => void;
 }
 
 const SideBar = ({
@@ -27,6 +28,7 @@ const SideBar = ({
   onDaySelect,
   onTaskClick,
   onEditTask,
+  onTaskDelete,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const { plan_id } = useParams<{ plan_id: string }>();
@@ -55,7 +57,11 @@ const SideBar = ({
   };
 
   const handleDeleteTask = (task_id: string) => {
-    deleteTask.mutate(task_id);
+    deleteTask.mutate(task_id, {
+      onSuccess: () => {
+        onTaskDelete?.(task_id);
+      },
+    });
   };
 
   const handleDeleteDay = (day_id: string) => {
