@@ -43,12 +43,11 @@ const PlanDetailsPage = () => {
         onTaskClick={(taskId) => {
           setSelectedTaskId(taskId);
         }}
-        onEditTask={handleEditTask}
         onTaskDelete={handleTaskDelete}
       />
       <div className=" w-full pl-4 rounded-l-2xl overflow-y-auto">
         {selectedTaskId ? (
-          <TaskView taskId={selectedTaskId} />
+          <TaskView taskId={selectedTaskId} onEditTask={handleEditTask} />
         ) : (
           <TaskForm
             selectedDay={selectedDay}

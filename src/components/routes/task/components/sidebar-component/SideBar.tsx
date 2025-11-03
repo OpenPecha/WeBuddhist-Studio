@@ -19,7 +19,6 @@ interface SideBarProps {
   selectedDay: number;
   onDaySelect: (dayNumber: number) => void;
   onTaskClick?: (taskId: string) => void;
-  onEditTask: (task: any) => void;
   onTaskDelete?: (taskId: string) => void;
 }
 
@@ -27,7 +26,6 @@ const SideBar = ({
   selectedDay,
   onDaySelect,
   onTaskClick,
-  onEditTask,
   onTaskDelete,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
@@ -250,13 +248,6 @@ const SideBar = ({
                                         />
                                       </Pecha.DropdownMenuTrigger>
                                       <Pecha.DropdownMenuContent side="right">
-                                        <Pecha.DropdownMenuItem
-                                          className="gap-2 cursor-pointer"
-                                          onClick={() => onEditTask(task)}
-                                        >
-                                          <FaPen className="h-4 w-4" />
-                                          Edit
-                                        </Pecha.DropdownMenuItem>
                                         <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
                                           <TaskDeleteDialog
                                             taskId={task.id}
