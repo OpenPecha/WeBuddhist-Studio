@@ -7,5 +7,5 @@ export const planSchema = z.object({
   difficulty_level: z.string().min(1, "Difficulty is required"),
   image_url: z.string().min(1, "Cover image is required"),
   tags: z.array(z.string()),
-  language: z.string().optional(),
+  language: z.string().min(1, "Language is required"),
 });
