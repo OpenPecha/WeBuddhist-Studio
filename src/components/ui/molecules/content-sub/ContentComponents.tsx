@@ -85,17 +85,19 @@ export const AudioContent = ({ content }: { content: string }) => {
 };
 
 export const ImageContent = ({ content }: { content: string }) => (
-  <div className="mt-4 flex w-full justify-center bg-[#FAFAFA] dark:bg-sidebar-secondary ">
-    <img
-      src={content}
-      alt="Task content"
-      className="w-full h-48 object-cover rounded-lg border"
-    />
+  <div className="mt-4 flex mx-auto justify-center bg-[#FAFAFA] dark:bg-sidebar-secondary ">
+    <div>
+      <img
+        src={content}
+        alt="Task content"
+        className="w-full h-48 object-cover rounded-lg border"
+      />
+    </div>
   </div>
 );
 
 export const TextContent = ({ content }: { content: string }) => (
-  <div className="w-full min-h-24  bg-[#FAFAFA] dark:bg-sidebar-secondary  whitespace-pre-wrap text-base p-3 border rounded-md">
+  <div className="w-full min-h-24 max-h-56 overflow-y-auto bg-[#FAFAFA] dark:bg-sidebar-secondary  whitespace-pre-wrap text-base p-3 border rounded-md">
     {content}
   </div>
 );
