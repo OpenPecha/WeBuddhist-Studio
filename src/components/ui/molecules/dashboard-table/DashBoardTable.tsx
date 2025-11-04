@@ -13,6 +13,7 @@ export interface Plan {
   total_days: string;
   subscription_count: string;
   status: string;
+  language: string;
 }
 
 interface DashBoardTableProps {
@@ -52,25 +53,47 @@ export function DashBoardTable({
         );
       case "DRAFT":
         return (
-          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
+          <Pecha.Badge className="px-3 py-1.5 text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
             Draft
           </Pecha.Badge>
         );
       case "ARCHIVED":
         return (
-          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+          <Pecha.Badge className="px-3 py-1.5 text-sm font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
             Archived
           </Pecha.Badge>
         );
       default:
         return (
-          <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
+          <Pecha.Badge className="px-3 py-1.5 text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
             Draft
           </Pecha.Badge>
         );
     }
   };
 
+  const getLanguage = (language: string) => {
+    switch (language) {
+      case "EN":
+        return (
+          <Pecha.Badge className=" bg-amber-100 text-amber-500 dark:bg-amber-900 dark:text-amber-100 px-3 py-1.5 text-sm font-bold">
+            English
+          </Pecha.Badge>
+        );
+      case "BO":
+        return (
+          <Pecha.Badge className=" bg-green-100 text-green-500 dark:bg-green-900 dark:text-green-100 px-3 py-1.5 text-sm font-bold">
+            བོད་ཡིག
+          </Pecha.Badge>
+        );
+      case "ZH":
+        return (
+          <Pecha.Badge className=" bg-red-100 text-red-500 dark:bg-red-900 dark:text-red-100 px-3 py-1.5 text-sm font-bold">
+            中文
+          </Pecha.Badge>
+        );
+    }
+  };
   const getSortIcon = (column: string) => {
     const isActive = sortBy === column;
     const Icon = isActive && sortOrder === "asc" ? FaChevronUp : FaChevronDown;
@@ -156,6 +179,7 @@ export function DashBoardTable({
         <Pecha.TableCell>{plan.total_days} Days</Pecha.TableCell>
         <Pecha.TableCell>{plan.subscription_count} Used</Pecha.TableCell>
         <Pecha.TableCell>{getStatusBadge(plan.status)}</Pecha.TableCell>
+        <Pecha.TableCell>{getLanguage(plan.language)}</Pecha.TableCell>
         <Pecha.TableCell>
           <div className="flex items-center gap-2">
             <DropdownButton planId={plan.id} currentStatus={plan.status} />
@@ -194,6 +218,9 @@ export function DashBoardTable({
           </Pecha.TableHead>
           <Pecha.TableHead className="w-[150px] font-bold">
             Status
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            {t("studio.plan.form_field.language")}
           </Pecha.TableHead>
           <Pecha.TableHead className="w-[150px] font-bold">
             {t("studio.dashboard.actions")}

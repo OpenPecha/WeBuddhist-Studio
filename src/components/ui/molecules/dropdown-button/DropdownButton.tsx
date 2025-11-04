@@ -91,7 +91,7 @@ export function DropdownButton({
       <Pecha.DropdownMenu>
         <Pecha.DropdownMenuTrigger asChild>
           <Pecha.Button variant="outline">
-            Change Status <BsThreeDotsVertical />
+            Status <BsThreeDotsVertical />
           </Pecha.Button>
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">

@@ -8,7 +8,7 @@ import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
 import TagInput from "@/components/ui/molecules/tag-input/TagInput";
-import { DIFFICULTY } from "@/lib/constant";
+import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -189,15 +189,10 @@ const Createplan = () => {
   };
 
   const onSubmit = (data: PlanFormData) => {
-    const language = localStorage.getItem("language") || "en";
-    const planformdata = {
-      ...data,
-      language: language,
-    };
     if (plan_id !== "new") {
-      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: planformdata });
+      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: data });
     } else {
-      createPlanMutation.mutate(planformdata);
+      createPlanMutation.mutate(data);
     }
   };
   return (
@@ -378,45 +373,84 @@ const Createplan = () => {
       <div className="flex-1 p-10 sm:mt-9">
         <Pecha.Form {...form}>
           <div className="space-y-6">
-            <Pecha.FormField
-              control={form.control}
-              name="difficulty_level"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormLabel className="text-sm font-bold">
-                    {t("studio.plan.form_field.difficulty")}
-                  </Pecha.FormLabel>
-                  <Pecha.Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <Pecha.FormControl>
-                      <Pecha.SelectTrigger
-                        className="h-12 bg-white"
-                        data-testid="select-trigger"
-                      >
-                        <Pecha.SelectValue
-                          placeholder={t(
-                            "studio.plan.form.placeholder.select_difficulty",
-                          )}
-                        />
-                      </Pecha.SelectTrigger>
-                    </Pecha.FormControl>
-                    <Pecha.SelectContent>
-                      {DIFFICULTY.map((difficulty) => (
-                        <Pecha.SelectItem
-                          key={difficulty.value}
-                          value={difficulty.value}
+            <div className="flex gap-4 items-center">
+              <Pecha.FormField
+                control={form.control}
+                name="difficulty_level"
+                render={({ field }) => (
+                  <Pecha.FormItem>
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      {t("studio.plan.form_field.difficulty")}
+                    </Pecha.FormLabel>
+                    <Pecha.Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <Pecha.FormControl>
+                        <Pecha.SelectTrigger
+                          className="h-12 bg-white"
+                          data-testid="select-trigger"
                         >
-                          {difficulty.label}
-                        </Pecha.SelectItem>
-                      ))}
-                    </Pecha.SelectContent>
-                  </Pecha.Select>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
-            />
+                          <Pecha.SelectValue
+                            placeholder={t(
+                              "studio.plan.form.placeholder.select_difficulty",
+                            )}
+                          />
+                        </Pecha.SelectTrigger>
+                      </Pecha.FormControl>
+                      <Pecha.SelectContent>
+                        {DIFFICULTY.map((difficulty) => (
+                          <Pecha.SelectItem
+                            key={difficulty.value}
+                            value={difficulty.value}
+                          >
+                            {difficulty.label}
+                          </Pecha.SelectItem>
+                        ))}
+                      </Pecha.SelectContent>
+                    </Pecha.Select>
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                )}
+              />
+              <Pecha.FormField
+                control={form.control}
+                name="language"
+                render={({ field }) => (
+                  <Pecha.FormItem>
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      {t("studio.plan.form_field.language")}
+                    </Pecha.FormLabel>
+                    <Pecha.Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <Pecha.FormControl>
+                        <Pecha.SelectTrigger className="h-12 bg-white">
+                          <Pecha.SelectValue
+                            placeholder={t(
+                              "studio.plan.form.placeholder.select_language",
+                            )}
+                          />
+                        </Pecha.SelectTrigger>
+                      </Pecha.FormControl>
+                      <Pecha.SelectContent>
+                        {PLAN_LANGUAGE.map((planlang) => (
+                          <Pecha.SelectItem
+                            key={planlang.value}
+                            value={planlang.value}
+                          >
+                            {planlang.label}
+                          </Pecha.SelectItem>
+                        ))}
+                      </Pecha.SelectContent>
+                    </Pecha.Select>
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                )}
+              />
+            </div>
+
             <Pecha.FormField
               control={form.control}
               name="tags"
