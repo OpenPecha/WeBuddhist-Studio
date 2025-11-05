@@ -25,12 +25,7 @@ const ResetPassword = () => {
     mutationFn: async (password: { password: string }) => {
       const response = await axiosInstance.post(
         `/api/v1/cms/auth/reset-password`,
-        password,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        { ...password, token },
       );
       return response.data;
     },
