@@ -49,7 +49,7 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
                   className="border border-dashed border-gray-300 h-32 hover:border-gray-400 transition-colors rounded-lg p-6 flex items-center justify-center cursor-pointer mb-4"
                 >
                   <input {...getInputProps()} />
-                  <p>Drag 'n' drop an image here, or click to select</p>
+                  <p>Drag & drop an image here, or click to select</p>
                 </div>
               </section>
             )}
@@ -61,8 +61,10 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
                 alt={selectedFile.name}
                 className="rounded-lg h-full border w-32 object-cover"
               />
-              <div className="flex text-start flex-col gap-2">
-                <p>{selectedFile?.name}</p>
+              <div className="flex text-start flex-col gap-2 w-xs">
+                <p className="text-ellipsis overflow-hidden whitespace-nowrap">
+                  {selectedFile?.name}
+                </p>
                 <div className="flex gap-2">
                   <Button
                     variant="default"

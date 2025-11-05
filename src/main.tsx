@@ -25,6 +25,8 @@ import CreatePlan from "./components/routes/create-plan/CreatePlan";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
+import Profile from "./components/routes/profile/Profile.tsx";
+import { UserbackProvider } from "./config/userback-context.tsx";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
@@ -116,6 +118,14 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "/profile/:author_id",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 ]);
@@ -124,10 +134,12 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <TolgeeProvider tolgee={tolgee}>
         <PlanAuthProvider>
-          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            <RouterProvider router={router} />
-            <Toaster />
-          </ThemeProvider>
+          <UserbackProvider>
+            <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+              <RouterProvider router={router} />
+              <Toaster />
+            </ThemeProvider>
+          </UserbackProvider>
         </PlanAuthProvider>
       </TolgeeProvider>
     </QueryClientProvider>

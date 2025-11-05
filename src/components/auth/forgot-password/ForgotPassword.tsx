@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
-import StudioCard from "@/components/ui/atoms/studio-card";
+import ContainerLayout from "@/components/ui/atoms/studio-card";
 import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
@@ -24,9 +24,7 @@ const ForgotPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      setSuccess(
-        "Email with reset password link is sent to your email address",
-      );
+      setSuccess(t("studio.auth.forgot_password.email_sent"));
     },
     onError: (error: any) => {
       setError(error.message);
@@ -48,7 +46,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <StudioCard title={t("studio.reset_password.description")}>
+    <ContainerLayout title={t("studio.reset_password.description")}>
       <form
         className="w-full max-w-[425px] space-y-4"
         onSubmit={handleForgotPassword}
@@ -85,7 +83,7 @@ const ForgotPassword = () => {
           </Link>
         </div>
       </form>
-    </StudioCard>
+    </ContainerLayout>
   );
 };
 

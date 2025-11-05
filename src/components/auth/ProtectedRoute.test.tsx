@@ -42,7 +42,7 @@ describe("ProtectedRoute Component", () => {
       </ProtectedRoute>,
     );
 
-    expect(screen.getByText("Loading...")).toBeDefined();
+    expect(screen.getByText("common.loading")).toBeDefined();
     expect(screen.queryByText("Protected Content")).toBeNull();
   });
 
@@ -81,7 +81,7 @@ describe("ProtectedRoute Component", () => {
     );
 
     expect(screen.getByText("Protected Content")).toBeDefined();
-    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.queryByText("common.loading")).toBeNull();
     expect(screen.queryByTestId("navigate")).toBeNull();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -123,7 +123,7 @@ describe("ProtectedRoute Component", () => {
       </ProtectedRoute>,
     );
 
-    expect(screen.getByText("Loading...")).toBeDefined();
+    expect(screen.getByText("common.loading")).toBeDefined();
     expect(screen.queryByText("Protected Content")).toBeNull();
   });
 
@@ -139,13 +139,13 @@ describe("ProtectedRoute Component", () => {
       </ProtectedRoute>,
     );
 
-    const loadingContainer = screen.getByText("Loading...").parentElement;
+    const loadingContainer = screen.getByText("common.loading").parentElement;
     expect(loadingContainer).toHaveClass(
       "flex",
       "items-center",
       "justify-center",
       "h-full",
     );
-    expect(screen.getByText("Loading...")).toHaveClass("text-lg");
+    expect(screen.getByText("common.loading")).toHaveClass("text-lg");
   });
 });

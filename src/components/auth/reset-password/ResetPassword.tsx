@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
-import StudioCard from "@/components/ui/atoms/studio-card";
+import ContainerLayout from "@/components/ui/atoms/studio-card";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
@@ -25,12 +25,7 @@ const ResetPassword = () => {
     mutationFn: async (password: { password: string }) => {
       const response = await axiosInstance.post(
         `/api/v1/cms/auth/reset-password`,
-        password,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        { ...password, token },
       );
       return response.data;
     },
@@ -74,16 +69,18 @@ const ResetPassword = () => {
 
   if (!token) {
     return (
-      <StudioCard>
-        <h2 className="text-xl font-semibold text-center">Invalid Token</h2>
+      <ContainerLayout>
+        <h2 className="text-xl font-semibold text-center">
+          {t("studio.reset_password.invalid_token")}
+        </h2>
         <p className="text-center mb-8 text-sm text-red-600 dark:text-red-400">
-          No reset password token provided.
+          {t("studio.reset_password.no_reset_password_token_provided")}
         </p>
-      </StudioCard>
+      </ContainerLayout>
     );
   }
   return (
-    <StudioCard title={t("studio.reset_password.new_password")}>
+    <ContainerLayout title={t("studio.reset_password.new_password")}>
       <form
         className="w-full max-w-[425px] space-y-4"
         onSubmit={handleResetPassword}
@@ -133,7 +130,7 @@ const ResetPassword = () => {
           </Link>
         </div>
       </form>
-    </StudioCard>
+    </ContainerLayout>
   );
 };
 

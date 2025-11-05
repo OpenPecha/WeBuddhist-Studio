@@ -137,7 +137,9 @@ describe("Login Component", () => {
 
       await waitFor(() => {
         expect(screen.getByText("Author not verified")).toBeInTheDocument();
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -166,7 +168,7 @@ describe("Login Component", () => {
       await waitFor(() => {
         expect(screen.getByText("Invalid credentials")).toBeInTheDocument();
         expect(
-          screen.queryByText("Reverify your Email"),
+          screen.queryByText("studio.login.reverify_your_email"),
         ).not.toBeInTheDocument();
       });
     });
@@ -201,10 +203,12 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("Reverify your Email"));
+      await user.click(screen.getByText("studio.login.reverify_your_email"));
 
       await waitFor(() => {
         expect(vi.mocked(axiosInstance.post)).toHaveBeenCalledWith(
@@ -248,10 +252,12 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("Reverify your Email"));
+      await user.click(screen.getByText("studio.login.reverify_your_email"));
 
       await waitFor(() => {
         expect(
@@ -291,13 +297,15 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("Reverify your Email"));
+      await user.click(screen.getByText("studio.login.reverify_your_email"));
 
-      expect(screen.getByText("Sending...")).toBeInTheDocument();
-      expect(screen.getByText("Sending...")).toBeDisabled();
+      expect(screen.getByText("studio.login.sending")).toBeInTheDocument();
+      expect(screen.getByText("studio.login.sending")).toBeDisabled();
     });
 
     it("handles case-insensitive error message detection", async () => {
@@ -324,7 +332,9 @@ describe("Login Component", () => {
 
       await waitFor(() => {
         expect(screen.getByText("AUTHOR NOT VERIFIED")).toBeInTheDocument();
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -365,9 +375,11 @@ describe("Login Component", () => {
       await user.click(screen.getByText("common.button.submit"));
 
       await waitFor(() => {
-        expect(screen.getByText("Reverify your Email")).toBeInTheDocument();
+        expect(
+          screen.getByText("studio.login.reverify_your_email"),
+        ).toBeInTheDocument();
       });
-      await user.click(screen.getByText("Reverify your Email"));
+      await user.click(screen.getByText("studio.login.reverify_your_email"));
 
       await waitFor(() => {
         expect(
@@ -375,7 +387,7 @@ describe("Login Component", () => {
         ).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("Reverify your Email"));
+      await user.click(screen.getByText("studio.login.reverify_your_email"));
 
       await waitFor(() => {
         expect(
