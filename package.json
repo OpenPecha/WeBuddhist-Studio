@@ -1,7 +1,7 @@
 {
   "name": "pechastudio",
   "private": true,
-  "version": "2025.10.22.0628",
+  "version": "2025.11.05.0657",
   "type": "module",
   "scripts": {
     "dev": "vite",
