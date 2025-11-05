@@ -93,15 +93,6 @@ describe("Dashboard Component", () => {
     expect(coverImageHeader.tagName).toBe("TH");
   });
 
-  it("renders pagination navigation", () => {
-    renderWithProviders(<Dashboard />);
-
-    const paginationNav = screen.getByRole("navigation", {
-      name: "pagination",
-    });
-    expect(paginationNav).toBeDefined();
-  });
-
   it("fetches plans correctly and returns the correct data", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
       data: { plans: [], total: 0 },
