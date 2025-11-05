@@ -13,6 +13,7 @@ export interface Plan {
   total_days: string;
   subscription_count: string;
   status: string;
+  language: string;
 }
 
 interface DashBoardTableProps {
@@ -37,21 +38,62 @@ export function DashBoardTable({
   const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
-    if (status === "Published") {
-      return (
-        <Pecha.Badge className="bg-green-100  dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
-          Published
-        </Pecha.Badge>
-      );
-    } else {
-      return (
-        <Pecha.Badge className="px-3 py-1.5 rounded text-sm font-bold dark:bg-blue-900 bg-[#E1F0FF] text-[#008DFF] dark:text-cyan-500">
-          In Draft
-        </Pecha.Badge>
-      );
+    switch (status) {
+      case "PUBLISHED":
+        return (
+          <Pecha.Badge className="bg-green-100  dark:bg-green-900 text-green-500 px-3 py-1.5 text-sm font-bold">
+            Published
+          </Pecha.Badge>
+        );
+      case "UNPUBLISHED":
+        return (
+          <Pecha.Badge className="bg-red-100  dark:bg-red-900 text-red-500 px-3 py-1.5 text-sm font-bold">
+            Unpublished
+          </Pecha.Badge>
+        );
+      case "DRAFT":
+        return (
+          <Pecha.Badge className="px-3 py-1.5 text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
+            Draft
+          </Pecha.Badge>
+        );
+      case "ARCHIVED":
+        return (
+          <Pecha.Badge className="px-3 py-1.5 text-sm font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            Archived
+          </Pecha.Badge>
+        );
+      default:
+        return (
+          <Pecha.Badge className="px-3 py-1.5 text-sm font-bold dark:bg-pending/10 bg-[#E1F0FF] text-[#008DFF] dark:text-pending">
+            Draft
+          </Pecha.Badge>
+        );
     }
   };
 
+  const getLanguage = (language: string) => {
+    switch (language) {
+      case "EN":
+        return (
+          <Pecha.Badge className=" bg-amber-100 text-amber-500 dark:bg-amber-900 dark:text-amber-100 px-3 py-1.5 text-sm font-bold">
+            English
+          </Pecha.Badge>
+        );
+      case "BO":
+        return (
+          <Pecha.Badge className=" bg-green-100 text-green-500 dark:bg-green-900 dark:text-green-100 px-3 py-1.5 text-sm font-bold">
+            བོད་ཡིག
+          </Pecha.Badge>
+        );
+      case "ZH":
+        return (
+          <Pecha.Badge className=" bg-red-100 text-red-500 dark:bg-red-900 dark:text-red-100 px-3 py-1.5 text-sm font-bold">
+            中文
+          </Pecha.Badge>
+        );
+    }
+  };
   const getSortIcon = (column: string) => {
     const isActive = sortBy === column;
     const Icon = isActive && sortOrder === "asc" ? FaChevronUp : FaChevronDown;
@@ -114,14 +156,14 @@ export function DashBoardTable({
     }
 
     return plans.map((plan) => (
-      <Pecha.TableRow key={plan.id}>
+      <Pecha.TableRow key={plan.id} className="dark:bg-background">
         <Pecha.TableCell>
           <img
             src={plan.image_url || defaultCover}
             onError={(e) => {
               e.currentTarget.src = defaultCover;
             }}
-            alt="cover"
+            alt="Plan Cover Image"
             className="w-32 rounded border-2 h-12 object-cover"
           />
         </Pecha.TableCell>
@@ -129,7 +171,7 @@ export function DashBoardTable({
           className="cursor-pointer"
           onClick={() => navigate(`/plan/${plan.id}/plan-details`)}
         >
-          <div className="font-semibold text-base">{plan.title}</div>
+          <div className="font-semibold text-sm">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
             {plan.description}
           </div>
@@ -137,53 +179,55 @@ export function DashBoardTable({
         <Pecha.TableCell>{plan.total_days} Days</Pecha.TableCell>
         <Pecha.TableCell>{plan.subscription_count} Used</Pecha.TableCell>
         <Pecha.TableCell>{getStatusBadge(plan.status)}</Pecha.TableCell>
+        <Pecha.TableCell>{getLanguage(plan.language)}</Pecha.TableCell>
         <Pecha.TableCell>
           <div className="flex items-center gap-2">
-            <DropdownButton planId={plan.id} />
+            <DropdownButton planId={plan.id} currentStatus={plan.status} />
           </div>
         </Pecha.TableCell>
       </Pecha.TableRow>
     ));
   };
   return (
-    <div className="w-full h-[640px] overflow-auto">
-      <Pecha.Table>
-        <Pecha.TableHeader>
-          <Pecha.TableRow className="font-dynamic">
-            <Pecha.TableHead className="w-[160px] font-bold">
-              {t("studio.dashboard.cover_image")}
-            </Pecha.TableHead>
-            <Pecha.TableHead
-              className="font-bold cursor-pointer"
-              onClick={() => onSort("title")}
-            >
-              <div className="flex items-center">
-                {t("studio.dashboard.title")}
-                {getSortIcon("title")}
-              </div>
-            </Pecha.TableHead>
-            <Pecha.TableHead
-              className="w-[150px] font-bold cursor-pointer"
-              onClick={() => onSort("total_days")}
-            >
-              <div className="flex items-center">
-                {t("studio.dashboard.plan_days")}
-                {getSortIcon("total_days")}
-              </div>
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[150px] font-bold">
-              {t("studio.dashboard.plan_used")}
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[150px] font-bold">
-              Status
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[150px] font-bold">
-              {t("studio.dashboard.actions")}
-            </Pecha.TableHead>
-          </Pecha.TableRow>
-        </Pecha.TableHeader>
-        <Pecha.TableBody>{renderTableContent()}</Pecha.TableBody>
-      </Pecha.Table>
-    </div>
+    <Pecha.Table className="bg-white dark:bg-[#181818]">
+      <Pecha.TableHeader className="dark:bg-[#1d1d1f]">
+        <Pecha.TableRow className="font-dynamic">
+          <Pecha.TableHead className="w-[100px] font-bold">
+            {t("studio.dashboard.cover_image")}
+          </Pecha.TableHead>
+          <Pecha.TableHead
+            className="font-bold cursor-pointer"
+            onClick={() => onSort("title")}
+          >
+            <div className="flex items-center">
+              {t("studio.dashboard.title")}
+              {getSortIcon("title")}
+            </div>
+          </Pecha.TableHead>
+          <Pecha.TableHead
+            className="w-[150px] font-bold cursor-pointer"
+            onClick={() => onSort("total_days")}
+          >
+            <div className="flex items-center">
+              {t("studio.dashboard.plan_days")}
+              {getSortIcon("total_days")}
+            </div>
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            {t("studio.dashboard.plan_used")}
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            Status
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            {t("studio.plan.form_field.language")}
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            {t("studio.dashboard.actions")}
+          </Pecha.TableHead>
+        </Pecha.TableRow>
+      </Pecha.TableHeader>
+      <Pecha.TableBody>{renderTableContent()}</Pecha.TableBody>
+    </Pecha.Table>
   );
 }

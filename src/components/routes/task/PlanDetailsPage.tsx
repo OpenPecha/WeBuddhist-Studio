@@ -1,15 +1,38 @@
 import { useState } from "react";
-import TaskForm from "./components/TaskForm";
-import SideBar from "./components/SideBar";
-import { DefaultDayView } from "./components/DefaultView";
+import TaskForm from "./components/view/TaskForm";
+import SideBar from "./components/sidebar-component/SideBar";
+import TaskView from "./components/view/TaskView";
 
 const PlanDetailsPage = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
-  const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
   const handleDaySelect = (dayNumber: number) => {
     setSelectedDay(dayNumber);
-    setShowTaskForm(false);
+    setSelectedTaskId(null);
+    setEditingTask(null);
+  };
+
+  const handleEditTask = (task: any) => {
+    setEditingTask(task);
+    setSelectedTaskId(null);
+  };
+
+  const handleCancelTaskForm = (newlyCreatedTaskId?: string) => {
+    setEditingTask(null);
+    if (newlyCreatedTaskId) {
+      setSelectedTaskId(newlyCreatedTaskId);
+    }
+  };
+
+  const handleTaskDelete = (taskId: string) => {
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
+    }
+    if (editingTask?.id === taskId) {
+      setEditingTask(null);
+    }
   };
 
   return (
@@ -17,13 +40,20 @@ const PlanDetailsPage = () => {
       <SideBar
         selectedDay={selectedDay}
         onDaySelect={handleDaySelect}
-        onAddTaskClick={() => setShowTaskForm(true)}
+        onTaskClick={(taskId) => {
+          setSelectedTaskId(taskId);
+        }}
+        onTaskDelete={handleTaskDelete}
       />
-      <div className="flex-1 bg-white dark:bg-background px-4 overflow-y-auto">
-        {showTaskForm ? (
-          <TaskForm selectedDay={selectedDay} />
+      <div className=" w-full pl-4 rounded-l-2xl overflow-y-auto">
+        {selectedTaskId ? (
+          <TaskView taskId={selectedTaskId} onEditTask={handleEditTask} />
         ) : (
-          <DefaultDayView selectedDay={selectedDay} />
+          <TaskForm
+            selectedDay={selectedDay}
+            editingTask={editingTask}
+            onCancel={handleCancelTaskForm}
+          />
         )}
       </div>
     </div>

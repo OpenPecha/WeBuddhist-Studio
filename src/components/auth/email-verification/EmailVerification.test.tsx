@@ -40,9 +40,11 @@ describe("EmailVerification Component", () => {
   it("renders loading state initially", () => {
     renderWithProviders(<EmailVerification />);
 
-    expect(screen.getByText("Verifying Email...")).toBeDefined();
+    expect(screen.getByText("studio.auth.email.verifying_email")).toBeDefined();
     expect(
-      screen.getByText("Please wait while we verify your email address."),
+      screen.getByText(
+        "studio.auth.email.please_wait_while_we_verify_your_email_address",
+      ),
     ).toBeDefined();
   });
 
@@ -52,29 +54,33 @@ describe("EmailVerification Component", () => {
         email: "test@example.com",
         status: "INACTIVE",
         message:
-          "Email verified successfully. Your account is pending admin approval",
+          "studio.auth.email.email_verified_successfully_your_account_is_pending_admin_approval",
       },
     });
 
     renderWithProviders(<EmailVerification />);
 
     await waitFor(() => {
-      expect(screen.getByText("Email Verified!")).toBeInTheDocument();
+      expect(
+        screen.getByText("studio.auth.email.email_verified"),
+      ).toBeInTheDocument();
     });
 
     expect(
       screen.getByText(
-        "Email verified successfully. Your account is pending admin approval",
+        "studio.auth.email.email_verified_successfully_your_account_is_pending_admin_approval",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText("Continue to Login")).toBeInTheDocument();
+    expect(
+      screen.getByText("studio.auth.email.continue_to_login"),
+    ).toBeInTheDocument();
   });
 
   it("renders error state when API call fails", async () => {
     vi.mocked(axiosInstance.get).mockRejectedValue({
       response: {
         data: {
-          detail: "Invalid verification token",
+          detail: "studio.auth.email.invalid_verification_token",
         },
       },
     });
@@ -82,11 +88,17 @@ describe("EmailVerification Component", () => {
     renderWithProviders(<EmailVerification />);
 
     await waitFor(() => {
-      expect(screen.getByText("Verification Failed")).toBeInTheDocument();
+      expect(
+        screen.getByText("studio.auth.email.verification_failed"),
+      ).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Invalid verification token")).toBeInTheDocument();
-    expect(screen.queryByText("Continue to Login")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("studio.auth.email.invalid_verification_token"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("studio.auth.email.continue_to_login"),
+    ).not.toBeInTheDocument();
   });
 
   it("makes correct API call with token", async () => {
@@ -95,7 +107,7 @@ describe("EmailVerification Component", () => {
         email: "test@example.com",
         status: "INACTIVE",
         message:
-          "Email verified successfully. Your account is pending admin approval",
+          "studio.auth.email.email_verified_successfully_your_account_is_pending_admin_approval",
       },
     });
 
@@ -119,17 +131,19 @@ describe("EmailVerification Component", () => {
         email: "test@example.com",
         status: "INACTIVE",
         message:
-          "Email verified successfully. Your account is pending admin approval",
+          "studio.auth.email.email_verified_successfully_your_account_is_pending_admin_approval",
       },
     });
 
     renderWithProviders(<EmailVerification />);
 
     await waitFor(() => {
-      expect(screen.getByText("Continue to Login")).toBeInTheDocument();
+      expect(
+        screen.getByText("studio.auth.email.continue_to_login"),
+      ).toBeInTheDocument();
     });
 
-    const loginButton = screen.getByText("Continue to Login");
+    const loginButton = screen.getByText("studio.auth.email.continue_to_login");
     fireEvent.click(loginButton);
 
     expect(mockNavigate).toHaveBeenCalledWith("/login");
@@ -174,7 +188,7 @@ describe("EmailVerification Component", () => {
     vi.mocked(axiosInstance.get).mockRejectedValue({
       response: {
         data: {
-          error: "Some other error format",
+          error: "studio.auth.email.some_other_error_format",
         },
       },
     });
@@ -182,13 +196,13 @@ describe("EmailVerification Component", () => {
     renderWithProviders(<EmailVerification />);
 
     await waitFor(() => {
-      expect(screen.getByText("Verification Failed")).toBeInTheDocument();
+      expect(
+        screen.getByText("studio.auth.email.verification_failed"),
+      ).toBeInTheDocument();
     });
 
     expect(
-      screen.getByText(
-        "There was an error verifying your email. Please try again or contact support.",
-      ),
+      screen.getByText("studio.auth.email.there_was_an_error"),
     ).toBeInTheDocument();
   });
 });

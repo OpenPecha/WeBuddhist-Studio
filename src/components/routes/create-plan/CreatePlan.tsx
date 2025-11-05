@@ -8,27 +8,14 @@ import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
 import TagInput from "@/components/ui/molecules/tag-input/TagInput";
-import { DIFFICULTY } from "@/lib/constant";
+import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
+import { uploadImageToS3 } from "../task/api/taskApi";
 
-export const UploadImageToS3 = async (file: File, plan_id: string) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  const { data } = await axiosInstance.post(
-    `/api/v1/cms/media/upload`,
-    formData,
-    {
-      params: {
-        ...(plan_id && { plan_id: plan_id }),
-      },
-    },
-  );
-  return data;
-};
 export const getPlan = async (plan_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
@@ -140,6 +127,7 @@ const Createplan = () => {
       toast.success("Plan updated successfully!", {
         description: "Your plan has been updated and is now available.",
       });
+      navigate("/dashboard");
     },
     onError: (error) => {
       toast.error("Failed to update plan", {
@@ -174,7 +162,7 @@ const Createplan = () => {
   };
   const handleImageUpload = async (file: File) => {
     try {
-      const { url, key } = await UploadImageToS3(
+      const { url, key } = await uploadImageToS3(
         file,
         plan_id === "new" ? "" : plan_id || "",
       );
@@ -182,29 +170,33 @@ const Createplan = () => {
       const imageKey = key;
       setImagePreview(imageUrl);
       setSelectedImage(file);
-      form.setValue("image_url", imageKey);
+      form.setValue("image_url", imageKey, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      toast.error("Failed to upload image");
+    } catch (error: any) {
+      if (error?.response?.status === 413) {
+        toast.error("Failed to update Image", {
+          description: "file exceeds the maximum size of 1MB",
+        });
+      } else {
+        console.error("Image upload failed:", error);
+        toast.error("Failed to upload image");
+      }
     }
   };
 
   const onSubmit = (data: PlanFormData) => {
-    const language = localStorage.getItem("language") || "en";
-    const planformdata = {
-      ...data,
-      language: language,
-    };
     if (plan_id !== "new") {
-      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: planformdata });
+      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: data });
     } else {
-      createPlanMutation.mutate(planformdata);
+      createPlanMutation.mutate(data);
     }
   };
   return (
-    <div className="w-full h-full font-dynamic flex max-sm:flex-col">
+    <div className="w-full border my-4 h-[calc(100vh-40px)] dark:bg-[#181818] bg-[#F5F5F5] rounded-l-2xl font-dynamic flex max-sm:flex-col">
       <div className="flex-1 p-10">
         <h1 className="text-xl font-bold my-4">
           {t("studio.plan.form_field.details")}
@@ -220,7 +212,7 @@ const Createplan = () => {
                   <Pecha.FormControl>
                     <Pecha.Input
                       placeholder={t("studio.plan.form.placeholder.title")}
-                      className="h-12 text-base"
+                      className="h-12 text-base bg-white"
                       {...field}
                     />
                   </Pecha.FormControl>
@@ -263,7 +255,7 @@ const Createplan = () => {
                       placeholder={t(
                         "studio.plan.form.placeholder.number_of_days",
                       )}
-                      className="h-12 text-base"
+                      className="h-12 text-base bg-white"
                       min="1"
                       max="365"
                       {...field}
@@ -274,52 +266,63 @@ const Createplan = () => {
               )}
             />
 
-            <div>
-              <h3 className="text-sm font-bold">
-                {t("studio.dashboard.cover_image")}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t("studio.plan.cover_image.description")}
-              </p>
-
-              <div className="flex gap-4 mt-4 items-start">
-                {!imagePreview && (
-                  <button
-                    type="button"
-                    onClick={() => setIsImageDialogOpen(true)}
-                    className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
-                    aria-label="Upload cover image"
-                  >
-                    <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  </button>
-                )}
-
-                {imagePreview && (
-                  <div className="relative">
-                    <img
-                      src={imagePreview}
-                      alt="Cover preview"
-                      className="w-48 h-32 object-cover rounded-lg border"
-                    />
-                    <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
-                      {selectedImage && (
-                        <p className="text-xs text-white truncate max-w-32">
-                          {selectedImage.name}
-                        </p>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
-                        data-testid="image-remove"
-                      >
-                        <IoMdClose className="h-4 w-4" />
-                      </button>
-                    </div>
+            <Pecha.FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <Pecha.FormItem>
+                  <div>
+                    <h3 className="text-sm font-bold">
+                      {t("studio.dashboard.cover_image")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {t("studio.plan.cover_image.description")}
+                    </p>
                   </div>
-                )}
-              </div>
-            </div>
+                  <Pecha.FormControl>
+                    <div className="flex gap-4 mt-4 items-start">
+                      {!imagePreview && (
+                        <button
+                          type="button"
+                          onClick={() => setIsImageDialogOpen(true)}
+                          className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
+                          aria-label="Upload cover image"
+                        >
+                          <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                        </button>
+                      )}
+
+                      {imagePreview && (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Cover preview"
+                            className="w-48 h-32 object-cover rounded-lg border"
+                          />
+                          <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
+                            {selectedImage && (
+                              <p className="text-xs text-white truncate max-w-32">
+                                {selectedImage.name}
+                              </p>
+                            )}
+                            <button
+                              type="button"
+                              onClick={handleRemoveImage}
+                              className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
+                              data-testid="image-remove"
+                            >
+                              <IoMdClose className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <input type="hidden" {...field} />
+                    </div>
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
+              )}
+            />
             <Pecha.Dialog
               open={isImageDialogOpen}
               onOpenChange={setIsImageDialogOpen}
@@ -370,45 +373,84 @@ const Createplan = () => {
       <div className="flex-1 p-10 sm:mt-9">
         <Pecha.Form {...form}>
           <div className="space-y-6">
-            <Pecha.FormField
-              control={form.control}
-              name="difficulty_level"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormLabel className="text-sm font-bold">
-                    {t("studio.plan.form_field.difficulty")}
-                  </Pecha.FormLabel>
-                  <Pecha.Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <Pecha.FormControl>
-                      <Pecha.SelectTrigger
-                        className="h-12"
-                        data-testid="select-trigger"
-                      >
-                        <Pecha.SelectValue
-                          placeholder={t(
-                            "studio.plan.form.placeholder.select_difficulty",
-                          )}
-                        />
-                      </Pecha.SelectTrigger>
-                    </Pecha.FormControl>
-                    <Pecha.SelectContent>
-                      {DIFFICULTY.map((difficulty) => (
-                        <Pecha.SelectItem
-                          key={difficulty.value}
-                          value={difficulty.value}
+            <div className="flex gap-4 items-center">
+              <Pecha.FormField
+                control={form.control}
+                name="difficulty_level"
+                render={({ field }) => (
+                  <Pecha.FormItem>
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      {t("studio.plan.form_field.difficulty")}
+                    </Pecha.FormLabel>
+                    <Pecha.Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <Pecha.FormControl>
+                        <Pecha.SelectTrigger
+                          className="h-12 bg-white"
+                          data-testid="select-trigger"
                         >
-                          {difficulty.label}
-                        </Pecha.SelectItem>
-                      ))}
-                    </Pecha.SelectContent>
-                  </Pecha.Select>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
-            />
+                          <Pecha.SelectValue
+                            placeholder={t(
+                              "studio.plan.form.placeholder.select_difficulty",
+                            )}
+                          />
+                        </Pecha.SelectTrigger>
+                      </Pecha.FormControl>
+                      <Pecha.SelectContent>
+                        {DIFFICULTY.map((difficulty) => (
+                          <Pecha.SelectItem
+                            key={difficulty.value}
+                            value={difficulty.value}
+                          >
+                            {difficulty.label}
+                          </Pecha.SelectItem>
+                        ))}
+                      </Pecha.SelectContent>
+                    </Pecha.Select>
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                )}
+              />
+              <Pecha.FormField
+                control={form.control}
+                name="language"
+                render={({ field }) => (
+                  <Pecha.FormItem>
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      {t("studio.plan.form_field.language")}
+                    </Pecha.FormLabel>
+                    <Pecha.Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <Pecha.FormControl>
+                        <Pecha.SelectTrigger className="h-12 bg-white">
+                          <Pecha.SelectValue
+                            placeholder={t(
+                              "studio.plan.form.placeholder.select_language",
+                            )}
+                          />
+                        </Pecha.SelectTrigger>
+                      </Pecha.FormControl>
+                      <Pecha.SelectContent>
+                        {PLAN_LANGUAGE.map((planlang) => (
+                          <Pecha.SelectItem
+                            key={planlang.value}
+                            value={planlang.value}
+                          >
+                            {planlang.label}
+                          </Pecha.SelectItem>
+                        ))}
+                      </Pecha.SelectContent>
+                    </Pecha.Select>
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                )}
+              />
+            </div>
+
             <Pecha.FormField
               control={form.control}
               name="tags"

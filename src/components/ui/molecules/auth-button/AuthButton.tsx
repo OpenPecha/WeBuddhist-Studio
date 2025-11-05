@@ -1,82 +1,38 @@
 import { useAuth } from "@/config/auth-context";
-import { Button } from "../../atoms/button";
-import { Skeleton } from "../../atoms/skeleton";
-import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/config/axios-config";
 import { NO_PROFILE_IMAGE } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslate } from "@tolgee/react";
-import { IoIosLogOut } from "react-icons/io";
+import { Link } from "react-router-dom";
 export const fetchUserInfo = async () => {
   const { data } = await axiosInstance.get(`/api/v1/authors/info`);
   return data;
 };
 const AuthButton = () => {
-  const navigate = useNavigate();
-  const { t } = useTranslate();
-  const { isLoggedIn, logout, isAuthLoading } = useAuth();
-  const { data: userInfo, isLoading: isUserInfoLoading } = useQuery({
+  const { isLoggedIn } = useAuth();
+  const { data: userInfo } = useQuery({
     queryKey: ["userInfo"],
     queryFn: fetchUserInfo,
   });
-  function handleLogout(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault();
-    logout();
-    navigate("/login");
-  }
-  const isLoading = isAuthLoading || (isLoggedIn && isUserInfoLoading);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-2">
-        <Skeleton className="w-8 h-8 rounded-full" />
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-3 w-32" />
-        </div>
-        <Skeleton className="h-9 w-16" />
-      </div>
-    );
-  }
 
   if (isLoggedIn) {
     return (
-      <div className="flex items-center font-dynamic gap-2">
-        <img
-          src={userInfo.avatar_url || NO_PROFILE_IMAGE}
-          alt="user"
-          className="w-8 h-8 hidden md:block rounded-full"
-        />
-        <div className="md:flex hidden flex-col">
-          <span className="text-sm font-medium">
-            {userInfo.firstname} {userInfo.lastname}
-          </span>
-          <span className="text-xs text-[#8a8a8a]">{userInfo.email}</span>
+      <Link to={`/profile/${userInfo?.id}`}>
+        <div className="flex items-center font-dynamic gap-2">
+          <img
+            src={userInfo?.image_url || NO_PROFILE_IMAGE}
+            alt="user"
+            className="hidden w-10 h-10 object-cover md:block rounded-full"
+          />
+          <div className="md:flex hidden flex-col">
+            <span className="text-sm font-medium">
+              {userInfo?.firstname} {userInfo?.lastname}
+            </span>
+            <span className="text-xs text-[#8a8a8a]">{userInfo?.email}</span>
+          </div>
         </div>
-        <Button onClick={handleLogout} variant="outline">
-          <span className="text-sm font-medium md:block hidden">
-            {t("header.profileMenu.log_out")}
-          </span>
-          <span className="md:hidden">
-            <IoIosLogOut className="w-4 h-4" />
-          </span>
-        </Button>
-      </div>
+      </Link>
     );
   }
-
-  return (
-    <div className="flex items-center font-dynamic gap-2">
-      <Button onClick={() => navigate("/login")} variant="outline">
-        <span className="text-sm font-medium">
-          {t("login.form.button.login_in")}
-        </span>
-      </Button>
-      <Button onClick={() => navigate("/signup")} variant="secondary">
-        <span className="text-sm font-medium">{t("common.sign_up")}</span>
-      </Button>
-    </div>
-  );
 };
 
 export default AuthButton;

@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/ui/molecules/nav-bar/Navbar";
-import { setFontVariables } from "./lib/font-config";
+import { setFontVariables } from "./config/font-config";
 import { useEffect, useState } from "react";
 import { ACCESS_TOKEN, LANGUAGE, REFRESH_TOKEN } from "./lib/constant";
 import { useAuth } from "./config/auth-context";
@@ -63,9 +63,11 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-full">
+    <div className="flex h-screen w-full">
       {!hideNavbar && <Navbar />}
-      <Outlet />
+      <div className="flex-1 overflow-auto">
+        <Outlet />
+      </div>
     </div>
   );
 }
