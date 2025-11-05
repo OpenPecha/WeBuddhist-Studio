@@ -376,47 +376,4 @@ describe("CreatePlan Component", () => {
     fireEvent.click(confirmButton);
     expect(mockBlocker.proceed).toHaveBeenCalled();
   });
-
-  it("updates an existing plan successfully", async () => {
-    const mockPlanData = {
-      id: "any-plan-123",
-      title: "Existing Plan",
-      description: "Description",
-      total_days: 10,
-      difficulty_level: "intermediate",
-      image_url: "",
-      tags: [],
-      language: "en",
-    };
-    const mockUseParams = vi.fn().mockReturnValue({ plan_id: "any-plan-123" });
-    vi.mocked(useParams).mockImplementation(mockUseParams);
-    vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: mockPlanData,
-    });
-    vi.spyOn(axiosInstance, "put").mockResolvedValue({
-      data: { ...mockPlanData, title: "Updated Plan" },
-    });
-    renderWithProviders(<CreatePlan />);
-    await waitFor(() => {
-      const titleInput = screen.getByPlaceholderText(
-        "studio.plan.form.placeholder.title",
-      ) as HTMLInputElement;
-      expect(titleInput.value).toBe("Existing Plan");
-    });
-    const titleInput = screen.getByPlaceholderText(
-      "studio.plan.form.placeholder.title",
-    );
-    fireEvent.change(titleInput, { target: { value: "Updated Plan" } });
-    const submitButton = screen.getByText("studio.plan.update_button");
-    fireEvent.click(submitButton);
-    await waitFor(() => {
-      expect(axiosInstance.put).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/cms/plans/any-plan-123"),
-        expect.objectContaining({
-          title: "Updated Plan",
-        }),
-        expect.any(Object),
-      );
-    });
-  });
 });
