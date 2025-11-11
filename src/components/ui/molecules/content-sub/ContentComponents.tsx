@@ -86,7 +86,7 @@ export const ImageContent = ({ content }: { content: string }) => (
 );
 
 export const TextContent = ({ content }: { content: string }) => (
-  <div className="w-full min-h-24 max-h-56 overflow-y-auto bg-[#FAFAFA] dark:bg-sidebar-secondary  whitespace-pre-wrap text-base p-3 border rounded-md">
+  <div className="w-full min-h-64 max-h-56 overflow-y-auto bg-[#FAFAFA] dark:bg-sidebar-secondary  whitespace-pre-wrap text-base p-3 border rounded-md">
     {content}
   </div>
 );
