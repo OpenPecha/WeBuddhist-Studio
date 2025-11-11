@@ -93,10 +93,10 @@ const SideBar = ({
       <div className="flex-1">
         <div className="flex p-4 items-center border-b pb-3 gap-2 mb-1">
           <IoCalendarClearOutline className="w-5 h-5 text-foreground" />
-          <span className="text-sm  text-foreground">Days</span>
+          <span className="text-sm text-foreground">Days</span>
         </div>
 
-        <div className="space-y-1 h-[calc(100vh-200px)] overflow-auto">
+        <div className="space-y-1 h-2/3 overflow-auto">
           {isLoading ? (
             <>
               {[1, 2, 3].map((index) => (
