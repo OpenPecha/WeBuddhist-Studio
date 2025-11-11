@@ -91,7 +91,7 @@ const TextSubtask = ({
 }) => (
   <Pecha.Textarea
     placeholder="Enter your text content"
-    className="w-full h-24 resize-none text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
+    className="w-full min-h-64 resize-none text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
     value={subTask.content}
     onChange={(e) => onUpdate(index, { content: e.target.value })}
   />
