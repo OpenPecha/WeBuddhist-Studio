@@ -4,6 +4,7 @@ import { FaChevronUp, FaChevronDown } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import defaultCover from "/default-image.webp";
 import { DropdownButton } from "../dropdown-button/DropdownButton";
+import { FaStar } from "react-icons/fa";
 
 export interface Plan {
   id: string;
@@ -13,6 +14,7 @@ export interface Plan {
   total_days: string;
   subscription_count: string;
   status: string;
+  featured:boolean;
   language: string;
 }
 
@@ -24,6 +26,7 @@ interface DashBoardTableProps {
   sortBy: string;
   sortOrder: string;
   onSort: (column: string) => void;
+  handleFeatured: (planId: string) => void;
 }
 
 export function DashBoardTable({
@@ -34,6 +37,7 @@ export function DashBoardTable({
   sortBy,
   sortOrder,
   onSort,
+  handleFeatured,
 }: DashBoardTableProps) {
   const navigate = useNavigate();
 
@@ -182,9 +186,17 @@ export function DashBoardTable({
         <Pecha.TableCell>{getLanguage(plan.language)}</Pecha.TableCell>
         <Pecha.TableCell>
           <div className="flex items-center gap-2">
+            <Pecha.Button variant="outline" className="bg-gray-100 hover:bg-gray-200" onClick={() => handleFeatured(plan.id)}>
+            <FaStar className={`${plan.featured ? "text-yellow-500" : "text-gray-500"}`} /> {plan.featured ? "Featured" : "Not Featured"}
+            </Pecha.Button>
+          </div>
+        </Pecha.TableCell>
+        <Pecha.TableCell>
+          <div className="flex items-center gap-2">
             <DropdownButton planId={plan.id} currentStatus={plan.status} />
           </div>
         </Pecha.TableCell>
+
       </Pecha.TableRow>
     ));
   };
@@ -216,11 +228,14 @@ export function DashBoardTable({
           <Pecha.TableHead className="w-[150px] font-bold">
             {t("studio.dashboard.plan_used")}
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[150px] font-bold">
+          <Pecha.TableHead className="w-[100px] font-bold">
             Status
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[150px] font-bold">
+          <Pecha.TableHead className="w-[100px] font-bold">
             {t("studio.plan.form_field.language")}
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[150px] font-bold">
+            Feature
           </Pecha.TableHead>
           <Pecha.TableHead className="w-[150px] font-bold">
             {t("studio.dashboard.actions")}

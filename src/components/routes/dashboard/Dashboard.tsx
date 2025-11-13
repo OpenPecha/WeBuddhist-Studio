@@ -5,11 +5,12 @@ import { useState, Activity } from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { Link } from "react-router-dom";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
+import { toast } from "sonner";
 
 const fetchPlans = async (
   page: number,
@@ -35,6 +36,16 @@ const fetchPlans = async (
   return data;
 };
 
+const toggleFeatured = async (planId: string) => {
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.patch(`/api/v1/cms/plans/${planId}/featured`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return data;
+};
+
 const Dashboard = () => {
   const { t } = useTranslate();
   const [search, setSearch] = useState("");
@@ -51,6 +62,7 @@ const Dashboard = () => {
       setSortOrder("asc");
     }
   };
+
   const {
     data: planData,
     isLoading,
@@ -68,6 +80,21 @@ const Dashboard = () => {
     refetchOnWindowFocus: false,
     retry: false,
   });
+ 
+  const queryClient = useQueryClient();
+  const featuredMutation = useMutation({
+    mutationFn: (planId: string) => toggleFeatured(planId),
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response.data.detail.message);
+    },
+  });
+
+  const handleFeatured = (planId: string) => {
+    featuredMutation.mutate(planId);
+  };
 
   const totalPages = planData ? Math.ceil(planData.total / 10) : 1;
 
@@ -102,6 +129,7 @@ const Dashboard = () => {
           sortBy={sortBy}
           sortOrder={sortOrder}
           onSort={handleSort}
+          handleFeatured={handleFeatured}
         />
       </div>
       <Activity mode={planData?.plans?.length > 0 ? "visible" : "hidden"}>
