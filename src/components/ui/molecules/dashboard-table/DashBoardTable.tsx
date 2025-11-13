@@ -14,7 +14,7 @@ export interface Plan {
   total_days: string;
   subscription_count: string;
   status: string;
-  featured:boolean;
+  featured: boolean;
   language: string;
 }
 
@@ -186,8 +186,15 @@ export function DashBoardTable({
         <Pecha.TableCell>{getLanguage(plan.language)}</Pecha.TableCell>
         <Pecha.TableCell>
           <div className="flex items-center gap-2">
-            <Pecha.Button variant="outline" className="bg-gray-100 hover:bg-gray-200" onClick={() => handleFeatured(plan.id)}>
-            <FaStar className={`${plan.featured ? "text-yellow-500" : "text-gray-500"}`} /> {plan.featured ? "Featured" : "Not Featured"}
+            <Pecha.Button
+              variant="outline"
+              className="bg-gray-100 hover:bg-gray-200"
+              onClick={() => handleFeatured(plan.id)}
+            >
+              <FaStar
+                className={`${plan.featured ? "text-yellow-500" : "text-gray-500"}`}
+              />{" "}
+              {plan.featured ? "Featured" : "Not Featured"}
             </Pecha.Button>
           </div>
         </Pecha.TableCell>
@@ -196,7 +203,6 @@ export function DashBoardTable({
             <DropdownButton planId={plan.id} currentStatus={plan.status} />
           </div>
         </Pecha.TableCell>
-
       </Pecha.TableRow>
     ));
   };

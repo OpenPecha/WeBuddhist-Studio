@@ -38,11 +38,14 @@ const fetchPlans = async (
 
 const toggleFeatured = async (planId: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.patch(`/api/v1/cms/plans/${planId}/featured`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
+  const { data } = await axiosInstance.patch(
+    `/api/v1/cms/plans/${planId}/featured`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-  });
+  );
   return data;
 };
 
@@ -80,7 +83,7 @@ const Dashboard = () => {
     refetchOnWindowFocus: false,
     retry: false,
   });
- 
+
   const queryClient = useQueryClient();
   const featuredMutation = useMutation({
     mutationFn: (planId: string) => toggleFeatured(planId),
