@@ -189,6 +189,7 @@ export function DashBoardTable({
             <Pecha.Button
               variant="outline"
               className="bg-gray-100 hover:bg-gray-200"
+              disabled={plan.status !== "PUBLISHED"}
               onClick={() => handleFeatured(plan.id)}
             >
               <FaStar
