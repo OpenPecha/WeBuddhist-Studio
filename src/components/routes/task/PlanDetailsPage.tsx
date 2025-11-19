@@ -30,7 +30,7 @@ const PlanDetailsPage = () => {
     }
   }
 
-  const status = cachedStatus;
+  const status = cachedStatus || "DRAFT";
   const isDraft = status === "DRAFT";
 
   const handleDaySelect = (dayNumber: number) => {
