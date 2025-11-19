@@ -17,7 +17,12 @@ import {
 } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 
-export function SortableList({ items, onReorder, children }: any) {
+export function SortableList({
+  items,
+  onReorder,
+  children,
+  disabled = false,
+}: any) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -27,6 +32,8 @@ export function SortableList({ items, onReorder, children }: any) {
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (disabled) return;
+
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -36,7 +43,7 @@ export function SortableList({ items, onReorder, children }: any) {
 
   return (
     <DndContext
-      sensors={sensors}
+      sensors={disabled ? [] : sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
       modifiers={[restrictToVerticalAxis, restrictToParentElement]}
