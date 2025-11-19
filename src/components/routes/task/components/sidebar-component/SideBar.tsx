@@ -187,7 +187,8 @@ const SideBar = ({
                                   ? "cursor-pointer"
                                   : "cursor-not-allowed opacity-50"
                               }`}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (isDraft) {
                                   handleDayClick(day.day_number);
                                 }
