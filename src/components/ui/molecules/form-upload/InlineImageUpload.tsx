@@ -80,7 +80,9 @@ const InlineImageUpload = ({
                 className="rounded-lg h-full border w-32 object-cover"
               />
               <div className="flex text-start flex-col gap-2 w-xs min-w-0">
-                <p className="text-ellipsis overflow-hidden whitespace-nowrap">{selectedFile?.name}</p>
+                <p className="text-ellipsis overflow-hidden whitespace-nowrap">
+                  {selectedFile?.name}
+                </p>
                 <div className="flex gap-2">
                   <Button
                     variant="default"

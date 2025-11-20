@@ -7,7 +7,9 @@ const UserCard = ({ userInfo }: any) => {
       <div className="flex items-start gap-6">
         <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-dashed border-gray-200 dark:border-[#505050]">
           <img
-            src={userInfo.image?.medium || userInfo.image_url || NO_PROFILE_IMAGE}
+            src={
+              userInfo.image?.medium || userInfo.image_url || NO_PROFILE_IMAGE
+            }
             alt="profile"
             className="w-full h-full object-cover"
           />
