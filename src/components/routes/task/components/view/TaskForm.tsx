@@ -27,11 +27,17 @@ interface TaskFormProps {
   selectedDay: number;
   editingTask?: any;
   onCancel: (newlyCreatedTaskId?: string) => void;
+  isDraft?: boolean;
 }
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
-const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
+const TaskForm = ({
+  selectedDay,
+  editingTask,
+  onCancel,
+  isDraft = true,
+}: TaskFormProps) => {
   const { plan_id } = useParams();
   const queryClient = useQueryClient();
   const form = useForm({
@@ -252,9 +258,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       return;
     }
     try {
-      const { url, key } = await uploadImageToS3(file, plan_id || "");
+      const { image, key } = await uploadImageToS3(file, plan_id || "");
       updateSubTask(index, {
-        imagePreview: url,
+        imagePreview: image.original,
         content: key,
       });
       toast.success("Image uploaded successfully!");
@@ -309,9 +315,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               isTitleEditing={isTitleEditing}
               formValue={formValues.title}
               control={form.control}
-              onEdit={() => setIsTitleEditing(true)}
+              onEdit={() => isDraft && setIsTitleEditing(true)}
               onSave={handleSaveTitle}
               onCancel={() => setIsTitleEditing(false)}
+              disabled={!isDraft}
             />
             {isEditMode && (
               <DaySelector selectedDay={selectedDay} taskId={editingTask?.id} />
@@ -341,7 +348,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           {imageUploadError && (
             <div className="text-red-500 text-sm ml-4">{imageUploadError}</div>
           )}
-          <ContentTypeSelector onSelectType={handleAddSubTask} />
+          {isDraft && <ContentTypeSelector onSelectType={handleAddSubTask} />}
 
           <div className="p-4 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
@@ -359,7 +366,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               disabled={
-                createTaskMutation.isPending || updateTaskMutation.isPending
+                !isDraft ||
+                createTaskMutation.isPending ||
+                updateTaskMutation.isPending
               }
             >
               {createTaskMutation.isPending || updateTaskMutation.isPending

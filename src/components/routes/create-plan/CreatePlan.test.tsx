@@ -70,8 +70,14 @@ describe("CreatePlan Component", () => {
       if (url.includes("/media/upload")) {
         return Promise.resolve({
           data: {
-            url: "mock-image-url",
+            image: {
+              thumbnail: "mock-thumb-url",
+              medium: "mock-medium-url",
+              original: "mock-image-url",
+            },
             key: "mock-image-key",
+            path: "images/path",
+            message: "Image uploaded successfully",
           },
         });
       }

@@ -93,12 +93,22 @@ Object.defineProperty(window, "sessionStorage", {
   writable: true,
 });
 
-const renderWithProviders = (component: React.ReactElement) => {
+const renderWithProviders = (component: React.ReactElement, isDraft = true) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
     },
   });
+  if (isDraft) {
+    queryClient.setQueryData(["dashboard-plans"], {
+      plans: [
+        {
+          id: "test-plan-id",
+          status: "DRAFT",
+        },
+      ],
+    });
+  }
   return render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>{component}</BrowserRouter>
@@ -149,7 +159,7 @@ describe("PlanDetailsPanel Component", () => {
   it("calls API when Add New Day button is clicked", async () => {
     const { default: axiosInstance } = await import("@/config/axios-config");
     const mockAxios = axiosInstance as any;
-    renderWithProviders(<PlanDetailsPage />);
+    renderWithProviders(<PlanDetailsPage />, true);
     await waitFor(() => {
       expect(screen.getByText("Day 4")).toBeInTheDocument();
     });
@@ -175,7 +185,7 @@ describe("PlanDetailsPanel Component", () => {
     mockAxios.post.mockRejectedValueOnce({
       response: { data: { detail: "Cannot create day" } },
     });
-    renderWithProviders(<PlanDetailsPage />);
+    renderWithProviders(<PlanDetailsPage />, true);
     await waitFor(() => {
       expect(screen.getByText("Day 4")).toBeInTheDocument();
     });
@@ -199,13 +209,20 @@ describe("PlanDetailsPanel Component", () => {
   it("switches to task view after creating a new task", async () => {
     const { default: axiosInstance } = await import("@/config/axios-config");
     const mockAxios = axiosInstance as any;
-    mockAxios.post.mockResolvedValueOnce({
-      data: {
-        id: "newly-created-task-123",
-        title: "New Task",
-        display_order: 1,
-        estimated_time: 30,
-      },
+    mockAxios.post.mockImplementation((url: string, data?: any) => {
+      if (url.includes("/tasks")) {
+        return Promise.resolve({
+          data: {
+            id: "newly-created-task-123",
+            title: data?.title || "New Task",
+            display_order: 1,
+            estimated_time: 30,
+          },
+        });
+      }
+      return Promise.resolve({
+        data: { id: "new-day-id", day_number: 5, tasks: [] },
+      });
     });
     mockAxios.get.mockImplementation((url: string) => {
       if (url.includes("/tasks/newly-created-task-123")) {
@@ -221,7 +238,7 @@ describe("PlanDetailsPanel Component", () => {
       }
       return Promise.resolve({ data: mockPlanData });
     });
-    renderWithProviders(<PlanDetailsPage />);
+    renderWithProviders(<PlanDetailsPage />, true);
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
@@ -233,6 +250,8 @@ describe("PlanDetailsPanel Component", () => {
     });
     await waitFor(() => {
       expect(screen.getByText("Task")).toBeInTheDocument();
+    });
+    await waitFor(() => {
       expect(screen.getByText("New Task")).toBeInTheDocument();
     });
   });
