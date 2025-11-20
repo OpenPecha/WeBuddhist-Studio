@@ -15,7 +15,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.PLAN_STUDIO }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set short git commit SHA
         id: vars
