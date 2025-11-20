@@ -92,8 +92,8 @@ const ProfileEditForm = ({
 
   const handleImageUpload = async (file: File) => {
     try {
-      const { url, key } = await uploadImageToS3(file, "");
-      const imageUrl = url;
+      const { image, key } = await uploadImageToS3(file, "");
+      const imageUrl = image.original;
       const imageKey = key;
       setImagePreview(imageUrl);
       form.setValue("image_url", imageKey);

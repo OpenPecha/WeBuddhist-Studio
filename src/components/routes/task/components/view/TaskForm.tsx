@@ -258,9 +258,9 @@ const TaskForm = ({
       return;
     }
     try {
-      const { url, key } = await uploadImageToS3(file, plan_id || "");
+      const { image, key } = await uploadImageToS3(file, plan_id || "");
       updateSubTask(index, {
-        imagePreview: url,
+        imagePreview: image.original,
         content: key,
       });
       toast.success("Image uploaded successfully!");
