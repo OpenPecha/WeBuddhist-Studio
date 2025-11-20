@@ -19,7 +19,7 @@ const AuthButton = () => {
       <Link to={`/profile/${userInfo?.id}`}>
         <div className="flex items-center font-dynamic gap-2">
           <img
-            src={userInfo?.image_url || NO_PROFILE_IMAGE}
+            src={userInfo?.image?.thumbnail || userInfo?.image_url || NO_PROFILE_IMAGE}
             alt="user"
             className="hidden w-10 h-10 object-cover md:block rounded-full"
           />

@@ -62,7 +62,7 @@ const ProfileEditForm = ({
     ];
   });
   const [imagePreview, setImagePreview] = useState<string | null>(
-    userInfo?.image_url || null,
+    userInfo?.image?.medium || null,
   );
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
