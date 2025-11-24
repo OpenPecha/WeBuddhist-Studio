@@ -2,29 +2,13 @@ import { Pecha } from "@/components/ui/shadimport";
 import { useMemo, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { useTranslate } from "@tolgee/react";
-import axiosInstance from "@/config/axios-config";
 import { useDebounce } from "use-debounce";
 import { useQuery } from "@tanstack/react-query";
 import SourceItem from "./sourceItem";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
-
-export const fetchSegments = async (
-  searchFilter: string,
-  limit: number,
-  skip: number,
-) => {
-  const { data } = await axiosInstance.get(
-    `/api/v1/search?query=${searchFilter}&search_type=${"SOURCE"}`,
-    {
-      params: {
-        limit,
-        skip,
-      },
-    },
-  );
-  return data;
-};
+import { searchSources } from "@/components/api/searchApi";
+import { LANGUAGE } from "@/lib/constant";
 
 interface SourceSelectorSheetProps {
   isOpen: boolean;
@@ -51,7 +35,15 @@ export const SourceSelectorSheet = ({
       pagination.currentPage,
       pagination.limit,
     ],
-    queryFn: () => fetchSegments(debouncedSearchFilter, pagination.limit, skip),
+    queryFn: () => {
+      const language = localStorage.getItem(LANGUAGE) || "en";
+      return searchSources({
+        query: debouncedSearchFilter,
+        language,
+        limit: pagination.limit,
+        skip,
+      });
+    },
     refetchOnWindowFocus: false,
     enabled: isOpen,
   });
