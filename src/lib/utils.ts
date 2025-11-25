@@ -31,33 +31,35 @@ export const getYouTubeVideoId = (url: string) => {
 export const convertDuration = (duration: string) => {
   const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
 
-  const hours = (match?.[1] || '0H').slice(0, -1);
-  const minutes = (match?.[2] || '0M').slice(0, -1);
-  const seconds = (match?.[3] || '0S').slice(0, -1);
+  const hours = (match?.[1] || "0H").slice(0, -1);
+  const minutes = (match?.[2] || "0M").slice(0, -1);
+  const seconds = (match?.[3] || "0S").slice(0, -1);
 
   return `${hours}:${minutes}:${seconds}`;
-}
+};
 
 export const getYouTubeDuration = async (url: string): Promise<string> => {
   try {
     // Try to get video ID from both regular YouTube and Shorts URLs
     const videoId = getYouTubeShortsId(url) || getYouTubeVideoId(url);
-    
+
     if (!videoId) {
       throw new Error("Invalid YouTube URL - could not extract video ID");
     }
 
     const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY || "";
-    
+
     if (!apiKey) {
       throw new Error("YouTube API key is not configured");
     }
     const youtubeUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${apiKey}`;
 
     const response = await fetch(youtubeUrl);
-    
+
     if (!response.ok) {
-      throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `YouTube API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -66,7 +68,7 @@ export const getYouTubeDuration = async (url: string): Promise<string> => {
     }
 
     const duration = data.items?.[0]?.contentDetails?.duration;
-    
+
     if (!duration) {
       throw new Error("Duration not found in YouTube API response");
     }
@@ -76,8 +78,7 @@ export const getYouTubeDuration = async (url: string): Promise<string> => {
     console.error("Error fetching YouTube duration:", error);
     throw error; // Re-throw to let caller handle it
   }
-}
-
+};
 
 export const getYouTubeShortsId = (url: string) => {
   const match = url.match(

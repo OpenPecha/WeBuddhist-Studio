@@ -70,7 +70,6 @@ const VideoSubtask = ({
   index: number;
   onUpdate: (index: number, updates: Partial<SubTask>) => void;
 }) => {
-
   const handleUrlChange = async (url: string) => {
     onUpdate(index, { content: url, duration: "" });
 
@@ -88,14 +87,14 @@ const VideoSubtask = ({
 
   return (
     <>
-        <Pecha.Input
-          type="url"
-          placeholder="Enter YouTube URL"
-          className="h-12 text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
-          value={subTask.content}
-          onChange={(e) => handleUrlChange(e.target.value)}
-        />
-      
+      <Pecha.Input
+        type="url"
+        placeholder="Enter YouTube URL"
+        className="h-12 text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
+        value={subTask.content}
+        onChange={(e) => handleUrlChange(e.target.value)}
+      />
+
       <VideoContent content={subTask.content} />
     </>
   );

@@ -79,7 +79,8 @@ const TaskForm = ({
           content: subTask.content,
           content_type: subTask.content_type,
           display_order: index + 1,
-          ...(subTask.content_type === "VIDEO" && subTask.duration && { duration: subTask.duration }),
+          ...(subTask.content_type === "VIDEO" &&
+            subTask.duration && { duration: subTask.duration }),
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
@@ -106,7 +107,8 @@ const TaskForm = ({
         content: subTask.content,
         content_type: subTask.content_type,
         display_order: index + 1,
-        ...(subTask.content_type === "VIDEO" && subTask.duration && { duration: subTask.duration }),
+        ...(subTask.content_type === "VIDEO" &&
+          subTask.duration && { duration: subTask.duration }),
       }));
       await updateSubTasks(editingTask.id, subTasksPayload);
     },
