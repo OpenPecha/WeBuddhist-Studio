@@ -10,9 +10,10 @@ const SourceItem = ({ source, onSegment }: any) => {
         <img src={pechaIcon} alt="source icon" className="w-8 h-8" />
       </div>
       <div className="flex flex-col gap-2">
-        {source.segment_match.map((segment: any) => (
+        {source.segment_matches?.map((segment: any, index: number) => (
           <button
-            className="border p-2 rounded-md text-left border-dashed border-gray-300 dark:border-[#313132] text-sm"
+            key={segment.segment_id || index}
+            className="border p-2 rounded-md text-left border-dashed border-gray-300 dark:border-[#313132] text-sm cursor-pointer"
             onClick={() => onSegment?.(segment.content)}
           >
             <div dangerouslySetInnerHTML={{ __html: segment.content }} />
