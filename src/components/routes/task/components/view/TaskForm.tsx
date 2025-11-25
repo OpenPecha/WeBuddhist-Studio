@@ -79,6 +79,7 @@ const TaskForm = ({
           content: subTask.content,
           content_type: subTask.content_type,
           display_order: index + 1,
+          ...(subTask.content_type === "VIDEO" && subTask.duration && { duration: subTask.duration }),
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
@@ -105,6 +106,7 @@ const TaskForm = ({
         content: subTask.content,
         content_type: subTask.content_type,
         display_order: index + 1,
+        ...(subTask.content_type === "VIDEO" && subTask.duration && { duration: subTask.duration }),
       }));
       await updateSubTasks(editingTask.id, subTasksPayload);
     },
@@ -152,6 +154,7 @@ const TaskForm = ({
               id: data.id,
               content_type: "VIDEO",
               content: data.content,
+              duration: data.duration,
             };
           case "TEXT":
             return {
@@ -199,6 +202,7 @@ const TaskForm = ({
           id: null,
           content_type: "VIDEO",
           content: "",
+          duration: "",
         };
         break;
       case "TEXT":
@@ -264,7 +268,7 @@ const TaskForm = ({
         content: key,
       });
       toast.success("Image uploaded successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload image");
     }
   };
@@ -288,7 +292,7 @@ const TaskForm = ({
     onCancel(newlyCreatedTaskId);
   };
 
-  const onSubmit = (data: TaskFormData) => {
+  const onSubmit = async (data: TaskFormData) => {
     const taskData: any = {
       plan_id: plan_id!,
       day_id: currentDayData!.id,

@@ -43,6 +43,7 @@ export const createSubTasks = async (
     content: string | null;
     content_type: string;
     display_order: number;
+    duration?: string;
   }[],
 ) => {
   const { data } = await axiosInstance.post(
@@ -65,6 +66,7 @@ export const updateSubTasks = async (
     content: string | null;
     content_type: string;
     display_order: number;
+    duration?: string;
   }[],
 ) => {
   await axiosInstance.put(
