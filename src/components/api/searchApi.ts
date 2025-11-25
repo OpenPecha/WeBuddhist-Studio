@@ -45,5 +45,3 @@ export const searchSources = async ({
 };
 
 export type { SearchCommon };
-
-
