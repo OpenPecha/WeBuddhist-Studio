@@ -11,9 +11,7 @@ RUN npm install
 
 COPY . .
 ARG VITE_ENV_SALT
-ARG VITE_YOUTUBE_API_KEY
 ENV VITE_ENV_SALT=${VITE_ENV_SALT}
-ENV VITE_YOUTUBE_API_KEY=${VITE_YOUTUBE_API_KEY}
 RUN npm run build
 
 FROM nginx:stable-alpine
@@ -33,4 +31,4 @@ COPY nginx/security-headers.conf /etc/nginx/
 
 EXPOSE 4173
 
-CMD ["sh", "-c", "envsubst '${VITE_BACKEND_BASE_URL} ${VITE_YOUTUBE_API_KEY}' < /etc/nginx/conf.d/studio.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "envsubst '${VITE_BACKEND_BASE_URL}' < /etc/nginx/conf.d/studio.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
