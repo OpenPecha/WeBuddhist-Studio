@@ -48,7 +48,6 @@ export const getYouTubeDuration = async (url: string): Promise<string> => {
     }
 
     const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY || "";
-
     if (!apiKey) {
       throw new Error("YouTube API key is not configured");
     }
