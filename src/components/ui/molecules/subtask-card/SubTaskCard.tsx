@@ -7,12 +7,14 @@ import {
   AudioContent,
   ContentIcon,
 } from "../content-sub/ContentComponents";
+import { getYouTubeDuration } from "@/lib/utils";
 
 interface VideoSubTask {
   id?: string | null;
   content_type: "VIDEO";
   content: string;
   display_order?: number;
+  duration?: string;
 }
 
 interface TextSubTask {
@@ -67,18 +69,36 @@ const VideoSubtask = ({
   subTask: VideoSubTask;
   index: number;
   onUpdate: (index: number, updates: Partial<SubTask>) => void;
-}) => (
-  <>
-    <Pecha.Input
-      type="url"
-      placeholder="Enter YouTube URL"
-      className="h-12 text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
-      value={subTask.content}
-      onChange={(e) => onUpdate(index, { content: e.target.value })}
-    />
-    <VideoContent content={subTask.content} />
-  </>
-);
+}) => {
+  const handleUrlChange = async (url: string) => {
+    onUpdate(index, { content: url, duration: "" });
+
+    // Fetch duration if it's a valid YouTube URL
+    if (url && (url.includes("youtube.com") || url.includes("youtu.be"))) {
+      try {
+        const duration = await getYouTubeDuration(url);
+        onUpdate(index, { content: url, duration });
+      } catch (error) {
+        console.error("Failed to fetch duration:", error);
+        onUpdate(index, { content: url, duration: "" });
+      }
+    }
+  };
+
+  return (
+    <>
+      <Pecha.Input
+        type="url"
+        placeholder="Enter YouTube URL"
+        className="h-12 text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
+        value={subTask.content}
+        onChange={(e) => handleUrlChange(e.target.value)}
+      />
+
+      <VideoContent content={subTask.content} />
+    </>
+  );
+};
 
 const TextSubtask = ({
   subTask,
