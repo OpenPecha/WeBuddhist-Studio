@@ -1,7 +1,7 @@
 import axiosInstance from "@/config/axios-config";
 import { Pecha } from "@/components/ui/shadimport";
 import { Label } from "@/components/ui/atoms/label";
-import { SOCIAL_PLATFORMS } from "@/lib/constant";
+import { SOCIAL_PLATFORMS, PLATFORM_PATTERNS } from "@/lib/constant";
 import { IoMdClose, IoMdAdd } from "react-icons/io";
 import { FaEdit } from "react-icons/fa";
 import { useState } from "react";
@@ -13,6 +13,13 @@ import { profileSchema, type ProfileFormData } from "@/schema/ProfileSchema";
 import { toast } from "sonner";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
+
+const getUrlError = (account: string, url: string): string | null => {
+  if (!account || !url || account === "email") return null;
+  const pattern = PLATFORM_PATTERNS[account];
+  if (pattern && !pattern.test(url)) return `URL must be a valid ${account} link`;
+  return null;
+};
 
 interface SocialProfile {
   account: string;
@@ -125,6 +132,10 @@ const ProfileEditForm = ({
   };
 
   const onSubmit = (data: ProfileFormData) => {
+    const hasUrlErrors = socialProfiles.some(
+      (sp) => getUrlError(sp.account, sp.url),
+    );
+    if (hasUrlErrors) return;
     try {
       const validatedData = profileSchema.parse(data);
       const filteredSocialProfiles = socialProfiles.filter(
@@ -254,6 +265,7 @@ const ProfileEditForm = ({
                   .filter((_, i) => i !== index)
                   .map((sp) => sp.account)
                   .filter(Boolean);
+                const urlError = getUrlError(social.account, social.url);
 
                 return (
                   <div
@@ -334,6 +346,9 @@ const ProfileEditForm = ({
                             social.url === userInfo?.email
                           }
                         />
+                        {urlError && (
+                          <p className="text-sm text-red-500">{urlError}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -345,7 +360,10 @@ const ProfileEditForm = ({
             <Pecha.Button
               type="submit"
               className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
-              disabled={updateProfileMutation.isPending}
+              disabled={
+                updateProfileMutation.isPending ||
+                socialProfiles.some((sp) => getUrlError(sp.account, sp.url))
+              }
             >
               {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
             </Pecha.Button>
