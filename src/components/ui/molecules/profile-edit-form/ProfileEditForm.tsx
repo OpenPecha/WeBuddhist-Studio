@@ -17,7 +17,8 @@ import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 const getUrlError = (account: string, url: string): string | null => {
   if (!account || !url || account === "email") return null;
   const pattern = PLATFORM_PATTERNS[account];
-  if (pattern && !pattern.test(url)) return `URL must be a valid ${account} link`;
+  if (pattern && !pattern.test(url))
+    return `URL must be a valid ${account} link`;
   return null;
 };
 
@@ -132,8 +133,8 @@ const ProfileEditForm = ({
   };
 
   const onSubmit = (data: ProfileFormData) => {
-    const hasUrlErrors = socialProfiles.some(
-      (sp) => getUrlError(sp.account, sp.url),
+    const hasUrlErrors = socialProfiles.some((sp) =>
+      getUrlError(sp.account, sp.url),
     );
     if (hasUrlErrors) return;
     try {
