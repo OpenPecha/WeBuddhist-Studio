@@ -374,7 +374,8 @@ const TaskForm = ({
               disabled={
                 !isDraft ||
                 createTaskMutation.isPending ||
-                updateTaskMutation.isPending
+                updateTaskMutation.isPending ||
+                subTasks.length === 0
               }
             >
               {createTaskMutation.isPending || updateTaskMutation.isPending
