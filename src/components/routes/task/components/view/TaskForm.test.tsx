@@ -278,6 +278,14 @@ describe("TaskForm Component", () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     fireEvent.change(titleInput, { target: { value: "New Task" } });
+
+    fireEvent.click(screen.getByText("Add Text"));
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("Enter your text content"),
+      ).toBeInTheDocument();
+    });
+
     const submitButton = screen.getByText("Submit");
     fireEvent.click(submitButton);
     await waitFor(() => {
@@ -377,6 +385,14 @@ describe("TaskForm Component", () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     fireEvent.change(titleInput, { target: { value: "New Task" } });
+
+    fireEvent.click(screen.getByText("Add Text"));
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("Enter your text content"),
+      ).toBeInTheDocument();
+    });
+
     const submitButton = screen.getByText("Submit");
     fireEvent.click(submitButton);
     await waitFor(() => {

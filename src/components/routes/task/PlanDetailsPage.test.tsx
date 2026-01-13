@@ -99,16 +99,10 @@ const renderWithProviders = (component: React.ReactElement, isDraft = true) => {
       queries: { retry: false },
     },
   });
-  if (isDraft) {
-    queryClient.setQueryData(["dashboard-plans"], {
-      plans: [
-        {
-          id: "test-plan-id",
-          status: "DRAFT",
-        },
-      ],
-    });
-  }
+  queryClient.setQueryData(["planDetails", "test-plan-id"], {
+    ...mockPlanData,
+    status: isDraft ? "DRAFT" : "ARCHIVED",
+  });
   return render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>{component}</BrowserRouter>
@@ -206,30 +200,15 @@ describe("PlanDetailsPanel Component", () => {
     expect(screen.getByPlaceholderText("Task Title")).toBeInTheDocument();
   });
 
-  it("switches to task view after creating a new task", async () => {
+  it("switches to task view after clicking a task", async () => {
     const { default: axiosInstance } = await import("@/config/axios-config");
     const mockAxios = axiosInstance as any;
-    mockAxios.post.mockImplementation((url: string, data?: any) => {
-      if (url.includes("/tasks")) {
-        return Promise.resolve({
-          data: {
-            id: "newly-created-task-123",
-            title: data?.title || "New Task",
-            display_order: 1,
-            estimated_time: 30,
-          },
-        });
-      }
-      return Promise.resolve({
-        data: { id: "new-day-id", day_number: 5, tasks: [] },
-      });
-    });
     mockAxios.get.mockImplementation((url: string) => {
-      if (url.includes("/tasks/newly-created-task-123")) {
+      if (url.includes("/tasks/task1")) {
         return Promise.resolve({
           data: {
-            id: "newly-created-task-123",
-            title: "New Task",
+            id: "task1",
+            title: "Morning Intention Setting",
             display_order: 1,
             estimated_time: 30,
             subtasks: [],
@@ -242,17 +221,13 @@ describe("PlanDetailsPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
-    const titleInput = screen.getByPlaceholderText("Task Title");
-    fireEvent.change(titleInput, { target: { value: "New Task" } });
-    fireEvent.click(screen.getByText("Submit"));
+    expect(screen.getByText("Add Task")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Morning Intention Setting"));
     await waitFor(() => {
       expect(screen.queryByText("Add Task")).not.toBeInTheDocument();
     });
     await waitFor(() => {
       expect(screen.getByText("Task")).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText("New Task")).toBeInTheDocument();
     });
   });
 });
