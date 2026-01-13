@@ -72,6 +72,7 @@ export function DropdownButton({
 
       toast.success(`Status updated to ${newStatus}`);
       queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
+      queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
     } catch (error: any) {
       toast.error(error.response.data.detail.message);
     }
