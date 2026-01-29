@@ -1,4 +1,3 @@
-import { TIBETAN_LETTERS } from "@/lib/constant";
 import pechaIcon from "../../../assets/icon/pecha_icon.png";
 
 interface ContainerLayoutProps {
@@ -38,7 +37,7 @@ const ContainerLayout = ({ children, title }: ContainerLayoutProps) => {
         </div>
         <div />
       </div>
-      <div className="flex-1 md:flex items-center justify-center hidden">
+      {/* <div className="flex-1 md:flex items-center justify-center hidden">
         <div className="grid grid-cols-4 w-full h-full font-dutsa">
           {TIBETAN_LETTERS.map((letter, index) => (
             <div
@@ -49,7 +48,7 @@ const ContainerLayout = ({ children, title }: ContainerLayoutProps) => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
