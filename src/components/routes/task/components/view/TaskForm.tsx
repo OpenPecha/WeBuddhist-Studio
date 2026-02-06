@@ -81,6 +81,10 @@ const TaskForm = ({
           display_order: index + 1,
           ...(subTask.content_type === "VIDEO" &&
             subTask.duration && { duration: subTask.duration }),
+          ...(subTask.content_type === "SOURCE_REFERENCE" && {
+            source_text_id: subTask.source_text_id || null,
+            pecha_segment_id: subTask.pecha_segment_id || null,
+          }),
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
@@ -109,6 +113,10 @@ const TaskForm = ({
         display_order: index + 1,
         ...(subTask.content_type === "VIDEO" &&
           subTask.duration && { duration: subTask.duration }),
+        ...(subTask.content_type === "SOURCE_REFERENCE" && {
+          source_text_id: subTask.source_text_id || null,
+          pecha_segment_id: subTask.pecha_segment_id || null,
+        }),
       }));
       await updateSubTasks(editingTask.id, subTasksPayload);
     },
@@ -182,6 +190,8 @@ const TaskForm = ({
               id: data.id,
               content_type: "SOURCE_REFERENCE",
               content: data.content,
+              source_text_id: data.source_text_id || null,
+              pecha_segment_id: data.pecha_segment_id || null,
             };
           default:
             return {
@@ -195,7 +205,13 @@ const TaskForm = ({
     }
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
-  const handleAddSubTask = (content_type: any, sourceContent?: string) => {
+  interface SourceData {
+    content: string;
+    segment_id: string;
+    text_id: string;
+  }
+
+  const handleAddSubTask = (content_type: any, sourceData?: SourceData) => {
     let newSubTask: SubTask;
 
     switch (content_type) {
@@ -233,7 +249,9 @@ const TaskForm = ({
         newSubTask = {
           id: null,
           content_type: "SOURCE_REFERENCE",
-          content: sourceContent || "",
+          content: sourceData?.content || "",
+          source_text_id: sourceData?.text_id || null,
+          pecha_segment_id: sourceData?.segment_id || null,
         };
         break;
     }
