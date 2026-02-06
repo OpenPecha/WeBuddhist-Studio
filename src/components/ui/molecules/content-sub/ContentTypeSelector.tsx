@@ -6,10 +6,16 @@ import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useState } from "react";
 import { SourceSelectorSheet } from "../webuddhist-source/SourceSelectorSheet";
 
+interface SourceData {
+  content: string;
+  segment_id: string;
+  text_id: string;
+}
+
 interface ContentTypeSelectorProps {
   onSelectType: (
     type: "IMAGE" | "VIDEO" | "AUDIO" | "TEXT" | "SOURCE_REFERENCE",
-    sourceContent?: string,
+    sourceData?: SourceData,
   ) => void;
 }
 
@@ -53,8 +59,8 @@ export const ContentTypeSelector = ({
     }
   };
 
-  const handleAddSource = (sourceContent: string) => {
-    onSelectType("SOURCE_REFERENCE", sourceContent);
+  const handleAddSource = (sourceData: SourceData) => {
+    onSelectType("SOURCE_REFERENCE", sourceData);
     setIsSourceSheetOpen(false);
   };
 
