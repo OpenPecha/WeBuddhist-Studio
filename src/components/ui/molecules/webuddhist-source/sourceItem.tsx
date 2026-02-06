@@ -16,7 +16,7 @@ const SourceItem = ({ source, onSegment }: any) => {
             className="border p-2 rounded-md text-left border-dashed border-gray-300 dark:border-[#313132] text-sm cursor-pointer"
             onClick={() => onSegment?.({
               content: segment.content,
-              segment_id: segment.segment_id,
+              segment_id: segment.pecha_segment_id,
               text_id: source.text.text_id,
             })}
           >
