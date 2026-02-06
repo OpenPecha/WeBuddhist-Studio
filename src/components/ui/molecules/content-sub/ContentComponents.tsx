@@ -29,25 +29,14 @@ export const ContentIcon = ({ type }: { type: ContentType }) => {
 export const VideoContent = ({ content }: { content: string }) => {
   const regularVideoId = getYouTubeVideoId(content);
   const shortsVideoId = getYouTubeShortsId(content);
-
-  if (regularVideoId && !shortsVideoId) {
-    return (
-      <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-        <p className="text-red-600 dark:text-red-400 text-sm">
-          Please upload only YouTube short
-        </p>
-      </div>
-    );
-  }
-
-  const videoId = shortsVideoId;
+  const videoId = regularVideoId || shortsVideoId;
 
   if (!videoId) return null;
 
   return (
     <div className="mt-4">
       <iframe
-        className="w-full max-w-[315px] aspect-[9/16] mx-auto rounded-md border bg-[#FAFAFA] dark:bg-sidebar-secondary"
+        className={`w-full max-w-[315px] mx-auto rounded-md border bg-[#FAFAFA] dark:bg-sidebar-secondary ${shortsVideoId ? "aspect-[9/16]" : "aspect-[16/9]"}`}
         src={`https://www.youtube.com/embed/${videoId}`}
         title="YouTube preview"
       />
@@ -97,7 +86,7 @@ export const ImageContent = ({ content }: { content: string }) => (
 );
 
 export const TextContent = ({ content }: { content: string }) => (
-  <div className="w-full min-h-24 max-h-56 overflow-y-auto bg-[#FAFAFA] dark:bg-sidebar-secondary  whitespace-pre-wrap text-base p-3 border rounded-md">
+  <div className="w-full min-h-64 max-h-56 overflow-y-auto bg-[#FAFAFA] dark:bg-sidebar-secondary  whitespace-pre-wrap text-base p-3 border rounded-md">
     {content}
   </div>
 );

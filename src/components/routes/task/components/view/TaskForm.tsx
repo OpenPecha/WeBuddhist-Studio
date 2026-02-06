@@ -27,11 +27,17 @@ interface TaskFormProps {
   selectedDay: number;
   editingTask?: any;
   onCancel: (newlyCreatedTaskId?: string) => void;
+  isDraft?: boolean;
 }
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
-const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
+const TaskForm = ({
+  selectedDay,
+  editingTask,
+  onCancel,
+  isDraft = true,
+}: TaskFormProps) => {
   const { plan_id } = useParams();
   const queryClient = useQueryClient();
   const form = useForm({
@@ -73,6 +79,12 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           content: subTask.content,
           content_type: subTask.content_type,
           display_order: index + 1,
+          ...(subTask.content_type === "VIDEO" &&
+            subTask.duration && { duration: subTask.duration }),
+          ...(subTask.content_type === "SOURCE_REFERENCE" && {
+            source_text_id: subTask.source_text_id || null,
+            pecha_segment_id: subTask.pecha_segment_id || null,
+          }),
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
@@ -99,6 +111,12 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         content: subTask.content,
         content_type: subTask.content_type,
         display_order: index + 1,
+        ...(subTask.content_type === "VIDEO" &&
+          subTask.duration && { duration: subTask.duration }),
+        ...(subTask.content_type === "SOURCE_REFERENCE" && {
+          source_text_id: subTask.source_text_id || null,
+          pecha_segment_id: subTask.pecha_segment_id || null,
+        }),
       }));
       await updateSubTasks(editingTask.id, subTasksPayload);
     },
@@ -146,6 +164,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               id: data.id,
               content_type: "VIDEO",
               content: data.content,
+              duration: data.duration,
             };
           case "TEXT":
             return {
@@ -171,6 +190,8 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               id: data.id,
               content_type: "SOURCE_REFERENCE",
               content: data.content,
+              source_text_id: data.source_text_id || null,
+              pecha_segment_id: data.pecha_segment_id || null,
             };
           default:
             return {
@@ -184,7 +205,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     }
   }, [editingTask?.id, selectedDay, taskDetails?.id]);
 
-  const handleAddSubTask = (content_type: any, sourceContent?: string) => {
+  interface SourceData {
+    content: string;
+    segment_id: string;
+    text_id: string;
+  }
+
+  const handleAddSubTask = (content_type: any, sourceData?: SourceData) => {
     let newSubTask: SubTask;
 
     switch (content_type) {
@@ -193,6 +220,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           id: null,
           content_type: "VIDEO",
           content: "",
+          duration: "",
         };
         break;
       case "TEXT":
@@ -221,7 +249,9 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
         newSubTask = {
           id: null,
           content_type: "SOURCE_REFERENCE",
-          content: sourceContent || "",
+          content: sourceData?.content || "",
+          source_text_id: sourceData?.text_id || null,
+          pecha_segment_id: sourceData?.segment_id || null,
         };
         break;
     }
@@ -252,13 +282,13 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
       return;
     }
     try {
-      const { url, key } = await uploadImageToS3(file, plan_id || "");
+      const { image, key } = await uploadImageToS3(file, plan_id || "");
       updateSubTask(index, {
-        imagePreview: url,
+        imagePreview: image.original,
         content: key,
       });
       toast.success("Image uploaded successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload image");
     }
   };
@@ -282,7 +312,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
     onCancel(newlyCreatedTaskId);
   };
 
-  const onSubmit = (data: TaskFormData) => {
+  const onSubmit = async (data: TaskFormData) => {
     const taskData: any = {
       plan_id: plan_id!,
       day_id: currentDayData!.id,
@@ -309,9 +339,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               isTitleEditing={isTitleEditing}
               formValue={formValues.title}
               control={form.control}
-              onEdit={() => setIsTitleEditing(true)}
+              onEdit={() => isDraft && setIsTitleEditing(true)}
               onSave={handleSaveTitle}
               onCancel={() => setIsTitleEditing(false)}
+              disabled={!isDraft}
             />
             {isEditMode && (
               <DaySelector selectedDay={selectedDay} taskId={editingTask?.id} />
@@ -341,7 +372,7 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
           {imageUploadError && (
             <div className="text-red-500 text-sm ml-4">{imageUploadError}</div>
           )}
-          <ContentTypeSelector onSelectType={handleAddSubTask} />
+          {isDraft && <ContentTypeSelector onSelectType={handleAddSubTask} />}
 
           <div className="p-4 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
@@ -359,7 +390,10 @@ const TaskForm = ({ selectedDay, editingTask, onCancel }: TaskFormProps) => {
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               disabled={
-                createTaskMutation.isPending || updateTaskMutation.isPending
+                !isDraft ||
+                createTaskMutation.isPending ||
+                updateTaskMutation.isPending ||
+                subTasks.length === 0
               }
             >
               {createTaskMutation.isPending || updateTaskMutation.isPending

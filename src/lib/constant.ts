@@ -26,7 +26,14 @@ export const SOCIAL_PLATFORMS = [
   { value: "instagram", label: "Instagram", icon: "Instagram" },
   { value: "tiktok", label: "TikTok", icon: "TikTok" },
 ];
-
+export const PLATFORM_PATTERNS: Record<string, RegExp> = {
+  facebook: /facebook\.com/i,
+  "x.com": /(x\.com|twitter\.com)/i,
+  linkedin: /linkedin\.com/i,
+  youtube: /(youtube\.com|youtu\.be)/i,
+  instagram: /instagram\.com/i,
+  tiktok: /tiktok\.com/i,
+};
 export const TIBETAN_LETTERS = [
   "ཀ",
   "ཁ",

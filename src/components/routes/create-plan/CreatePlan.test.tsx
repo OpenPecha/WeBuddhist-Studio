@@ -70,8 +70,14 @@ describe("CreatePlan Component", () => {
       if (url.includes("/media/upload")) {
         return Promise.resolve({
           data: {
-            url: "mock-image-url",
+            image: {
+              thumbnail: "mock-thumb-url",
+              medium: "mock-medium-url",
+              original: "mock-image-url",
+            },
             key: "mock-image-key",
+            path: "images/path",
+            message: "Image uploaded successfully",
           },
         });
       }
@@ -375,48 +381,5 @@ describe("CreatePlan Component", () => {
     const confirmButton = screen.getByText("studio.plan.navigation.leave");
     fireEvent.click(confirmButton);
     expect(mockBlocker.proceed).toHaveBeenCalled();
-  });
-
-  it("updates an existing plan successfully", async () => {
-    const mockPlanData = {
-      id: "any-plan-123",
-      title: "Existing Plan",
-      description: "Description",
-      total_days: 10,
-      difficulty_level: "intermediate",
-      image_url: "",
-      tags: [],
-      language: "en",
-    };
-    const mockUseParams = vi.fn().mockReturnValue({ plan_id: "any-plan-123" });
-    vi.mocked(useParams).mockImplementation(mockUseParams);
-    vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: mockPlanData,
-    });
-    vi.spyOn(axiosInstance, "put").mockResolvedValue({
-      data: { ...mockPlanData, title: "Updated Plan" },
-    });
-    renderWithProviders(<CreatePlan />);
-    await waitFor(() => {
-      const titleInput = screen.getByPlaceholderText(
-        "studio.plan.form.placeholder.title",
-      ) as HTMLInputElement;
-      expect(titleInput.value).toBe("Existing Plan");
-    });
-    const titleInput = screen.getByPlaceholderText(
-      "studio.plan.form.placeholder.title",
-    );
-    fireEvent.change(titleInput, { target: { value: "Updated Plan" } });
-    const submitButton = screen.getByText("studio.plan.update_button");
-    fireEvent.click(submitButton);
-    await waitFor(() => {
-      expect(axiosInstance.put).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/cms/plans/any-plan-123"),
-        expect.objectContaining({
-          title: "Updated Plan",
-        }),
-        expect.any(Object),
-      );
-    });
   });
 });

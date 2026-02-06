@@ -153,11 +153,7 @@ describe("ResetPassword Component", () => {
         {
           password:
             "4c2417eef23ec7fb1bd8d74eb29afe5f0867a4ddbdb707ada89d1cf91f0e6e1d",
-        },
-        {
-          headers: {
-            Authorization: "Bearer test-token",
-          },
+          token: "test-token",
         },
       );
     });

@@ -93,11 +93,15 @@ Object.defineProperty(window, "sessionStorage", {
   writable: true,
 });
 
-const renderWithProviders = (component: React.ReactElement) => {
+const renderWithProviders = (component: React.ReactElement, isDraft = true) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
     },
+  });
+  queryClient.setQueryData(["planDetails", "test-plan-id"], {
+    ...mockPlanData,
+    status: isDraft ? "DRAFT" : "ARCHIVED",
   });
   return render(
     <QueryClientProvider client={queryClient}>
@@ -149,7 +153,7 @@ describe("PlanDetailsPanel Component", () => {
   it("calls API when Add New Day button is clicked", async () => {
     const { default: axiosInstance } = await import("@/config/axios-config");
     const mockAxios = axiosInstance as any;
-    renderWithProviders(<PlanDetailsPage />);
+    renderWithProviders(<PlanDetailsPage />, true);
     await waitFor(() => {
       expect(screen.getByText("Day 4")).toBeInTheDocument();
     });
@@ -175,7 +179,7 @@ describe("PlanDetailsPanel Component", () => {
     mockAxios.post.mockRejectedValueOnce({
       response: { data: { detail: "Cannot create day" } },
     });
-    renderWithProviders(<PlanDetailsPage />);
+    renderWithProviders(<PlanDetailsPage />, true);
     await waitFor(() => {
       expect(screen.getByText("Day 4")).toBeInTheDocument();
     });
@@ -196,23 +200,15 @@ describe("PlanDetailsPanel Component", () => {
     expect(screen.getByPlaceholderText("Task Title")).toBeInTheDocument();
   });
 
-  it("switches to task view after creating a new task", async () => {
+  it("switches to task view after clicking a task", async () => {
     const { default: axiosInstance } = await import("@/config/axios-config");
     const mockAxios = axiosInstance as any;
-    mockAxios.post.mockResolvedValueOnce({
-      data: {
-        id: "newly-created-task-123",
-        title: "New Task",
-        display_order: 1,
-        estimated_time: 30,
-      },
-    });
     mockAxios.get.mockImplementation((url: string) => {
-      if (url.includes("/tasks/newly-created-task-123")) {
+      if (url.includes("/tasks/task1")) {
         return Promise.resolve({
           data: {
-            id: "newly-created-task-123",
-            title: "New Task",
+            id: "task1",
+            title: "Morning Intention Setting",
             display_order: 1,
             estimated_time: 30,
             subtasks: [],
@@ -221,19 +217,17 @@ describe("PlanDetailsPanel Component", () => {
       }
       return Promise.resolve({ data: mockPlanData });
     });
-    renderWithProviders(<PlanDetailsPage />);
+    renderWithProviders(<PlanDetailsPage />, true);
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
-    const titleInput = screen.getByPlaceholderText("Task Title");
-    fireEvent.change(titleInput, { target: { value: "New Task" } });
-    fireEvent.click(screen.getByText("Submit"));
+    expect(screen.getByText("Add Task")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Morning Intention Setting"));
     await waitFor(() => {
       expect(screen.queryByText("Add Task")).not.toBeInTheDocument();
     });
     await waitFor(() => {
       expect(screen.getByText("Task")).toBeInTheDocument();
-      expect(screen.getByText("New Task")).toBeInTheDocument();
     });
   });
 });

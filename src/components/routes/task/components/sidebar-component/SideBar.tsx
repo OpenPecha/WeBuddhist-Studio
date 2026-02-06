@@ -19,6 +19,7 @@ interface SideBarProps {
   onDaySelect: (dayNumber: number) => void;
   onTaskClick?: (taskId: string) => void;
   onTaskDelete?: (taskId: string) => void;
+  isDraft?: boolean;
 }
 
 const SideBar = ({
@@ -26,6 +27,7 @@ const SideBar = ({
   onDaySelect,
   onTaskClick,
   onTaskDelete,
+  isDraft,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const { plan_id } = useParams<{ plan_id: string }>();
@@ -93,10 +95,10 @@ const SideBar = ({
       <div className="flex-1">
         <div className="flex p-4 items-center border-b pb-3 gap-2 mb-1">
           <IoCalendarClearOutline className="w-5 h-5 text-foreground" />
-          <span className="text-sm  text-foreground">Days</span>
+          <span className="text-sm text-foreground">Days</span>
         </div>
 
-        <div className="space-y-1 h-[calc(100vh-200px)] overflow-auto">
+        <div className="space-y-1 h-2/3 overflow-auto">
           {isLoading ? (
             <>
               {[1, 2, 3].map((index) => (
@@ -114,6 +116,7 @@ const SideBar = ({
               onReorder={(activeId: any, overId: any) => {
                 handleDayReorder(activeId, overId);
               }}
+              disabled={!isDraft}
             >
               {displayDays.map((day: any) => (
                 <SortableItem key={day.id} id={day.id}>
@@ -126,11 +129,13 @@ const SideBar = ({
                         }}
                       >
                         <div className="flex items-center gap-3">
-                          <PiDotsSixVertical
-                            className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
-                            {...listeners}
-                            onClick={(e) => e.stopPropagation()}
-                          />
+                          {isDraft && (
+                            <PiDotsSixVertical
+                              className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
+                              {...listeners}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )}
                           <div
                             className={`w-4 h-4 rounded-full ${
                               selectedDay === day.day_number
@@ -177,12 +182,19 @@ const SideBar = ({
                               />
                             </Activity>
                             <IoMdAdd
-                              className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer"
-                              onClick={() => {
-                                handleDayClick(day.day_number);
+                              className={`w-4 h-4 text-gray-400 dark:text-muted-foreground ${
+                                isDraft
+                                  ? "cursor-pointer"
+                                  : "cursor-not-allowed opacity-50"
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isDraft) {
+                                  handleDayClick(day.day_number);
+                                }
                               }}
                             />
-                            {currentPlan?.days.length > 1 && (
+                            {isDraft && currentPlan?.days.length > 1 && (
                               <Pecha.DropdownMenu>
                                 <Pecha.DropdownMenuTrigger asChild>
                                   <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
@@ -217,6 +229,7 @@ const SideBar = ({
                             onReorder={(activeId: any, overId: any) => {
                               handleTaskReorder(activeId, overId);
                             }}
+                            disabled={!isDraft}
                           >
                             {getDisplayTasks(day).map((task: any) => (
                               <SortableItem
@@ -226,10 +239,12 @@ const SideBar = ({
                               >
                                 {({ listeners }: any) => (
                                   <>
-                                    <PiDotsSixVertical
-                                      className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
-                                      {...listeners}
-                                    />
+                                    {isDraft && (
+                                      <PiDotsSixVertical
+                                        className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
+                                        {...listeners}
+                                      />
+                                    )}
                                     <span
                                       className="cursor-pointer w-full"
                                       onClick={(e) => {
@@ -239,22 +254,24 @@ const SideBar = ({
                                     >
                                       {task.title}
                                     </span>
-                                    <Pecha.DropdownMenu>
-                                      <Pecha.DropdownMenuTrigger asChild>
-                                        <BsThreeDots
-                                          className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer"
-                                          onClick={(e) => e.stopPropagation()}
-                                        />
-                                      </Pecha.DropdownMenuTrigger>
-                                      <Pecha.DropdownMenuContent side="right">
-                                        <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                                          <TaskDeleteDialog
-                                            taskId={task.id}
-                                            onDelete={handleDeleteTask}
+                                    {isDraft && (
+                                      <Pecha.DropdownMenu>
+                                        <Pecha.DropdownMenuTrigger asChild>
+                                          <BsThreeDots
+                                            className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer"
+                                            onClick={(e) => e.stopPropagation()}
                                           />
-                                        </Pecha.DropdownMenuItem>
-                                      </Pecha.DropdownMenuContent>
-                                    </Pecha.DropdownMenu>
+                                        </Pecha.DropdownMenuTrigger>
+                                        <Pecha.DropdownMenuContent side="right">
+                                          <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                                            <TaskDeleteDialog
+                                              taskId={task.id}
+                                              onDelete={handleDeleteTask}
+                                            />
+                                          </Pecha.DropdownMenuItem>
+                                        </Pecha.DropdownMenuContent>
+                                      </Pecha.DropdownMenu>
+                                    )}
                                   </>
                                 )}
                               </SortableItem>
@@ -273,7 +290,7 @@ const SideBar = ({
           <Pecha.Button
             type="button"
             onClick={addNewDay}
-            disabled={createNewDay.isPending}
+            disabled={!isDraft || createNewDay.isPending}
             variant="destructive"
             className="cursor-pointer mt-1 disabled:opacity-50 w-full disabled:cursor-not-allowed"
           >

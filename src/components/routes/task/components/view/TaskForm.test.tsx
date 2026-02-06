@@ -278,6 +278,14 @@ describe("TaskForm Component", () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     fireEvent.change(titleInput, { target: { value: "New Task" } });
+
+    fireEvent.click(screen.getByText("Add Text"));
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("Enter your text content"),
+      ).toBeInTheDocument();
+    });
+
     const submitButton = screen.getByText("Submit");
     fireEvent.click(submitButton);
     await waitFor(() => {
@@ -377,6 +385,14 @@ describe("TaskForm Component", () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
     const titleInput = screen.getByPlaceholderText("Task Title");
     fireEvent.change(titleInput, { target: { value: "New Task" } });
+
+    fireEvent.click(screen.getByText("Add Text"));
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("Enter your text content"),
+      ).toBeInTheDocument();
+    });
+
     const submitButton = screen.getByText("Submit");
     fireEvent.click(submitButton);
     await waitFor(() => {
@@ -390,8 +406,14 @@ describe("TaskForm Component", () => {
     const { uploadImageToS3 } = await import("../../api/taskApi");
     const { toast } = await import("sonner");
     vi.mocked(uploadImageToS3).mockResolvedValue({
-      url: "https://example.com/image.jpg",
+      image: {
+        thumbnail: "https://example.com/image-thumb.jpg",
+        medium: "https://example.com/image-medium.jpg",
+        original: "https://example.com/image.jpg",
+      },
       key: "image-key-123",
+      path: "images/path",
+      message: "Image uploaded successfully",
     });
     renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
     const addImageButton = screen.getByText("Add Image");

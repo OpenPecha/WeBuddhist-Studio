@@ -9,6 +9,7 @@ interface TaskTitleFieldProps {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  disabled?: boolean;
 }
 
 export const TaskTitleField = ({
@@ -19,6 +20,7 @@ export const TaskTitleField = ({
   onEdit,
   onSave,
   onCancel,
+  disabled = false,
 }: TaskTitleFieldProps) => {
   if (isEditMode && !isTitleEditing) {
     return (
@@ -26,7 +28,12 @@ export const TaskTitleField = ({
         <div className="h-12  text-base flex bg-white dark:bg-[#161616] items-center px-3 border opacity-80 rounded-md flex-1">
           {formValue}
         </div>
-        <Pecha.Button variant="outline" type="button" onClick={onEdit}>
+        <Pecha.Button
+          variant="outline"
+          type="button"
+          onClick={onEdit}
+          disabled={disabled === true}
+        >
           Edit
         </Pecha.Button>
       </>
@@ -46,6 +53,7 @@ export const TaskTitleField = ({
                   type="text"
                   placeholder="Task Title"
                   className="h-12 text-base bg-white dark:bg-[#161616]"
+                  disabled={disabled}
                   {...field}
                 />
               </Pecha.FormControl>
@@ -76,6 +84,7 @@ export const TaskTitleField = ({
               type="text"
               placeholder="Task Title"
               className="h-12 text-base bg-white dark:bg-[#161616]"
+              disabled={disabled}
               {...field}
             />
           </Pecha.FormControl>

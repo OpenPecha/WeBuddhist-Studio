@@ -162,11 +162,11 @@ const Createplan = () => {
   };
   const handleImageUpload = async (file: File) => {
     try {
-      const { url, key } = await uploadImageToS3(
+      const { image, key } = await uploadImageToS3(
         file,
         plan_id === "new" ? "" : plan_id || "",
       );
-      const imageUrl = url;
+      const imageUrl = image.original;
       const imageKey = key;
       setImagePreview(imageUrl);
       setSelectedImage(file);
