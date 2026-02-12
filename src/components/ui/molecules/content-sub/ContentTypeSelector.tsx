@@ -8,9 +8,9 @@ import { SourceSelectorSheet } from "../webuddhist-source/SourceSelectorSheet";
 
 interface SourceData {
   content: string;
-  segment_id: string;
+  pecha_segment_id: string;
   text_id: string;
-  actual_segment_id: string;
+  segment_id: string;
 }
 
 interface ContentTypeSelectorProps {

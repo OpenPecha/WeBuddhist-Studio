@@ -210,9 +210,9 @@ const TaskForm = ({
 
   interface SourceData {
     content: string;
-    segment_id: string;
+    pecha_segment_id: string;
     text_id: string;
-    actual_segment_id: string;
+    segment_id: string;
   }
 
   const handleAddSubTask = (content_type: any, sourceData?: SourceData) => {
@@ -255,8 +255,8 @@ const TaskForm = ({
           content_type: "SOURCE_REFERENCE",
           content: sourceData?.content || "",
           source_text_id: sourceData?.text_id || null,
-          pecha_segment_id: sourceData?.segment_id || null,
-          segment_id: sourceData?.actual_segment_id || null,
+          pecha_segment_id: sourceData?.pecha_segment_id || null,
+          segment_id: sourceData?.segment_id || null,
         };
         break;
     }

@@ -17,9 +17,9 @@ const SourceItem = ({ source, onSegment }: any) => {
             onClick={() =>
               onSegment?.({
                 content: segment.content,
-                segment_id: segment.pecha_segment_id,
+                pecha_segment_id: segment.pecha_segment_id,
                 text_id: source.text.text_id,
-                actual_segment_id: segment.segment_id,
+                segment_id: segment.segment_id,
               })
             }
           >
