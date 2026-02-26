@@ -19,7 +19,7 @@ const PlanDetailsPage = () => {
   });
 
   const status = planDetails?.status || "DRAFT";
-  const isDraft = status === "DRAFT";
+  const isEditable = status === "DRAFT" || status === "ARCHIVED";
 
   const handleDaySelect = (dayNumber: number) => {
     setSelectedDay(dayNumber);
@@ -28,7 +28,7 @@ const PlanDetailsPage = () => {
   };
 
   const handleEditTask = (task: any) => {
-    if (!isDraft) {
+    if (!isEditable) {
       return;
     }
     setEditingTask(task);
@@ -60,21 +60,21 @@ const PlanDetailsPage = () => {
           setSelectedTaskId(taskId);
         }}
         onTaskDelete={handleTaskDelete}
-        isDraft={isDraft}
+        isEditable={isEditable}
       />
       <div className=" w-full pl-4 rounded-l-2xl overflow-y-auto">
         {selectedTaskId ? (
           <TaskView
             taskId={selectedTaskId}
             onEditTask={handleEditTask}
-            isDraft={isDraft}
+            isEditable={isEditable}
           />
         ) : (
           <TaskForm
             selectedDay={selectedDay}
             editingTask={editingTask}
             onCancel={handleCancelTaskForm}
-            isDraft={isDraft}
+            isEditable={isEditable}
           />
         )}
       </div>

@@ -19,7 +19,7 @@ type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 interface TaskViewProps {
   taskId: string;
   onEditTask: (task: any) => void;
-  isDraft?: boolean;
+  isEditable?: boolean;
 }
 
 const fetchTaskDetails = async (task_id: string) => {
@@ -56,11 +56,11 @@ const SubtaskContent = ({
 const SubtaskCard = ({
   subtask,
   listeners,
-  isDraft,
+  isEditable,
 }: {
   subtask: any;
   listeners?: any;
-  isDraft?: boolean;
+  isEditable?: boolean;
 }) => {
   return (
     <div
@@ -70,7 +70,7 @@ const SubtaskCard = ({
         <div className="flex items-center border w-fit bg-[#F7F7F7] dark:bg-sidebar-secondary px-2 py-1 text-sm rounded-md border-dashed gap-2">
           <ContentIcon type={subtask.content_type} /> {subtask.content_type}
         </div>
-        {listeners && isDraft && (
+        {listeners && isEditable && (
           <PiDotsSixVertical
             className="w-5 h-5 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
             {...listeners}
@@ -82,7 +82,7 @@ const SubtaskCard = ({
   );
 };
 
-const TaskView = ({ taskId, onEditTask, isDraft }: TaskViewProps) => {
+const TaskView = ({ taskId, onEditTask, isEditable }: TaskViewProps) => {
   const { data: taskDetails, isLoading } = useQuery({
     queryKey: ["taskDetails", taskId],
     queryFn: () => fetchTaskDetails(taskId),
@@ -101,7 +101,7 @@ const TaskView = ({ taskId, onEditTask, isDraft }: TaskViewProps) => {
       <div className=" space-y-4  overflow-y-auto">
         <div className="flex p-4 items-center justify-between w-3/4">
           <h2 className="text-xl font-semibold">Task</h2>
-          {isDraft && (
+          {isEditable && (
             <Pecha.Button
               variant="outline"
               type="button"
@@ -140,7 +140,7 @@ const TaskView = ({ taskId, onEditTask, isDraft }: TaskViewProps) => {
               onReorder={(activeId: any, overId: any) => {
                 handleSubtaskReorder(activeId, overId);
               }}
-              disabled={!isDraft}
+              disabled={!isEditable}
             >
               {displaySubtasks.map((subtask: any) => (
                 <SortableItem key={subtask.id} id={subtask.id}>
@@ -148,7 +148,7 @@ const TaskView = ({ taskId, onEditTask, isDraft }: TaskViewProps) => {
                     <SubtaskCard
                       subtask={subtask}
                       listeners={listeners}
-                      isDraft={isDraft}
+                      isEditable={isEditable}
                     />
                   )}
                 </SortableItem>

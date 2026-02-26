@@ -27,7 +27,7 @@ interface TaskFormProps {
   selectedDay: number;
   editingTask?: any;
   onCancel: (newlyCreatedTaskId?: string) => void;
-  isDraft?: boolean;
+  isEditable?: boolean;
 }
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -36,7 +36,7 @@ const TaskForm = ({
   selectedDay,
   editingTask,
   onCancel,
-  isDraft = true,
+  isEditable = true,
 }: TaskFormProps) => {
   const { plan_id } = useParams();
   const queryClient = useQueryClient();
@@ -344,10 +344,10 @@ const TaskForm = ({
               isTitleEditing={isTitleEditing}
               formValue={formValues.title}
               control={form.control}
-              onEdit={() => isDraft && setIsTitleEditing(true)}
+              onEdit={() => isEditable && setIsTitleEditing(true)}
               onSave={handleSaveTitle}
               onCancel={() => setIsTitleEditing(false)}
-              disabled={!isDraft}
+              disabled={!isEditable}
             />
             {isEditMode && (
               <DaySelector selectedDay={selectedDay} taskId={editingTask?.id} />
@@ -377,7 +377,9 @@ const TaskForm = ({
           {imageUploadError && (
             <div className="text-red-500 text-sm ml-4">{imageUploadError}</div>
           )}
-          {isDraft && <ContentTypeSelector onSelectType={handleAddSubTask} />}
+          {isEditable && (
+            <ContentTypeSelector onSelectType={handleAddSubTask} />
+          )}
 
           <div className="p-4 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
@@ -395,7 +397,7 @@ const TaskForm = ({
               className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               disabled={
-                !isDraft ||
+                !isEditable ||
                 createTaskMutation.isPending ||
                 updateTaskMutation.isPending ||
                 subTasks.length === 0

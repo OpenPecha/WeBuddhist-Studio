@@ -84,7 +84,7 @@ export function DropdownButton({
     allowedStatuses.includes(status.value),
   );
 
-  const canEdit = currentStatus === "DRAFT";
+  const canEdit = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
   const canDelete = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
 
   return (
