@@ -377,7 +377,9 @@ const TaskForm = ({
           {imageUploadError && (
             <div className="text-red-500 text-sm ml-4">{imageUploadError}</div>
           )}
-          {isEditable && <ContentTypeSelector onSelectType={handleAddSubTask} />}
+          {isEditable && (
+            <ContentTypeSelector onSelectType={handleAddSubTask} />
+          )}
 
           <div className="p-4 flex gap-3">
             <Activity mode={isEditMode ? "visible" : "hidden"}>
