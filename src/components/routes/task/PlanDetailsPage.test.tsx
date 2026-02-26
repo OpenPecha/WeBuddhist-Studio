@@ -93,7 +93,7 @@ Object.defineProperty(window, "sessionStorage", {
   writable: true,
 });
 
-const renderWithProviders = (component: React.ReactElement, isDraft = true) => {
+const renderWithProviders = (component: React.ReactElement, isEditable = true) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -101,7 +101,7 @@ const renderWithProviders = (component: React.ReactElement, isDraft = true) => {
   });
   queryClient.setQueryData(["planDetails", "test-plan-id"], {
     ...mockPlanData,
-    status: isDraft ? "DRAFT" : "ARCHIVED",
+    status: isEditable ? "DRAFT" : "PUBLISHED",
   });
   return render(
     <QueryClientProvider client={queryClient}>
