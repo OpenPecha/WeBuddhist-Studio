@@ -538,9 +538,13 @@ describe("TaskForm Component", () => {
       expect(screen.getByTestId("image-upload-input")).toBeInTheDocument();
     });
     const imageInput = screen.getByTestId("image-upload-input");
-    const largeFile = new File([new ArrayBuffer(1.5 * 1024 * 1024)], "big.jpg", {
-      type: "image/jpeg",
-    });
+    const largeFile = new File(
+      [new ArrayBuffer(1.5 * 1024 * 1024)],
+      "big.jpg",
+      {
+        type: "image/jpeg",
+      },
+    );
     fireEvent.change(imageInput, { target: { files: [largeFile] } });
     await waitFor(() => {
       expect(

@@ -354,8 +354,7 @@ describe("PlanDetailsPanel Component", () => {
 
     const taskElements = screen.getAllByText("Morning Intention Setting");
     const sidebarSpan = taskElements.find(
-      (el) =>
-        el.tagName === "SPAN" && el.classList.contains("cursor-pointer"),
+      (el) => el.tagName === "SPAN" && el.classList.contains("cursor-pointer"),
     );
     const taskRow = sidebarSpan!.parentElement!;
     const dropdownTrigger = taskRow.querySelector(
