@@ -530,4 +530,24 @@ describe("TaskForm Component", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("shows error when image exceeds 1MB", async () => {
+    renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
+    fireEvent.click(screen.getByText("Add Image"));
+    await waitFor(() => {
+      expect(screen.getByTestId("image-upload-input")).toBeInTheDocument();
+    });
+    const imageInput = screen.getByTestId("image-upload-input");
+    const largeFile = new File([new ArrayBuffer(1.5 * 1024 * 1024)], "big.jpg", {
+      type: "image/jpeg",
+    });
+    fireEvent.change(imageInput, { target: { files: [largeFile] } });
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "File size exceeds 1MB limit. Please select a smaller image.",
+        ),
+      ).toBeInTheDocument();
+    });
+  });
 });
