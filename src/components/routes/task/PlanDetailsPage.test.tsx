@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
@@ -231,6 +232,144 @@ describe("PlanDetailsPanel Component", () => {
     });
     await waitFor(() => {
       expect(screen.getByText("Task")).toBeInTheDocument();
+    });
+  });
+
+  it("fetches plan details via queryFn when cache is empty", async () => {
+    const { default: axiosInstance } = await import("@/config/axios-config");
+    const mockAxios = axiosInstance as any;
+    mockAxios.get.mockResolvedValue({
+      data: { ...mockPlanData, status: "DRAFT" },
+    });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <PlanDetailsPage />
+        </BrowserRouter>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(mockAxios.get).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/cms/plans/test-plan-id"),
+        expect.any(Object),
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
+    });
+  });
+
+  it("clears selected task when that task is deleted from sidebar", async () => {
+    const user = userEvent.setup();
+    const { default: axiosInstance } = await import("@/config/axios-config");
+    const mockAxios = axiosInstance as any;
+    mockAxios.get.mockImplementation((url: string) => {
+      if (url.includes("/tasks/task1")) {
+        return Promise.resolve({
+          data: {
+            id: "task1",
+            title: "Morning Intention Setting",
+            display_order: 1,
+            estimated_time: 30,
+            subtasks: [],
+          },
+        });
+      }
+      return Promise.resolve({ data: { ...mockPlanData, status: "DRAFT" } });
+    });
+    mockAxios.delete.mockResolvedValue({ data: {} });
+
+    renderWithProviders(<PlanDetailsPage />, true);
+    await waitFor(() => {
+      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Morning Intention Setting"));
+    await waitFor(() => {
+      expect(screen.getByText("Task")).toBeInTheDocument();
+    });
+
+    const taskElements = screen.getAllByText("Morning Intention Setting");
+    const sidebarSpan = taskElements.find(
+      (el) => el.tagName === "SPAN" && el.classList.contains("cursor-pointer"),
+    );
+    const taskRow = sidebarSpan!.parentElement!;
+    const dropdownTrigger = taskRow.querySelector(
+      '[data-slot="dropdown-menu-trigger"]',
+    ) as HTMLElement;
+    await user.click(dropdownTrigger);
+
+    const deleteText = await screen.findByText("Delete");
+    await user.click(deleteText);
+
+    const deleteTaskBtn = await screen.findByText("Delete Task");
+    await user.click(deleteTaskBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Add Task")).toBeInTheDocument();
+    });
+  });
+
+  it("clears editing task when that task is deleted from sidebar", async () => {
+    const user = userEvent.setup();
+    const { default: axiosInstance } = await import("@/config/axios-config");
+    const mockAxios = axiosInstance as any;
+    mockAxios.get.mockImplementation((url: string) => {
+      if (url.includes("/tasks/task1")) {
+        return Promise.resolve({
+          data: {
+            id: "task1",
+            title: "Morning Intention Setting",
+            display_order: 1,
+            estimated_time: 30,
+            subtasks: [],
+          },
+        });
+      }
+      return Promise.resolve({ data: { ...mockPlanData, status: "DRAFT" } });
+    });
+    mockAxios.delete.mockResolvedValue({ data: {} });
+
+    renderWithProviders(<PlanDetailsPage />, true);
+    await waitFor(() => {
+      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Morning Intention Setting"));
+    await waitFor(() => {
+      expect(screen.getByText("Task")).toBeInTheDocument();
+    });
+
+    const editBtn = await screen.findByRole("button", { name: /edit/i });
+    fireEvent.click(editBtn);
+    await waitFor(() => {
+      expect(screen.getByText("Edit Task")).toBeInTheDocument();
+    });
+
+    const taskElements = screen.getAllByText("Morning Intention Setting");
+    const sidebarSpan = taskElements.find(
+      (el) => el.tagName === "SPAN" && el.classList.contains("cursor-pointer"),
+    );
+    const taskRow = sidebarSpan!.parentElement!;
+    const dropdownTrigger = taskRow.querySelector(
+      '[data-slot="dropdown-menu-trigger"]',
+    ) as HTMLElement;
+    await user.click(dropdownTrigger);
+
+    const deleteText = await screen.findByText("Delete");
+    await user.click(deleteText);
+
+    const deleteTaskBtn = await screen.findByText("Delete Task");
+    await user.click(deleteTaskBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Add Task")).toBeInTheDocument();
     });
   });
 });

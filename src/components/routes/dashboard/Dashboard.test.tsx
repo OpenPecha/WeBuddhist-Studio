@@ -148,4 +148,44 @@ describe("Dashboard Component", () => {
       );
     });
   });
+
+  it("handles toggle featured on a plan", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        plans: [
+          {
+            id: "plan-1",
+            image_url: "",
+            title: "Test Plan",
+            description: "Test description",
+            total_days: "7",
+            subscription_count: "10",
+            status: "PUBLISHED",
+            featured: false,
+            language: "EN",
+          },
+        ],
+        total: 1,
+      },
+    });
+    axiosInstance.patch = vi.fn().mockResolvedValue({ data: {} });
+
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Test Plan")).toBeInTheDocument();
+
+    const featuredButton = screen.getByText("Not Featured");
+    fireEvent.click(featuredButton);
+
+    await waitFor(() => {
+      expect(axiosInstance.patch).toHaveBeenCalledWith(
+        "/api/v1/cms/plans/plan-1/featured",
+        expect.any(Object),
+      );
+    });
+  });
 });
