@@ -27,16 +27,13 @@ const pickSearchLanguage = (query: string, uiLanguage?: string | null) => {
 
 export const searchSources = async ({
   query,
-  language = localStorage.getItem(LANGUAGE) || "en",
   limit = 10,
   skip = 0,
 }: SearchCommon) => {
-  const lang = pickSearchLanguage(query, language);
   const { data } = await axiosInstance.get(`/api/v1/search/multilingual`, {
     params: {
       query,
       search_type: "exact",
-      language: lang,
       limit,
       skip,
     },

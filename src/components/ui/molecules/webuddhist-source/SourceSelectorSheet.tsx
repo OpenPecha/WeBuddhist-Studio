@@ -8,7 +8,6 @@ import SourceItem from "./sourceItem";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { searchSources } from "@/components/api/searchApi";
-import { LANGUAGE } from "@/lib/constant";
 
 interface SourceData {
   content: string;
@@ -42,10 +41,8 @@ export const SourceSelectorSheet = ({
       pagination.limit,
     ],
     queryFn: () => {
-      const language = localStorage.getItem(LANGUAGE) || "en";
       return searchSources({
         query: debouncedSearchFilter,
-        language,
         limit: pagination.limit,
         skip,
       });
