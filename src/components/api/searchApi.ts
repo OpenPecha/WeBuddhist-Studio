@@ -7,8 +7,6 @@ type SearchCommon = {
   skip?: number;
 };
 
-
-
 export const searchSources = async ({
   query,
   limit = 10,
