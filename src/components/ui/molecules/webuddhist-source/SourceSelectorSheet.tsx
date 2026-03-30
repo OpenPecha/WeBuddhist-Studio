@@ -11,8 +11,9 @@ import { searchSources } from "@/components/api/searchApi";
 
 interface SourceData {
   content: string;
-  segment_id: string;
+  pecha_segment_id: string;
   text_id: string;
+  segment_id: string;
 }
 
 interface SourceSelectorSheetProps {
@@ -40,13 +41,12 @@ export const SourceSelectorSheet = ({
       pagination.currentPage,
       pagination.limit,
     ],
-    queryFn: () => {
-      return searchSources({
+    queryFn: () =>
+      searchSources({
         query: debouncedSearchFilter,
         limit: pagination.limit,
         skip,
-      });
-    },
+      }),
     refetchOnWindowFocus: false,
     enabled: isOpen,
   });

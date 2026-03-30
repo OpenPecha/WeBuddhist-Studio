@@ -2,7 +2,6 @@ import axiosInstance from "@/config/axios-config";
 
 type SearchCommon = {
   query: string;
-  language?: string;
   limit?: number;
   skip?: number;
 };

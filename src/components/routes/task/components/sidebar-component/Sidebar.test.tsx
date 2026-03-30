@@ -193,7 +193,7 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        isDraft={true}
+        isEditable={true}
       />,
     );
     await waitFor(() => {
@@ -247,7 +247,7 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        isDraft={true}
+        isEditable={true}
       />,
     );
     await waitFor(() => {
@@ -279,7 +279,7 @@ describe("SideBar Component", () => {
         selectedDay={1}
         onDaySelect={mockOnDaySelect}
         onTaskClick={mockOnTaskClick}
-        isDraft={true}
+        isEditable={true}
       />,
     );
     await waitFor(() => {

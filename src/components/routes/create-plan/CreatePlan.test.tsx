@@ -83,6 +83,19 @@ describe("CreatePlan Component", () => {
       }
       return Promise.resolve({ data: {} });
     });
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        id: "plan-123",
+        title: "Existing Plan",
+        description: "Existing description",
+        total_days: 14,
+        difficulty_level: "Beginner",
+        plan_image_url: "https://example.com/image.jpg",
+        image_url: "https://example.com/image.jpg",
+        tags: ["meditation"],
+        language: "en",
+      },
+    });
   });
   it("renders create plan form with main heading", () => {
     renderWithProviders(<CreatePlan />);
@@ -162,7 +175,7 @@ describe("CreatePlan Component", () => {
 
     fireEvent.change(titleInput, { target: { value: "Test Plan Title" } });
 
-    expect((titleInput as HTMLInputElement).value).toBe("Test Plan Title");
+    expect(titleInput).toHaveValue("Test Plan Title");
   });
 
   it("allows typing in description textarea", () => {
@@ -176,9 +189,7 @@ describe("CreatePlan Component", () => {
       target: { value: "Test plan description" },
     });
 
-    expect((descriptionTextarea as HTMLTextAreaElement).value).toBe(
-      "Test plan description",
-    );
+    expect(descriptionTextarea).toHaveValue("Test plan description");
   });
 
   it("allows typing in number of days input", () => {
@@ -190,7 +201,7 @@ describe("CreatePlan Component", () => {
 
     fireEvent.change(daysInput, { target: { value: "30" } });
 
-    expect((daysInput as HTMLInputElement).value).toBe("30");
+    expect(daysInput).toHaveValue(30);
   });
 
   it("renders image upload area", () => {
@@ -381,5 +392,81 @@ describe("CreatePlan Component", () => {
     const confirmButton = screen.getByText("studio.plan.navigation.leave");
     fireEvent.click(confirmButton);
     expect(mockBlocker.proceed).toHaveBeenCalled();
+  });
+
+  it("fetches and populates form in edit mode", async () => {
+    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+
+    renderWithProviders(<CreatePlan />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("studio.plan.form.placeholder.title"),
+      ).toHaveValue("Existing Plan");
+    });
+
+    expect(
+      screen.getByPlaceholderText("studio.plan.form.placeholder.description"),
+    ).toHaveValue("Existing description");
+
+    expect(
+      screen.getByPlaceholderText(
+        "studio.plan.form.placeholder.number_of_days",
+      ),
+    ).toHaveValue(14);
+
+    expect(screen.getByAltText("Cover preview")).toBeInTheDocument();
+  });
+
+  it("handles navigation cancellation", async () => {
+    const mockBlocker = {
+      state: "blocked" as const,
+      proceed: vi.fn(),
+      reset: vi.fn(),
+      location: {} as any,
+    };
+    vi.mocked(useBlocker).mockReturnValue(mockBlocker);
+    renderWithProviders(<CreatePlan />);
+    await waitFor(() => {
+      expect(
+        screen.getByText("studio.plan.navigation.confirm_title"),
+      ).toBeInTheDocument();
+    });
+    const cancelButtons = screen.getAllByText("common.button.cancel");
+    const dialogCancelButton = cancelButtons.find((btn) =>
+      btn.closest('[role="dialog"]'),
+    );
+    fireEvent.click(dialogCancelButton!);
+    expect(mockBlocker.reset).toHaveBeenCalled();
+  });
+
+  it("submits update in edit mode", async () => {
+    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    vi.spyOn(axiosInstance, "put").mockResolvedValue({ data: {} });
+    renderWithProviders(<CreatePlan />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("studio.plan.form.placeholder.title"),
+      ).toHaveValue("Existing Plan");
+    });
+
+    fireEvent.change(
+      screen.getByPlaceholderText("studio.plan.form.placeholder.title"),
+      { target: { value: "Updated Plan" } },
+    );
+
+    const submitButton = screen.getByText("studio.plan.update_button");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(axiosInstance.put).toHaveBeenCalledWith(
+        "/api/v1/cms/plans/plan-123",
+        expect.any(Object),
+        expect.any(Object),
+      );
+    });
   });
 });

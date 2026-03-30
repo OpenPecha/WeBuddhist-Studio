@@ -19,7 +19,7 @@ interface SideBarProps {
   onDaySelect: (dayNumber: number) => void;
   onTaskClick?: (taskId: string) => void;
   onTaskDelete?: (taskId: string) => void;
-  isDraft?: boolean;
+  isEditable?: boolean;
 }
 
 const SideBar = ({
@@ -27,7 +27,7 @@ const SideBar = ({
   onDaySelect,
   onTaskClick,
   onTaskDelete,
-  isDraft,
+  isEditable,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
   const { plan_id } = useParams<{ plan_id: string }>();
@@ -116,7 +116,7 @@ const SideBar = ({
               onReorder={(activeId: any, overId: any) => {
                 handleDayReorder(activeId, overId);
               }}
-              disabled={!isDraft}
+              disabled={!isEditable}
             >
               {displayDays.map((day: any) => (
                 <SortableItem key={day.id} id={day.id}>
@@ -129,7 +129,7 @@ const SideBar = ({
                         }}
                       >
                         <div className="flex items-center gap-3">
-                          {isDraft && (
+                          {isEditable && (
                             <PiDotsSixVertical
                               className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
                               {...listeners}
@@ -183,18 +183,18 @@ const SideBar = ({
                             </Activity>
                             <IoMdAdd
                               className={`w-4 h-4 text-gray-400 dark:text-muted-foreground ${
-                                isDraft
+                                isEditable
                                   ? "cursor-pointer"
                                   : "cursor-not-allowed opacity-50"
                               }`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (isDraft) {
+                                if (isEditable) {
                                   handleDayClick(day.day_number);
                                 }
                               }}
                             />
-                            {isDraft && currentPlan?.days.length > 1 && (
+                            {isEditable && currentPlan?.days.length > 1 && (
                               <Pecha.DropdownMenu>
                                 <Pecha.DropdownMenuTrigger asChild>
                                   <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
@@ -229,7 +229,7 @@ const SideBar = ({
                             onReorder={(activeId: any, overId: any) => {
                               handleTaskReorder(activeId, overId);
                             }}
-                            disabled={!isDraft}
+                            disabled={!isEditable}
                           >
                             {getDisplayTasks(day).map((task: any) => (
                               <SortableItem
@@ -239,7 +239,7 @@ const SideBar = ({
                               >
                                 {({ listeners }: any) => (
                                   <>
-                                    {isDraft && (
+                                    {isEditable && (
                                       <PiDotsSixVertical
                                         className="w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
                                         {...listeners}
@@ -254,7 +254,7 @@ const SideBar = ({
                                     >
                                       {task.title}
                                     </span>
-                                    {isDraft && (
+                                    {isEditable && (
                                       <Pecha.DropdownMenu>
                                         <Pecha.DropdownMenuTrigger asChild>
                                           <BsThreeDots
@@ -290,7 +290,7 @@ const SideBar = ({
           <Pecha.Button
             type="button"
             onClick={addNewDay}
-            disabled={!isDraft || createNewDay.isPending}
+            disabled={!isEditable || createNewDay.isPending}
             variant="destructive"
             className="cursor-pointer mt-1 disabled:opacity-50 w-full disabled:cursor-not-allowed"
           >
