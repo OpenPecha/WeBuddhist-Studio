@@ -94,7 +94,7 @@ Object.defineProperty(window, "sessionStorage", {
   writable: true,
 });
 
-const renderWithProviders = (component: React.ReactElement, isDraft = true) => {
+const renderWithProviders = (component: React.ReactElement, isEditable = true) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
