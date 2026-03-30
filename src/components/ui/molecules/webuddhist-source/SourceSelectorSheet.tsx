@@ -8,12 +8,18 @@ import SourceItem from "./sourceItem";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { searchSources } from "@/components/api/searchApi";
-import { LANGUAGE } from "@/lib/constant";
+
+interface SourceData {
+  content: string;
+  pecha_segment_id: string;
+  text_id: string;
+  segment_id: string;
+}
 
 interface SourceSelectorSheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddSource: (sourceContent: string) => void;
+  onAddSource: (sourceData: SourceData) => void;
 }
 
 export const SourceSelectorSheet = ({
@@ -35,15 +41,12 @@ export const SourceSelectorSheet = ({
       pagination.currentPage,
       pagination.limit,
     ],
-    queryFn: () => {
-      const language = localStorage.getItem(LANGUAGE) || "en";
-      return searchSources({
+    queryFn: () =>
+      searchSources({
         query: debouncedSearchFilter,
-        language,
         limit: pagination.limit,
         skip,
-      });
-    },
+      }),
     refetchOnWindowFocus: false,
     enabled: isOpen,
   });
@@ -55,9 +58,9 @@ export const SourceSelectorSheet = ({
   };
   const { t } = useTranslate();
 
-  const handleAddSource = (content: any) => {
-    if (content) {
-      onAddSource(content);
+  const handleAddSource = (sourceData: SourceData) => {
+    if (sourceData?.content) {
+      onAddSource(sourceData);
       onOpenChange(false);
     }
   };

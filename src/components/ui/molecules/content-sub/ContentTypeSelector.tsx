@@ -1,15 +1,22 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { IoMdAdd, IoMdVideocam } from "react-icons/io";
-import { IoTextOutline } from "react-icons/io5";
+import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { useState } from "react";
 import { SourceSelectorSheet } from "../webuddhist-source/SourceSelectorSheet";
 
+interface SourceData {
+  content: string;
+  pecha_segment_id: string;
+  text_id: string;
+  segment_id: string;
+}
+
 interface ContentTypeSelectorProps {
   onSelectType: (
     type: "IMAGE" | "VIDEO" | "AUDIO" | "TEXT" | "SOURCE_REFERENCE",
-    sourceContent?: string,
+    sourceData?: SourceData,
   ) => void;
 }
 
@@ -20,10 +27,10 @@ const contentTypes = [
     key: "IMAGE",
     icon: <MdOutlineImage className={iconClassName} />,
   },
-  // {
-  //   key: "AUDIO",
-  //   icon: <IoMusicalNotesSharp className={iconClassName} />,
-  // },
+  {
+    key: "AUDIO",
+    icon: <IoMusicalNotesSharp className={iconClassName} />,
+  },
   {
     key: "VIDEO",
     icon: <IoMdVideocam className={iconClassName} />,
@@ -53,8 +60,8 @@ export const ContentTypeSelector = ({
     }
   };
 
-  const handleAddSource = (sourceContent: string) => {
-    onSelectType("SOURCE_REFERENCE", sourceContent);
+  const handleAddSource = (sourceData: SourceData) => {
+    onSelectType("SOURCE_REFERENCE", sourceData);
     setIsSourceSheetOpen(false);
   };
 

@@ -17,7 +17,6 @@ const Login = () => {
   const { t } = useTranslate();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [showEmailReverify, setShowEmailReverify] = useState<boolean>(false);
@@ -69,10 +68,12 @@ const Login = () => {
     },
   });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setShowEmailReverify(false);
     setSuccessMessage("");
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get("password") as string;
     const clientPassword = createPasswordHash(email, password);
     loginMutation.mutate({
       email,
@@ -111,13 +112,10 @@ const Login = () => {
           </Label>
           <Input
             type="password"
+            name="password"
             placeholder={t("studio.login.placeholder.password")}
             className=" placeholder:text-[#b1b1b1]"
             required
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
           />
         </div>
         <div className="flex mt-4 justify-center ">

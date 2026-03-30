@@ -1,4 +1,3 @@
-import { TIBETAN_LETTERS } from "@/lib/constant";
 import pechaIcon from "../../../assets/icon/pecha_icon.png";
 
 interface ContainerLayoutProps {

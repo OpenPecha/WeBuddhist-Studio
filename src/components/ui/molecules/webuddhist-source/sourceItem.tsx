@@ -14,7 +14,14 @@ const SourceItem = ({ source, onSegment }: any) => {
           <button
             key={segment.segment_id || index}
             className="border p-2 rounded-md text-left border-dashed border-gray-300 dark:border-[#313132] text-sm cursor-pointer"
-            onClick={() => onSegment?.(segment.content)}
+            onClick={() =>
+              onSegment?.({
+                content: segment.content,
+                pecha_segment_id: segment.pecha_segment_id,
+                text_id: source.text.text_id,
+                segment_id: segment.segment_id,
+              })
+            }
           >
             <div dangerouslySetInnerHTML={{ __html: segment.content }} />
           </button>

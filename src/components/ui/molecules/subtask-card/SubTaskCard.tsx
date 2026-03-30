@@ -44,6 +44,9 @@ interface SourceSubTask {
   content_type: "SOURCE_REFERENCE";
   content: string;
   display_order?: number;
+  source_text_id?: string | null;
+  pecha_segment_id?: string | null;
+  segment_id?: string | null;
 }
 export type SubTask =
   | VideoSubTask
