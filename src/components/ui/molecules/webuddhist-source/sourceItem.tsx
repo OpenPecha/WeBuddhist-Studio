@@ -19,7 +19,7 @@ const SourceItem = ({ source, onSegment }: any) => {
                 content: segment.content,
                 pecha_segment_id: segment.pecha_segment_id,
                 text_id: source.text.text_id,
-                segment_id: segment.segment_id,
+                segment_ids: [segment.segment_id],
               })
             }
           >

@@ -84,7 +84,7 @@ const TaskForm = ({
           ...(subTask.content_type === "SOURCE_REFERENCE" && {
             source_text_id: subTask.source_text_id || null,
             pecha_segment_id: subTask.pecha_segment_id || null,
-            segment_id: subTask.segment_id || null,
+            segment_ids: subTask.segment_ids || null,
           }),
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
@@ -117,7 +117,7 @@ const TaskForm = ({
         ...(subTask.content_type === "SOURCE_REFERENCE" && {
           source_text_id: subTask.source_text_id || null,
           pecha_segment_id: subTask.pecha_segment_id || null,
-          segment_id: subTask.segment_id || null,
+          segment_ids: subTask.segment_ids || null,
         }),
       }));
       await updateSubTasks(editingTask.id, subTasksPayload);
@@ -194,7 +194,7 @@ const TaskForm = ({
               content: data.content,
               source_text_id: data.source_text_id || null,
               pecha_segment_id: data.pecha_segment_id || null,
-              segment_id: data.segment_id || null,
+              segment_ids: data.segment_ids || null,
             };
           default:
             return {
@@ -212,7 +212,7 @@ const TaskForm = ({
     content: string;
     pecha_segment_id: string;
     text_id: string;
-    segment_id: string;
+    segment_ids: string[];
   }
 
   const handleAddSubTask = (content_type: any, sourceData?: SourceData) => {
@@ -256,7 +256,7 @@ const TaskForm = ({
           content: sourceData?.content || "",
           source_text_id: sourceData?.text_id || null,
           pecha_segment_id: sourceData?.pecha_segment_id || null,
-          segment_id: sourceData?.segment_id || null,
+          segment_ids: sourceData?.segment_ids || null,
         };
         break;
     }
