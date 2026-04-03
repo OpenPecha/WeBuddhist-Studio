@@ -10,7 +10,7 @@ interface SourceData {
   content: string;
   pecha_segment_id: string;
   text_id: string;
-  segment_id: string;
+  segment_ids: string[];
 }
 
 interface ContentTypeSelectorProps {
