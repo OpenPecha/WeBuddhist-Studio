@@ -13,7 +13,13 @@ const TagInput = ({ value = [], onChange }: TagInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && inputValue.trim()) {
       e.preventDefault();
-      onChange?.([inputValue.trim(), ...value]);
+      const trimmed = inputValue.trim();
+      const normalizedTag =
+        trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+
+      if (!value.includes(normalizedTag)) {
+        onChange?.([normalizedTag, ...value]);
+      }
       setInputValue("");
     }
   };

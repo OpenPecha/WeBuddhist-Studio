@@ -46,7 +46,7 @@ export const createSubTasks = async (
     duration?: string;
     source_text_id?: string | null;
     pecha_segment_id?: string | null;
-    segment_id?: string | null;
+    segment_ids?: string[] | null;
   }[],
 ) => {
   const { data } = await axiosInstance.post(
@@ -72,7 +72,7 @@ export const updateSubTasks = async (
     duration?: string;
     source_text_id?: string | null;
     pecha_segment_id?: string | null;
-    segment_id?: string | null;
+    segment_ids?: string[] | null;
   }[],
 ) => {
   await axiosInstance.put(

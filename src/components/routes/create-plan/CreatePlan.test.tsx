@@ -320,7 +320,7 @@ describe("CreatePlan Component", () => {
     const tagInput = screen.getByPlaceholderText("Add a tag");
     fireEvent.change(tagInput, { target: { value: "tag1" } });
     fireEvent.keyDown(tagInput, { key: "Enter", code: "Enter" });
-    expect(screen.getByText("tag1")).toBeInTheDocument();
+    expect(screen.getByText("Tag1")).toBeInTheDocument();
   });
 
   it("shows no image preview initially", () => {
