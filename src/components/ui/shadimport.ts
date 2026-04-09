@@ -46,6 +46,7 @@ import { ButtonGroup } from "@/components/ui/atoms/button-group";
 import { Badge } from "@/components/ui/atoms/badge";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { Skeleton } from "@/components/ui/atoms/skeleton";
+import { Checkbox } from "@/components/ui/atoms/checkbox";
 
 import {
   Pagination,
@@ -132,4 +133,5 @@ export const Pecha = {
   Badge,
   Textarea,
   Skeleton,
+  Checkbox,
 };
