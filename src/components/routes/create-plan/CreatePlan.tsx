@@ -306,6 +306,7 @@ const Createplan = () => {
                               </p>
                             )}
                             <button
+                              aria-label="Remove image"
                               type="button"
                               onClick={handleRemoveImage}
                               className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"

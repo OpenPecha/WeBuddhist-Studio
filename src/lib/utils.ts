@@ -121,3 +121,61 @@ export const reorderArray = <T extends { id: string }>(
 
   return newItems;
 };
+
+const escapeRegex = (value: string) =>
+  value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+
+export const highlightSearchMatch = (
+  text: string,
+  searchTerm: string,
+  highlightClass = "highlighted-text",
+) => {
+  if (!text || !searchTerm || searchTerm.trim() === "") {
+    return text;
+  }
+
+  const escaped = escapeRegex(searchTerm);
+  const isLatinQuery = /^[\p{Script=Latin}\d\s'''.:-]+$/u.test(searchTerm);
+
+  if (isLatinQuery) {
+    const wordRegex = new RegExp(
+      String.raw`(^|\P{L})(${escaped})(?=\P{L}|$)`,
+      "giu",
+    );
+    return text.replace(wordRegex, (_, separator, match) => {
+      return `${separator}<span class="${highlightClass}">${match}</span>`;
+    });
+  }
+
+  const subRegex = new RegExp(escaped, "giu");
+  return text.replace(
+    subRegex,
+    (match) => `<span class="${highlightClass}">${match}</span>`,
+  );
+};
+
+export const getLastSegmentId = (sections: any[]): string | null => {
+  if (!sections?.length) {
+    return null;
+  }
+  const lastSection = sections.at(-1);
+  return (
+    getLastSegmentId(lastSection.sections) ??
+    lastSection.segments?.at(-1)?.segment_id ??
+    null
+  );
+};
+
+export const flattenSegments = (sections: any[]): any[] => {
+  if (!sections?.length) return [];
+  const result: any[] = [];
+  for (const section of sections) {
+    if (section.segments?.length) {
+      result.push(...section.segments);
+    }
+    if (section.sections?.length) {
+      result.push(...flattenSegments(section.sections));
+    }
+  }
+  return result;
+};

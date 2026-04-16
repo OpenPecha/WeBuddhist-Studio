@@ -1,13 +1,19 @@
 import { Pecha } from "@/components/ui/shadimport";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { useTranslate } from "@tolgee/react";
 import { useDebounce } from "use-debounce";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
 import SourceItem from "./sourceItem";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
-import { searchSources } from "@/components/api/searchApi";
+import {
+  searchSources,
+  searchTitles,
+  fetchTextDetails,
+} from "@/components/api/searchApi";
+import { flattenSegments, getLastSegmentId } from "@/lib/utils";
 
 interface SourceData {
   content: string;
@@ -22,38 +28,74 @@ interface SourceSelectorSheetProps {
   onAddSource: (sourceData: SourceData) => void;
 }
 
-const parseRange = (
-  input: string,
-  max: number,
-): { start: number; end: number } | null => {
-  const match = input.trim().match(/^(\d+)\s*-\s*(\d+)$/);
-  if (!match) return null;
-  const start = parseInt(match[1], 10);
-  const end = parseInt(match[2], 10);
-  if (start < 1 || end < start || start > max) return null;
-  return { start, end: Math.min(end, max) };
+const RANGE_REGEX = /^(\d+)\s*-\s*(\d+)$/;
+const SINGLE_REGEX = /^(\d+)$/;
+
+const parsePart = (part: string, max: number): number[] | null => {
+  const rangeMatch = RANGE_REGEX.exec(part);
+  if (rangeMatch) {
+    const start = Number.parseInt(rangeMatch[1], 10);
+    const end = Number.parseInt(rangeMatch[2], 10);
+    if (start < 1 || end < start || start > max) return null;
+    const result: number[] = [];
+    for (let i = start; i <= Math.min(end, max); i++) result.push(i);
+    return result;
+  }
+
+  const singleMatch = SINGLE_REGEX.exec(part);
+  if (singleMatch) {
+    const num = Number.parseInt(singleMatch[1], 10);
+    if (num < 1 || num > max) return null;
+    return [num];
+  }
+
+  return null;
+};
+
+const parseSelection = (input: string, max: number): Set<number> | null => {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const parts = trimmed
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return null;
+
+  const selected = new Set<number>();
+  for (const part of parts) {
+    const nums = parsePart(part, max);
+    if (nums === null) return null;
+    nums.forEach((n) => selected.add(n));
+  }
+
+  return selected.size > 0 ? selected : null;
 };
 
 const SelectedSourceDetail = ({
   segments,
   selectedSource,
   onAdd,
+  bottomRef,
+  isFetchingNextPage,
 }: {
   segments: any[];
   selectedSource: any;
   onAdd: (sourceData: SourceData) => void;
+  bottomRef?: (node?: Element | null) => void;
+  isFetchingNextPage?: boolean;
 }) => {
   const [rangeInput, setRangeInput] = useState("");
   const [selectAll, setSelectAll] = useState(false);
 
   const segmentCount = segments.length;
 
-  const parsedRange = useMemo(() => {
+  const selectedIndices = useMemo(() => {
     if (!segmentCount) return null;
-    return parseRange(rangeInput, segmentCount);
+    return parseSelection(rangeInput, segmentCount);
   }, [rangeInput, segmentCount]);
 
-  const isAddDisabled = !parsedRange;
+  const isAddDisabled = !selectedIndices;
 
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
@@ -65,17 +107,19 @@ const SelectedSourceDetail = ({
   };
 
   const handleAdd = () => {
-    if (!parsedRange || !selectedSource) return;
-    const { start, end } = parsedRange;
-    const selected = segments.slice(start - 1, end);
+    if (!selectedIndices || !selectedSource) return;
+    const sortedIndices = Array.from(selectedIndices).sort((a, b) => a - b);
+    const selected = sortedIndices.map((i) => segments[i - 1]).filter(Boolean);
     const content = selected.map((seg: any) => seg.content).join("\n");
     const segmentIds = selected.map((seg: any) => seg.segment_id);
     const pechaSegmentId = selected[0]?.pecha_segment_id || "";
 
+    const textId = selectedSource.id;
+
     onAdd({
       content,
       pecha_segment_id: pechaSegmentId,
-      text_id: selectedSource.text.text_id,
+      text_id: textId,
       segment_ids: segmentIds,
     });
   };
@@ -100,7 +144,7 @@ const SelectedSourceDetail = ({
 
       <div className="flex items-center gap-2">
         <Pecha.Input
-          placeholder={`1-${segmentCount}`}
+          placeholder="1-10"
           value={rangeInput}
           onChange={(e) => {
             setRangeInput(e.target.value);
@@ -119,20 +163,38 @@ const SelectedSourceDetail = ({
         </Pecha.Button>
       </div>
 
-      <div className="space-y-3 max-h-[300px] overflow-y-auto">
-        {segments.map((segment: any, segIndex: number) => (
+      <div className="border border-[#DEDEDE] dark:border-[#313132] rounded-[10px] p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-380px)]">
+        {segments.map((segment: any, segIndex: number) => {
+          const isSelected = selectedIndices?.has(segIndex + 1);
+          return (
+            <div
+              key={segment.segment_id || segIndex}
+              className={`border p-3 rounded-[10px] text-sm transition-colors ${
+                isSelected
+                  ? "bg-[#E5E5E5] dark:bg-[#2a2a2b] border-solid border-[#CFCFCF] dark:border-[#4a4a4b]"
+                  : "bg-[#F9F9F9] dark:bg-sidebar-secondary border-dashed border-[#E1E1E1] dark:border-[#313132]"
+              }`}
+            >
+              <span className="font-medium">{segIndex + 1}. </span>
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: segment.content,
+                }}
+              />
+            </div>
+          );
+        })}
+        {bottomRef && (
           <div
-            key={segment.segment_id || segIndex}
-            className="border p-3 rounded-md border-dashed border-gray-300 dark:border-[#313132] text-sm"
-          >
-            <span className="font-medium">{segIndex + 1}. </span>
-            <span
-              dangerouslySetInnerHTML={{
-                __html: segment.content,
-              }}
-            />
-          </div>
-        ))}
+            ref={bottomRef}
+            className="h-5 w-full opacity-0 pointer-events-none"
+          />
+        )}
+        {isFetchingNextPage && (
+          <p className="text-center text-sm text-gray-500">
+            Loading more segments...
+          </p>
+        )}
       </div>
     </div>
   );
@@ -153,23 +215,100 @@ export const SourceSelectorSheet = ({
     () => (pagination.currentPage - 1) * pagination.limit,
     [pagination],
   );
-  const { data: searchData, isLoading } = useQuery({
+
+  const { data: multilingualData, isLoading: isMultilingualLoading } = useQuery(
+    {
+      queryKey: [
+        "topics",
+        debouncedSearchFilter,
+        pagination.currentPage,
+        pagination.limit,
+      ],
+      queryFn: () =>
+        searchSources({
+          query: debouncedSearchFilter,
+          limit: pagination.limit,
+          skip,
+        }),
+      refetchOnWindowFocus: false,
+      enabled: isOpen && !searchOnlyTitles,
+    },
+  );
+
+  const { data: titleData, isLoading: isTitleLoading } = useQuery({
     queryKey: [
-      "topics",
+      "titleSearch",
       debouncedSearchFilter,
       pagination.currentPage,
       pagination.limit,
     ],
     queryFn: () =>
-      searchSources({
-        query: debouncedSearchFilter,
+      searchTitles({
+        title: debouncedSearchFilter,
         limit: pagination.limit,
-        skip,
+        offset: skip,
       }),
     refetchOnWindowFocus: false,
-    enabled: isOpen,
+    enabled: isOpen && searchOnlyTitles && debouncedSearchFilter.length > 0,
   });
-  const totalSegments = searchData?.total || 0;
+
+  const {
+    data: detailsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["textDetails", selectedSource?.id],
+    initialPageParam: undefined as
+      | { segmentId: string; direction: "next" | "previous" }
+      | undefined,
+    queryFn: ({ pageParam }) =>
+      fetchTextDetails({
+        textId: selectedSource.id,
+        segmentId: pageParam?.segmentId,
+        direction: pageParam?.direction as "next" | "previous" | undefined,
+        size: 20,
+      }),
+    getNextPageParam: (lastPage: any) => {
+      if (lastPage?.current_segment_position >= lastPage?.total_segments)
+        return undefined;
+      const lastSegmentId = getLastSegmentId(lastPage.content.sections);
+      if (!lastSegmentId) return undefined;
+      return { segmentId: lastSegmentId, direction: "next" };
+    },
+    enabled: !!selectedSource?.id && searchOnlyTitles,
+    refetchOnWindowFocus: false,
+  });
+
+  const { ref: bottomSentinelRef, inView: isBottomVisible } = useInView({
+    threshold: 0.1,
+    rootMargin: "50px",
+  });
+
+  useEffect(() => {
+    if (isBottomVisible && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [isBottomVisible, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const detailSegments = useMemo(() => {
+    if (!detailsData?.pages) return [];
+    return detailsData.pages.flatMap((page) =>
+      flattenSegments(page.content.sections),
+    );
+  }, [detailsData?.pages]);
+
+  const isLoading = searchOnlyTitles ? isTitleLoading : isMultilingualLoading;
+
+  const sources = searchOnlyTitles
+    ? titleData || []
+    : multilingualData?.sources || [];
+
+  const segments = searchOnlyTitles
+    ? detailSegments
+    : selectedSource?.segment_matches || [];
+
+  const totalSegments = multilingualData?.total || 0;
   const totalPages = Math.ceil(totalSegments / pagination.limit);
 
   const handlePageChange = (pageNumber: number) => {
@@ -185,17 +324,14 @@ export const SourceSelectorSheet = ({
     }
   };
 
-  const sources = searchData?.sources || [];
-  const segments = selectedSource?.segment_matches || [];
-
   const handleTitleClick = (source: any) => {
-    setSelectedSource(source);
+    setSelectedSource((prev: any) => (prev?.id === source.id ? null : source));
   };
 
   const renderSegmentList = () => {
     if (sources.length === 0) {
       return (
-        <div className=" text-center h-full flex flex-col items-center justify-center">
+        <div className="text-center min-h-[400px] flex flex-col items-center justify-center">
           <img
             src={pechaIcon}
             alt="no data found"
@@ -213,10 +349,9 @@ export const SourceSelectorSheet = ({
       return (
         <>
           {sources.map((source: any, index: number) => {
-            const isSelected =
-              selectedSource?.text.text_id === source.text.text_id;
+            const isSelected = selectedSource?.id === source.id;
             return (
-              <div key={source.text.text_id || index}>
+              <div key={source.id || index}>
                 <button
                   className={`border p-3 rounded-md text-left w-full flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-input/50 ${
                     isSelected
@@ -226,7 +361,7 @@ export const SourceSelectorSheet = ({
                   onClick={() => handleTitleClick(source)}
                 >
                   <p className="font-bold text-[#801A1E] dark:text-[#b0b0b0]">
-                    {source.text.title}
+                    {source.title}
                   </p>
                   <img src={pechaIcon} alt="source icon" className="w-8 h-8" />
                 </button>
@@ -236,6 +371,8 @@ export const SourceSelectorSheet = ({
                     segments={segments}
                     selectedSource={selectedSource}
                     onAdd={handleAddSource}
+                    bottomRef={bottomSentinelRef}
+                    isFetchingNextPage={isFetchingNextPage}
                   />
                 )}
               </div>
@@ -250,6 +387,7 @@ export const SourceSelectorSheet = ({
         key={source.text.text_id}
         source={source}
         onSegment={handleAddSource}
+        searchQuery={debouncedSearchFilter}
       />
     ));
   };
@@ -260,6 +398,8 @@ export const SourceSelectorSheet = ({
       onOpenChange={(open) => {
         if (!open) {
           setSelectedSource(null);
+          setSearchFilter("");
+          setPagination({ currentPage: 1, limit: 10 });
         }
         onOpenChange(open);
       }}
@@ -285,24 +425,35 @@ export const SourceSelectorSheet = ({
           <label className="flex items-center gap-2 px-1 pt-5 cursor-pointer">
             <Pecha.Checkbox
               checked={searchOnlyTitles}
-              onCheckedChange={(checked: boolean) =>
-                setSearchOnlyTitles(!!checked)
-              }
+              onCheckedChange={(checked: boolean) => {
+                setSearchOnlyTitles(!!checked);
+                setPagination({ currentPage: 1, limit: 10 });
+                setSelectedSource(null);
+              }}
               className="data-[state=checked]:bg-transparent data-[state=checked]:text-primary"
             />
             <span className="text-sm select-none">Search only titles</span>
           </label>
-        </div>
-        <div className="px-4 pt-1.5 pb-4 space-y-4 h-[540px] overflow-y-auto">
-          {isLoading ? (
-            <div className="w-full flex items-center justify-center h-full">
-              <p>Loading segments...</p>
-            </div>
-          ) : (
-            renderSegmentList()
+          {sources.length > 0 && !searchOnlyTitles && (
+            <p className="text-sm text-black dark:text-gray-200 px-1 pt-2">
+              Results: {totalSegments}
+            </p>
           )}
         </div>
-        {sources.length > 0 && (
+        <div className="h-[calc(100vh-200px)] overflow-hidden">
+          <div
+            className={`px-4 pb-4 space-y-4 ${searchOnlyTitles ? "pt-1.5" : "pt-2"}`}
+          >
+            {isLoading ? (
+              <div className="w-full flex items-center justify-center h-full">
+                <p>Loading segments...</p>
+              </div>
+            ) : (
+              renderSegmentList()
+            )}
+          </div>
+        </div>
+        {sources.length > 0 && !searchOnlyTitles && (
           <Pagination
             currentPage={pagination.currentPage}
             totalPages={totalPages}
