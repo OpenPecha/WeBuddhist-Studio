@@ -7,6 +7,7 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import SourceItem from "./sourceItem";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
+import { ScrollArea } from "@/components/ui/atoms/scroll-area";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import {
   searchSources,
@@ -31,45 +32,28 @@ interface SourceSelectorSheetProps {
 const RANGE_REGEX = /^(\d+)\s*-\s*(\d+)$/;
 const SINGLE_REGEX = /^(\d+)$/;
 
-const parsePart = (part: string, max: number): number[] | null => {
-  const rangeMatch = RANGE_REGEX.exec(part);
-  if (rangeMatch) {
-    const start = Number.parseInt(rangeMatch[1], 10);
-    const end = Number.parseInt(rangeMatch[2], 10);
-    if (start < 1 || end < start || start > max) return null;
-    const result: number[] = [];
-    for (let i = start; i <= Math.min(end, max); i++) result.push(i);
-    return result;
-  }
-
-  const singleMatch = SINGLE_REGEX.exec(part);
-  if (singleMatch) {
-    const num = Number.parseInt(singleMatch[1], 10);
-    if (num < 1 || num > max) return null;
-    return [num];
-  }
-
-  return null;
-};
-
 const parseSelection = (input: string, max: number): Set<number> | null => {
   const trimmed = input.trim();
   if (!trimmed) return null;
 
-  const parts = trimmed
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
-  if (parts.length === 0) return null;
-
-  const selected = new Set<number>();
-  for (const part of parts) {
-    const nums = parsePart(part, max);
-    if (nums === null) return null;
-    nums.forEach((n) => selected.add(n));
+  const rangeMatch = RANGE_REGEX.exec(trimmed);
+  if (rangeMatch) {
+    const start = Number.parseInt(rangeMatch[1], 10);
+    const end = Number.parseInt(rangeMatch[2], 10);
+    if (start < 1 || end < start || start > max) return null;
+    const selected = new Set<number>();
+    for (let i = start; i <= Math.min(end, max); i++) selected.add(i);
+    return selected;
   }
 
-  return selected.size > 0 ? selected : null;
+  const singleMatch = SINGLE_REGEX.exec(trimmed);
+  if (singleMatch) {
+    const num = Number.parseInt(singleMatch[1], 10);
+    if (num < 1 || num > max) return null;
+    return new Set([num]);
+  }
+
+  return null;
 };
 
 const SelectedSourceDetail = ({
@@ -163,39 +147,44 @@ const SelectedSourceDetail = ({
         </Pecha.Button>
       </div>
 
-      <div className="border border-[#DEDEDE] dark:border-[#313132] rounded-[10px] p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-380px)]">
-        {segments.map((segment: any, segIndex: number) => {
-          const isSelected = selectedIndices?.has(segIndex + 1);
-          return (
+      <ScrollArea
+        type="scroll"
+        className="border border-[#DEDEDE] dark:border-[#313132] rounded-[10px] h-[calc(100vh-380px)]"
+      >
+        <div className="p-4 space-y-4">
+          {segments.map((segment: any, segIndex: number) => {
+            const isSelected = selectedIndices?.has(segIndex + 1);
+            return (
+              <div
+                key={segment.segment_id || segIndex}
+                className={`border p-3 rounded-[10px] text-sm transition-colors ${
+                  isSelected
+                    ? "bg-[#E5E5E5] dark:bg-[#2a2a2b] border-solid border-[#CFCFCF] dark:border-[#4a4a4b]"
+                    : "bg-[#F9F9F9] dark:bg-sidebar-secondary border-dashed border-[#E1E1E1] dark:border-[#313132]"
+                }`}
+              >
+                <span className="font-medium">{segIndex + 1}. </span>
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: segment.content,
+                  }}
+                />
+              </div>
+            );
+          })}
+          {bottomRef && (
             <div
-              key={segment.segment_id || segIndex}
-              className={`border p-3 rounded-[10px] text-sm transition-colors ${
-                isSelected
-                  ? "bg-[#E5E5E5] dark:bg-[#2a2a2b] border-solid border-[#CFCFCF] dark:border-[#4a4a4b]"
-                  : "bg-[#F9F9F9] dark:bg-sidebar-secondary border-dashed border-[#E1E1E1] dark:border-[#313132]"
-              }`}
-            >
-              <span className="font-medium">{segIndex + 1}. </span>
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: segment.content,
-                }}
-              />
-            </div>
-          );
-        })}
-        {bottomRef && (
-          <div
-            ref={bottomRef}
-            className="h-5 w-full opacity-0 pointer-events-none"
-          />
-        )}
-        {isFetchingNextPage && (
-          <p className="text-center text-sm text-gray-500">
-            Loading more segments...
-          </p>
-        )}
-      </div>
+              ref={bottomRef}
+              className="h-5 w-full opacity-0 pointer-events-none"
+            />
+          )}
+          {isFetchingNextPage && (
+            <p className="text-center text-sm text-gray-500">
+              Loading more segments...
+            </p>
+          )}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
@@ -434,15 +423,12 @@ export const SourceSelectorSheet = ({
             />
             <span className="text-sm select-none">Search only titles</span>
           </label>
-          {sources.length > 0 && !searchOnlyTitles && (
-            <p className="text-sm text-black dark:text-gray-200 px-1 pt-2">
-              Results: {totalSegments}
-            </p>
-          )}
         </div>
-        <div className="h-[calc(100vh-200px)] overflow-hidden">
+        <div className="h-[calc(100vh-200px)] overflow-hidden flex flex-col">
           <div
-            className={`px-4 pb-4 space-y-4 ${searchOnlyTitles ? "pt-1.5" : "pt-2"}`}
+            className={`px-4 pb-4 pt-2 ${
+              searchOnlyTitles ? "space-y-4 overflow-y-auto" : "flex-1 min-h-0"
+            }`}
           >
             {isLoading ? (
               <div className="w-full flex items-center justify-center h-full">
