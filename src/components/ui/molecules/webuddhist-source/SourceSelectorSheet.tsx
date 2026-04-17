@@ -134,7 +134,7 @@ const SelectedSourceDetail = ({
             setRangeInput(e.target.value);
             setSelectAll(false);
           }}
-          className="flex-1 h-10"
+          className={`flex-1 h-10 ${rangeInput.trim() !== "" && !rangeInput.trim().endsWith("-") && !selectedIndices ? "ring-1 ring-red-500 dark:ring-red-400" : ""}`}
         />
         <Pecha.Button
           type="button"
@@ -146,6 +146,12 @@ const SelectedSourceDetail = ({
           Add
         </Pecha.Button>
       </div>
+
+      {rangeInput.trim() !== "" && !rangeInput.trim().endsWith("-") && !selectedIndices && (
+        <p className="text-xs text-red-500 dark:text-red-400 -mt-1">
+          Enter a single number (e.g. 3) or a range (e.g. 1-10)
+        </p>
+      )}
 
       <ScrollArea
         type="scroll"
@@ -159,7 +165,7 @@ const SelectedSourceDetail = ({
                 key={segment.segment_id || segIndex}
                 className={`border p-3 rounded-[10px] text-sm transition-colors ${
                   isSelected
-                    ? "bg-[#E5E5E5] dark:bg-[#2a2a2b] border-solid border-[#CFCFCF] dark:border-[#4a4a4b]"
+                    ? "bg-[#F9F9F9] dark:bg-sidebar-secondary border-solid border-foreground dark:border-foreground"
                     : "bg-[#F9F9F9] dark:bg-sidebar-secondary border-dashed border-[#E1E1E1] dark:border-[#313132]"
                 }`}
               >
@@ -427,7 +433,7 @@ export const SourceSelectorSheet = ({
         <div className="h-[calc(100vh-200px)] overflow-hidden flex flex-col">
           <div
             className={`px-4 pb-4 pt-2 ${
-              searchOnlyTitles ? "space-y-4 overflow-y-auto" : "flex-1 min-h-0"
+              searchOnlyTitles ? "space-y-4" : "flex-1 min-h-0"
             }`}
           >
             {isLoading ? (
