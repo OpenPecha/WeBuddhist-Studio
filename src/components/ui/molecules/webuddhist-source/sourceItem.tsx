@@ -1,6 +1,6 @@
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { highlightSearchMatch } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/atoms/scroll-area";
+import { Pecha } from "@/components/ui/shadimport";
 
 const SourceItem = ({ source, onSegment, searchQuery }: any) => {
   return (
@@ -11,7 +11,7 @@ const SourceItem = ({ source, onSegment, searchQuery }: any) => {
         </p>
         <img src={pechaIcon} alt="source icon" className="w-8 h-8" />
       </div>
-      <ScrollArea type="scroll" className="flex-1 min-h-0 mt-3">
+      <Pecha.ScrollArea type="scroll" className="flex-1 min-h-0 mt-3">
         <div className="flex flex-col gap-2 px-2 pb-2">
           {source.segment_matches?.map((segment: any, index: number) => (
             <button
@@ -41,7 +41,7 @@ const SourceItem = ({ source, onSegment, searchQuery }: any) => {
             </button>
           ))}
         </div>
-      </ScrollArea>
+      </Pecha.ScrollArea>
     </div>
   );
 };

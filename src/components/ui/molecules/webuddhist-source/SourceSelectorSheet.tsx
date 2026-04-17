@@ -7,7 +7,6 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import SourceItem from "./sourceItem";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
-import { ScrollArea } from "@/components/ui/atoms/scroll-area";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import {
   searchSources,
@@ -155,7 +154,7 @@ const SelectedSourceDetail = ({
           </p>
         )}
 
-      <ScrollArea
+      <Pecha.ScrollArea
         type="scroll"
         className="border border-[#DEDEDE] dark:border-[#313132] rounded-[10px] h-[calc(100vh-380px)]"
       >
@@ -192,7 +191,7 @@ const SelectedSourceDetail = ({
             </p>
           )}
         </div>
-      </ScrollArea>
+      </Pecha.ScrollArea>
     </div>
   );
 };
