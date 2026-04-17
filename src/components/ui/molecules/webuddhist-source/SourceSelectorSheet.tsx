@@ -147,11 +147,13 @@ const SelectedSourceDetail = ({
         </Pecha.Button>
       </div>
 
-      {rangeInput.trim() !== "" && !rangeInput.trim().endsWith("-") && !selectedIndices && (
-        <p className="text-xs text-red-500 dark:text-red-400 -mt-1">
-          Enter a single number (e.g. 3) or a range (e.g. 1-10)
-        </p>
-      )}
+      {rangeInput.trim() !== "" &&
+        !rangeInput.trim().endsWith("-") &&
+        !selectedIndices && (
+          <p className="text-xs text-red-500 dark:text-red-400 -mt-1">
+            Enter a single number (e.g. 3) or a range (e.g. 1-10)
+          </p>
+        )}
 
       <ScrollArea
         type="scroll"
