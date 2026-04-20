@@ -179,10 +179,11 @@ export const SourceSelectorSheet = ({
             return (
               <div key={source.id || index}>
                 <button
-                  className={`border p-3 rounded-md text-left w-full flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-input/50 ${isSelected
+                  className={`border p-3 rounded-md text-left w-full flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-input/50 ${
+                    isSelected
                       ? "border-[#801A1E] dark:border-[#801A1E]"
                       : "border-gray-300 dark:border-[#313132]"
-                    }`}
+                  }`}
                   onClick={() => handleTitleClick(source)}
                 >
                   <p className="font-bold text-[#801A1E] dark:text-[#b0b0b0]">
