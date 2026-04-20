@@ -29,10 +29,10 @@ const SourceItem = ({ source, onSegment, searchQuery }: any) => {
               dangerouslySetInnerHTML={{
                 __html: searchQuery
                   ? highlightSearchMatch(
-                    segment.content,
-                    searchQuery,
-                    "bg-yellow-300 px-0.5 text-black",
-                  )
+                      segment.content,
+                      searchQuery,
+                      "bg-yellow-300 px-0.5 text-black",
+                    )
                   : segment.content,
               }}
             />

@@ -293,7 +293,7 @@ export const SourceSelectorSheet = ({
       flattenSegments(page.content.sections),
     );
     return Array.from(
-      new Map(allSegments.map((s: any) => [s.segment_id, s])).values()
+      new Map(allSegments.map((s: any) => [s.segment_id, s])).values(),
     );
   }, [detailsData?.pages]);
 
