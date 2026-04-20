@@ -227,7 +227,7 @@ export const SourceSelectorSheet = ({
           skip,
         }),
       refetchOnWindowFocus: false,
-      enabled: isOpen && !searchOnlyTitles,
+      enabled: isOpen && !searchOnlyTitles && debouncedSearchFilter.length > 0,
     },
   );
 
@@ -289,8 +289,11 @@ export const SourceSelectorSheet = ({
 
   const detailSegments = useMemo(() => {
     if (!detailsData?.pages) return [];
-    return detailsData.pages.flatMap((page) =>
+    const allSegments = detailsData.pages.flatMap((page) =>
       flattenSegments(page.content.sections),
+    );
+    return Array.from(
+      new Map(allSegments.map((s: any) => [s.segment_id, s])).values()
     );
   }, [detailsData?.pages]);
 
@@ -432,11 +435,7 @@ export const SourceSelectorSheet = ({
           </label>
         </div>
         <div className="h-[calc(100vh-200px)] overflow-hidden flex flex-col">
-          <div
-            className={`px-4 pb-4 pt-2 ${
-              searchOnlyTitles ? "space-y-4" : "flex-1 min-h-0"
-            }`}
-          >
+          <div className="px-4 pb-4 pt-2 flex-1 min-h-0 overflow-y-auto space-y-4 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {isLoading ? (
               <div className="w-full flex items-center justify-center h-full">
                 <p>Loading segments...</p>

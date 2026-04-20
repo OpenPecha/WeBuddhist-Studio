@@ -1,47 +1,44 @@
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { highlightSearchMatch } from "@/lib/utils";
-import { Pecha } from "@/components/ui/shadimport";
 
 const SourceItem = ({ source, onSegment, searchQuery }: any) => {
   return (
-    <div className="border rounded-md flex flex-col h-full overflow-hidden">
+    <div className="border rounded-md flex flex-col overflow-hidden">
       <div className="flex items-center justify-between p-2 pb-0">
         <p className="font-bold text-[#801A1E] dark:text-[#b0b0b0]">
           {source.text.title}
         </p>
         <img src={pechaIcon} alt="source icon" className="w-8 h-8" />
       </div>
-      <Pecha.ScrollArea type="scroll" className="flex-1 min-h-0 mt-3">
-        <div className="flex flex-col gap-2 px-2 pb-2">
-          {source.segment_matches?.map((segment: any, index: number) => (
-            <button
-              key={segment.segment_id || index}
-              aria-label={`Select segment ${index + 1}`}
-              className="border p-2 rounded-md text-left border-dashed border-gray-300 dark:border-[#313132] text-sm cursor-pointer"
-              onClick={() =>
-                onSegment?.({
-                  content: segment.content,
-                  pecha_segment_id: segment.pecha_segment_id,
-                  text_id: source.text.text_id,
-                  segment_ids: [segment.segment_id],
-                })
-              }
-            >
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: searchQuery
-                    ? highlightSearchMatch(
-                        segment.content,
-                        searchQuery,
-                        "bg-yellow-300 px-0.5 text-black",
-                      )
-                    : segment.content,
-                }}
-              />
-            </button>
-          ))}
-        </div>
-      </Pecha.ScrollArea>
+      <div className="flex flex-col gap-2 px-2 pb-2 mt-3">
+        {source.segment_matches?.map((segment: any, index: number) => (
+          <button
+            key={segment.segment_id || index}
+            aria-label={`Select segment ${index + 1}`}
+            className="border p-2 rounded-md text-left border-dashed border-gray-300 dark:border-[#313132] text-sm cursor-pointer"
+            onClick={() =>
+              onSegment?.({
+                content: segment.content,
+                pecha_segment_id: segment.pecha_segment_id,
+                text_id: source.text.text_id,
+                segment_ids: [segment.segment_id],
+              })
+            }
+          >
+            <div
+              dangerouslySetInnerHTML={{
+                __html: searchQuery
+                  ? highlightSearchMatch(
+                    segment.content,
+                    searchQuery,
+                    "bg-yellow-300 px-0.5 text-black",
+                  )
+                  : segment.content,
+              }}
+            />
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
