@@ -6,6 +6,19 @@ type SearchCommon = {
   skip?: number;
 };
 
+type SearchTitle = {
+  title: string;
+  limit?: number;
+  offset?: number;
+};
+
+type SearchTextDetails = {
+  textId: string;
+  contentId?: string;
+  segmentId?: string;
+  direction?: "next" | "previous";
+  size?: number;
+};
 export const searchSources = async ({
   query,
   limit = 10,
@@ -26,11 +39,7 @@ export const searchTitles = async ({
   title,
   limit = 20,
   offset = 0,
-}: {
-  title: string;
-  limit?: number;
-  offset?: number;
-}) => {
+}: SearchTitle) => {
   const { data } = await axiosInstance.get(`/api/v1/texts/title-search`, {
     params: {
       title,
@@ -47,13 +56,7 @@ export const fetchTextDetails = async ({
   segmentId,
   direction = "next",
   size = 20,
-}: {
-  textId: string;
-  contentId?: string;
-  segmentId?: string;
-  direction?: "next" | "previous";
-  size?: number;
-}) => {
+}: SearchTextDetails) => {
   const { data } = await axiosInstance.post(`/api/v1/texts/${textId}/details`, {
     ...(contentId && { content_id: contentId }),
     ...(segmentId && { segment_id: segmentId }),
