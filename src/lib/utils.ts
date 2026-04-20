@@ -10,6 +10,7 @@ import {
   FaInstagram,
   FaTiktok,
 } from "react-icons/fa";
+import { RANGE_REGEX, SINGLE_REGEX } from "./constant";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -120,4 +121,89 @@ export const reorderArray = <T extends { id: string }>(
   newItems.splice(overIndex, 0, movedItem);
 
   return newItems;
+};
+
+const escapeRegex = (value: string) =>
+  value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+
+export const highlightSearchMatch = (
+  text: string,
+  searchTerm: string,
+  highlightClass = "highlighted-text",
+) => {
+  if (!text || !searchTerm || searchTerm.trim() === "") {
+    return text;
+  }
+
+  const escaped = escapeRegex(searchTerm);
+  const isLatinQuery = /^[\p{Script=Latin}\d\s'''.:-]+$/u.test(searchTerm);
+
+  if (isLatinQuery) {
+    const wordRegex = new RegExp(
+      String.raw`(^|\P{L})(${escaped})(?=\P{L}|$)`,
+      "giu",
+    );
+    return text.replace(wordRegex, (_, separator, match) => {
+      return `${separator}<span class="${highlightClass}">${match}</span>`;
+    });
+  }
+
+  const subRegex = new RegExp(escaped, "giu");
+  return text.replace(
+    subRegex,
+    (match) => `<span class="${highlightClass}">${match}</span>`,
+  );
+};
+
+export const getLastSegmentId = (sections: any[]): string | null => {
+  if (!sections?.length) {
+    return null;
+  }
+  const lastSection = sections.at(-1);
+  return (
+    getLastSegmentId(lastSection.sections) ??
+    lastSection.segments?.at(-1)?.segment_id ??
+    null
+  );
+};
+
+export const flattenSegments = (sections: any[]): any[] => {
+  if (!sections?.length) return [];
+  const result: any[] = [];
+  for (const section of sections) {
+    if (section.segments?.length) {
+      result.push(...section.segments);
+    }
+    if (section.sections?.length) {
+      result.push(...flattenSegments(section.sections));
+    }
+  }
+  return result;
+};
+
+export const parseSelection = (
+  input: string,
+  max: number,
+): Set<number> | null => {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const rangeMatch = RANGE_REGEX.exec(trimmed);
+  if (rangeMatch) {
+    const start = Number.parseInt(rangeMatch[1], 10);
+    const end = Number.parseInt(rangeMatch[2], 10);
+    if (start < 1 || end < start || start > max) return null;
+    const selected = new Set<number>();
+    for (let i = start; i <= Math.min(end, max); i++) selected.add(i);
+    return selected;
+  }
+
+  const singleMatch = SINGLE_REGEX.exec(trimmed);
+  if (singleMatch) {
+    const num = Number.parseInt(singleMatch[1], 10);
+    if (num < 1 || num > max) return null;
+    return new Set([num]);
+  }
+
+  return null;
 };

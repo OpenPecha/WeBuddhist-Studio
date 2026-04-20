@@ -34,6 +34,9 @@ export const PLATFORM_PATTERNS: Record<string, RegExp> = {
   instagram: /instagram\.com/i,
   tiktok: /tiktok\.com/i,
 };
+export const RANGE_REGEX = /^(\d+)\s*-\s*(\d+)$/;
+export const SINGLE_REGEX = /^(\d+)$/;
+
 export const TIBETAN_LETTERS = [
   "ཀ",
   "ཁ",
