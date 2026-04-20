@@ -10,6 +10,7 @@ import {
   FaInstagram,
   FaTiktok,
 } from "react-icons/fa";
+import { RANGE_REGEX, SINGLE_REGEX } from "./constant";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -178,4 +179,31 @@ export const flattenSegments = (sections: any[]): any[] => {
     }
   }
   return result;
+};
+
+export const parseSelection = (
+  input: string,
+  max: number,
+): Set<number> | null => {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const rangeMatch = RANGE_REGEX.exec(trimmed);
+  if (rangeMatch) {
+    const start = Number.parseInt(rangeMatch[1], 10);
+    const end = Number.parseInt(rangeMatch[2], 10);
+    if (start < 1 || end < start || start > max) return null;
+    const selected = new Set<number>();
+    for (let i = start; i <= Math.min(end, max); i++) selected.add(i);
+    return selected;
+  }
+
+  const singleMatch = SINGLE_REGEX.exec(trimmed);
+  if (singleMatch) {
+    const num = Number.parseInt(singleMatch[1], 10);
+    if (num < 1 || num > max) return null;
+    return new Set([num]);
+  }
+
+  return null;
 };
