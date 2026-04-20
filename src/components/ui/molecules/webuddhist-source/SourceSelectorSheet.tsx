@@ -110,11 +110,13 @@ const SelectedSourceDetail = ({
   return (
     <div className="mt-3 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600 dark:text-[#b1b1b1]">
+        <span className="text-sm text-muted-foreground">
           Select Range (e.g. 1-{segmentCount})
         </span>
         <label className="flex items-center gap-1.5 cursor-pointer">
-          <span className="text-sm text-gray-600 dark:text-[#b1b1b1]">
+          <span
+            className={`text-sm select-none${selectAll ? "" : " text-muted-foreground"}`}
+          >
             Select All
           </span>
           <Pecha.Checkbox
