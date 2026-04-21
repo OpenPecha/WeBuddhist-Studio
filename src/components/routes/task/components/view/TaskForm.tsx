@@ -159,38 +159,42 @@ const TaskForm = ({
   useEffect(() => {
     if (editingTask && taskDetails) {
       form.setValue("title", editingTask.title);
-      const subTasksData = taskDetails.subtasks.map((data: any) => {
+      const sorted = [...taskDetails.subtasks].sort(
+        (a: { display_order: number }, b: { display_order: number }) =>
+          a.display_order - b.display_order,
+      );
+      const subTasksData: SubTask[] = sorted.map((data: any) => {
         switch (data.content_type) {
           case "VIDEO":
             return {
               id: data.id,
-              content_type: "VIDEO",
+              content_type: "VIDEO" as const,
               content: data.content,
               duration: data.duration,
             };
           case "TEXT":
             return {
               id: data.id,
-              content_type: "TEXT",
+              content_type: "TEXT" as const,
               content: data.content,
             };
           case "AUDIO":
             return {
               id: data.id,
-              content_type: "AUDIO",
+              content_type: "AUDIO" as const,
               content: data.content,
             };
           case "IMAGE":
             return {
               id: data.id,
-              content_type: "IMAGE",
+              content_type: "IMAGE" as const,
               imagePreview: data.content,
               content: data.image_url,
             };
           case "SOURCE_REFERENCE":
             return {
               id: data.id,
-              content_type: "SOURCE_REFERENCE",
+              content_type: "SOURCE_REFERENCE" as const,
               content: data.content,
               source_text_id: data.source_text_id || null,
               pecha_segment_id: data.pecha_segment_id || null,
@@ -199,7 +203,7 @@ const TaskForm = ({
           default:
             return {
               id: data.id,
-              content_type: "TEXT",
+              content_type: "TEXT" as const,
               content: data.content,
             };
         }

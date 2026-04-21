@@ -60,10 +60,16 @@ export const AudioContent = ({ content }: { content: string }) => {
 
   const src = getEmbedSrc();
   if (!src) return null;
+
+  const audioTitle = content.includes("spotify.com")
+    ? "Spotify audio player"
+    : "SoundCloud audio player";
+
   return (
     <div className="mt-4 w-full rounded-md overflow-hidden bg-[#FAFAFA] dark:bg-sidebar-secondary ">
       <iframe
         src={src}
+        title={audioTitle}
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         allowFullScreen
         loading="lazy"
@@ -91,8 +97,20 @@ export const TextContent = ({ content }: { content: string }) => (
   </div>
 );
 
-export const SourceReferenceContent = ({ content }: { content: string }) => (
-  <div className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]">
-    <div dangerouslySetInnerHTML={{ __html: content }} />
-  </div>
-);
+export const SourceReferenceContent = ({ content }: { content: string }) => {
+  const segments = content.split("\n").filter(Boolean);
+
+  return (
+    <div className="space-y-3">
+      {segments.map((text, index) => (
+        <div
+          key={index}
+          className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]"
+        >
+          <span className="font-medium">{index + 1}. </span>
+          <span dangerouslySetInnerHTML={{ __html: text }} />
+        </div>
+      ))}
+    </div>
+  );
+};

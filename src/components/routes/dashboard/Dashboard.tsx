@@ -64,6 +64,7 @@ const Dashboard = () => {
       setSortBy(column);
       setSortOrder("asc");
     }
+    setCurrentPage(1);
   };
 
   const {
@@ -111,7 +112,12 @@ const Dashboard = () => {
               placeholder={t("common.placeholder.search")}
               className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                if (currentPage !== 1) {
+                  setCurrentPage(1);
+                }
+              }}
             />
           </div>
           <Link to="/plan/new">
