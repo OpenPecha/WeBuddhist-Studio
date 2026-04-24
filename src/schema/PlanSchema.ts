@@ -8,4 +8,5 @@ export const planSchema = z.object({
   image_url: z.string().min(1, "Cover image is required"),
   tags: z.array(z.string()),
   language: z.string().min(1, "Language is required"),
+  start_date: z.iso.datetime().nullable().optional(),
 });

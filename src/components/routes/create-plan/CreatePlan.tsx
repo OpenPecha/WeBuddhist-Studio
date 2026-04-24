@@ -1,7 +1,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
+import { IoCalendarClearOutline } from "react-icons/io5";
 import { useState, useRef, useEffect } from "react";
+import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
 import { planSchema } from "@/schema/PlanSchema";
@@ -9,6 +11,7 @@ import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
 import TagInput from "@/components/ui/molecules/tag-input/TagInput";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
+import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -59,6 +62,10 @@ const Createplan = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [showNavigationDialog, setShowNavigationDialog] = useState(false);
+  const [startDateMode, setStartDateMode] = useState<"enroll" | "specific">(
+    "enroll",
+  );
+  const [isDateOpen, setIsDateOpen] = useState(false);
   const { plan_id } = useParams();
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
@@ -73,6 +80,7 @@ const Createplan = () => {
       image_url: "",
       tags: [],
       language: "",
+      start_date: null,
     },
   });
 
@@ -92,13 +100,16 @@ const Createplan = () => {
         image_url: planData.plan_image_url || "",
         tags: planData.tags || [],
         language: planData.language || "",
+        start_date: planData.start_date || null,
       });
+      setStartDateMode(planData.start_date ? "specific" : "enroll");
       setImagePreview(planData.image_url ? `${planData.image_url}` : null);
     }
   }, [plan_id, planData]);
 
-  const hasUnsavedChanges =
-    form.formState.isDirty && !form.formState.isSubmitSuccessful;
+  const canUpdate = form.formState.isDirty;
+
+  const hasUnsavedChanges = canUpdate && !form.formState.isSubmitSuccessful;
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -189,10 +200,14 @@ const Createplan = () => {
   };
 
   const onSubmit = (data: PlanFormData) => {
+    const payload = {
+      ...data,
+      start_date: startDateMode === "specific" ? data.start_date : null,
+    };
     if (plan_id !== "new") {
-      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: data });
+      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: payload });
     } else {
-      createPlanMutation.mutate(data);
+      createPlanMutation.mutate(payload);
     }
   };
   return (
@@ -209,6 +224,9 @@ const Createplan = () => {
               name="title"
               render={({ field }) => (
                 <Pecha.FormItem>
+                  <Pecha.FormLabel className="text-sm font-bold">
+                    {t("studio.plan.form_field.title")}
+                  </Pecha.FormLabel>
                   <Pecha.FormControl>
                     <Pecha.Input
                       placeholder={t("studio.plan.form.placeholder.title")}
@@ -226,38 +244,15 @@ const Createplan = () => {
               name="description"
               render={({ field }) => (
                 <Pecha.FormItem>
+                  <Pecha.FormLabel className="text-sm font-bold">
+                    {t("studio.plan.form_field.description")}
+                  </Pecha.FormLabel>
                   <Pecha.FormControl>
                     <Textarea
                       placeholder={t(
                         "studio.plan.form.placeholder.description",
                       )}
                       className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                      {...field}
-                    />
-                  </Pecha.FormControl>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
-            />
-
-            <Pecha.FormField
-              control={form.control}
-              name="total_days"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormLabel className="text-sm font-bold">
-                    {t("studio.plan.form_field.number_of_day")}
-                  </Pecha.FormLabel>
-                  <Pecha.FormControl>
-                    <Pecha.Input
-                      type="number"
-                      disabled={plan_id !== "new"}
-                      placeholder={t(
-                        "studio.plan.form.placeholder.number_of_days",
-                      )}
-                      className="h-12 text-base bg-white"
-                      min="1"
-                      max="365"
                       {...field}
                     />
                   </Pecha.FormControl>
@@ -374,12 +369,136 @@ const Createplan = () => {
       <div className="flex-1 p-10 sm:mt-9">
         <Pecha.Form {...form}>
           <div className="space-y-6">
+            <div className="flex gap-4 items-start">
+              <Pecha.FormField
+                control={form.control}
+                name="total_days"
+                render={({ field }) => (
+                  <Pecha.FormItem className="flex-1">
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      {t("studio.plan.form_field.number_of_day")}
+                    </Pecha.FormLabel>
+                    <Pecha.FormControl>
+                      <Pecha.Input
+                        type="number"
+                        disabled={plan_id !== "new"}
+                        placeholder={t(
+                          "studio.plan.form.placeholder.number_of_days",
+                        )}
+                        className="h-12 text-base bg-white"
+                        min="1"
+                        max="365"
+                        {...field}
+                      />
+                    </Pecha.FormControl>
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                )}
+              />
+              <Pecha.FormField
+                control={form.control}
+                name="start_date"
+                render={({ field }) => (
+                  <Pecha.FormItem className="flex-1">
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      Start Date
+                    </Pecha.FormLabel>
+                    <Pecha.RadioGroup
+                      value={startDateMode}
+                      onValueChange={(v) => {
+                        const mode = v as "enroll" | "specific";
+                        setStartDateMode(mode);
+                        if (mode === "enroll") {
+                          form.setValue("start_date", null, {
+                            shouldDirty: true,
+                          });
+                        }
+                      }}
+                      className="gap-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Pecha.RadioGroupItem
+                          value="enroll"
+                          id="start-date-enroll"
+                        />
+                        <label
+                          htmlFor="start-date-enroll"
+                          className="text-sm cursor-pointer"
+                        >
+                          When User Enrolls
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Pecha.RadioGroupItem
+                          value="specific"
+                          id="start-date-specific"
+                        />
+                        <label
+                          htmlFor="start-date-specific"
+                          className="text-sm cursor-pointer"
+                        >
+                          On Specific Date
+                        </label>
+                      </div>
+                    </Pecha.RadioGroup>
+                    <Pecha.Popover
+                      open={isDateOpen}
+                      onOpenChange={setIsDateOpen}
+                    >
+                      <Pecha.PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={startDateMode !== "specific"}
+                          className="h-12 w-full flex items-center gap-2 px-3 text-sm bg-white border border-input rounded-md text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <IoCalendarClearOutline className="h-4 w-4 text-muted-foreground" />
+                          <span
+                            className={
+                              field.value
+                                ? "text-foreground"
+                                : "text-muted-foreground"
+                            }
+                          >
+                            {field.value
+                              ? format(
+                                  fromBackendISO(field.value),
+                                  "MMM d, yyyy",
+                                )
+                              : "Choose Date"}
+                          </span>
+                        </button>
+                      </Pecha.PopoverTrigger>
+                      <Pecha.PopoverContent
+                        className="w-auto p-0"
+                        align="start"
+                      >
+                        <Pecha.Calendar
+                          className="cursor-pointer"
+                          mode="single"
+                          selected={
+                            field.value
+                              ? fromBackendISO(field.value)
+                              : undefined
+                          }
+                          onSelect={(d) => {
+                            setIsDateOpen(false);
+                            field.onChange(d ? toBackendISO(d) : null);
+                          }}
+                          disabled={isPastDate}
+                        />
+                      </Pecha.PopoverContent>
+                    </Pecha.Popover>
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                )}
+              />
+            </div>
             <div className="flex gap-4 items-center">
               <Pecha.FormField
                 control={form.control}
                 name="difficulty_level"
                 render={({ field }) => (
-                  <Pecha.FormItem>
+                  <Pecha.FormItem className="flex-1">
                     <Pecha.FormLabel className="text-sm font-bold">
                       {t("studio.plan.form_field.difficulty")}
                     </Pecha.FormLabel>
@@ -389,7 +508,7 @@ const Createplan = () => {
                     >
                       <Pecha.FormControl>
                         <Pecha.SelectTrigger
-                          className="h-12 bg-white"
+                          className="h-12 w-full bg-white"
                           data-testid="select-trigger"
                         >
                           <Pecha.SelectValue
@@ -418,7 +537,7 @@ const Createplan = () => {
                 control={form.control}
                 name="language"
                 render={({ field }) => (
-                  <Pecha.FormItem>
+                  <Pecha.FormItem className="flex-1">
                     <Pecha.FormLabel className="text-sm font-bold">
                       {t("studio.plan.form_field.language")}
                     </Pecha.FormLabel>
@@ -427,7 +546,7 @@ const Createplan = () => {
                       value={field.value}
                     >
                       <Pecha.FormControl>
-                        <Pecha.SelectTrigger className="h-12 bg-white">
+                        <Pecha.SelectTrigger className="h-12 w-full bg-white">
                           <Pecha.SelectValue
                             placeholder={t(
                               "studio.plan.form.placeholder.select_language",
@@ -493,9 +612,7 @@ const Createplan = () => {
                     variant="default"
                     className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
                     onClick={form.handleSubmit(onSubmit)}
-                    disabled={
-                      updatePlanMutation.isPending || !form.formState.isDirty
-                    }
+                    disabled={updatePlanMutation.isPending || !canUpdate}
                   >
                     {updatePlanMutation.isPending
                       ? "Updating..."

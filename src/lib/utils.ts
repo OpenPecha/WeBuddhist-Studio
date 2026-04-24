@@ -11,6 +11,7 @@ import {
   FaTiktok,
 } from "react-icons/fa";
 import { RANGE_REGEX, SINGLE_REGEX } from "./constant";
+import { format } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -206,4 +207,18 @@ export const parseSelection = (
   }
 
   return null;
+};
+
+export const toBackendISO = (d: Date): string =>
+  format(d, "yyyy-MM-dd") + "T00:00:00Z";
+
+export const fromBackendISO = (iso: string): Date => {
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
+
+export const isPastDate = (d: Date): boolean => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return d < today;
 };
