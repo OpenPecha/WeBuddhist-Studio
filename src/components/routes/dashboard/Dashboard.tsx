@@ -7,7 +7,7 @@ import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
@@ -56,6 +56,8 @@ const Dashboard = () => {
   const [debouncedSearch] = useDebounce(search, 500);
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("");
+
+  const navigate = useNavigate();
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -129,17 +131,34 @@ const Dashboard = () => {
         <AuthButton />
       </div>
       <div className="border-b  w-full border-dashed border-gray-300 dark:border-input" />
-      <div className="w-full px-4 pt-4 flex flex-col items-center justify-between">
-        <DashBoardTable
-          plans={planData?.plans}
-          t={t}
-          isLoading={isLoading}
-          error={error}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={handleSort}
-          handleFeatured={handleFeatured}
-        />
+      <div className="px-4 pt-4 flex flex-col items-center justify-between">
+        {planData?.plans.length === 0 ?
+          (
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-base text-muted-foreground">
+                {t("studio.dashboard.no_plan_found")}
+              </p>
+              <Pecha.Button
+                onClick={() => navigate("/plan/new")}
+                variant="outline"
+                className="mt-2"
+              >
+                <IoMdAdd /> {t("studio.dashboard.add_plan")}
+              </Pecha.Button>
+            </div>
+          ) : (
+            <DashBoardTable
+              plans={planData?.plans}
+              t={t}
+              isLoading={isLoading}
+              error={error}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              handleFeatured={handleFeatured}
+            />
+          )
+        }
       </div>
       <Activity mode={planData?.plans?.length > 0 ? "visible" : "hidden"}>
         <Pagination

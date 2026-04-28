@@ -135,30 +135,6 @@ export function DashBoardTable({
       );
     }
 
-    if (plans.length === 0) {
-      return (
-        <Pecha.TableRow>
-          <Pecha.TableCell
-            colSpan={6}
-            className="text-center py-10 text-muted-foreground"
-          >
-            <div className="flex flex-col items-center justify-center">
-              <p className="text-base text-muted-foreground">
-                {t("studio.dashboard.no_plan_found")}
-              </p>
-              <Pecha.Button
-                onClick={() => navigate("/plan/new")}
-                variant="outline"
-                className="mt-2"
-              >
-                <IoMdAdd /> {t("studio.dashboard.add_plan")}
-              </Pecha.Button>
-            </div>
-          </Pecha.TableCell>
-        </Pecha.TableRow>
-      );
-    }
-
     return plans.map((plan) => (
       <Pecha.TableRow key={plan.id} className="dark:bg-background">
         <Pecha.TableCell>
