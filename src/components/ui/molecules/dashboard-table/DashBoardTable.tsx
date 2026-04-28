@@ -1,5 +1,4 @@
 import { Pecha } from "@/components/ui/shadimport";
-import { IoMdAdd } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import defaultCover from "/default-image.webp";
