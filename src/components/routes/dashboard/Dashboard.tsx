@@ -132,33 +132,31 @@ const Dashboard = () => {
       </div>
       <div className="border-b  w-full border-dashed border-gray-300 dark:border-input" />
       <div className="px-4 pt-4 flex flex-col items-center justify-between">
-        {planData?.plans.length === 0 ?
-          (
-            <div className="flex flex-col items-center justify-center">
-              <p className="text-base text-muted-foreground">
-                {t("studio.dashboard.no_plan_found")}
-              </p>
-              <Pecha.Button
-                onClick={() => navigate("/plan/new")}
-                variant="outline"
-                className="mt-2"
-              >
-                <IoMdAdd /> {t("studio.dashboard.add_plan")}
-              </Pecha.Button>
-            </div>
-          ) : (
-            <DashBoardTable
-              plans={planData?.plans}
-              t={t}
-              isLoading={isLoading}
-              error={error}
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              onSort={handleSort}
-              handleFeatured={handleFeatured}
-            />
-          )
-        }
+        {planData?.plans.length === 0 ? (
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-base text-muted-foreground">
+              {t("studio.dashboard.no_plan_found")}
+            </p>
+            <Pecha.Button
+              onClick={() => navigate("/plan/new")}
+              variant="outline"
+              className="mt-2"
+            >
+              <IoMdAdd /> {t("studio.dashboard.add_plan")}
+            </Pecha.Button>
+          </div>
+        ) : (
+          <DashBoardTable
+            plans={planData?.plans}
+            t={t}
+            isLoading={isLoading}
+            error={error}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            handleFeatured={handleFeatured}
+          />
+        )}
       </div>
       <Activity mode={planData?.plans?.length > 0 ? "visible" : "hidden"}>
         <Pagination
