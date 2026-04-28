@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FaEllipsis } from "react-icons/fa6";
+import { FaAngleLeft, FaAngleRight, FaEllipsis } from "react-icons/fa6";
 
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/atoms/button";
@@ -76,6 +76,9 @@ function PaginationPrevious({
       {...props}
     >
       <span className="hidden sm:block">Previous</span>
+      <span className="sm:hidden">
+        <FaAngleLeft className="size-4" />
+      </span>
     </PaginationLink>
   );
 }
@@ -95,6 +98,9 @@ function PaginationNext({
       {...props}
     >
       <span className="hidden sm:block">Next</span>
+      <span className="sm:hidden">
+        <FaAngleRight className="size-4" />
+      </span>
     </PaginationLink>
   );
 }
