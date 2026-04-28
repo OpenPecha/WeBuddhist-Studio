@@ -324,6 +324,7 @@ const Createplan = () => {
                 </Pecha.FormItem>
               )}
             />
+
             <Pecha.Dialog
               open={isImageDialogOpen}
               onOpenChange={setIsImageDialogOpen}
@@ -469,7 +470,7 @@ const Createplan = () => {
                 <Pecha.Button
                   type="submit"
                   variant="default"
-                  className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                  className="sm:h-12 sm:px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
                   onClick={form.handleSubmit(onSubmit)}
                   disabled={createPlanMutation.isPending}
                 >
@@ -482,7 +483,7 @@ const Createplan = () => {
                   <Pecha.Button
                     type="button"
                     variant="outline"
-                    className=" h-12 px-12 font-medium"
+                    className="sm:h-12 sm:px-12 font-medium"
                     onClick={() => navigate(`/dashboard`)}
                   >
                     {t("common.button.cancel")}
@@ -491,7 +492,7 @@ const Createplan = () => {
                   <Pecha.Button
                     type="submit"
                     variant="default"
-                    className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
+                    className="sm:h-12 sm:px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
                     onClick={form.handleSubmit(onSubmit)}
                     disabled={
                       updatePlanMutation.isPending || !form.formState.isDirty
