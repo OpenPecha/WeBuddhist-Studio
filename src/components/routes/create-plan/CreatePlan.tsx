@@ -196,8 +196,8 @@ const Createplan = () => {
     }
   };
   return (
-    <div className="w-full border my-4 h-[calc(100vh-40px)] dark:bg-[#181818] bg-[#F5F5F5] rounded-l-2xl font-dynamic flex max-sm:flex-col">
-      <div className="flex-1 p-10">
+    <div className="flex flex-col sm:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
+      <div className="flex-1 p-4 sm:p-10">
         <h1 className="text-xl font-bold my-4">
           {t("studio.plan.form_field.details")}
         </h1>
@@ -374,7 +374,7 @@ const Createplan = () => {
       <div className="flex-1 p-10 sm:mt-9">
         <Pecha.Form {...form}>
           <div className="space-y-6">
-            <div className="flex gap-4 items-center">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Pecha.FormField
                 control={form.control}
                 name="difficulty_level"
