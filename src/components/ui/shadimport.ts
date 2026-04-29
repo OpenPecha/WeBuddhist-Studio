@@ -24,6 +24,11 @@ import {
   DialogTitle,
 } from "@/components/ui/atoms/dialog";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/atoms/avatar";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -77,6 +82,9 @@ import {
 } from "@/components/ui/atoms/sheet";
 
 export const Pecha = {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Form,
   FormControl,
   FormField,

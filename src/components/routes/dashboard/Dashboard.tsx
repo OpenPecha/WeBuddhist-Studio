@@ -7,7 +7,7 @@ import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
@@ -57,8 +57,6 @@ const Dashboard = () => {
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("");
 
-  const navigate = useNavigate();
-
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -105,7 +103,7 @@ const Dashboard = () => {
   const totalPages = planData ? Math.ceil(planData.total / 10) : 1;
 
   return (
-    <div className=" border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
+    <div className="flex flex-col border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
       <div className="mb-4  px-4 pt-10 flex items-center justify-between">
         <div className="flex  items-center space-x-2">
           <div className="border w-fit px-2 bg-white dark:bg-input/30 rounded-md border-gray-200 dark:border-[#313132] flex items-center">
@@ -131,19 +129,17 @@ const Dashboard = () => {
         <AuthButton />
       </div>
       <div className="border-b  w-full border-dashed border-gray-300 dark:border-input" />
-      <div className="px-4 pt-4 flex flex-col items-center justify-between">
+      <div className="px-4 pt-4 h-full flex flex-col items-center justify-between">
         {planData?.plans.length === 0 ? (
-          <div className="flex flex-col items-center justify-center">
+          <div className="flex flex-col h-full items-center justify-center">
             <p className="text-base text-muted-foreground">
               {t("studio.dashboard.no_plan_found")}
             </p>
-            <Pecha.Button
-              onClick={() => navigate("/plan/new")}
-              variant="outline"
-              className="mt-2"
-            >
-              <IoMdAdd /> {t("studio.dashboard.add_plan")}
-            </Pecha.Button>
+            <Link to="/plan/new">
+              <Pecha.Button variant="outline" className="mt-2">
+                <IoMdAdd /> {t("studio.dashboard.add_plan")}
+              </Pecha.Button>
+            </Link>
           </div>
         ) : (
           <DashBoardTable
