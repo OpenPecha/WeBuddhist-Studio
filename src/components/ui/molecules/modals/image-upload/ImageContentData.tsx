@@ -60,12 +60,10 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
               <img
                 src={URL.createObjectURL(selectedFile)}
                 alt={selectedFile.name}
-                className="rounded-lg h-full border w-fit object-cover"
+                className="rounded-lg h-full border w-full object-cover"
               />
-              <div className="flex items-center flex-col gap-2 sm:w-xs">
-                <p className="text-ellipsis overflow-hidden whitespace-nowrap">
-                  {selectedFile?.name}
-                </p>
+              <div className="flex items-center flex-col gap-2">
+                <p className="max-w-xs w-3xs truncate">{selectedFile?.name}</p>
                 <div className="flex gap-2">
                   <Button
                     variant="default"
