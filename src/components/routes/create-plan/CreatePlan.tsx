@@ -450,7 +450,7 @@ const Createplan = () => {
                           type="button"
                           variant="outline"
                           disabled={startDateMode !== "specific"}
-                          className="h-12 w-full justify-start gap-2 px-3 font-normal"
+                          className="h-12 w-full justify-start gap-2 px-3 font-normal rounded-md"
                         >
                           <IoCalendarClearOutline className="h-4 w-4 text-muted-foreground" />
                           <span
