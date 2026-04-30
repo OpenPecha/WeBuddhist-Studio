@@ -54,6 +54,13 @@ import { Skeleton } from "@/components/ui/atoms/skeleton";
 import { Checkbox } from "@/components/ui/atoms/checkbox";
 import { ScrollArea } from "@/components/ui/atoms/scroll-area";
 
+import { RadioGroup, RadioGroupItem } from "@/components/ui/atoms/radio-group";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/atoms/popover";
+import { Calendar } from "@/components/ui/atoms/calendar";
 import {
   Pagination,
   PaginationContent,
@@ -144,4 +151,10 @@ export const Pecha = {
   Skeleton,
   Checkbox,
   ScrollArea,
+  RadioGroup,
+  RadioGroupItem,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Calendar,
 };

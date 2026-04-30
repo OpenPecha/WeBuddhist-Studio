@@ -94,6 +94,7 @@ describe("CreatePlan Component", () => {
         image_url: "https://example.com/image.jpg",
         tags: ["meditation"],
         language: "en",
+        start_date: "2026-04-30T00:00:00Z",
       },
     });
   });
@@ -465,6 +466,38 @@ describe("CreatePlan Component", () => {
       expect(axiosInstance.put).toHaveBeenCalledWith(
         "/api/v1/cms/plans/plan-123",
         expect.any(Object),
+        expect.any(Object),
+      );
+    });
+  });
+
+  it("clears start_date when switching from specific to enroll mode on submit", async () => {
+    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    const putSpy = vi
+      .spyOn(axiosInstance, "put")
+      .mockResolvedValue({ data: {} });
+
+    renderWithProviders(<CreatePlan />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("studio.plan.form.placeholder.title"),
+      ).toHaveValue("Existing Plan");
+    });
+
+    const enrollRadio = screen.getByLabelText(/When User Enrolls/i);
+    await act(async () => {
+      fireEvent.click(enrollRadio);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("studio.plan.update_button"));
+    });
+
+    await waitFor(() => {
+      expect(putSpy).toHaveBeenCalledWith(
+        "/api/v1/cms/plans/plan-123",
+        expect.objectContaining({ start_date: null }),
         expect.any(Object),
       );
     });
