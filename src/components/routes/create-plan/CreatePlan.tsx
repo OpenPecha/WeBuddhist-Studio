@@ -462,9 +462,9 @@ const Createplan = () => {
                           >
                             {field.value
                               ? format(
-                                fromBackendISO(field.value),
-                                "MMM d, yyyy",
-                              )
+                                  fromBackendISO(field.value),
+                                  "MMM d, yyyy",
+                                )
                               : "Choose Date"}
                           </span>
                         </button>
