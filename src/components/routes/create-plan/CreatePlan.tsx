@@ -446,10 +446,11 @@ const Createplan = () => {
                       onOpenChange={setIsDateOpen}
                     >
                       <Pecha.PopoverTrigger asChild>
-                        <button
+                        <Pecha.Button
                           type="button"
+                          variant="outline"
                           disabled={startDateMode !== "specific"}
-                          className="h-12 w-full flex items-center gap-2 px-3 text-sm bg-white border border-input rounded-md text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="h-12 w-full justify-start gap-2 px-3 font-normal"
                         >
                           <IoCalendarClearOutline className="h-4 w-4 text-muted-foreground" />
                           <span
@@ -466,7 +467,7 @@ const Createplan = () => {
                                 )
                               : "Choose Date"}
                           </span>
-                        </button>
+                        </Pecha.Button>
                       </Pecha.PopoverTrigger>
                       <Pecha.PopoverContent
                         className="w-auto p-0"
