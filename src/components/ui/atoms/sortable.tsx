@@ -11,10 +11,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {
-  restrictToVerticalAxis,
-  restrictToParentElement,
-} from "@dnd-kit/modifiers";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 
 export function SortableList({
@@ -43,10 +40,10 @@ export function SortableList({
 
   return (
     <DndContext
-      sensors={disabled ? [] : sensors}
+      sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
-      modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+      modifiers={[restrictToVerticalAxis]}
     >
       <SortableContext items={items} strategy={verticalListSortingStrategy}>
         {children}
@@ -55,7 +52,13 @@ export function SortableList({
   );
 }
 
-export function SortableItem({ id, children, className = "", ...props }: any) {
+export function SortableItem({
+  id,
+  children,
+  className = "",
+  disabled = false,
+  ...props
+}: any) {
   const {
     attributes,
     listeners,
@@ -65,6 +68,7 @@ export function SortableItem({ id, children, className = "", ...props }: any) {
     isDragging,
   } = useSortable({
     id,
+    disabled,
   });
 
   const style = {
@@ -77,7 +81,7 @@ export function SortableItem({ id, children, className = "", ...props }: any) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`${className} ${isDragging && "z-50"}`}
+      className={`${className} ${isDragging ? "z-50" : ""}`}
       {...attributes}
       {...props}
     >
