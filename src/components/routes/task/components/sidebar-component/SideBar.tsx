@@ -137,16 +137,18 @@ const SideBar = ({
                             />
                           )}
                           <div
-                            className={`w-4 h-4 rounded-full ${selectedDay === day.day_number
+                            className={`w-4 h-4 rounded-full ${
+                              selectedDay === day.day_number
                                 ? "bg-[#ba0909]"
                                 : "bg-input"
-                              }`}
+                            }`}
                           ></div>
                           <span
-                            className={`text-sm ${selectedDay === day.day_number
+                            className={`text-sm ${
+                              selectedDay === day.day_number
                                 ? "text-zinc-900 dark:text-zinc-100"
                                 : "text-zinc-400 dark:text-zinc-600"
-                              }`}
+                            }`}
                           >
                             Day {day.day_number}
                           </span>
@@ -164,10 +166,11 @@ const SideBar = ({
                               mode={day.tasks.length > 0 ? "visible" : "hidden"}
                             >
                               <MdExpandMore
-                                className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${expandedDay === day.day_number
+                                className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
+                                  expandedDay === day.day_number
                                     ? "rotate-180"
                                     : ""
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setExpandedDay(
@@ -179,10 +182,11 @@ const SideBar = ({
                               />
                             </Activity>
                             <IoMdAdd
-                              className={`w-4 h-4 text-gray-400 dark:text-muted-foreground ${isEditable
+                              className={`w-4 h-4 text-gray-400 dark:text-muted-foreground ${
+                                isEditable
                                   ? "cursor-pointer"
                                   : "cursor-not-allowed opacity-50"
-                                }`}
+                              }`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (isEditable) {
