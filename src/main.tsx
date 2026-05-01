@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./index.css";
 import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -129,6 +130,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -137,6 +139,7 @@ createRoot(document.getElementById("root")!).render(
           <UserbackProvider>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
               <RouterProvider router={router} />
+              <ReactQueryDevtools initialIsOpen={false} />
               <Toaster />
             </ThemeProvider>
           </UserbackProvider>

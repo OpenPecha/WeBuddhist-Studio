@@ -6,7 +6,7 @@ import { useState } from "react";
 import UserCard from "@/components/ui/molecules/user-card/UserCard";
 import ProfileEditForm from "@/components/ui/molecules/profile-edit-form/ProfileEditForm";
 
-export const fetchUserInfo = async (author_id: string) => {
+const fetchUserInfo = async (author_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(`/api/v1/authors/${author_id}`, {
     headers: {
