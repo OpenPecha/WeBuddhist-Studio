@@ -56,26 +56,32 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
               )}
             </Dropzone>
           ) : (
-            <div className="text-center p-3 w-full items-center flex flex-col justify-start gap-2">
-              <img
-                src={URL.createObjectURL(selectedFile)}
-                alt={selectedFile.name}
-                className="rounded-lg h-full border w-full object-cover"
-              />
-              <div className="flex items-center flex-col gap-2">
-                <p className="max-w-xs w-3xs truncate">{selectedFile?.name}</p>
-                <div className="flex gap-2">
+            <div className="w-full flex flex-col gap-3">
+              <div className="rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                <img
+                  src={URL.createObjectURL(selectedFile)}
+                  alt={selectedFile.name}
+                  className="w-full h-48 object-cover"
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-gray-700 truncate flex-1 min-w-0">
+                  {selectedFile?.name}
+                </p>
+                <div className="flex gap-2 shrink-0">
                   <Button
                     variant="default"
+                    size="sm"
                     onClick={() => {
                       setIsCropOpen(true);
                     }}
-                    className="px-5 py-2 bg-[#A51C21] text-white rounded cursor-pointer hover:bg-[#A51C21]/90 transition-colors"
+                    className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 transition-colors"
                   >
                     Crop
                   </Button>
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => setSelectedFile(null)}
                   >
                     Delete
