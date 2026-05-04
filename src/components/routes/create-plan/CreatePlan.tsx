@@ -1,15 +1,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
-import { Textarea } from "@/components/ui/atoms/textarea";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
-import TagInput from "@/components/ui/molecules/tag-input/TagInput";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
@@ -17,6 +14,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
+import {
+  TitleField,
+  DescriptionField,
+  CoverImageField,
+  TagsField,
+} from "@/components/ui/molecules/shared-form-fields/SharedFormFields";
 import { uploadImageToS3 } from "../task/api/taskApi";
 
 export const getPlan = async (plan_id: string) => {
@@ -219,105 +222,26 @@ const Createplan = () => {
 
         <Pecha.Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Pecha.FormField
+            <TitleField
               control={form.control}
-              name="title"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormLabel className="text-sm font-bold">
-                    {t("studio.plan.form_field.title")}
-                  </Pecha.FormLabel>
-                  <Pecha.FormControl>
-                    <Pecha.Input
-                      placeholder={t("studio.plan.form.placeholder.title")}
-                      className="h-12 text-base bg-white"
-                      {...field}
-                    />
-                  </Pecha.FormControl>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
+              label={t("studio.plan.form_field.title")}
+              placeholder={t("studio.plan.form.placeholder.title")}
             />
 
-            <Pecha.FormField
+            <DescriptionField
               control={form.control}
-              name="description"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormLabel className="text-sm font-bold">
-                    {t("studio.plan.form_field.description")}
-                  </Pecha.FormLabel>
-                  <Pecha.FormControl>
-                    <Textarea
-                      placeholder={t(
-                        "studio.plan.form.placeholder.description",
-                      )}
-                      className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                      {...field}
-                    />
-                  </Pecha.FormControl>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
+              label={t("studio.plan.form_field.description")}
+              placeholder={t("studio.plan.form.placeholder.description")}
             />
 
-            <Pecha.FormField
+            <CoverImageField
               control={form.control}
-              name="image_url"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <div>
-                    <h3 className="text-sm font-bold">
-                      {t("studio.dashboard.cover_image")}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t("studio.plan.cover_image.description")}
-                    </p>
-                  </div>
-                  <Pecha.FormControl>
-                    <div className="flex gap-4 mt-4 items-start">
-                      {!imagePreview && (
-                        <button
-                          type="button"
-                          onClick={() => setIsImageDialogOpen(true)}
-                          className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
-                          aria-label="Upload cover image"
-                        >
-                          <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                        </button>
-                      )}
-
-                      {imagePreview && (
-                        <div className="relative">
-                          <img
-                            src={imagePreview}
-                            alt="Cover preview"
-                            className="w-48 h-32 object-cover rounded-lg border"
-                          />
-                          <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
-                            {selectedImage && (
-                              <p className="text-xs text-white truncate max-w-32">
-                                {selectedImage.name}
-                              </p>
-                            )}
-                            <button
-                              aria-label="Remove image"
-                              type="button"
-                              onClick={handleRemoveImage}
-                              className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
-                              data-testid="image-remove"
-                            >
-                              <IoMdClose className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      <input type="hidden" {...field} />
-                    </div>
-                  </Pecha.FormControl>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
+              heading={t("studio.dashboard.cover_image")}
+              description={t("studio.plan.cover_image.description")}
+              imagePreview={imagePreview}
+              selectedImage={selectedImage}
+              onOpenUploadDialog={() => setIsImageDialogOpen(true)}
+              onRemoveImage={handleRemoveImage}
             />
 
             <Pecha.Dialog
@@ -463,9 +387,9 @@ const Createplan = () => {
                           >
                             {field.value
                               ? format(
-                                  fromBackendISO(field.value),
-                                  "MMM d, yyyy",
-                                )
+                                fromBackendISO(field.value),
+                                "MMM d, yyyy",
+                              )
                               : "Choose Date"}
                           </span>
                         </Pecha.Button>
@@ -573,18 +497,8 @@ const Createplan = () => {
               />
             </div>
 
-            <Pecha.FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormControl>
-                    <TagInput value={field.value} onChange={field.onChange} />
-                  </Pecha.FormControl>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
-            />
+            <TagsField control={form.control} />
+
             <div className="pt-8 w-full flex justify-end">
               {plan_id == "new" ? (
                 <Pecha.Button
