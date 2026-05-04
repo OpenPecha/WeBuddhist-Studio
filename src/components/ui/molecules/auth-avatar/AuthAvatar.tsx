@@ -1,3 +1,4 @@
+import { Pecha } from "@/components/ui/shadimport";
 import { useAuth } from "@/config/auth-context";
 import axiosInstance from "@/config/axios-config";
 import { NO_PROFILE_IMAGE } from "@/lib/constant";
@@ -9,7 +10,7 @@ const fetchUserInfo = async () => {
   return data;
 };
 
-const AuthButton = () => {
+const AuthAvatar = () => {
   const { isLoggedIn } = useAuth();
   const { data: userInfo } = useQuery({
     queryKey: ["userInfo"],
@@ -19,26 +20,20 @@ const AuthButton = () => {
   if (isLoggedIn) {
     return (
       <Link to={`/profile/${userInfo?.id}`}>
-        <div className="flex items-center font-dynamic gap-2">
-          <img
+        <Pecha.Avatar className="w-9 h-9 object-cover rounded-full">
+          <Pecha.AvatarImage
             src={
               userInfo?.image?.thumbnail ||
               userInfo?.image_url ||
               NO_PROFILE_IMAGE
             }
-            alt="user"
-            className="hidden w-10 h-10 object-cover md:block rounded-full"
+            className="object-cover"
           />
-          <div className="md:flex hidden flex-col">
-            <span className="text-sm font-medium">
-              {userInfo?.firstname} {userInfo?.lastname}
-            </span>
-            <span className="text-xs text-[#8a8a8a]">{userInfo?.email}</span>
-          </div>
-        </div>
+          <Pecha.AvatarFallback>WB</Pecha.AvatarFallback>
+        </Pecha.Avatar>
       </Link>
     );
   }
 };
 
-export default AuthButton;
+export default AuthAvatar;

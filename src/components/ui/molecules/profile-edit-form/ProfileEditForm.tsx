@@ -159,7 +159,7 @@ const ProfileEditForm = ({
     <Pecha.Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex p-6 flex-col md:flex-row space-x-3 justify-between"
+        className="flex p-6 flex-col md:flex-row gap-4 justify-between"
       >
         <div className="gap-4 flex-1 space-y-4">
           <div className="space-y-2">

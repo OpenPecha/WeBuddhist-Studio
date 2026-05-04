@@ -9,9 +9,9 @@ const ContainerLayout = ({ children, title }: ContainerLayoutProps) => {
   return (
     <div className="flex bg-[#F5F5F5] dark:bg-[#181818]">
       <div className="min-h-screen flex-1 font-dynamic relative flex flex-col items-center justify-between">
-        <div className="rounded-sm h-full w-[500px] flex flex-col items-left justify-center p-8 relative z-10">
+        <div className="rounded-sm h-full flex flex-col items-left justify-center p-8 relative">
           <div className="flex items-center gap-2 mb-2 w-full">
-            <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center">
               <img
                 src={pechaIcon}
                 alt="Pecha Studio Logo"

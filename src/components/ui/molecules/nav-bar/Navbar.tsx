@@ -11,6 +11,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../atoms/tooltip";
+import AuthAvatar from "@/components/ui/molecules/auth-avatar/AuthAvatar";
+
 const navItems = [
   {
     icon: <MdDashboard className="w-4 h-4" />,
@@ -25,6 +27,11 @@ const navItems = [
   // },
 ];
 const tooltipItems = [
+  {
+    id: "avatar",
+    component: <AuthAvatar />,
+    label: "View Profile",
+  },
   {
     id: "theme",
     component: <ModeToggle />,
@@ -41,8 +48,10 @@ const tooltipItems = [
     label: "Logout",
   },
 ];
+
 const Navbar = () => {
   const location = useLocation();
+
   return (
     <TooltipProvider>
       <div className="font-dynamic p-2 flex flex-col justify-between items-center">
@@ -75,7 +84,7 @@ const Navbar = () => {
             ))}
           </div>
         </div>
-        <div className="flex flex-col items-center h-32 space-y-2">
+        <div className="flex flex-col items-center h-44 space-y-2 pb-2">
           {tooltipItems.map((item, index) => (
             <Tooltip key={index}>
               <TooltipTrigger asChild>

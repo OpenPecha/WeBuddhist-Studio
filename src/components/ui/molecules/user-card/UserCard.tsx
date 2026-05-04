@@ -4,7 +4,7 @@ import { getIcon } from "@/lib/utils";
 const UserCard = ({ userInfo }: any) => {
   return (
     <div className="space-y-6 px-6 py-2">
-      <div className="flex items-start gap-6">
+      <div className="flex flex-col md:flex-row items-start gap-6">
         <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-dashed border-gray-200 dark:border-[#505050]">
           <img
             src={
