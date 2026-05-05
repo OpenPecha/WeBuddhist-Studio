@@ -1,33 +1,67 @@
 import { Button } from "@/components/ui/atoms/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Dropzone from "react-dropzone";
+import { FiLoader } from "react-icons/fi";
 import ImageCropContent from "./image-crop/ImageCropModal";
 
 interface ImageContentDataProps {
   onCropClick?: (file: File) => void;
-  onUpload?: (file: File) => void;
+  onUpload?: (file: File) => Promise<void> | void;
+  isLoading: boolean;
 }
 
-const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
+const ImageContentData = ({
+  onCropClick,
+  onUpload,
+  isLoading,
+}: ImageContentDataProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(selectedFile);
+    setPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [selectedFile]);
 
   const handleCropComplete = (croppedBlob: Blob) => {
     const croppedFile = new File(
       [croppedBlob],
       selectedFile?.name || "cropped.jpg",
-      { type: "image/jpeg" },
+      { type: "image/jpeg" }
     );
+
     setSelectedFile(croppedFile);
     setIsCropOpen(false);
-    if (onCropClick) onCropClick(croppedFile);
+    onCropClick?.(croppedFile);
   };
+
+  const handleUpload = async () => {
+    if (!selectedFile || !onUpload || isUploading || isLoading) return;
+
+    try {
+      setIsUploading(true);
+      await onUpload(selectedFile);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const disabled = isUploading || isLoading;
 
   return (
     <div className="space-y-4">
       {isCropOpen && selectedFile ? (
         <ImageCropContent
-          imageSrc={URL.createObjectURL(selectedFile)}
+          imageSrc={previewUrl!}
           onBack={() => setIsCropOpen(false)}
           onCropComplete={handleCropComplete}
         />
@@ -37,8 +71,9 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
             <Dropzone
               accept={{ "image/*": [] }}
               multiple={false}
+              disabled={disabled}
               onDrop={(acceptedFiles) => {
-                if (acceptedFiles && acceptedFiles.length > 0) {
+                if (acceptedFiles?.length) {
                   setSelectedFile(acceptedFiles[0]);
                 }
               }}
@@ -56,33 +91,37 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
               )}
             </Dropzone>
           ) : (
-            <div className="w-full flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
+              {/* Preview */}
               <div className="rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
                 <img
-                  src={URL.createObjectURL(selectedFile)}
-                  alt={selectedFile.name}
+                  src={previewUrl!}
+                  alt="preview"
                   className="w-full h-48 object-cover"
                 />
               </div>
+
+              {/* File info + actions */}
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-gray-700 truncate flex-1 min-w-0">
                   {selectedFile?.name}
                 </p>
-                <div className="flex gap-2 shrink-0">
+
+                <div className="flex gap-2">
                   <Button
-                    variant="default"
                     size="sm"
-                    onClick={() => {
-                      setIsCropOpen(true);
-                    }}
+                    onClick={() => setIsCropOpen(true)}
                     className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 transition-colors"
+                    disabled={disabled}
                   >
                     Crop
                   </Button>
+
                   <Button
-                    variant="outline"
                     size="sm"
+                    variant="outline"
                     onClick={() => setSelectedFile(null)}
+                    disabled={disabled}
                   >
                     Delete
                   </Button>
@@ -91,17 +130,16 @@ const ImageContentData = ({ onCropClick, onUpload }: ImageContentDataProps) => {
             </div>
           )}
 
+          {/* Upload Button */}
           <Button
-            variant="default"
-            className=" bg-[#A51C21] w-full py-6 font-medium dark:text-white  hover:bg-[#A51C21]/90"
-            onClick={() => {
-              if (selectedFile && onUpload) {
-                onUpload(selectedFile);
-              }
-            }}
-            disabled={!selectedFile}
+            className="bg-[#A51C21] w-full py-6 font-medium dark:text-white  hover:bg-[#A51C21]/90 hover:cursor-pointer "
+            onClick={handleUpload}
+            disabled={!selectedFile || disabled}
           >
-            Upload
+            {(isUploading || isLoading) && (
+              <FiLoader className="h-4 w-4 animate-spin" />
+            )}
+            {isUploading || isLoading ? "Uploading..." : "Upload"}
           </Button>
         </>
       )}

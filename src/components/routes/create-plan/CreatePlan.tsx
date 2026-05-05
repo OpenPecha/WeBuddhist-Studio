@@ -61,6 +61,7 @@ const Createplan = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [showNavigationDialog, setShowNavigationDialog] = useState(false);
   const [startDateMode, setStartDateMode] = useState<"enroll" | "specific">(
     "enroll",
@@ -171,7 +172,9 @@ const Createplan = () => {
     setShowNavigationDialog(false);
     blocker.reset?.();
   };
+
   const handleImageUpload = async (file: File) => {
+    setIsImageUploading(true);
     try {
       const { image, key } = await uploadImageToS3(
         file,
@@ -196,6 +199,8 @@ const Createplan = () => {
         console.error("Image upload failed:", error);
         toast.error("Failed to upload image");
       }
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
@@ -328,7 +333,10 @@ const Createplan = () => {
                 <Pecha.DialogHeader>
                   <Pecha.DialogTitle>Upload & Crop Image</Pecha.DialogTitle>
                 </Pecha.DialogHeader>
-                <ImageContentData onUpload={handleImageUpload} />
+                <ImageContentData
+                  onUpload={handleImageUpload}
+                  isLoading={isImageUploading}
+                />
               </Pecha.DialogContent>
             </Pecha.Dialog>
 
@@ -463,9 +471,9 @@ const Createplan = () => {
                           >
                             {field.value
                               ? format(
-                                  fromBackendISO(field.value),
-                                  "MMM d, yyyy",
-                                )
+                                fromBackendISO(field.value),
+                                "MMM d, yyyy",
+                              )
                               : "Choose Date"}
                           </span>
                         </Pecha.Button>
