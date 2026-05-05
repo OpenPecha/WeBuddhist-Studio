@@ -39,7 +39,7 @@ const ImageContentData = ({
     const croppedFile = new File(
       [croppedBlob],
       selectedFile?.name || "cropped.jpg",
-      { type: "image/jpeg" }
+      { type: "image/jpeg" },
     );
 
     setSelectedFile(croppedFile);

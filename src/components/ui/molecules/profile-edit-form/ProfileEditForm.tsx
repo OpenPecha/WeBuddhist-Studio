@@ -34,7 +34,7 @@ interface ProfileEditFormProps {
 }
 
 const updateUserProfile = async (
-  profileData: ProfileFormData & { social_profiles?: SocialProfile[]; },
+  profileData: ProfileFormData & { social_profiles?: SocialProfile[] },
 ) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(
@@ -91,7 +91,7 @@ const ProfileEditForm = ({
 
   const updateProfileMutation = useMutation({
     mutationFn: (
-      profileData: ProfileFormData & { social_profiles?: SocialProfile[]; },
+      profileData: ProfileFormData & { social_profiles?: SocialProfile[] },
     ) => updateUserProfile(profileData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userInfo", author_id] });
