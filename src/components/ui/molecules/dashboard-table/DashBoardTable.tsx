@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import defaultCover from "/default-image.webp";
 import { DropdownButton } from "../dropdown-button/DropdownButton";
 import { FaStar } from "react-icons/fa";
+import type { PlanStatus } from "@/lib/constant";
 
 export interface Plan {
   id: string;
@@ -12,7 +13,7 @@ export interface Plan {
   description: string;
   total_days: string;
   subscription_count: string;
-  status: string;
+  status: PlanStatus;
   featured: boolean;
   language: string;
 }
@@ -97,6 +98,7 @@ export function DashBoardTable({
         );
     }
   };
+
   const getSortIcon = (column: string) => {
     const isActive = sortBy === column;
     const Icon = isActive && sortOrder === "asc" ? FaChevronUp : FaChevronDown;
@@ -182,6 +184,7 @@ export function DashBoardTable({
       </Pecha.TableRow>
     ));
   };
+
   return (
     <Pecha.Table className="bg-white dark:bg-[#181818]">
       <Pecha.TableHeader className="dark:bg-[#1d1d1f]">
@@ -207,11 +210,23 @@ export function DashBoardTable({
               {getSortIcon("total_days")}
             </div>
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[150px] font-bold">
-            {t("studio.dashboard.plan_used")}
+          <Pecha.TableHead
+            className="w-[150px] font-bold cursor-pointer"
+            onClick={() => onSort("subscription_count")}
+          >
+            <div className="flex items-center">
+              {t("studio.dashboard.plan_used")}
+              {getSortIcon("subscription_count")}
+            </div>
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[100px] font-bold">
-            Status
+          <Pecha.TableHead
+            className="w-[100px] font-bold cursor-pointer"
+            onClick={() => onSort("status")}
+          >
+            <div className="flex items-center">
+              Status
+              {getSortIcon("status")}
+            </div>
           </Pecha.TableHead>
           <Pecha.TableHead className="w-[100px] font-bold">
             {t("studio.plan.form_field.language")}
