@@ -72,8 +72,6 @@ export const TIBETAN_LETTERS = [
   "༄",
 ];
 
-export type PlanStatus = "PUBLISHED" | "DRAFT" | "UNPUBLISHED" | "ARCHIVED";
-
 export const STATUS_TRANSITIONS = [
   { label: "Draft", value: "DRAFT" },
   { label: "Publish", value: "PUBLISHED" },
