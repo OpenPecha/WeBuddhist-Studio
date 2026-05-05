@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/atoms/button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Dropzone from "react-dropzone";
 import { FiLoader } from "react-icons/fi";
 import ImageCropContent from "./image-crop/ImageCropModal";
@@ -19,6 +19,9 @@ const ImageContentData = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  // 🔒 Instant lock to prevent multiple clicks
+  const uploadLockRef = useRef(false);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -45,13 +48,17 @@ const ImageContentData = ({
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !onUpload || isUploading || isLoading) return;
+    if (!selectedFile || !onUpload) return;
+
+    if (uploadLockRef.current) return;
+    uploadLockRef.current = true;
 
     try {
       setIsUploading(true);
       await onUpload(selectedFile);
     } finally {
       setIsUploading(false);
+      uploadLockRef.current = false;
     }
   };
 
@@ -132,7 +139,7 @@ const ImageContentData = ({
 
           {/* Upload Button */}
           <Button
-            className="bg-[#A51C21] w-full py-6 font-medium dark:text-white  hover:bg-[#A51C21]/90 hover:cursor-pointer "
+            className="bg-[#A51C21] w-full py-6 font-medium dark:text-white  hover:bg-[#A51C21]/90 hover:cursor-pointer"
             onClick={handleUpload}
             disabled={!selectedFile || disabled}
           >
