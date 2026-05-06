@@ -306,30 +306,18 @@ const Createplan = () => {
                             side="right"
                             className="bg-black text-white text-xs rounded-md px-3 py-2 shadow-md max-w-xs"
                           >
-                            <ul className="space-y-1">
-                              <li>{t("studio.plan.cover_image.rule_1")}</li>
-                              <li>{t("studio.plan.cover_image.rule_2")}</li>
-                              <li>{t("studio.plan.cover_image.rule_3")}</li>
-                            </ul>
+                            <p className="whitespace-pre-line">
+                              {t("studio.plan.cover_image.constraints")}
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </div>
 
                     {/* ✅ Mobile only */}
-                    <div className="text-sm sm:hidden block text-muted-foreground">
-                      <p>{t("studio.plan.cover_image.description")}</p>
-
-                      <p className="mt-2 font-semibold text-white">
-                        {t("studio.plan.cover_image.note")}
-                      </p>
-
-                      <ul className="list-disc ml-4 mt-1 space-y-1">
-                        <li>{t("studio.plan.cover_image.rule_1")}</li>
-                        <li>{t("studio.plan.cover_image.rule_2")}</li>
-                        <li>{t("studio.plan.cover_image.rule_3")}</li>
-                      </ul>
-                    </div>
+                    <p className="text-sm sm:hidden text-muted-foreground whitespace-pre-line">
+                      {t("studio.plan.cover_image.constraints")}
+                    </p>
                   </div>
                   <Pecha.FormControl>
                     <div className="flex gap-4 mt-4 items-start">
