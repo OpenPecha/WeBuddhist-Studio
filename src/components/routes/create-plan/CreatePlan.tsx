@@ -1,7 +1,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
-import { IoCalendarClearOutline } from "react-icons/io5";
+import {
+  IoCalendarClearOutline,
+  IoInformationCircleOutline,
+} from "react-icons/io5";
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
@@ -18,6 +21,12 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadImageToS3 } from "../task/api/taskApi";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/atoms/tooltip";
 
 export const getPlan = async (plan_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
@@ -275,11 +284,40 @@ const Createplan = () => {
               name="image_url"
               render={({ field }) => (
                 <Pecha.FormItem>
-                  <div>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <h3 className="text-sm font-bold">
                       {t("studio.dashboard.cover_image")}
                     </h3>
-                    <div className="text-sm text-muted-foreground">
+
+                    {/* Tooltip only on desktop */}
+                    <div className="hidden sm:block">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <IoInformationCircleOutline className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+
+                          <TooltipContent
+                            side="right"
+                            className="bg-black text-white text-xs rounded-md px-3 py-2 shadow-md max-w-xs"
+                          >
+                            <ul className="space-y-1">
+                              <li>{t("studio.plan.cover_image.rule_1")}</li>
+                              <li>{t("studio.plan.cover_image.rule_2")}</li>
+                              <li>{t("studio.plan.cover_image.rule_3")}</li>
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+
+                    {/* ✅ Mobile only */}
+                    <div className="text-sm sm:hidden block text-muted-foreground">
                       <p>{t("studio.plan.cover_image.description")}</p>
 
                       <p className="mt-2 font-semibold text-white">
@@ -485,9 +523,9 @@ const Createplan = () => {
                           >
                             {field.value
                               ? format(
-                                fromBackendISO(field.value),
-                                "MMM d, yyyy",
-                              )
+                                  fromBackendISO(field.value),
+                                  "MMM d, yyyy",
+                                )
                               : "Choose Date"}
                           </span>
                         </Pecha.Button>
