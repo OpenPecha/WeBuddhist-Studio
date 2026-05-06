@@ -28,6 +28,7 @@ export const getPlan = async (plan_id: string) => {
   });
   return data;
 };
+
 export const updatePlan = async ({
   plan_id,
   formdata,
@@ -47,6 +48,7 @@ export const updatePlan = async ({
   );
   return data;
 };
+
 export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(`/api/v1/cms/plans`, formdata, {
@@ -56,6 +58,7 @@ export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   });
   return data;
 };
+
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -66,6 +69,7 @@ const Createplan = () => {
   const [startDateMode, setStartDateMode] = useState<"enroll" | "specific">(
     "enroll",
   );
+
   const [isDateOpen, setIsDateOpen] = useState(false);
   const { plan_id } = useParams();
   const { t } = useTranslate();
@@ -275,9 +279,19 @@ const Createplan = () => {
                     <h3 className="text-sm font-bold">
                       {t("studio.dashboard.cover_image")}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t("studio.plan.cover_image.description")}
-                    </p>
+                    <div className="text-sm text-muted-foreground">
+                      <p>{t("studio.plan.cover_image.description")}</p>
+
+                      <p className="mt-2 font-semibold text-white">
+                        {t("studio.plan.cover_image.note")}
+                      </p>
+
+                      <ul className="list-disc ml-4 mt-1 space-y-1">
+                        <li>{t("studio.plan.cover_image.rule_1")}</li>
+                        <li>{t("studio.plan.cover_image.rule_2")}</li>
+                        <li>{t("studio.plan.cover_image.rule_3")}</li>
+                      </ul>
+                    </div>
                   </div>
                   <Pecha.FormControl>
                     <div className="flex gap-4 mt-4 items-start">
@@ -471,9 +485,9 @@ const Createplan = () => {
                           >
                             {field.value
                               ? format(
-                                  fromBackendISO(field.value),
-                                  "MMM d, yyyy",
-                                )
+                                fromBackendISO(field.value),
+                                "MMM d, yyyy",
+                              )
                               : "Choose Date"}
                           </span>
                         </Pecha.Button>
