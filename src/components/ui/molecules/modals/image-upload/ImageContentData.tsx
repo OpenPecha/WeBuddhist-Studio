@@ -56,6 +56,13 @@ const ImageContentData = ({
     try {
       setIsUploading(true);
       await onUpload(selectedFile);
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setIsCropOpen(false);
+      setIsUploading(false);
+      uploadLockRef.current = false;
+    } catch (error) {
+      console.error("Error uploading image:", error);
     } finally {
       setIsUploading(false);
       uploadLockRef.current = false;
