@@ -61,7 +61,7 @@ interface SubTaskCardProps {
   index: number;
   onUpdate: (index: number, updates: Partial<SubTask>) => void;
   onRemove: (index: number) => void;
-  onImageUpload: (index: number, file: File) => void;
+  onImageUpload: (index: number, file: File) => Promise<void> | void;
   onRemoveImage: (index: number) => void;
 }
 
@@ -155,10 +155,7 @@ const ImageSubtask = ({
 }) => (
   <>
     {!subTask.imagePreview && (
-      <InlineImageUpload
-        onUpload={(file) => onImageUpload(index, file)}
-        uploadedImage={subTask.imagePreview}
-      />
+      <InlineImageUpload onUpload={(file) => onImageUpload(index, file)} />
     )}
     {subTask.imagePreview && (
       <div className="mt-4 flex w-full justify-center bg-[#FAFAFA] dark:bg-sidebar-secondary ">
