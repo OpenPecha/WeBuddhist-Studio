@@ -6,12 +6,14 @@ interface PlanDeleteDialogProps {
   planId: string;
   onDelete: (planId: string) => void;
   trigger?: React.ReactNode;
+  entityLabel?: string;
 }
 
 const PlanDeleteDialog = ({
   planId,
   onDelete,
   trigger,
+  entityLabel = "Plan",
 }: PlanDeleteDialogProps) => {
   const [open, setOpen] = useState(false);
 
@@ -31,7 +33,7 @@ const PlanDeleteDialog = ({
             }}
             className="flex items-center gap-2 cursor-pointer w-full"
           >
-            <IoMdTrash className="w-4 h-4" /> Delete Plan
+            <IoMdTrash className="w-4 h-4" /> Delete {entityLabel}
           </span>
         )}
       </Pecha.AlertDialogTrigger>
@@ -39,8 +41,8 @@ const PlanDeleteDialog = ({
         <Pecha.AlertDialogHeader>
           <Pecha.AlertDialogTitle>Are you sure?</Pecha.AlertDialogTitle>
           <Pecha.AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your plan
-            and remove all associated data.
+            This action cannot be undone. This will permanently delete your{" "}
+            {entityLabel.toLowerCase()} and remove all associated data.
           </Pecha.AlertDialogDescription>
         </Pecha.AlertDialogHeader>
         <Pecha.AlertDialogFooter>
@@ -51,7 +53,7 @@ const PlanDeleteDialog = ({
             className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
             onClick={handleDelete}
           >
-            Delete Plan
+            Delete {entityLabel}
           </Pecha.AlertDialogAction>
         </Pecha.AlertDialogFooter>
       </Pecha.AlertDialogContent>

@@ -23,14 +23,14 @@ const renderWithProviders = (component: React.ReactElement) => {
 };
 
 describe("Dashboard Component", () => {
-  it("renders dashboard with search input and add plan button", () => {
+  it("renders dashboard with search input and add button", () => {
     renderWithProviders(<Dashboard />);
 
     expect(
       screen.getByPlaceholderText("common.placeholder.search"),
     ).toBeDefined();
 
-    expect(screen.getByText("Add Plan")).toBeDefined();
+    expect(screen.getByText("Add")).toBeDefined();
   });
 
   it("displays table headers correctly", () => {
@@ -66,15 +66,21 @@ describe("Dashboard Component", () => {
     expect(searchInput.value).toBe("test search");
   });
 
-  it("renders add plan button with correct link", () => {
+  it("renders add dropdown with plan and collection links", () => {
     renderWithProviders(<Dashboard />);
 
-    const addPlanButton = screen.getByText("Add Plan");
-    expect(addPlanButton).toBeDefined();
+    const addButton = screen.getByText("Add");
+    fireEvent.click(addButton);
 
-    const linkElement = addPlanButton.closest("a");
-    expect(linkElement).toBeDefined();
-    expect(linkElement?.getAttribute("href")).toBe("/plan/new");
+    const addPlanItem = screen.getByText("Add Plan");
+    expect(addPlanItem).toBeDefined();
+    expect(addPlanItem.closest("a")?.getAttribute("href")).toBe("/plan/new");
+
+    const addCollectionItem = screen.getByText("Add Collection");
+    expect(addCollectionItem).toBeDefined();
+    expect(addCollectionItem.closest("a")?.getAttribute("href")).toBe(
+      "/series/new",
+    );
   });
 
   it("renders loading state by default", () => {
@@ -114,7 +120,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
+        expect.stringContaining(`/api/v1/cms/plans`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
@@ -126,7 +132,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
+        expect.stringContaining(`/api/v1/cms/plans`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
@@ -138,7 +144,7 @@ describe("Dashboard Component", () => {
     fireEvent.click(titleHeader);
     await waitFor(() => {
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
+        expect.stringContaining(`/api/v1/cms/plans`),
         expect.objectContaining({
           params: expect.objectContaining({
             sort_by: "title",
