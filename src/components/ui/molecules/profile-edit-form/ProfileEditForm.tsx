@@ -77,6 +77,7 @@ const ProfileEditForm = ({
   );
 
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -103,6 +104,7 @@ const ProfileEditForm = ({
   });
 
   const handleImageUpload = async (file: File) => {
+    setIsImageUploading(true);
     try {
       const data = await uploadImageToS3(file, "");
       const imageUrl = data.image.original;
@@ -116,6 +118,8 @@ const ProfileEditForm = ({
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image");
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
@@ -395,7 +399,10 @@ const ProfileEditForm = ({
                 Upload & Crop Profile Picture
               </Pecha.DialogTitle>
             </Pecha.DialogHeader>
-            <ImageContentData onUpload={handleImageUpload} />
+            <ImageContentData
+              onUpload={handleImageUpload}
+              isLoading={isImageUploading}
+            />
           </Pecha.DialogContent>
         </Pecha.Dialog>
       </form>
