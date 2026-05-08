@@ -62,7 +62,6 @@ export function useImageUploadDraft({
     }
   };
 
-  const disabled = isUploading || isExternallyBusy;
   const uploadUiBusy = isUploading || isExternallyBusy;
 
   return {
@@ -71,7 +70,6 @@ export function useImageUploadDraft({
     previewUrl,
     isCropOpen,
     setIsCropOpen,
-    disabled,
     uploadUiBusy,
     handleCropComplete,
     handleUpload,

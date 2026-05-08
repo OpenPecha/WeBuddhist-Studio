@@ -15,7 +15,6 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
     previewUrl,
     isCropOpen,
     setIsCropOpen,
-    disabled,
     uploadUiBusy,
     handleCropComplete,
     handleUpload,
@@ -75,7 +74,7 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
                     size="sm"
                     onClick={() => setIsCropOpen(true)}
                     className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 transition-colors"
-                    disabled={disabled}
+                    disabled={uploadUiBusy}
                   >
                     Crop
                   </Button>
@@ -84,7 +83,7 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectedFile(null)}
-                    disabled={disabled}
+                    disabled={uploadUiBusy}
                   >
                     Delete
                   </Button>
@@ -98,7 +97,7 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
               variant="default"
               className="bg-[#A51C21] w-full py-6 font-medium dark:text-white hover:bg-[#A51C21]/90"
               onClick={handleUpload}
-              disabled={!selectedFile || disabled}
+              disabled={!selectedFile || uploadUiBusy}
             >
               {uploadUiBusy && <FiLoader className="h-4 w-4 animate-spin" />}
               {uploadUiBusy ? "Uploading..." : "Upload"}
