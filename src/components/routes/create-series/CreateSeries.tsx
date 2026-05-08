@@ -13,7 +13,6 @@ import {
   DescriptionField,
   CoverImageField,
 } from "@/components/ui/molecules/shared-form-fields/SharedFormFields";
-import TagInput from "@/components/ui/molecules/tag-input/TagInput";
 import PlanSearchSelector from "./components/PlanSearchSelector";
 import { uploadImageToS3 } from "../task/api/taskApi";
 
@@ -33,7 +32,6 @@ const CreateSeries = () => {
       title: "",
       description: "",
       image_url: "",
-      tags: [],
       language: "",
       plan_ids: [],
     },
@@ -94,13 +92,13 @@ const CreateSeries = () => {
             <TitleField
               control={form.control}
               label="Title"
-              placeholder="Enter series title"
+              placeholder="Series title"
             />
 
             <DescriptionField
               control={form.control}
               label="Description"
-              placeholder="Enter series description"
+              placeholder="Series description"
             />
 
             <CoverImageField
@@ -173,23 +171,6 @@ const CreateSeries = () => {
                     <PlanSearchSelector
                       value={field.value}
                       onChange={field.onChange}
-                    />
-                  </Pecha.FormControl>
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
-            />
-
-            <Pecha.FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormControl>
-                    <TagInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      size="sm"
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />

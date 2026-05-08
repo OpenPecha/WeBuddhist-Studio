@@ -74,7 +74,7 @@ const PlanSearchSelector = ({ value, onChange }: PlanSearchSelectorProps) => {
   };
 
   return (
-    <div className="border border-input rounded-md bg-background dark:bg-[#181818] p-4 min-h-[280px] space-y-3">
+    <div className="border border-input rounded-md p-4 min-h-[280px] space-y-3">
       <div className="relative">
         <div className="relative">
           <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
