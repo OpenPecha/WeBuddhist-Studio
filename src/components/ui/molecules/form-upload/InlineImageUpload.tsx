@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/atoms/button";
-import { useState, useEffect, useRef } from "react";
 import Dropzone from "react-dropzone";
 import ImageCropContent from "../modals/image-upload/image-crop/ImageCropModal";
+import { useImageUploadDraft } from "../../../routes/task/hooks/useImageUploadDraft";
 import { FiLoader } from "react-icons/fi";
 
 interface InlineImageUploadProps {
@@ -9,57 +9,17 @@ interface InlineImageUploadProps {
 }
 
 const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isCropOpen, setIsCropOpen] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-
-  // 🔒 Instant lock to prevent multiple clicks
-  const uploadLockRef = useRef(false);
-
-  useEffect(() => {
-    if (!selectedFile) {
-      setPreviewUrl(null);
-      return;
-    }
-
-    const url = URL.createObjectURL(selectedFile);
-    setPreviewUrl(url);
-
-    return () => URL.revokeObjectURL(url);
-  }, [selectedFile]);
-
-  const handleCropComplete = (croppedBlob: Blob) => {
-    const croppedFile = new File(
-      [croppedBlob],
-      selectedFile?.name || "cropped.jpg",
-      { type: "image/jpeg" },
-    );
-    setSelectedFile(croppedFile);
-    setIsCropOpen(false);
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile || !onUpload) return;
-
-    if (uploadLockRef.current) return;
-    uploadLockRef.current = true;
-
-    try {
-      setIsUploading(true);
-      await onUpload(selectedFile);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      setIsCropOpen(false);
-      setIsUploading(false);
-      uploadLockRef.current = false;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    } finally {
-      setIsUploading(false);
-      uploadLockRef.current = false;
-    }
-  };
+  const {
+    selectedFile,
+    setSelectedFile,
+    previewUrl,
+    isCropOpen,
+    setIsCropOpen,
+    disabled,
+    uploadUiBusy,
+    handleCropComplete,
+    handleUpload,
+  } = useImageUploadDraft({ onUpload });
 
   return (
     <div className="space-y-4">
@@ -76,7 +36,7 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
               accept={{ "image/*": [] }}
               multiple={false}
               onDrop={(acceptedFiles) => {
-                if (acceptedFiles && acceptedFiles.length > 0) {
+                if (acceptedFiles?.length) {
                   setSelectedFile(acceptedFiles[0]);
                 }
               }}
@@ -115,7 +75,7 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
                     size="sm"
                     onClick={() => setIsCropOpen(true)}
                     className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 transition-colors"
-                    disabled={isUploading}
+                    disabled={disabled}
                   >
                     Crop
                   </Button>
@@ -124,7 +84,7 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectedFile(null)}
-                    disabled={isUploading}
+                    disabled={disabled}
                   >
                     Delete
                   </Button>
@@ -138,10 +98,10 @@ const InlineImageUpload = ({ onUpload }: InlineImageUploadProps) => {
               variant="default"
               className="bg-[#A51C21] w-full py-6 font-medium dark:text-white hover:bg-[#A51C21]/90"
               onClick={handleUpload}
-              disabled={!selectedFile || isUploading}
+              disabled={!selectedFile || disabled}
             >
-              {isUploading && <FiLoader className="h-4 w-4 animate-spin" />}
-              {isUploading ? "Uploading..." : "Upload"}
+              {uploadUiBusy && <FiLoader className="h-4 w-4 animate-spin" />}
+              {uploadUiBusy ? "Uploading..." : "Upload"}
             </Button>
           </div>
         </>

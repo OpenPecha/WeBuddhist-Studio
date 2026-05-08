@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/atoms/button";
-import { useEffect, useRef, useState } from "react";
 import Dropzone from "react-dropzone";
 import { FiLoader } from "react-icons/fi";
 import ImageCropContent from "./image-crop/ImageCropModal";
+import { useImageUploadDraft } from "../../../../routes/task/hooks/useImageUploadDraft";
 
 interface ImageContentDataProps {
   onCropClick?: (file: File) => void;
@@ -15,61 +15,21 @@ const ImageContentData = ({
   onUpload,
   isLoading,
 }: ImageContentDataProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isCropOpen, setIsCropOpen] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-
-  // 🔒 Instant lock to prevent multiple clicks
-  const uploadLockRef = useRef(false);
-
-  useEffect(() => {
-    if (!selectedFile) {
-      setPreviewUrl(null);
-      return;
-    }
-
-    const url = URL.createObjectURL(selectedFile);
-    setPreviewUrl(url);
-
-    return () => URL.revokeObjectURL(url);
-  }, [selectedFile]);
-
-  const handleCropComplete = (croppedBlob: Blob) => {
-    const croppedFile = new File(
-      [croppedBlob],
-      selectedFile?.name || "cropped.jpg",
-      { type: "image/jpeg" },
-    );
-
-    setSelectedFile(croppedFile);
-    setIsCropOpen(false);
-    onCropClick?.(croppedFile);
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile || !onUpload) return;
-
-    if (uploadLockRef.current) return;
-    uploadLockRef.current = true;
-
-    try {
-      setIsUploading(true);
-      await onUpload(selectedFile);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      setIsCropOpen(false);
-      setIsUploading(false);
-      uploadLockRef.current = false;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    } finally {
-      setIsUploading(false);
-      uploadLockRef.current = false;
-    }
-  };
-
-  const disabled = isUploading || isLoading;
+  const {
+    selectedFile,
+    setSelectedFile,
+    previewUrl,
+    isCropOpen,
+    setIsCropOpen,
+    disabled,
+    uploadUiBusy,
+    handleCropComplete,
+    handleUpload,
+  } = useImageUploadDraft({
+    onUpload,
+    onCropComplete: onCropClick,
+    isExternallyBusy: isLoading,
+  });
 
   return (
     <div className="space-y-4">
@@ -150,10 +110,8 @@ const ImageContentData = ({
             onClick={handleUpload}
             disabled={!selectedFile || disabled}
           >
-            {(isUploading || isLoading) && (
-              <FiLoader className="h-4 w-4 animate-spin" />
-            )}
-            {isUploading || isLoading ? "Uploading..." : "Upload"}
+            {uploadUiBusy && <FiLoader className="h-4 w-4 animate-spin" />}
+            {uploadUiBusy ? "Uploading..." : "Upload"}
           </Button>
         </>
       )}
