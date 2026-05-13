@@ -23,6 +23,7 @@ import Signup from "./components/auth/signup/Signup";
 import Dashboard from "./components/routes/dashboard/Dashboard";
 import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
+import CreateSeries from "./components/routes/create-series/CreateSeries";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
@@ -92,6 +93,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <CreatePlan />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/series/:series_id",
+        element: (
+          <ProtectedRoute>
+            <CreateSeries />
           </ProtectedRoute>
         ),
       },
