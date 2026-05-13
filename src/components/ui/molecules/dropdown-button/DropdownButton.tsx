@@ -22,9 +22,11 @@ const STATUS_ICONS = {
 export function DropdownButton({
   planId,
   currentStatus,
+  triggerVariant = "default",
 }: {
   planId: string;
   currentStatus: string;
+  triggerVariant?: "default" | "icon";
 }) {
   const queryClient = useQueryClient();
 
@@ -45,6 +47,7 @@ export function DropdownButton({
         description: "The plan has been deleted.",
       });
       queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
+      queryClient.refetchQueries({ queryKey: ["dashboard-all-feed"] });
     },
     onError: (error: any) => {
       toast.error("Failed to delete plan", {
@@ -72,6 +75,7 @@ export function DropdownButton({
 
       toast.success(`Status updated to ${newStatus}`);
       queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
+      queryClient.refetchQueries({ queryKey: ["dashboard-all-feed"] });
       queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
     } catch (error: any) {
       toast.error(error.response.data.detail.message);
@@ -91,9 +95,15 @@ export function DropdownButton({
     <Pecha.ButtonGroup>
       <Pecha.DropdownMenu>
         <Pecha.DropdownMenuTrigger asChild>
-          <Pecha.Button variant="outline">
-            Status <BsThreeDotsVertical />
-          </Pecha.Button>
+          {triggerVariant === "icon" ? (
+            <Pecha.Button variant="outline" size="icon" aria-label="Plan actions">
+              <BsThreeDotsVertical />
+            </Pecha.Button>
+          ) : (
+            <Pecha.Button variant="outline">
+              Status <BsThreeDotsVertical />
+            </Pecha.Button>
+          )}
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
           {canEdit && (
