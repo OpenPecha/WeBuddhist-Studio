@@ -1,65 +1,90 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
 import { IoMdClose } from "react-icons/io";
 import { FaMagnifyingGlass } from "react-icons/fa6";
+import { searchPlans, type Plan } from "@/components/routes/create-series/api/planSearchApi";
 
-// TODO: Replace with real plan search API once endpoint is ready.
-type MockPlan = {
-  id: string;
-  title: string;
-  image_url: string;
-};
-
-const MOCK_PLANS: MockPlan[] = [
-  {
-    id: "plan-1",
-    title: "Abhidhamma Part 1",
-    image_url: "https://placehold.co/40x40",
-  },
-  {
-    id: "plan-2",
-    title: "Abhidhamma Part 2",
-    image_url: "https://placehold.co/40x40",
-  },
-  {
-    id: "plan-3",
-    title: "Abhidhamma in Everyday Life",
-    image_url: "https://placehold.co/40x40",
-  },
-  {
-    id: "plan-4",
-    title: "Abhidhamma Teaching 1",
-    image_url: "https://placehold.co/40x40",
-  },
-  {
-    id: "plan-5",
-    title: "Abhidhamma Teaching 2",
-    image_url: "https://placehold.co/40x40",
-  },
-  {
-    id: "plan-6",
-    title: "Introduction to Buddhism",
-    image_url: "https://placehold.co/40x40",
-  },
-];
+const PAGE_SIZE = 20;
+const DEBOUNCE_MS = 300;
 
 type PlanSearchSelectorProps = {
   value: string[];
   onChange: (planIds: string[]) => void;
+  /**
+   * Pre-existing plan objects for edit mode hydration.
+   * In create mode this is empty; in edit mode the parent passes the plans
+   * already attached to the series so we can render their thumbnails/titles without a lookup call.
+   */
+  initialPlans?: Plan[];
 };
 
-const PlanSearchSelector = ({ value, onChange }: PlanSearchSelectorProps) => {
+const PlanSearchSelector = ({
+  value,
+  onChange,
+  initialPlans = [],
+}: PlanSearchSelectorProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // TODO: Replace with real API call (debounced).
-  const searchResults = searchQuery.trim()
-    ? MOCK_PLANS.filter((plan) =>
-      plan.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    : [];
+  // Local cache of plan objects we've seen (from search results + initialPlans).
+  // Needed so we can render thumbnails/titles for plans in `value` even after the user clears the search query.
+  const [knownPlans, setKnownPlans] = useState<Map<string, Plan>>(
+    () => new Map(initialPlans.map((p) => [p.id, p])),
+  );
 
-  // Build lookup of added plans for rendering the list (with thumbnail + title).
-  const addedPlans = MOCK_PLANS.filter((plan) => value.includes(plan.id));
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["search-plans", debouncedQuery],
+    queryFn: ({ pageParam = 0 }) =>
+      searchPlans({
+        search: debouncedQuery || undefined,
+        skip: pageParam,
+        limit: PAGE_SIZE,
+      }),
+    getNextPageParam: (lastPage) => {
+      const fetched = lastPage.skip + lastPage.plans.length;
+      return fetched < lastPage.total ? fetched : undefined;
+    },
+    initialPageParam: 0,
+    enabled: debouncedQuery.length > 0 && isDropdownOpen,
+  });
+
+  const searchResults: Plan[] =
+    data?.pages.flatMap((page) => page.plans) ?? [];
+
+  useEffect(() => {
+    if (searchResults.length === 0) return;
+    setKnownPlans((prev) => {
+      const next = new Map(prev);
+      searchResults.forEach((plan) => next.set(plan.id, plan));
+      return next;
+    });
+  }, [searchResults]);
+
+  const { ref: sentinelRef, inView } = useInView({ threshold: 0 });
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const addedPlans: Plan[] = value
+    .map((id) => knownPlans.get(id))
+    .filter((plan): plan is Plan => plan !== undefined);
 
   const handleTogglePlan = (planId: string) => {
     if (value.includes(planId)) {
@@ -72,6 +97,10 @@ const PlanSearchSelector = ({ value, onChange }: PlanSearchSelectorProps) => {
   const handleRemovePlan = (planId: string) => {
     onChange(value.filter((id) => id !== planId));
   };
+
+  const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
+  const showNoResults =
+    showDropdown && !isLoading && searchResults.length === 0;
 
   return (
     <div className="border border-input rounded-md p-4 min-h-[280px] space-y-3">
@@ -89,8 +118,14 @@ const PlanSearchSelector = ({ value, onChange }: PlanSearchSelectorProps) => {
           />
         </div>
 
-        {isDropdownOpen && searchQuery.trim() && searchResults.length > 0 && (
+        {showDropdown && (
           <div className="absolute z-10 mt-1 w-full rounded-md border border-input bg-background dark:bg-[#262626] shadow-md max-h-60 overflow-auto">
+            {isLoading && searchResults.length === 0 && (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                Searching...
+              </div>
+            )}
+
             {searchResults.map((plan) => {
               const isSelected = value.includes(plan.id);
               return (
@@ -110,12 +145,21 @@ const PlanSearchSelector = ({ value, onChange }: PlanSearchSelectorProps) => {
                 </button>
               );
             })}
-          </div>
-        )}
 
-        {isDropdownOpen && searchQuery.trim() && searchResults.length === 0 && (
-          <div className="absolute z-10 mt-1 w-full rounded-md border border-input bg-background dark:bg-[#262626] shadow-md p-3">
-            <p className="text-sm text-muted-foreground">No plans found</p>
+            {hasNextPage && (
+              <div
+                ref={sentinelRef}
+                className="px-3 py-2 text-xs text-muted-foreground text-center"
+              >
+                {isFetchingNextPage ? "Loading more..." : ""}
+              </div>
+            )}
+
+            {showNoResults && (
+              <div className="px-3 py-2">
+                <p className="text-sm text-muted-foreground">No plans found</p>
+              </div>
+            )}
           </div>
         )}
       </div>
