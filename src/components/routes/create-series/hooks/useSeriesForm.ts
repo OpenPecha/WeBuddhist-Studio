@@ -39,7 +39,7 @@ export const useSeriesForm = (): UseSeriesFormReturn => {
 
   const addedLanguages = Object.keys(languages) as LanguageCode[];
   const availableLanguages = PLAN_LANGUAGE.filter(
-    ({ value }) => !languages[value],
+    ({ value }) => !languages[value as LanguageCode],
   );
   const filledLanguages = addedLanguages.filter((code) => {
     const block = languages[code];
