@@ -33,6 +33,7 @@ export type SeriesPlanDTO = {
   language: string;
   image_url?: string | null;
   image_key?: string | null;
+  display_order?: number | null;
 };
 
 export type SeriesDetailDTO = {
@@ -123,18 +124,29 @@ export function mapSeriesDetailToFormData(
     }
   }
 
-  const plans: SeriesFormData["plans"] = {};
+  const buckets: Partial<
+    Record<LanguageCode, { item: SeriesPlan; ord: number }[]>
+  > = {};
   for (const p of dto.plans ?? []) {
     const code = normalizeLang(p.language);
     if (!code) continue;
-    const list = plans[code] ?? [];
+    const ord =
+      typeof p.display_order === "number" && !Number.isNaN(p.display_order)
+        ? p.display_order
+        : 1_000_000;
     const item: SeriesPlan = {
       id: String(p.id),
       title: p.title,
       image_url: p.image_url ?? undefined,
     };
-    list.push(item);
-    plans[code] = list;
+    if (!buckets[code]) buckets[code] = [];
+    buckets[code]!.push({ item, ord });
+  }
+  const plans: SeriesFormData["plans"] = {};
+  for (const code of order) {
+    const row = buckets[code];
+    if (!row?.length) continue;
+    plans[code] = [...row].sort((a, b) => a.ord - b.ord).map((x) => x.item);
   }
 
   const imageKey =
@@ -181,6 +193,7 @@ export function buildSeriesCreateBody(
   };
 }
 
+/** Plan id lists per language; array order is display order for the API. */
 export function buildPlansReplacePayload(
   data: SeriesFormData,
 ): SeriesPlansReplacePayload {

@@ -290,7 +290,7 @@ const CreateSeries = () => {
 
   return (
     <div className="flex flex-col lg:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
-      <div className="flex-1 p-4 sm:p-10 border-b lg:border-b-0 lg:border-r border-border">
+      <div className="flex-1 p-4 sm:p-10 border-b lg:border-b-0 border-border">
         <h1 className="text-xl font-bold my-4">
           {isNew ? "Series details" : "Edit series"}
         </h1>

@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
+import type { UniqueIdentifier } from "@dnd-kit/core";
 import { IoMdClose } from "react-icons/io";
 import { FaMagnifyingGlass } from "react-icons/fa6";
+import { PiDotsSixVertical } from "react-icons/pi";
 import {
   searchPlans,
   type Plan,
 } from "@/components/routes/create-series/api/planSearchApi";
 import type { SeriesPlan } from "@/schema/SeriesSchema";
 import { NO_PROFILE_IMAGE } from "@/lib/constant";
+import { reorderArray } from "@/lib/utils";
+import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 
 const PAGE_SIZE = 20;
 const DEBOUNCE_MS = 600;
@@ -85,9 +89,20 @@ const PlanSearchSelector = ({
     onChange(value.filter((p) => p.id !== planId));
   };
 
+  const handleReorder = (
+    activeId: UniqueIdentifier,
+    overId: UniqueIdentifier,
+  ) => {
+    const next = reorderArray(value, String(activeId), String(overId));
+    if (next) onChange(next);
+  };
+
   const showDropdown = isDropdownOpen;
   const showNoResults =
     showDropdown && !isLoading && searchResults.length === 0;
+
+  const sortableIds = value.map((p) => p.id);
+  const canReorder = value.length > 1;
 
   return (
     <div className="border border-input rounded-md p-4 min-h-[200px] space-y-3 bg-white dark:bg-[#262626]">
@@ -96,29 +111,52 @@ const PlanSearchSelector = ({
           No plans added yet — use the search below to add plans to this series.
         </div>
       ) : (
-        <div className="space-y-2 max-h-80 overflow-auto">
-          {value.map((plan) => (
-            <div
-              key={plan.id}
-              className="flex items-center gap-3 rounded-md border border-input bg-white dark:bg-[#262626] p-2"
-            >
-              <img
-                src={plan.image_url || NO_PROFILE_IMAGE}
-                alt={plan.title}
-                className="w-10 h-10 rounded object-cover shrink-0"
-              />
-              <span className="flex-1 text-sm">{plan.title}</span>
-              <button
-                type="button"
-                onClick={() => handleRemovePlan(plan.id)}
-                aria-label={`Remove ${plan.title}`}
-                className="text-muted-foreground hover:text-foreground cursor-pointer p-1 shrink-0"
+        <SortableList
+          items={sortableIds}
+          onReorder={handleReorder}
+          disabled={!canReorder}
+        >
+          <div className="space-y-2 max-h-80 overflow-auto">
+            {value.map((plan) => (
+              <SortableItem
+                key={plan.id}
+                id={plan.id}
+                disabled={!canReorder}
+                className="flex items-center gap-2 rounded-md border border-input bg-white dark:bg-[#262626] p-2"
               >
-                <IoMdClose className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
+                {({ listeners }: { listeners: Record<string, unknown> }) => (
+                  <>
+                    <button
+                      type="button"
+                      className="shrink-0 p-1 rounded text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none disabled:opacity-30 disabled:cursor-not-allowed"
+                      aria-label={`Reorder ${plan.title}`}
+                      disabled={!canReorder}
+                      {...listeners}
+                    >
+                      <PiDotsSixVertical className="w-4 h-4" />
+                    </button>
+                    <img
+                      src={plan.image_url || NO_PROFILE_IMAGE}
+                      alt=""
+                      className="w-10 h-10 rounded object-cover shrink-0"
+                    />
+                    <span className="flex-1 text-sm min-w-0 truncate">
+                      {plan.title}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePlan(plan.id)}
+                      aria-label={`Remove ${plan.title}`}
+                      className="text-muted-foreground hover:text-foreground cursor-pointer p-1 shrink-0"
+                    >
+                      <IoMdClose className="h-4 w-4" />
+                    </button>
+                  </>
+                )}
+              </SortableItem>
+            ))}
+          </div>
+        </SortableList>
       )}
 
       <div className="relative">
