@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
+import type { DashboardTableRow } from "@/components/routes/dashboard/dashboardTable";
 
 type DashboardView = "all" | "plans" | "series";
 
@@ -417,7 +418,9 @@ const Dashboard = () => {
         ) : (
           <div className="w-full overflow-x-auto">
             <DashboardContentTable
-              rows={seriesData?.series ?? []}
+              rows={
+                (seriesData?.series ?? []) as unknown as DashboardTableRow[]
+              }
               isLoading={isSeriesLoading}
               t={t}
               handleFeatured={handleFeatured}

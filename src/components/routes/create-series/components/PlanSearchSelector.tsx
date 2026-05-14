@@ -7,35 +7,34 @@ import {
   searchPlans,
   type Plan,
 } from "@/components/routes/create-series/api/planSearchApi";
+import type { SeriesPlan } from "@/schema/SeriesSchema";
+import { NO_PROFILE_IMAGE } from "@/lib/constant";
 
 const PAGE_SIZE = 20;
-const DEBOUNCE_MS = 300;
+const DEBOUNCE_MS = 600;
+
+function planToSeriesPlan(plan: Plan): SeriesPlan {
+  return {
+    id: plan.id,
+    title: plan.title,
+    image_url: plan.image_url || undefined,
+  };
+}
 
 type PlanSearchSelectorProps = {
-  value: string[];
-  onChange: (planIds: string[]) => void;
-  /**
-   * Pre-existing plan objects for edit mode hydration.
-   * In create mode this is empty; in edit mode the parent passes the plans
-   * already attached to the series so we can render their thumbnails/titles without a lookup call.
-   */
-  initialPlans?: Plan[];
+  value: SeriesPlan[];
+  onChange: (plans: SeriesPlan[]) => void;
+  searchLanguage?: string;
 };
 
 const PlanSearchSelector = ({
   value,
   onChange,
-  initialPlans = [],
+  searchLanguage,
 }: PlanSearchSelectorProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // Local cache of plan objects we've seen (from search results + initialPlans).
-  // Needed so we can render thumbnails/titles for plans in `value` even after the user clears the search query.
-  const [knownPlans, setKnownPlans] = useState<Map<string, Plan>>(
-    () => new Map(initialPlans.map((p) => [p.id, p])),
-  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,10 +45,11 @@ const PlanSearchSelector = ({
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["search-plans", debouncedQuery],
+      queryKey: ["search-plans", debouncedQuery, searchLanguage],
       queryFn: ({ pageParam = 0 }) =>
         searchPlans({
           search: debouncedQuery || undefined,
+          language: searchLanguage,
           skip: pageParam,
           limit: PAGE_SIZE,
         }),
@@ -58,19 +58,10 @@ const PlanSearchSelector = ({
         return fetched < lastPage.total ? fetched : undefined;
       },
       initialPageParam: 0,
-      enabled: debouncedQuery.length > 0 && isDropdownOpen,
+      enabled: isDropdownOpen,
     });
 
   const searchResults: Plan[] = data?.pages.flatMap((page) => page.plans) ?? [];
-
-  useEffect(() => {
-    if (searchResults.length === 0) return;
-    setKnownPlans((prev) => {
-      const next = new Map(prev);
-      searchResults.forEach((plan) => next.set(plan.id, plan));
-      return next;
-    });
-  }, [searchResults]);
 
   const { ref: sentinelRef, inView } = useInView({ threshold: 0 });
   useEffect(() => {
@@ -79,34 +70,63 @@ const PlanSearchSelector = ({
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const addedPlans: Plan[] = value
-    .map((id) => knownPlans.get(id))
-    .filter((plan): plan is Plan => plan !== undefined);
+  const valueIds = new Set(value.map((p) => p.id));
 
-  const handleTogglePlan = (planId: string) => {
-    if (value.includes(planId)) {
-      onChange(value.filter((id) => id !== planId));
+  const handleTogglePlan = (plan: Plan) => {
+    const id = plan.id;
+    if (valueIds.has(id)) {
+      onChange(value.filter((p) => p.id !== id));
     } else {
-      onChange([...value, planId]);
+      onChange([...value, planToSeriesPlan(plan)]);
     }
   };
 
   const handleRemovePlan = (planId: string) => {
-    onChange(value.filter((id) => id !== planId));
+    onChange(value.filter((p) => p.id !== planId));
   };
 
-  const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
+  const showDropdown = isDropdownOpen;
   const showNoResults =
     showDropdown && !isLoading && searchResults.length === 0;
 
   return (
-    <div className="border border-input rounded-md p-4 min-h-[280px] space-y-3">
+    <div className="border border-input rounded-md p-4 min-h-[200px] space-y-3 bg-white dark:bg-[#262626]">
+      {value.length === 0 ? (
+        <div className="rounded-md border border-dashed border-muted-foreground/40 px-4 py-8 text-center text-sm text-muted-foreground">
+          No plans added yet — use the search below to add plans to this series.
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-80 overflow-auto">
+          {value.map((plan) => (
+            <div
+              key={plan.id}
+              className="flex items-center gap-3 rounded-md border border-input bg-white dark:bg-[#262626] p-2"
+            >
+              <img
+                src={plan.image_url || NO_PROFILE_IMAGE}
+                alt={plan.title}
+                className="w-10 h-10 rounded object-cover shrink-0"
+              />
+              <span className="flex-1 text-sm">{plan.title}</span>
+              <button
+                type="button"
+                onClick={() => handleRemovePlan(plan.id)}
+                aria-label={`Remove ${plan.title}`}
+                className="text-muted-foreground hover:text-foreground cursor-pointer p-1 shrink-0"
+              >
+                <IoMdClose className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="relative">
         <div className="relative">
           <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Find Plan"
+            placeholder="Find plans to add"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsDropdownOpen(true)}
@@ -124,20 +144,25 @@ const PlanSearchSelector = ({
             )}
 
             {searchResults.map((plan) => {
-              const isSelected = value.includes(plan.id);
+              const isSelected = valueIds.has(plan.id);
               return (
                 <button
                   key={plan.id}
                   type="button"
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    handleTogglePlan(plan.id);
+                    handleTogglePlan(plan);
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#333333] cursor-pointer"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#333333] cursor-pointer"
                 >
-                  <span className="text-sm">{plan.title}</span>
+                  <img
+                    src={plan.image_url || NO_PROFILE_IMAGE}
+                    alt=""
+                    className="w-9 h-9 rounded object-cover shrink-0"
+                  />
+                  <span className="text-sm flex-1">{plan.title}</span>
                   {isSelected && (
-                    <span className="text-sm text-foreground">✓</span>
+                    <span className="text-sm text-foreground shrink-0">✓</span>
                   )}
                 </button>
               );
@@ -159,30 +184,6 @@ const PlanSearchSelector = ({
             )}
           </div>
         )}
-      </div>
-
-      <div className="space-y-2 max-h-80 overflow-auto">
-        {addedPlans.map((plan) => (
-          <div
-            key={plan.id}
-            className="flex items-center gap-3 rounded-md border border-input bg-white dark:bg-[#262626] p-2"
-          >
-            <img
-              src={plan.image_url}
-              alt={plan.title}
-              className="w-10 h-10 rounded object-cover"
-            />
-            <span className="flex-1 text-sm">{plan.title}</span>
-            <button
-              type="button"
-              onClick={() => handleRemovePlan(plan.id)}
-              aria-label={`Remove ${plan.title}`}
-              className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
-            >
-              <IoMdClose className="h-4 w-4" />
-            </button>
-          </div>
-        ))}
       </div>
     </div>
   );

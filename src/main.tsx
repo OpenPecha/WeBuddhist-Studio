@@ -113,14 +113,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/series/:series_id",
-        element: (
-          <ProtectedRoute>
-            <CreateSeries />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: "/analytics",
         element: (
           <ProtectedRoute>

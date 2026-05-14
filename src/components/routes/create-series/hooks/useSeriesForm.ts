@@ -16,7 +16,6 @@ export type UseSeriesFormReturn = {
   imageUrl: string;
   addedLanguages: LanguageCode[];
   availableLanguages: typeof PLAN_LANGUAGE;
-  filledLanguages: LanguageCode[];
   canSubmit: boolean;
   addLanguage: (code: LanguageCode) => void;
   removeLanguage: (code: LanguageCode) => void;
@@ -29,7 +28,11 @@ export type UseSeriesFormReturn = {
 export const useSeriesForm = (): UseSeriesFormReturn => {
   const form = useForm<SeriesFormData>({
     resolver: zodResolver(seriesSchema),
-    defaultValues: { languages: {}, plans: {}, image_url: "" },
+    defaultValues: {
+      languages: {},
+      plans: {},
+      image_url: "",
+    } satisfies SeriesFormData,
     mode: "onChange",
   });
 
@@ -41,11 +44,14 @@ export const useSeriesForm = (): UseSeriesFormReturn => {
   const availableLanguages = PLAN_LANGUAGE.filter(
     ({ value }) => !languages[value as LanguageCode],
   );
-  const filledLanguages = addedLanguages.filter((code) => {
-    const block = languages[code];
-    return !!block?.title.trim() && !!block?.description.trim();
-  });
-  const canSubmit = filledLanguages.length > 0;
+  const allAddedLanguagesComplete =
+    addedLanguages.length > 0 &&
+    addedLanguages.every((code) => {
+      const block = languages[code];
+      return !!block?.title.trim() && !!block?.description.trim();
+    });
+  const canSubmit =
+    allAddedLanguagesComplete && (imageUrl?.trim()?.length ?? 0) > 0;
 
   const addLanguage = useCallback(
     (code: LanguageCode) => {
@@ -134,7 +140,6 @@ export const useSeriesForm = (): UseSeriesFormReturn => {
     imageUrl,
     addedLanguages,
     availableLanguages,
-    filledLanguages,
     canSubmit,
     addLanguage,
     removeLanguage,
