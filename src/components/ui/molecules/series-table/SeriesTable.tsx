@@ -28,7 +28,7 @@ interface SeriesTableProps {
   onDeleteSeries: (seriesId: string) => void;
 }
 
-function StatusDot({ status }: { status: SeriesRow["status"]; }) {
+function StatusDot({ status }: { status: SeriesRow["status"] }) {
   const color =
     status === "PUBLISHED"
       ? "bg-green-500"
@@ -66,7 +66,10 @@ export function SeriesTable({
     if (error) {
       return (
         <Pecha.TableRow>
-          <Pecha.TableCell colSpan={7} className="text-center py-6 text-red-500">
+          <Pecha.TableCell
+            colSpan={7}
+            className="text-center py-6 text-red-500"
+          >
             {error.message}
           </Pecha.TableCell>
         </Pecha.TableRow>
@@ -115,11 +118,18 @@ export function SeriesTable({
           <Pecha.TableCell className="w-[120px]">
             <Pecha.DropdownMenu>
               <Pecha.DropdownMenuTrigger asChild>
-                <Pecha.Button variant="outline" size="icon" aria-label="Actions">
+                <Pecha.Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Actions"
+                >
                   <BsThreeDotsVertical />
                 </Pecha.Button>
               </Pecha.DropdownMenuTrigger>
-              <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
+              <Pecha.DropdownMenuContent
+                align="end"
+                className="[--radius:1rem]"
+              >
                 <PlanDeleteDialog
                   planId={s.id}
                   entityLabel="Series"
@@ -141,13 +151,18 @@ export function SeriesTable({
           </Pecha.TableCell>
         </Pecha.TableRow>,
         isOpen ? (
-          <Pecha.TableRow key={`${s.id}__expanded`} className="dark:bg-background">
+          <Pecha.TableRow
+            key={`${s.id}__expanded`}
+            className="dark:bg-background"
+          >
             <Pecha.TableCell />
             <Pecha.TableCell colSpan={7} className="py-3">
               <div className="text-sm">
                 <div className="font-semibold mb-2">Plans in this series</div>
                 {s.plans.length === 0 ? (
-                  <div className="text-muted-foreground">No plans added yet to this series.</div>
+                  <div className="text-muted-foreground">
+                    No plans added yet to this series.
+                  </div>
                 ) : (
                   <ul className="list-disc pl-5 space-y-1">
                     {s.plans.map((p) => (
@@ -181,4 +196,3 @@ export function SeriesTable({
     </Pecha.Table>
   );
 }
-

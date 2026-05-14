@@ -87,7 +87,9 @@ function normalizeStatus(raw: unknown): string {
   return s;
 }
 
-export function mapPlanToTableRow(plan: Record<string, unknown>): DashboardTableRow {
+export function mapPlanToTableRow(
+  plan: Record<string, unknown>,
+): DashboardTableRow {
   const td = plan.total_days;
   const days =
     typeof td === "number" ? td : parseInt(String(td ?? "0"), 10) || 0;
@@ -114,13 +116,15 @@ export function mapPlanToTableRow(plan: Record<string, unknown>): DashboardTable
   };
 }
 
-export function mapSeriesToTableRow(s: Record<string, unknown>): DashboardTableRow {
-  const plans = Array.isArray(s.plans) ? (s.plans as Record<string, unknown>[]) : [];
+export function mapSeriesToTableRow(
+  s: Record<string, unknown>,
+): DashboardTableRow {
+  const plans = Array.isArray(s.plans)
+    ? (s.plans as Record<string, unknown>[])
+    : [];
   const firstLang = plans[0]?.language as string | undefined;
   const title =
-    typeof s.title === "string" && s.title
-      ? s.title
-      : pickSeriesTitle(s.name);
+    typeof s.title === "string" && s.title ? s.title : pickSeriesTitle(s.name);
   const td = s.total_days ?? 0;
   const days =
     typeof td === "number" ? td : parseInt(String(td ?? "0"), 10) || 0;
@@ -140,8 +144,7 @@ export function mapSeriesToTableRow(s: Record<string, unknown>): DashboardTableR
     status: normalizeStatus(s.status),
     total_days: days,
     enrolled,
-    modifiedAt:
-      (s.updated_at as string) ?? (s.updatedAt as string) ?? null,
+    modifiedAt: (s.updated_at as string) ?? (s.updatedAt as string) ?? null,
     featured: !!s.featured,
   };
 }

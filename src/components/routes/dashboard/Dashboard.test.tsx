@@ -84,12 +84,16 @@ describe("Dashboard Component", () => {
 
     await user.click(screen.getByLabelText("Add"));
 
-    expect(await screen.findByRole("menuitem", { name: "Add Plan" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("menuitem", { name: "Add Plan" }),
+    ).toBeInTheDocument();
     const addPlanItem = screen.getByRole("menuitem", { name: "Add Plan" });
     expect(addPlanItem.closest("a")?.getAttribute("href")).toBe("/plan/new");
 
     const addSeriesItem = screen.getByRole("menuitem", { name: "Add Series" });
-    expect(addSeriesItem.closest("a")?.getAttribute("href")).toBe("/series/new");
+    expect(addSeriesItem.closest("a")?.getAttribute("href")).toBe(
+      "/series/new",
+    );
   });
 
   it("renders loading state by default", async () => {

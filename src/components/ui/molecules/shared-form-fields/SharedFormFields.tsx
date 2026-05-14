@@ -10,7 +10,11 @@ type TitleFieldProps = {
   placeholder: string;
 };
 
-export const TitleField = ({ control, label, placeholder }: TitleFieldProps) => {
+export const TitleField = ({
+  control,
+  label,
+  placeholder,
+}: TitleFieldProps) => {
   return (
     <Pecha.FormField
       control={control}

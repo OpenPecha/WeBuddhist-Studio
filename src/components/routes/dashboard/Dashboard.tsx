@@ -19,7 +19,12 @@ const fetchSeries = async (
   page: number,
   limit: number,
   search: string,
-): Promise<{ series: Record<string, unknown>[]; total: number; skip: number; limit: number; }> => {
+): Promise<{
+  series: Record<string, unknown>[];
+  total: number;
+  skip: number;
+  limit: number;
+}> => {
   const skip = (page - 1) * limit;
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.get(`/api/v1/cms/series`, {
@@ -85,7 +90,11 @@ function DashboardListPlaceholder({
       {description ? (
         <p className="mt-2 text-sm text-muted-foreground">{description}</p>
       ) : null}
-      {children ? <div className="mt-6 flex flex-wrap justify-center gap-2">{children}</div> : null}
+      {children ? (
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -154,7 +163,9 @@ const Dashboard = () => {
       queryClient.refetchQueries({ queryKey: ["dashboard-all-feed"] });
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.detail?.message ?? "Could not update featured");
+      toast.error(
+        err?.response?.data?.detail?.message ?? "Could not update featured",
+      );
     },
   });
 
@@ -164,7 +175,9 @@ const Dashboard = () => {
 
   const totalPlanPages = planData ? Math.ceil(planData.total / 10) : 1;
   const totalSeriesPages = seriesData ? Math.ceil(seriesData.total / 10) : 1;
-  const totalAllPages = allFeedData ? Math.ceil(allFeedData.total / 10) || 1 : 1;
+  const totalAllPages = allFeedData
+    ? Math.ceil(allFeedData.total / 10) || 1
+    : 1;
 
   const plansHasServerRows = (planData?.plans?.length ?? 0) > 0;
   const seriesHasServerRows = (seriesData?.series?.length ?? 0) > 0;
@@ -175,12 +188,14 @@ const Dashboard = () => {
     view === "series" &&
     !isSeriesLoading &&
     (!!seriesError || !seriesHasServerRows);
-  const allEmpty = view === "all" && !isAllLoading && (allFeedData?.rows?.length ?? 0) === 0;
+  const allEmpty =
+    view === "all" && !isAllLoading && (allFeedData?.rows?.length ?? 0) === 0;
 
   const chipClass = (active: boolean) =>
-    `rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${active
-      ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-      : "border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:border-[#313132] dark:bg-transparent dark:text-gray-200 dark:hover:bg-[#2a2a2a]"
+    `rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+      active
+        ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+        : "border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:border-[#313132] dark:bg-transparent dark:text-gray-200 dark:hover:bg-[#2a2a2a]"
     }`;
 
   const showPagination =
@@ -198,13 +213,17 @@ const Dashboard = () => {
           <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
             <Pecha.SelectValue placeholder="Sort" />
           </Pecha.SelectTrigger>
-          <Pecha.SelectContent>
-            <Pecha.SelectItem value="recent">Recently modified</Pecha.SelectItem>
+          <Pecha.SelectContent onClick={() => setSortBy("recent")}>
+            <Pecha.SelectItem value="recent">
+              Recently modified
+            </Pecha.SelectItem>
           </Pecha.SelectContent>
         </Pecha.Select>
       </div>
       <div className="flex min-w-[160px] flex-col gap-1">
-        <span className="text-xs font-medium text-muted-foreground">Language</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          Language
+        </span>
         <Pecha.Select
           value={languageFilter || "all"}
           onValueChange={(v) => {
@@ -226,7 +245,9 @@ const Dashboard = () => {
         </Pecha.Select>
       </div>
       <div className="flex min-w-[160px] flex-col gap-1">
-        <span className="text-xs font-medium text-muted-foreground">Status</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          Status
+        </span>
         <Pecha.Select
           value={statusFilter || "all"}
           onValueChange={(v) => {
@@ -343,7 +364,11 @@ const Dashboard = () => {
           </DashboardListPlaceholder>
         ) : plansEmpty ? (
           <DashboardListPlaceholder
-            title={error ? "Unable to load plans" : t("studio.dashboard.no_plan_found")}
+            title={
+              error
+                ? "Unable to load plans"
+                : t("studio.dashboard.no_plan_found")
+            }
             description={
               error?.message
                 ? String(error.message)
@@ -411,7 +436,11 @@ const Dashboard = () => {
       <Activity mode={showPagination ? "visible" : "hidden"}>
         <Pagination
           currentPage={
-            view === "plans" ? plansPage : view === "series" ? seriesPage : allPage
+            view === "plans"
+              ? plansPage
+              : view === "series"
+                ? seriesPage
+                : allPage
           }
           totalPages={
             view === "plans"

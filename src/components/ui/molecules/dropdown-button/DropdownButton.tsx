@@ -96,7 +96,11 @@ export function DropdownButton({
       <Pecha.DropdownMenu>
         <Pecha.DropdownMenuTrigger asChild>
           {triggerVariant === "icon" ? (
-            <Pecha.Button variant="outline" size="icon" aria-label="Plan actions">
+            <Pecha.Button
+              variant="outline"
+              size="icon"
+              aria-label="Plan actions"
+            >
               <BsThreeDotsVertical />
             </Pecha.Button>
           ) : (

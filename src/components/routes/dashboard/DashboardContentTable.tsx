@@ -7,7 +7,10 @@ import { Link } from "react-router-dom";
 import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
 import { IoMdTrash } from "react-icons/io";
-import type { DashboardLanguageCode, DashboardTableRow } from "./dashboardTable";
+import type {
+  DashboardLanguageCode,
+  DashboardTableRow,
+} from "./dashboardTable";
 import { formatRowModified, isMockDashboardId } from "./dashboardTable";
 
 function statusChip(status: string) {
@@ -72,7 +75,7 @@ interface DashboardContentTableProps {
 
 export function DashboardContentTable({
   rows,
-  isLoading,
+  // isLoading,
   t,
   handleFeatured,
   onDeleteSeries,
@@ -80,7 +83,6 @@ export function DashboardContentTable({
   const navigate = useNavigate();
 
   const renderBody = () => {
-
     return rows.map((row) => {
       const daysLabel = `${row.total_days} ${row.total_days === 1 ? "Day" : "Days"}`;
       const titleHref =
@@ -90,7 +92,10 @@ export function DashboardContentTable({
       const modifiedDisplay = formatRowModified(row);
 
       return (
-        <Pecha.TableRow key={`${row.kind}-${row.id}`} className="dark:bg-background">
+        <Pecha.TableRow
+          key={`${row.kind}-${row.id}`}
+          className="dark:bg-background"
+        >
           <Pecha.TableCell>
             <img
               src={row.image_url || defaultCover}
@@ -136,7 +141,9 @@ export function DashboardContentTable({
               >
                 <FaStar
                   className={
-                    row.featured ? "text-yellow-500" : "text-gray-300 dark:text-gray-600"
+                    row.featured
+                      ? "text-yellow-500"
+                      : "text-gray-300 dark:text-gray-600"
                   }
                 />
               </Pecha.Button>
@@ -144,7 +151,9 @@ export function DashboardContentTable({
               <span className="inline-flex h-9 w-9 items-center justify-center">
                 <FaStar
                   className={
-                    row.featured ? "text-yellow-500" : "text-gray-300 dark:text-gray-600"
+                    row.featured
+                      ? "text-yellow-500"
+                      : "text-gray-300 dark:text-gray-600"
                   }
                 />
               </span>
@@ -160,22 +169,38 @@ export function DashboardContentTable({
             ) : row.kind === "plan" ? (
               <Pecha.DropdownMenu>
                 <Pecha.DropdownMenuTrigger asChild>
-                  <Pecha.Button variant="outline" size="icon" aria-label="Actions">
+                  <Pecha.Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Actions"
+                  >
                     <BsThreeDotsVertical />
                   </Pecha.Button>
                 </Pecha.DropdownMenuTrigger>
-                <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
-                  <Pecha.DropdownMenuItem disabled>Preview (mock)</Pecha.DropdownMenuItem>
+                <Pecha.DropdownMenuContent
+                  align="end"
+                  className="[--radius:1rem]"
+                >
+                  <Pecha.DropdownMenuItem disabled>
+                    Preview (mock)
+                  </Pecha.DropdownMenuItem>
                 </Pecha.DropdownMenuContent>
               </Pecha.DropdownMenu>
             ) : (
               <Pecha.DropdownMenu>
                 <Pecha.DropdownMenuTrigger asChild>
-                  <Pecha.Button variant="outline" size="icon" aria-label="Actions">
+                  <Pecha.Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Actions"
+                  >
                     <BsThreeDotsVertical />
                   </Pecha.Button>
                 </Pecha.DropdownMenuTrigger>
-                <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
+                <Pecha.DropdownMenuContent
+                  align="end"
+                  className="[--radius:1rem]"
+                >
                   <Link to={`/series/${row.id}`}>
                     <Pecha.DropdownMenuItem>Edit series</Pecha.DropdownMenuItem>
                   </Link>
@@ -213,11 +238,21 @@ export function DashboardContentTable({
           <Pecha.TableHead className="w-[120px] font-bold">
             {t("studio.dashboard.cover_image")}
           </Pecha.TableHead>
-          <Pecha.TableHead className="font-bold">{t("studio.dashboard.title")}</Pecha.TableHead>
-          <Pecha.TableHead className="w-[100px] font-bold">Enrolled</Pecha.TableHead>
-          <Pecha.TableHead className="w-[130px] font-bold">Modified</Pecha.TableHead>
-          <Pecha.TableHead className="w-[72px] font-bold">Featured</Pecha.TableHead>
-          <Pecha.TableHead className="w-[100px] font-bold">{t("studio.dashboard.actions")}</Pecha.TableHead>
+          <Pecha.TableHead className="font-bold">
+            {t("studio.dashboard.title")}
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[100px] font-bold">
+            Enrolled
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[130px] font-bold">
+            Modified
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[72px] font-bold">
+            Featured
+          </Pecha.TableHead>
+          <Pecha.TableHead className="w-[100px] font-bold">
+            {t("studio.dashboard.actions")}
+          </Pecha.TableHead>
         </Pecha.TableRow>
       </Pecha.TableHeader>
       <Pecha.TableBody>{renderBody()}</Pecha.TableBody>

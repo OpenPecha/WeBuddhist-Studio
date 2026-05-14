@@ -5,7 +5,8 @@ import type { DashboardTableRow } from "./dashboardTable";
  * Placeholder path for a future unified CMS feed. The request is expected to fail
  * until the backend exists; the dashboard falls back to {@link MOCK_DASHBOARD_ALL_ROWS}.
  */
-export const DASHBOARD_ALL_IMAGINARY_PATH = "/api/v1/cms/dashboard/unified-feed";
+export const DASHBOARD_ALL_IMAGINARY_PATH =
+  "/api/v1/cms/dashboard/unified-feed";
 
 export const MOCK_DASHBOARD_ALL_ROWS: DashboardTableRow[] = [
   {

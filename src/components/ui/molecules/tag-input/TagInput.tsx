@@ -33,8 +33,9 @@ const TagInput = ({ value = [], onChange, size = "md" }: TagInputProps) => {
     <div className=" w-full space-y-2 h-full font-dynamic flex flex-col">
       <p className="text-sm font-bold">Tags</p>
       <div
-        className={`w-full border p-2 overflow-auto space-y-4 rounded-md ${size === "sm" ? "min-h-[100px]" : "h-100"
-          }`}
+        className={`w-full border p-2 overflow-auto space-y-4 rounded-md ${
+          size === "sm" ? "min-h-[100px]" : "h-100"
+        }`}
       >
         <Input
           placeholder="Add a tag"
