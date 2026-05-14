@@ -3,7 +3,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { IoMdClose } from "react-icons/io";
 import { FaMagnifyingGlass } from "react-icons/fa6";
-import { searchPlans, type Plan } from "@/components/routes/create-series/api/planSearchApi";
+import {
+  searchPlans,
+  type Plan,
+} from "@/components/routes/create-series/api/planSearchApi";
 
 const PAGE_SIZE = 20;
 const DEBOUNCE_MS = 300;
@@ -41,30 +44,24 @@ const PlanSearchSelector = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["search-plans", debouncedQuery],
-    queryFn: ({ pageParam = 0 }) =>
-      searchPlans({
-        search: debouncedQuery || undefined,
-        skip: pageParam,
-        limit: PAGE_SIZE,
-      }),
-    getNextPageParam: (lastPage) => {
-      const fetched = lastPage.skip + lastPage.plans.length;
-      return fetched < lastPage.total ? fetched : undefined;
-    },
-    initialPageParam: 0,
-    enabled: debouncedQuery.length > 0 && isDropdownOpen,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      queryKey: ["search-plans", debouncedQuery],
+      queryFn: ({ pageParam = 0 }) =>
+        searchPlans({
+          search: debouncedQuery || undefined,
+          skip: pageParam,
+          limit: PAGE_SIZE,
+        }),
+      getNextPageParam: (lastPage) => {
+        const fetched = lastPage.skip + lastPage.plans.length;
+        return fetched < lastPage.total ? fetched : undefined;
+      },
+      initialPageParam: 0,
+      enabled: debouncedQuery.length > 0 && isDropdownOpen,
+    });
 
-  const searchResults: Plan[] =
-    data?.pages.flatMap((page) => page.plans) ?? [];
+  const searchResults: Plan[] = data?.pages.flatMap((page) => page.plans) ?? [];
 
   useEffect(() => {
     if (searchResults.length === 0) return;

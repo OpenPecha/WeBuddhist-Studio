@@ -120,11 +120,31 @@ const Dashboard = () => {
               }}
             />
           </div>
-          <Link to="/plan/new">
-            <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
-              <IoMdAdd /> Add Plan
-            </Button>
-          </Link>
+
+          <Pecha.DropdownMenu>
+            <Pecha.DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="gap-2 border-gray-200 bg-white hover:bg-gray-50 dark:border-[#313132] dark:bg-transparent dark:hover:bg-[#2a2a2a]"
+                aria-label="Add"
+              >
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#A51C21] text-white">
+                  <IoMdAdd className="h-4 w-4" aria-hidden />
+                </span>
+                Add
+              </Button>
+            </Pecha.DropdownMenuTrigger>
+            <Pecha.DropdownMenuContent align="start">
+              <Pecha.DropdownMenuGroup>
+                <Link to="/series/new">
+                  <Pecha.DropdownMenuItem>Add Series</Pecha.DropdownMenuItem>
+                </Link>
+                <Link to="/plan/new">
+                  <Pecha.DropdownMenuItem>Add Plan</Pecha.DropdownMenuItem>
+                </Link>
+              </Pecha.DropdownMenuGroup>
+            </Pecha.DropdownMenuContent>
+          </Pecha.DropdownMenu>
         </div>
         <AuthButton />
       </div>
