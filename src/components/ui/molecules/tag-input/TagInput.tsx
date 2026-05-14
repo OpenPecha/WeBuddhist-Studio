@@ -5,9 +5,10 @@ import { Input } from "../../atoms/input";
 interface TagInputProps {
   value?: string[];
   onChange?: (tags: string[]) => void;
+  size?: "sm" | "md";
 }
 
-const TagInput = ({ value = [], onChange }: TagInputProps) => {
+const TagInput = ({ value = [], onChange, size = "md" }: TagInputProps) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -31,7 +32,10 @@ const TagInput = ({ value = [], onChange }: TagInputProps) => {
   return (
     <div className=" w-full space-y-2 h-full font-dynamic flex flex-col">
       <p className="text-sm font-bold">Tags</p>
-      <div className=" w-full border p-2 h-100 overflow-auto space-y-4 rounded-md">
+      <div
+        className={`w-full border p-2 overflow-auto space-y-4 rounded-md ${size === "sm" ? "min-h-[100px]" : "h-100"
+          }`}
+      >
         <Input
           placeholder="Add a tag"
           className=" border-none shadow-none bg-white"
