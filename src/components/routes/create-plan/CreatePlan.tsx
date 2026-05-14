@@ -1,12 +1,18 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IoCalendarClearOutline } from "react-icons/io5";
+import { IoMdAdd, IoMdClose } from "react-icons/io";
+import {
+  IoCalendarClearOutline,
+  IoInformationCircleOutline,
+} from "react-icons/io5";
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
+import { Textarea } from "@/components/ui/atoms/textarea";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
+import TagInput from "@/components/ui/molecules/tag-input/TagInput";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
@@ -14,13 +20,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
-import {
-  TitleField,
-  DescriptionField,
-  CoverImageField,
-  TagsField,
-} from "@/components/ui/molecules/shared-form-fields/SharedFormFields";
 import { uploadImageToS3 } from "../task/api/taskApi";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/atoms/tooltip";
 
 export const getPlan = async (plan_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
@@ -31,6 +37,7 @@ export const getPlan = async (plan_id: string) => {
   });
   return data;
 };
+
 export const updatePlan = async ({
   plan_id,
   formdata,
@@ -50,6 +57,7 @@ export const updatePlan = async ({
   );
   return data;
 };
+
 export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(`/api/v1/cms/plans`, formdata, {
@@ -59,15 +67,18 @@ export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   });
   return data;
 };
+
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [showNavigationDialog, setShowNavigationDialog] = useState(false);
   const [startDateMode, setStartDateMode] = useState<"enroll" | "specific">(
     "enroll",
   );
+
   const [isDateOpen, setIsDateOpen] = useState(false);
   const { plan_id } = useParams();
   const { t } = useTranslate();
@@ -174,7 +185,9 @@ const Createplan = () => {
     setShowNavigationDialog(false);
     blocker.reset?.();
   };
+
   const handleImageUpload = async (file: File) => {
+    setIsImageUploading(true);
     try {
       const { image, key } = await uploadImageToS3(
         file,
@@ -199,6 +212,8 @@ const Createplan = () => {
         console.error("Image upload failed:", error);
         toast.error("Failed to upload image");
       }
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
@@ -222,26 +237,132 @@ const Createplan = () => {
 
         <Pecha.Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <TitleField
+            <Pecha.FormField
               control={form.control}
-              label={t("studio.plan.form_field.title")}
-              placeholder={t("studio.plan.form.placeholder.title")}
+              name="title"
+              render={({ field }) => (
+                <Pecha.FormItem>
+                  <Pecha.FormLabel className="text-sm font-bold">
+                    {t("studio.plan.form_field.title")}
+                  </Pecha.FormLabel>
+                  <Pecha.FormControl>
+                    <Pecha.Input
+                      placeholder={t("studio.plan.form.placeholder.title")}
+                      className="h-12 text-base bg-white"
+                      {...field}
+                    />
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
+              )}
             />
 
-            <DescriptionField
+            <Pecha.FormField
               control={form.control}
-              label={t("studio.plan.form_field.description")}
-              placeholder={t("studio.plan.form.placeholder.description")}
+              name="description"
+              render={({ field }) => (
+                <Pecha.FormItem>
+                  <Pecha.FormLabel className="text-sm font-bold">
+                    {t("studio.plan.form_field.description")}
+                  </Pecha.FormLabel>
+                  <Pecha.FormControl>
+                    <Textarea
+                      placeholder={t(
+                        "studio.plan.form.placeholder.description",
+                      )}
+                      className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                      {...field}
+                    />
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
+              )}
             />
 
-            <CoverImageField
+            <Pecha.FormField
               control={form.control}
-              heading={t("studio.dashboard.cover_image")}
-              description={t("studio.plan.cover_image.description")}
-              imagePreview={imagePreview}
-              selectedImage={selectedImage}
-              onOpenUploadDialog={() => setIsImageDialogOpen(true)}
-              onRemoveImage={handleRemoveImage}
+              name="image_url"
+              render={({ field }) => (
+                <Pecha.FormItem>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <h3 className="text-sm font-bold">
+                      {t("studio.dashboard.cover_image")}
+                    </h3>
+
+                    {/* Tooltip only on desktop */}
+                    <div className="hidden sm:block">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <IoInformationCircleOutline className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+
+                          <TooltipContent
+                            side="right"
+                            className="bg-black text-white text-xs rounded-md px-3 py-2 shadow-md max-w-xs"
+                          >
+                            <p className="whitespace-pre-line">
+                              {t("studio.plan.cover_image.constraints")}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+
+                    {/* ✅ Mobile only */}
+                    <p className="text-sm sm:hidden text-muted-foreground whitespace-pre-line">
+                      {t("studio.plan.cover_image.constraints")}
+                    </p>
+                  </div>
+                  <Pecha.FormControl>
+                    <div className="flex gap-4 mt-4 items-start">
+                      {!imagePreview && (
+                        <button
+                          type="button"
+                          onClick={() => setIsImageDialogOpen(true)}
+                          className="border w-48 h-32 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none"
+                          aria-label="Upload cover image"
+                        >
+                          <IoMdAdd className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                        </button>
+                      )}
+
+                      {imagePreview && (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Cover preview"
+                            className="w-48 h-32 object-cover rounded-lg border"
+                          />
+                          <div className="flex items-center justify-between absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg p-2">
+                            {selectedImage && (
+                              <p className="text-xs text-white truncate max-w-32">
+                                {selectedImage.name}
+                              </p>
+                            )}
+                            <button
+                              aria-label="Remove image"
+                              type="button"
+                              onClick={handleRemoveImage}
+                              className=" text-white cursor-pointer rounded-full p-1 transition-colors ml-2"
+                              data-testid="image-remove"
+                            >
+                              <IoMdClose className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <input type="hidden" {...field} />
+                    </div>
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
+              )}
             />
 
             <Pecha.Dialog
@@ -252,7 +373,10 @@ const Createplan = () => {
                 <Pecha.DialogHeader>
                   <Pecha.DialogTitle>Upload & Crop Image</Pecha.DialogTitle>
                 </Pecha.DialogHeader>
-                <ImageContentData onUpload={handleImageUpload} />
+                <ImageContentData
+                  onUpload={handleImageUpload}
+                  isLoading={isImageUploading}
+                />
               </Pecha.DialogContent>
             </Pecha.Dialog>
 
@@ -497,8 +621,18 @@ const Createplan = () => {
               />
             </div>
 
-            <TagsField control={form.control} />
-
+            <Pecha.FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <Pecha.FormItem>
+                  <Pecha.FormControl>
+                    <TagInput value={field.value} onChange={field.onChange} />
+                  </Pecha.FormControl>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
+              )}
+            />
             <div className="pt-8 w-full flex justify-end">
               {plan_id == "new" ? (
                 <Pecha.Button
