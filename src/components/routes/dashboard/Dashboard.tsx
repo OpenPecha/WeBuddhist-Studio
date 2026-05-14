@@ -1,7 +1,8 @@
 import { Pecha } from "@/components/ui/shadimport";
-import { DashBoardTable } from "@/components/ui/molecules/dashboard-table/DashBoardTable";
+import { DashboardContentTable } from "@/components/routes/dashboard/DashboardContentTable";
+import { fetchDashboardAllImaginary } from "@/components/routes/dashboard/dashboardAllFeed";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
-import { useState, Activity } from "react";
+import { useState, Activity, type ReactNode } from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
@@ -12,12 +13,38 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
 
+type DashboardView = "all" | "plans" | "series";
+
+const fetchSeries = async (
+  page: number,
+  limit: number,
+  search: string,
+): Promise<{
+  series: Record<string, unknown>[];
+  total: number;
+  skip: number;
+  limit: number;
+}> => {
+  const skip = (page - 1) * limit;
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { data } = await axiosInstance.get(`/api/v1/cms/series`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    params: {
+      skip,
+      limit,
+      ...(search && { search }),
+    },
+  });
+  return data;
+};
+
 const fetchPlans = async (
   page: number,
   limit: number,
   search: string,
   sortBy: string,
-  sortOrder: string,
 ) => {
   const skip = (page - 1) * limit;
   const accessToken = sessionStorage.getItem("accessToken");
@@ -30,7 +57,6 @@ const fetchPlans = async (
       limit,
       ...(search && { search }),
       ...(sortBy && { sort_by: sortBy }),
-      ...(sortOrder && { sort_order: sortOrder }),
     },
   });
   return data;
@@ -49,40 +75,84 @@ const toggleFeatured = async (planId: string) => {
   return data;
 };
 
+function DashboardListPlaceholder({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white/80 px-8 py-16 text-center dark:border-[#313132] dark:bg-[#1d1d1f]/80">
+      <p className="text-base font-medium text-foreground">{title}</p>
+      {description ? (
+        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+      ) : null}
+      {children ? (
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {children}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 const Dashboard = () => {
   const { t } = useTranslate();
+  const [view, setView] = useState<DashboardView>("all");
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [plansPage, setPlansPage] = useState(1);
+  const [seriesPage, setSeriesPage] = useState(1);
+  const [allPage, setAllPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
   const [sortBy, setSortBy] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
+  const [languageFilter, setLanguageFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
-  const handleSort = (column: string) => {
-    if (sortBy === column) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(column);
-      setSortOrder("asc");
-    }
-    setCurrentPage(1);
+  const setViewAndResetPages = (next: DashboardView) => {
+    setView(next);
+    setPlansPage(1);
+    setSeriesPage(1);
+    setAllPage(1);
+    setLanguageFilter("");
+    setStatusFilter("");
   };
 
+  //  Series Query
+  const {
+    data: seriesData,
+    isLoading: isSeriesLoading,
+    error: seriesError,
+  } = useQuery({
+    queryKey: ["dashboard-series", seriesPage, debouncedSearch],
+    queryFn: () => fetchSeries(seriesPage, 10, debouncedSearch),
+    refetchOnWindowFocus: false,
+    retry: false,
+    enabled: view === "series",
+  });
+
+  //  Plans Query
   const {
     data: planData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: [
-      "dashboard-plans",
-      currentPage,
-      debouncedSearch,
-      sortBy,
-      sortOrder,
-    ],
-    queryFn: () =>
-      fetchPlans(currentPage, 10, debouncedSearch, sortBy, sortOrder),
+    queryKey: ["dashboard-plans", plansPage, debouncedSearch],
+    queryFn: () => fetchPlans(plansPage, 10, debouncedSearch, sortBy),
     refetchOnWindowFocus: false,
     retry: false,
+    enabled: view === "plans",
+  });
+
+  //  All Feed Query
+  const { data: allFeedData, isLoading: isAllLoading } = useQuery({
+    queryKey: ["dashboard-all-feed", allPage, debouncedSearch],
+    queryFn: () => fetchDashboardAllImaginary(allPage, 10, debouncedSearch),
+    refetchOnWindowFocus: false,
+    retry: false,
+    enabled: view === "all",
   });
 
   const queryClient = useQueryClient();
@@ -90,9 +160,12 @@ const Dashboard = () => {
     mutationFn: (planId: string) => toggleFeatured(planId),
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
+      queryClient.refetchQueries({ queryKey: ["dashboard-all-feed"] });
     },
-    onError: (error: any) => {
-      toast.error(error.response.data.detail.message);
+    onError: (err: any) => {
+      toast.error(
+        err?.response?.data?.detail?.message ?? "Could not update featured",
+      );
     },
   });
 
@@ -100,23 +173,120 @@ const Dashboard = () => {
     featuredMutation.mutate(planId);
   };
 
-  const totalPages = planData ? Math.ceil(planData.total / 10) : 1;
+  const totalPlanPages = planData ? Math.ceil(planData.total / 10) : 1;
+  const totalSeriesPages = seriesData ? Math.ceil(seriesData.total / 10) : 1;
+  const totalAllPages = allFeedData
+    ? Math.ceil(allFeedData.total / 10) || 1
+    : 1;
+
+  const plansHasServerRows = (planData?.plans?.length ?? 0) > 0;
+  const seriesHasServerRows = (seriesData?.series?.length ?? 0) > 0;
+
+  const plansEmpty =
+    view === "plans" && !isLoading && (!!error || !plansHasServerRows);
+  const seriesEmpty =
+    view === "series" &&
+    !isSeriesLoading &&
+    (!!seriesError || !seriesHasServerRows);
+  const allEmpty =
+    view === "all" && !isAllLoading && (allFeedData?.rows?.length ?? 0) === 0;
+
+  const chipClass = (active: boolean) =>
+    `rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+      active
+        ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+        : "border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:border-[#313132] dark:bg-transparent dark:text-gray-200 dark:hover:bg-[#2a2a2a]"
+    }`;
+
+  const showPagination =
+    view === "plans"
+      ? plansHasServerRows
+      : view === "series"
+        ? seriesHasServerRows
+        : (allFeedData?.rows?.length ?? 0) > 0;
+
+  const filterBar = (
+    <div className="flex w-full flex-wrap items-end gap-4 px-4 pb-2 pt-3">
+      <div className="flex min-w-[180px] flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">Sort</span>
+        <Pecha.Select defaultValue="recent">
+          <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
+            <Pecha.SelectValue placeholder="Sort" />
+          </Pecha.SelectTrigger>
+          <Pecha.SelectContent onClick={() => setSortBy("recent")}>
+            <Pecha.SelectItem value="recent">
+              Recently modified
+            </Pecha.SelectItem>
+          </Pecha.SelectContent>
+        </Pecha.Select>
+      </div>
+      <div className="flex min-w-[160px] flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">
+          Language
+        </span>
+        <Pecha.Select
+          value={languageFilter || "all"}
+          onValueChange={(v) => {
+            setLanguageFilter(v === "all" ? "" : v);
+            setPlansPage(1);
+            setSeriesPage(1);
+            setAllPage(1);
+          }}
+        >
+          <Pecha.SelectTrigger className="h-9 w-[180px] bg-white dark:bg-input/30">
+            <Pecha.SelectValue placeholder="Language" />
+          </Pecha.SelectTrigger>
+          <Pecha.SelectContent>
+            <Pecha.SelectItem value="all">All languages</Pecha.SelectItem>
+            <Pecha.SelectItem value="EN">English</Pecha.SelectItem>
+            <Pecha.SelectItem value="ZH">中国人</Pecha.SelectItem>
+            <Pecha.SelectItem value="BO">བོད་སྐད།</Pecha.SelectItem>
+          </Pecha.SelectContent>
+        </Pecha.Select>
+      </div>
+      <div className="flex min-w-[160px] flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">
+          Status
+        </span>
+        <Pecha.Select
+          value={statusFilter || "all"}
+          onValueChange={(v) => {
+            setStatusFilter(v === "all" ? "" : v);
+            setPlansPage(1);
+            setSeriesPage(1);
+            setAllPage(1);
+          }}
+        >
+          <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
+            <Pecha.SelectValue placeholder="Status" />
+          </Pecha.SelectTrigger>
+          <Pecha.SelectContent>
+            <Pecha.SelectItem value="all">All statuses</Pecha.SelectItem>
+            <Pecha.SelectItem value="DRAFT">Draft</Pecha.SelectItem>
+            <Pecha.SelectItem value="PUBLISHED">Published</Pecha.SelectItem>
+            <Pecha.SelectItem value="UNPUBLISHED">Unpublished</Pecha.SelectItem>
+            <Pecha.SelectItem value="ARCHIVED">Archived</Pecha.SelectItem>
+          </Pecha.SelectContent>
+        </Pecha.Select>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
-      <div className="mb-4  px-4 pt-10 flex items-center justify-between">
-        <div className="flex  items-center space-x-2">
+      <div className="mb-4 px-4 pt-10 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="border w-fit px-2 bg-white dark:bg-input/30 rounded-md border-gray-200 dark:border-[#313132] flex items-center">
-            <IoMdSearch className="w-4 h-4" />
+            <IoMdSearch className="w-4 h-4 shrink-0" />
             <Pecha.Input
               placeholder={t("common.placeholder.search")}
               className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
-                if (currentPage !== 1) {
-                  setCurrentPage(1);
-                }
+                setPlansPage(1);
+                setSeriesPage(1);
+                setAllPage(1);
               }}
             />
           </div>
@@ -145,40 +315,147 @@ const Dashboard = () => {
               </Pecha.DropdownMenuGroup>
             </Pecha.DropdownMenuContent>
           </Pecha.DropdownMenu>
+
+          <div className="flex flex-wrap items-center gap-2 pl-1">
+            <button
+              type="button"
+              className={chipClass(view === "all")}
+              onClick={() => setViewAndResetPages("all")}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              className={chipClass(view === "plans")}
+              onClick={() => setViewAndResetPages("plans")}
+            >
+              Plans
+            </button>
+            <button
+              type="button"
+              className={chipClass(view === "series")}
+              onClick={() => setViewAndResetPages("series")}
+            >
+              Series
+            </button>
+          </div>
         </div>
         <AuthButton />
       </div>
-      <div className="border-b  w-full border-dashed border-gray-300 dark:border-input" />
-      <div className="px-4 pt-4 h-full flex flex-col items-center justify-between">
-        {planData?.plans.length === 0 ? (
-          <div className="flex flex-col h-full items-center justify-center">
-            <p className="text-base text-muted-foreground">
-              {t("studio.dashboard.no_plan_found")}
-            </p>
+      <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
+      {filterBar}
+
+      <div className="flex flex-1 flex-col items-center px-4 pb-6 pt-2">
+        {view === "all" && allEmpty ? (
+          <DashboardListPlaceholder
+            title="Nothing to show yet"
+            description="Try clearing search or add new plans and series."
+          >
             <Link to="/plan/new">
-              <Pecha.Button variant="outline" className="mt-2">
-                <IoMdAdd /> {t("studio.dashboard.add_plan")}
+              <Pecha.Button variant="outline" size="sm">
+                <IoMdAdd className="h-4 w-4" /> {t("studio.dashboard.add_plan")}
               </Pecha.Button>
             </Link>
+            <Link to="/series/new">
+              <Pecha.Button variant="outline" size="sm">
+                <IoMdAdd className="h-4 w-4" /> Add Series
+              </Pecha.Button>
+            </Link>
+          </DashboardListPlaceholder>
+        ) : plansEmpty ? (
+          <DashboardListPlaceholder
+            title={
+              error
+                ? "Unable to load plans"
+                : t("studio.dashboard.no_plan_found")
+            }
+            description={
+              error?.message
+                ? String(error.message)
+                : "Create a plan to see it listed here."
+            }
+          >
+            <Link to="/plan/new">
+              <Pecha.Button variant="outline" size="sm">
+                <IoMdAdd className="h-4 w-4" /> {t("studio.dashboard.add_plan")}
+              </Pecha.Button>
+            </Link>
+          </DashboardListPlaceholder>
+        ) : seriesEmpty ? (
+          <DashboardListPlaceholder
+            title={seriesError ? "Unable to load series" : "No series found."}
+            description={
+              seriesError?.message
+                ? String(seriesError.message)
+                : "Create a series to see it listed here."
+            }
+          >
+            <Link to="/series/new">
+              <Pecha.Button variant="outline" size="sm">
+                <IoMdAdd className="h-4 w-4" /> Add Series
+              </Pecha.Button>
+            </Link>
+          </DashboardListPlaceholder>
+        ) : view === "all" ? (
+          <div className="w-full overflow-x-auto">
+            <DashboardContentTable
+              rows={allFeedData?.rows ?? []}
+              isLoading={isAllLoading}
+              t={t}
+              handleFeatured={handleFeatured}
+            />
+          </div>
+        ) : view === "plans" ? (
+          <div className="w-full overflow-x-auto">
+            <DashboardContentTable
+              rows={planData?.plans ?? []}
+              isLoading={isLoading}
+              t={t}
+              handleFeatured={handleFeatured}
+            />
           </div>
         ) : (
-          <DashBoardTable
-            plans={planData?.plans}
-            t={t}
-            isLoading={isLoading}
-            error={error}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-            handleFeatured={handleFeatured}
-          />
+          <div className="w-full overflow-x-auto">
+            <DashboardContentTable
+              rows={seriesData?.series ?? []}
+              isLoading={isSeriesLoading}
+              t={t}
+              handleFeatured={handleFeatured}
+              onDeleteSeries={(seriesId) => {
+                void seriesId;
+                toast.message("Delete series", {
+                  description:
+                    "Delete endpoint isn't documented yet; will be wired when available.",
+                });
+              }}
+            />
+          </div>
         )}
       </div>
-      <Activity mode={planData?.plans?.length > 0 ? "visible" : "hidden"}>
+
+      <Activity mode={showPagination ? "visible" : "hidden"}>
         <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          currentPage={
+            view === "plans"
+              ? plansPage
+              : view === "series"
+                ? seriesPage
+                : allPage
+          }
+          totalPages={
+            view === "plans"
+              ? totalPlanPages
+              : view === "series"
+                ? totalSeriesPages
+                : totalAllPages
+          }
+          onPageChange={
+            view === "plans"
+              ? setPlansPage
+              : view === "series"
+                ? setSeriesPage
+                : setAllPage
+          }
         />
       </Activity>
     </div>

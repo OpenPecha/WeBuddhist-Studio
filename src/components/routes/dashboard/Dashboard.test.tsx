@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Dashboard from "./Dashboard";
@@ -23,14 +24,18 @@ const renderWithProviders = (component: React.ReactElement) => {
 };
 
 describe("Dashboard Component", () => {
-  it("renders dashboard with search input and add plan button", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("renders dashboard with search input and add button", () => {
     renderWithProviders(<Dashboard />);
 
     expect(
       screen.getByPlaceholderText("common.placeholder.search"),
     ).toBeDefined();
 
-    expect(screen.getByText("Add Plan")).toBeDefined();
+    expect(screen.getByLabelText("Add")).toBeDefined();
   });
 
   it("displays table headers correctly", () => {
@@ -38,9 +43,9 @@ describe("Dashboard Component", () => {
 
     expect(screen.getByText("studio.dashboard.cover_image")).toBeDefined();
     expect(screen.getByText("studio.dashboard.title")).toBeDefined();
-    expect(screen.getByText("studio.dashboard.plan_days")).toBeDefined();
-    expect(screen.getByText("studio.dashboard.plan_used")).toBeDefined();
-    expect(screen.getByText("Status")).toBeDefined();
+    expect(screen.getByText("Enrolled")).toBeDefined();
+    expect(screen.getByText("Modified")).toBeDefined();
+    expect(screen.getByText("Featured")).toBeDefined();
     expect(screen.getByText("studio.dashboard.actions")).toBeDefined();
   });
 
@@ -66,21 +71,35 @@ describe("Dashboard Component", () => {
     expect(searchInput.value).toBe("test search");
   });
 
-  it("renders add plan button with correct link", () => {
+  it("renders add dropdown with plan and series links", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: { plans: [], total: 0 },
+    });
+    const user = userEvent.setup();
     renderWithProviders(<Dashboard />);
 
-    const addPlanButton = screen.getByText("Add Plan");
-    expect(addPlanButton).toBeDefined();
+    await waitFor(() => {
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
 
-    const linkElement = addPlanButton.closest("a");
-    expect(linkElement).toBeDefined();
-    expect(linkElement?.getAttribute("href")).toBe("/plan/new");
+    await user.click(screen.getByLabelText("Add"));
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Add Plan" }),
+    ).toBeInTheDocument();
+    const addPlanItem = screen.getByRole("menuitem", { name: "Add Plan" });
+    expect(addPlanItem.closest("a")?.getAttribute("href")).toBe("/plan/new");
+
+    const addSeriesItem = screen.getByRole("menuitem", { name: "Add Series" });
+    expect(addSeriesItem.closest("a")?.getAttribute("href")).toBe(
+      "/series/new",
+    );
   });
 
-  it("renders loading state by default", () => {
+  it("renders loading state by default", async () => {
     renderWithProviders(<Dashboard />);
 
-    expect(screen.getByText("Loading...")).toBeDefined();
+    expect(await screen.findByText("Loading...")).toBeDefined();
   });
 
   it("has proper table structure", () => {
@@ -104,45 +123,20 @@ describe("Dashboard Component", () => {
     });
   });
 
-  it("should toggle sort order when clicking column header multiple times", async () => {
-    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+  it("requests plans sorted by recently modified (updated_at desc)", async () => {
+    const getSpy = vi.spyOn(axiosInstance, "get").mockResolvedValue({
       data: { plans: [], total: 0 },
     });
 
     renderWithProviders(<Dashboard />);
-    const titleHeader = screen.getByText("studio.dashboard.title");
-    fireEvent.click(titleHeader);
+
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
+      expect(getSpy).toHaveBeenCalledWith(
+        expect.stringContaining(`/api/v1/cms/plans`),
         expect.objectContaining({
           params: expect.objectContaining({
-            sort_by: "title",
-            sort_order: "asc",
-          }),
-        }),
-      );
-    });
-    fireEvent.click(titleHeader);
-    await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
-        expect.objectContaining({
-          params: expect.objectContaining({
-            sort_by: "title",
+            sort_by: "updated_at",
             sort_order: "desc",
-          }),
-        }),
-      );
-    });
-    fireEvent.click(titleHeader);
-    await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
-        expect.objectContaining({
-          params: expect.objectContaining({
-            sort_by: "title",
-            sort_order: "asc",
           }),
         }),
       );
@@ -176,9 +170,11 @@ describe("Dashboard Component", () => {
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
 
-    expect(screen.getByText("Test Plan")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Test Plan")).toBeInTheDocument();
+    });
 
-    const featuredButton = screen.getByText("Not Featured");
+    const featuredButton = screen.getByRole("button", { name: "Not featured" });
     fireEvent.click(featuredButton);
 
     await waitFor(() => {
