@@ -20,13 +20,10 @@ import type { LanguageCode } from "@/schema/SeriesSchema";
 import { useSeriesForm } from "@/components/routes/create-series/hooks/useSeriesForm";
 import PlanSearchSelector from "@/components/routes/create-series/components/PlanSearchSelector";
 import {
-  buildPlansReplacePayload,
-  buildSeriesCreateBody,
-  fetchAuthorInfo,
+  buildSeriesUpdateBody,
   getSeries,
   mapSeriesDetailToFormData,
   postSeries,
-  putSeriesPlans,
   putUpdateSeries,
 } from "@/components/routes/create-series/api/seriesApi";
 import type { SeriesFormData } from "@/schema/SeriesSchema";
@@ -50,12 +47,6 @@ const CreateSeries = () => {
     removeLanguage,
     setImageUrl,
   } = useSeriesForm();
-
-  const { data: authorInfo, isLoading: isAuthorLoading } = useQuery({
-    queryKey: ["userInfo"],
-    queryFn: fetchAuthorInfo,
-    staleTime: 60_000,
-  });
 
   const {
     data: seriesData,
@@ -129,40 +120,17 @@ const CreateSeries = () => {
   }, [blocker.state]);
 
   const saveSeriesMutation = useMutation({
-    mutationFn: async (input: {
-      data: SeriesFormData;
-      authorId: string;
-      featured: boolean;
-    }) => {
-      const body = buildSeriesCreateBody(
-        input.data,
-        { id: input.authorId },
-        { featured: input.featured },
-      );
-      let targetId: string;
+    mutationFn: async (input: { data: SeriesFormData; featured: boolean }) => {
+      const body = buildSeriesUpdateBody(input.data, input.featured);
       if (isNew) {
         const created = await postSeries(body);
-        targetId = String(created.id);
-      } else {
-        targetId = series_id!;
-        await putUpdateSeries({ seriesId: targetId, body });
+        return { id: String(created.id) };
       }
-      try {
-        await putSeriesPlans({
-          seriesId: targetId,
-          body: buildPlansReplacePayload(input.data),
-        });
-      } catch (planErr: unknown) {
-        const ax = planErr as { response?: { status?: number } };
-        const status = ax?.response?.status;
-        toast.warning("Series saved, but plans were not updated", {
-          description:
-            status === 404 || status === 405
-              ? "If PUT /cms/series/{id}/plans is not deployed yet, add it on the backend."
-              : undefined,
-        });
-      }
-      return { id: targetId };
+      await putUpdateSeries({
+        seriesId: series_id!,
+        body,
+      });
+      return { id: series_id! };
     },
     onSuccess: () => {
       toast.success(
@@ -238,15 +206,8 @@ const CreateSeries = () => {
   };
 
   const onSubmit = form.handleSubmit((data) => {
-    const authorId = authorInfo?.id;
-    if (!authorId) {
-      toast.error("Could not load your profile", {
-        description: "Refresh the page and try again.",
-      });
-      return;
-    }
     const featured = isNew ? false : (seriesData?.featured ?? false);
-    saveSeriesMutation.mutate({ data, authorId, featured });
+    saveSeriesMutation.mutate({ data, featured });
   });
 
   if (!isNew && isSeriesLoading) {
@@ -273,8 +234,6 @@ const CreateSeries = () => {
   const submitEnabled =
     canSubmit &&
     !saveSeriesMutation.isPending &&
-    !isAuthorLoading &&
-    !!authorInfo?.id &&
     imageUrl.trim().length > 0 &&
     (isNew || !!seriesData);
 
@@ -556,16 +515,15 @@ const CreateSeries = () => {
         )}
 
         <div className="mt-auto pt-8 flex justify-end gap-3">
-          {!isNew && (
-            <Pecha.Button
-              type="button"
-              variant="outline"
-              className="sm:h-12 sm:px-8"
-              onClick={() => navigate("/dashboard")}
-            >
-              {t("common.button.cancel")}
-            </Pecha.Button>
-          )}
+          <Pecha.Button
+            type="button"
+            variant="outline"
+            className="sm:h-12 sm:px-8"
+            onClick={() => navigate("/dashboard")}
+          >
+            {t("common.button.cancel")}
+          </Pecha.Button>
+
           <Pecha.Button
             type="button"
             variant="default"

@@ -5,25 +5,11 @@ import type {
   SeriesPlan,
 } from "@/schema/SeriesSchema";
 
-export type CreateSeriesPayload = {
+export type SeriesPayload = {
   name: Record<string, { title: string; description: string }>;
-  image?: string | null;
-  featured?: boolean;
-  author_id: string;
-  created_by: string;
-};
-
-export type SeriesPlansReplacePayload = {
+  image_key?: string;
+  featured: boolean;
   plans: Partial<Record<LanguageCode, string[]>>;
-};
-
-export type AuthorInfo = {
-  id: string;
-};
-
-export const fetchAuthorInfo = async (): Promise<AuthorInfo> => {
-  const { data } = await axiosInstance.get(`/api/v1/authors/info`);
-  return data;
 };
 
 export type SeriesPlanDTO = {
@@ -59,20 +45,19 @@ export const getSeries = async (seriesId: string): Promise<SeriesDetailDTO> => {
   return data;
 };
 
-export const postSeries = async (body: CreateSeriesPayload) => {
+export const postSeries = async (body: SeriesPayload) => {
   const { data } = await axiosInstance.post(`/api/v1/cms/series`, body, {
     headers: authHeaders(),
   });
   return data as SeriesDetailDTO;
 };
 
-/** `PUT /cms/series/{id}` — contract mirrors create body (add when backend exposes it in OpenAPI). */
 export const putUpdateSeries = async ({
   seriesId,
   body,
 }: {
   seriesId: string;
-  body: CreateSeriesPayload;
+  body: SeriesPayload;
 }) => {
   const { data } = await axiosInstance.put(
     `/api/v1/cms/series/${seriesId}`,
@@ -80,22 +65,6 @@ export const putUpdateSeries = async ({
     { headers: authHeaders() },
   );
   return data as SeriesDetailDTO;
-};
-
-/** `PUT /cms/series/{id}/plans` — full snapshot per language (empty arrays clear). */
-export const putSeriesPlans = async ({
-  seriesId,
-  body,
-}: {
-  seriesId: string;
-  body: SeriesPlansReplacePayload;
-}) => {
-  const { data } = await axiosInstance.put(
-    `/api/v1/cms/series/${seriesId}/plans`,
-    body,
-    { headers: authHeaders() },
-  );
-  return data;
 };
 
 function normalizeLang(raw: string): LanguageCode | null {
@@ -178,30 +147,44 @@ export function buildSeriesNameJson(
   return out;
 }
 
-export function buildSeriesCreateBody(
+/** Plan ids per added language; array order is display order. */
+export function buildSeriesPlansJson(
   data: SeriesFormData,
-  author: AuthorInfo,
-  options?: { featured?: boolean },
-): CreateSeriesPayload {
-  const image = data.image_url.trim();
-  return {
-    name: buildSeriesNameJson(data.languages),
-    ...(image ? { image } : {}),
-    featured: options?.featured ?? false,
-    author_id: author.id,
-    created_by: author.id,
-  };
-}
-
-/** Plan id lists per language; array order is display order for the API. */
-export function buildPlansReplacePayload(
-  data: SeriesFormData,
-): SeriesPlansReplacePayload {
+  languageCodes: LanguageCode[],
+): Partial<Record<LanguageCode, string[]>> {
   const plans: Partial<Record<LanguageCode, string[]>> = {};
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
-  for (const code of order) {
+  for (const code of languageCodes) {
     const list = data.plans[code] ?? [];
     plans[code] = list.map((p) => p.id);
   }
-  return { plans };
+  return plans;
+}
+
+export function buildSeriesWriteBody(
+  data: SeriesFormData,
+  featured: boolean,
+): SeriesPayload {
+  const name = buildSeriesNameJson(data.languages);
+  const languageCodes = Object.keys(name) as LanguageCode[];
+  const imageKey = data.image_url.trim();
+  return {
+    name,
+    featured,
+    plans: buildSeriesPlansJson(data, languageCodes),
+    ...(imageKey ? { image_key: imageKey } : {}),
+  };
+}
+
+export function buildSeriesCreateBody(
+  data: SeriesFormData,
+  featured = false,
+): SeriesPayload {
+  return buildSeriesWriteBody(data, featured);
+}
+
+export function buildSeriesUpdateBody(
+  data: SeriesFormData,
+  featured: boolean,
+): SeriesPayload {
+  return buildSeriesWriteBody(data, featured);
 }
