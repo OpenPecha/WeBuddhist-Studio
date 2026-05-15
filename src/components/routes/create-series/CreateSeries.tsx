@@ -248,9 +248,9 @@ const CreateSeries = () => {
       : "Save changes";
 
   return (
-    <div className="flex flex-col lg:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
+    <div className="flex flex-col lg:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F3F3F3] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
       <div className="flex-1 p-4 sm:p-10 border-b lg:border-b-0 border-border">
-        <h1 className="text-xl font-bold my-4">
+        <h1 className="text-xl font-bold my-4 border-b border-dashed border-black dark:border-white">
           {isNew ? "Series details" : "Edit series"}
         </h1>
 
@@ -259,12 +259,18 @@ const CreateSeries = () => {
             <div className="space-y-4">
               {orderedAddedLanguages.map((code) => {
                 const label =
-                  PLAN_LANGUAGE.find((l) => l.value === code)?.label ?? code;
+                  code === "EN"
+                    ? "English"
+                    : code === "BO"
+                      ? "Tibetan"
+                      : code === "ZH"
+                        ? "Chinese"
+                        : code;
 
                 return (
                   <div
                     key={code}
-                    className="relative rounded-lg border border-input bg-white dark:bg-[#262626] p-4 space-y-3"
+                    className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3"
                   >
                     <button
                       type="button"
@@ -305,7 +311,7 @@ const CreateSeries = () => {
                           <Pecha.FormControl>
                             <Textarea
                               placeholder={`Description in ${label}`}
-                              className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none resize-none"
+                              className="min-h-[100px] w-full rounded-md border border-input bg-white dark:bg-[#181818] px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none resize-none"
                               {...field}
                             />
                           </Pecha.FormControl>
@@ -323,10 +329,13 @@ const CreateSeries = () => {
                 key={addedLanguages.join(",")}
                 onValueChange={(v) => addLanguage(v as LanguageCode)}
               >
-                <Pecha.SelectTrigger className="h-11 w-full max-w-md border-dashed bg-white dark:bg-[#262626]">
+                <Pecha.SelectTrigger className="h-11 w-fit max-w-md border-dashed bg-white dark:bg-[#262626]">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <IoMdAdd className="h-5 w-5" />
-                    <Pecha.SelectValue placeholder="Add series details" />
+                    <Pecha.SelectValue
+                      className="text-[#1A1A1A] font-semibold text-sm"
+                      placeholder="Add series details"
+                    />
                   </div>
                 </Pecha.SelectTrigger>
                 <Pecha.SelectContent>
@@ -339,7 +348,7 @@ const CreateSeries = () => {
               </Pecha.Select>
             ) : null}
 
-            <div className="border-t border-border pt-6 space-y-2">
+            <div className="space-y-2">
               <div className="flex flex-col sm:flex-row gap-2">
                 <h3 className="text-sm font-bold">
                   {t("studio.dashboard.cover_image")}
@@ -375,7 +384,7 @@ const CreateSeries = () => {
                   <button
                     type="button"
                     onClick={() => setIsImageDialogOpen(true)}
-                    className="border w-48 h-48 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none bg-white dark:bg-[#262626]"
+                    className="border w-56 h-40 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors cursor-pointer focus:outline-none bg-#C7C7C7 dark:bg-[#262626]"
                     aria-label="Upload cover image"
                   >
                     <IoMdAdd className="h-10 w-10 text-gray-400" />
@@ -487,11 +496,12 @@ const CreateSeries = () => {
                     onClick={() => setActivePlansLanguage(code)}
                     className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                       isActive
-                        ? "border-[#A51C21] text-foreground"
+                        ? "border-[#B82E2E] text-[#B82E2E] font-semibold"
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {label} ({count})
+                    <span>{label}</span>
+                    <span className="text-[#737373]"> ({count})</span>
                   </button>
                 );
               })}

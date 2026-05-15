@@ -105,10 +105,10 @@ const PlanSearchSelector = ({
   const canReorder = value.length > 1;
 
   return (
-    <div className="border border-input rounded-md p-4 min-h-[200px] space-y-3 bg-white dark:bg-[#262626]">
+    <div className="rounded-md p-4 min-h-[200px] space-y-3  dark:bg-[#262626]">
       {value.length === 0 ? (
         <div className="rounded-md border border-dashed border-muted-foreground/40 px-4 py-8 text-center text-sm text-muted-foreground">
-          No plans added yet — use the search below to add plans to this series.
+          No plans added yet — use the search to add plans to this series.
         </div>
       ) : (
         <SortableList
@@ -159,7 +159,7 @@ const PlanSearchSelector = ({
         </SortableList>
       )}
 
-      <div className="relative">
+      <div className="relative pt-16">
         <div className="relative">
           <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
