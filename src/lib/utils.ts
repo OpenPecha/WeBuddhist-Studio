@@ -20,7 +20,11 @@ export function cn(...inputs: ClassValue[]) {
 export function createPasswordHash(email: string, password: string): string {
   const envSalt = import.meta.env.VITE_ENV_SALT || "";
   const combinedString = email + envSalt + password;
-  return sha256(combinedString).toString();
+  const hash=sha256(combinedString).toString();
+  console.log("envSalt", envSalt)
+   console.log("combinedString", combinedString)
+   console.log(hash)
+  return hash
 }
 
 export const getYouTubeVideoId = (url: string) => {
