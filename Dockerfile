@@ -10,10 +10,6 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-ARG VITE_ENV_SALT
-ARG VITE_YOUTUBE_API_KEY
-ENV VITE_ENV_SALT=${VITE_ENV_SALT}
-ENV VITE_YOUTUBE_API_KEY=${VITE_YOUTUBE_API_KEY}
 RUN npm run build
 
 FROM nginx:stable-alpine
