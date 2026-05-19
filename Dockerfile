@@ -29,4 +29,4 @@ COPY nginx/security-headers.conf /etc/nginx/
 
 EXPOSE 4173
 
-CMD ["sh", "-c", "envsubst '${VITE_BACKEND_BASE_URL} ${VITE_YOUTUBE_API_KEY}' < /etc/nginx/conf.d/studio.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "envsubst '${VITE_BACKEND_BASE_URL} ' < /etc/nginx/conf.d/studio.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

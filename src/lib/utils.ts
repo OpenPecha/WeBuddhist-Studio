@@ -14,6 +14,7 @@ import { RANGE_REGEX, SINGLE_REGEX } from "./constant";
 import { format } from "date-fns";
 
 const envSalt = import.meta.env.VITE_AUTH_TOKEN || "";
+const envYoutubeApiKey = import.meta.env.VITE_YOUTUBE_API_KEY || "";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -21,7 +22,7 @@ export function cn(...inputs: ClassValue[]) {
 export function createPasswordHash(email: string, password: string): string {
   const combinedString = email + envSalt + password;
   const hash=sha256(combinedString).toString();
-  console.log("envSalt", envSalt)
+  console.log("envSalt", envSalt ,"envYoutubeApiKey", envYoutubeApiKey)
    console.log("combinedString", combinedString)
    console.log(hash)
   return hash
