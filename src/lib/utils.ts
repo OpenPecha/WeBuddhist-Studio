@@ -13,12 +13,12 @@ import {
 import { RANGE_REGEX, SINGLE_REGEX } from "./constant";
 import { format } from "date-fns";
 
+const envSalt = import.meta.env.VITE_ENV_SALT || "";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function createPasswordHash(email: string, password: string): string {
-  const envSalt = import.meta.env.VITE_ENV_SALT || "";
   const combinedString = email + envSalt + password;
   const hash=sha256(combinedString).toString();
   console.log("envSalt", envSalt)
