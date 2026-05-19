@@ -59,7 +59,7 @@ describe("Dashboard Component", () => {
     expect(screen.getByText("studio.dashboard.cover_image")).toBeDefined();
     expect(screen.getByText("studio.dashboard.title")).toBeDefined();
     expect(screen.getByText("Enrolled")).toBeDefined();
-    expect(screen.getByText("Modified")).toBeDefined();
+    expect(screen.getByText("Date Modified")).toBeDefined();
     expect(screen.getByText("Featured")).toBeDefined();
     expect(screen.getByText("studio.dashboard.actions")).toBeDefined();
   });
@@ -190,6 +190,36 @@ describe("Dashboard Component", () => {
         }),
       );
     });
+  });
+
+  it("shows stack badge on series cover image", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "series-1",
+            type: "series",
+            title: "Test Series",
+            image_url: "https://example.com/cover.jpg",
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 5,
+            plans_count: 10,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
+    });
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Series")).toBeInTheDocument();
+    });
+
+    expect(screen.getByLabelText("Series, 10 plans")).toBeInTheDocument();
   });
 
   it("handles toggle featured on a plan", async () => {

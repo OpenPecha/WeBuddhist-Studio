@@ -9,15 +9,14 @@ export interface DashboardTableRow {
   id: string;
   title: string;
   image_url: string;
-  /** One or more content languages (order preserved). */
   languages: DashboardLanguageCode[];
   status: string;
   total_days: number;
   enrolled: number;
   modifiedAt: string | null;
-  /** When set (e.g. mock unified feed), shown instead of formatting {@link modifiedAt}. */
   dateModifiedLabel?: string;
   featured: boolean;
+  plans_count?: number;
 }
 
 function normalizeOneLanguageCode(v: string): DashboardLanguageCode | null {
@@ -131,6 +130,8 @@ export function mapSeriesToTableRow(
     enrolled,
     modifiedAt: (s.updated_at as string) ?? (s.updatedAt as string) ?? null,
     featured: !!s.featured,
+    plans_count:
+      typeof s.plans_count === "number" ? s.plans_count : plans.length,
   };
 }
 

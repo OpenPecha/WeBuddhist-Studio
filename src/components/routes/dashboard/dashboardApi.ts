@@ -17,6 +17,9 @@ function mapDashboardItemToTableRow(item: DashboardApiItem): DashboardTableRow {
     enrolled: item.enrolled_count ?? 0,
     modifiedAt: item.updated_at ?? item.created_at ?? null,
     featured: !!item.featured,
+    ...(item.type === "series" && {
+      plans_count: item.plans_count ?? 0,
+    }),
   };
 }
 

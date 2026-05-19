@@ -144,10 +144,7 @@ describe("CreatePlan Component", () => {
     renderWithProviders(<CreatePlan />);
 
     expect(
-      screen.getByText("studio.dashboard.cover_image"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("studio.plan.cover_image.description"),
+      screen.getByText("studio.plan.cover_image.constraints"),
     ).toBeInTheDocument();
   });
 
@@ -211,7 +208,7 @@ describe("CreatePlan Component", () => {
       screen.getByText("studio.dashboard.cover_image"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("studio.plan.cover_image.description"),
+      screen.getByText("studio.plan.cover_image.constraints"),
     ).toBeInTheDocument();
     const uploadButton = screen.getByLabelText("Upload cover image");
     expect(uploadButton).toBeInTheDocument();

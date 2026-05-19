@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import defaultCover from "/default-image.webp";
 import { FaStar } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { LuLayers } from "react-icons/lu";
 import { Link } from "react-router-dom";
 import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
@@ -97,14 +98,25 @@ export function DashboardContentTable({
           className="dark:bg-background"
         >
           <Pecha.TableCell>
-            <img
-              src={row.image_url || defaultCover}
-              onError={(e) => {
-                e.currentTarget.src = defaultCover;
-              }}
-              alt=""
-              className="h-12 w-28 rounded border object-cover"
-            />
+            <div className="relative inline-block">
+              <img
+                src={row.image_url || defaultCover}
+                onError={(e) => {
+                  e.currentTarget.src = defaultCover;
+                }}
+                alt=""
+                className="h-12 w-28 rounded border object-cover"
+              />
+              {row.kind === "series" ? (
+                <span
+                  className="absolute left-1 top-1 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white shadow-sm"
+                  aria-label={`Series, ${row.plans_count ?? 0} plans`}
+                >
+                  <LuLayers className="h-3 w-3 shrink-0" aria-hidden />
+                  {row.plans_count ?? 0}
+                </span>
+              ) : null}
+            </div>
           </Pecha.TableCell>
           <Pecha.TableCell>
             <button
@@ -245,7 +257,7 @@ export function DashboardContentTable({
             Enrolled
           </Pecha.TableHead>
           <Pecha.TableHead className="w-[130px] font-bold">
-            Modified
+            Date Modified
           </Pecha.TableHead>
           <Pecha.TableHead className="w-[72px] font-bold">
             Featured
