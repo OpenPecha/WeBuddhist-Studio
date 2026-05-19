@@ -13,7 +13,7 @@ import {
 import { RANGE_REGEX, SINGLE_REGEX } from "./constant";
 import { format } from "date-fns";
 
-const envSalt = import.meta.env.VITE_ENV_SALT || "";
+const envSalt = import.meta.env.VITE_ENV_SALT2 || "";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
