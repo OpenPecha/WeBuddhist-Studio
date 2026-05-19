@@ -308,13 +308,6 @@ const Dashboard = () => {
               isLoading={isLoadingTable}
               t={t}
               handleFeatured={handleFeatured}
-              onDeleteSeries={(seriesId) => {
-                void seriesId;
-                toast.message("Delete series", {
-                  description:
-                    "Delete endpoint isn't documented yet; will be wired when available.",
-                });
-              }}
             />
           </div>
         )}

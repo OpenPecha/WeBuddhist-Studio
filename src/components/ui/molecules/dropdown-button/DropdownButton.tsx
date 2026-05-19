@@ -19,51 +19,60 @@ const STATUS_ICONS = {
   DRAFT: RiDraftLine,
 };
 
+export type DropdownButtonEntityType = "plan" | "series";
+
 export function DropdownButton({
   planId,
   currentStatus,
   triggerVariant = "default",
+  entityType = "plan",
 }: {
   planId: string;
   currentStatus: string;
   triggerVariant?: "default" | "icon";
+  entityType?: DropdownButtonEntityType;
 }) {
   const queryClient = useQueryClient();
+  const isSeries = entityType === "series";
+  const apiBase = isSeries ? "/api/v1/cms/series" : "/api/v1/cms/plans";
+  const editHref = isSeries ? `/series/${planId}` : `/plan/${planId}`;
+  const editLabel = isSeries ? "Edit Series" : "Edit Plan";
+  const deleteLabel = isSeries ? "Delete Series" : "Delete Plan";
+  const entityName = isSeries ? "Series" : "Plan";
 
-  const deletePlanMutation = useMutation({
-    mutationFn: async (plan_id: string) => {
-      const { data } = await axiosInstance.delete(
-        `/api/v1/cms/plans/${plan_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-          },
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await axiosInstance.delete(`${apiBase}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         },
-      );
+      });
       return data;
     },
     onSuccess: () => {
-      toast.success("Plan deleted successfully!", {
-        description: "The plan has been deleted.",
+      toast.success(`${entityName} deleted successfully!`, {
+        description: `The ${entityName.toLowerCase()} has been deleted.`,
       });
       queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
     },
-    onError: (error: any) => {
-      toast.error("Failed to delete plan", {
-        description: error.response.data.detail.message,
+    onError: (error: {
+      response?: { data?: { detail?: { message?: string } } };
+    }) => {
+      toast.error(`Failed to delete ${entityName.toLowerCase()}`, {
+        description: error.response?.data?.detail?.message,
       });
     },
   });
 
-  const handleDeletePlan = () => {
-    deletePlanMutation.mutate(planId);
+  const handleDelete = () => {
+    deleteMutation.mutate(planId);
   };
 
   const handleStatusChange = async (newStatus: string) => {
     try {
       const accessToken = sessionStorage.getItem("accessToken");
       await axiosInstance.patch(
-        `/api/v1/cms/plans/${planId}/status`,
+        `${apiBase}/${planId}/status`,
         { status: newStatus },
         {
           headers: {
@@ -74,9 +83,15 @@ export function DropdownButton({
 
       toast.success(`Status updated to ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
-      queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
-    } catch (error: any) {
-      toast.error(error.response.data.detail.message);
+      if (!isSeries) {
+        queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
+      }
+    } catch (error: {
+      response?: { data?: { detail?: { message?: string } } };
+    }) {
+      toast.error(
+        error.response?.data?.detail?.message ?? "Status update failed",
+      );
     }
   };
 
@@ -97,7 +112,7 @@ export function DropdownButton({
             <Pecha.Button
               variant="outline"
               size="icon"
-              aria-label="Plan actions"
+              aria-label={`${entityName} actions`}
             >
               <BsThreeDotsVertical />
             </Pecha.Button>
@@ -111,10 +126,10 @@ export function DropdownButton({
           {canEdit && (
             <>
               <Pecha.DropdownMenuGroup>
-                <Link to={`/plan/${planId}`}>
+                <Link to={editHref}>
                   <Pecha.DropdownMenuItem>
                     <FaPen className="h-4 w-4" />
-                    Edit Plan
+                    {editLabel}
                   </Pecha.DropdownMenuItem>
                 </Link>
               </Pecha.DropdownMenuGroup>
@@ -143,7 +158,8 @@ export function DropdownButton({
               <Pecha.DropdownMenuGroup>
                 <PlanDeleteDialog
                   planId={planId}
-                  onDelete={handleDeletePlan}
+                  entityLabel={entityName}
+                  onDelete={handleDelete}
                   trigger={
                     <Pecha.DropdownMenuItem
                       variant="destructive"
@@ -151,9 +167,9 @@ export function DropdownButton({
                         e.preventDefault();
                       }}
                     >
-                      <span className="flex items-center gap-2 w-full">
+                      <span className="flex w-full items-center gap-2">
                         <IoMdTrash className="h-4 w-4" />
-                        Delete Plan
+                        {deleteLabel}
                       </span>
                     </Pecha.DropdownMenuItem>
                   }

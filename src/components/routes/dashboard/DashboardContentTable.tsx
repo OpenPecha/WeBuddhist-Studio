@@ -4,10 +4,7 @@ import defaultCover from "/default-image.webp";
 import { FaStar } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { LuLayers } from "react-icons/lu";
-import { Link } from "react-router-dom";
 import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
-import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
-import { IoMdTrash } from "react-icons/io";
 import type {
   DashboardLanguageCode,
   DashboardTableRow,
@@ -71,7 +68,6 @@ interface DashboardContentTableProps {
   isLoading?: boolean;
   t: (key: string, parameters?: any) => string;
   handleFeatured: (planId: string) => void;
-  onDeleteSeries?: (seriesId: string) => void;
 }
 
 export function DashboardContentTable({
@@ -79,7 +75,6 @@ export function DashboardContentTable({
   // isLoading,
   t,
   handleFeatured,
-  onDeleteSeries,
 }: DashboardContentTableProps) {
   const navigate = useNavigate();
 
@@ -172,13 +167,7 @@ export function DashboardContentTable({
             )}
           </Pecha.TableCell>
           <Pecha.TableCell className="w-[100px]">
-            {row.kind === "plan" && !isMockDashboardId(row.id) ? (
-              <DropdownButton
-                planId={row.id}
-                currentStatus={row.status}
-                triggerVariant="icon"
-              />
-            ) : row.kind === "plan" ? (
+            {row.kind === "plan" && isMockDashboardId(row.id) ? (
               <Pecha.DropdownMenu>
                 <Pecha.DropdownMenuTrigger asChild>
                   <Pecha.Button
@@ -199,43 +188,12 @@ export function DashboardContentTable({
                 </Pecha.DropdownMenuContent>
               </Pecha.DropdownMenu>
             ) : (
-              <Pecha.DropdownMenu>
-                <Pecha.DropdownMenuTrigger asChild>
-                  <Pecha.Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="Actions"
-                  >
-                    <BsThreeDotsVertical />
-                  </Pecha.Button>
-                </Pecha.DropdownMenuTrigger>
-                <Pecha.DropdownMenuContent
-                  align="end"
-                  className="[--radius:1rem]"
-                >
-                  <Link to={`/series/${row.id}`}>
-                    <Pecha.DropdownMenuItem>Edit series</Pecha.DropdownMenuItem>
-                  </Link>
-                  {onDeleteSeries ? (
-                    <PlanDeleteDialog
-                      planId={row.id}
-                      entityLabel="Series"
-                      onDelete={onDeleteSeries}
-                      trigger={
-                        <Pecha.DropdownMenuItem
-                          variant="destructive"
-                          onSelect={(e) => e.preventDefault()}
-                        >
-                          <span className="flex w-full items-center gap-2">
-                            <IoMdTrash className="h-4 w-4" />
-                            Delete Series
-                          </span>
-                        </Pecha.DropdownMenuItem>
-                      }
-                    />
-                  ) : null}
-                </Pecha.DropdownMenuContent>
-              </Pecha.DropdownMenu>
+              <DropdownButton
+                planId={row.id}
+                entityType={row.kind}
+                currentStatus={row.status}
+                triggerVariant="icon"
+              />
             )}
           </Pecha.TableCell>
         </Pecha.TableRow>
