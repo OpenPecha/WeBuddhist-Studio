@@ -44,11 +44,7 @@ export function DropdownButton({
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data } = await axiosInstance.delete(`${apiBase}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-        },
-      });
+      const { data } = await axiosInstance.delete(`${apiBase}/${id}`);
       return data;
     },
     onSuccess: () => {
@@ -72,28 +68,20 @@ export function DropdownButton({
 
   const handleStatusChange = async (newStatus: string) => {
     try {
-      const accessToken = sessionStorage.getItem("accessToken");
-      await axiosInstance.patch(
-        `${apiBase}/${planId}/status`,
-        { status: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
+      await axiosInstance.patch(`${apiBase}/${planId}/status`, {
+        status: newStatus,
+      });
 
       toast.success(`Status updated to ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
       if (!isSeries) {
         queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
       }
-    } catch (error: {
-      response?: { data?: { detail?: { message?: string } } };
-    }) {
-      toast.error(
-        error.response?.data?.detail?.message ?? "Status update failed",
-      );
+    } catch (error: unknown) {
+      const message = (
+        error as { response?: { data?: { detail?: { message?: string } } } }
+      )?.response?.data?.detail?.message;
+      toast.error(message ?? "Status update failed");
     }
   };
 

@@ -73,15 +73,11 @@ export const DASHBOARD_PAGE_SIZE = 10;
 export async function fetchDashboardItems(
   params: FetchDashboardItemsParams,
 ): Promise<DashboardItemsResult> {
-  const accessToken = sessionStorage.getItem("accessToken");
   const pageSize = params.pageSize ?? DASHBOARD_PAGE_SIZE;
 
   const { data } = await axiosInstance.get<DashboardItemsResponse>(
     DASHBOARD_ITEMS_PATH,
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
       params: {
         tab: params.tab,
         page: params.page,

@@ -25,16 +25,11 @@ const toggleFeatured = async ({
   id: string;
   kind: DashboardRowKind;
 }) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const path =
     kind === "series"
       ? `/api/v1/cms/series/${id}/featured`
       : `/api/v1/cms/plans/${id}/featured`;
-  const { data } = await axiosInstance.patch(path, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const { data } = await axiosInstance.patch(path);
   return data;
 };
 

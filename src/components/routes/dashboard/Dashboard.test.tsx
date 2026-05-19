@@ -256,7 +256,6 @@ describe("Dashboard Component", () => {
     await waitFor(() => {
       expect(axiosInstance.patch).toHaveBeenCalledWith(
         "/api/v1/cms/plans/plan-1/featured",
-        expect.any(Object),
       );
     });
   });
@@ -296,7 +295,6 @@ describe("Dashboard Component", () => {
     await waitFor(() => {
       expect(axiosInstance.patch).toHaveBeenCalledWith(
         "/api/v1/cms/series/series-1/featured",
-        expect.any(Object),
       );
     });
   });
