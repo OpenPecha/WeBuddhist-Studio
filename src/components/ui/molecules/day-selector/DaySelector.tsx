@@ -11,9 +11,9 @@ interface DaySelectorProps {
 
 const DaySelector = ({ selectedDay, taskId }: DaySelectorProps) => {
   const queryClient = useQueryClient();
-  const { plan_id } = useParams<{ plan_id: string }>();
+  const { planId } = useParams<{ planId: string }>();
 
-  const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
+  const currentPlan = queryClient.getQueryData<any>(["planDetails", planId]);
   const days = currentPlan?.days || [];
 
   const changeTaskDayMutation = useMutation({
@@ -24,7 +24,7 @@ const DaySelector = ({ selectedDay, taskId }: DaySelectorProps) => {
       toast.success("Task moved successfully!", {
         description: "The task has been moved to the selected day.",
       });
-      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+      queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
       queryClient.invalidateQueries({ queryKey: ["taskDetails", taskId] });
     },
     onError: (error: any) => {

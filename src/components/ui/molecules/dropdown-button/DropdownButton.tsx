@@ -7,6 +7,7 @@ import { IoEyeOffSharp } from "react-icons/io5";
 import { RiDraftLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
@@ -99,7 +100,7 @@ export function DropdownButton({
           {canEdit && (
             <>
               <Pecha.DropdownMenuGroup>
-                <Link to={`/plan/${planId}`}>
+                <Link to={ROUTES.planEdit(planId)}>
                   <Pecha.DropdownMenuItem>
                     <FaPen className="h-4 w-4" />
                     Edit Plan

@@ -29,7 +29,6 @@ interface SocialProfile {
 
 interface ProfileEditFormProps {
   userInfo: any;
-  author_id: string;
   onSuccess: () => void;
 }
 
@@ -51,7 +50,6 @@ const updateUserProfile = async (
 
 const ProfileEditForm = ({
   userInfo,
-  author_id,
   onSuccess,
 }: ProfileEditFormProps) => {
   const queryClient = useQueryClient();
@@ -94,7 +92,7 @@ const ProfileEditForm = ({
       profileData: ProfileFormData & { social_profiles?: SocialProfile[] },
     ) => updateUserProfile(profileData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userInfo", author_id] });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
       onSuccess();
       toast.success("Profile updated successfully!");
     },

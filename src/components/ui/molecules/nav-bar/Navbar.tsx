@@ -29,7 +29,7 @@ const navItems = [
 const tooltipItems = [
   {
     id: "avatar",
-    component: <AuthAvatar />,
+    component: <div className="block md:hidden"><AuthAvatar /></div>,
     label: "View Profile",
   },
   {
@@ -72,7 +72,7 @@ const Navbar = () => {
                 <TooltipTrigger asChild>
                   <Link
                     to={item.path}
-                    className={` border p-2 rounded-md dark:hover:text-white hover:text-black transition-all duration-300 hover:cursor-pointer ${location.pathname === item.path || (item.path === "/dashboard" && location.pathname === "/") ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-600"}`}
+                    className={` border p-2 rounded-md dark:hover:text-white hover:text-black transition-all duration-300 hover:cursor-pointer ${location.pathname === item.path || location.pathname === "/" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-600"}`}
                   >
                     {item.icon}
                   </Link>

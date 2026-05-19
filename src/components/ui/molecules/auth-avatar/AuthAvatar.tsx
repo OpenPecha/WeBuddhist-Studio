@@ -4,6 +4,7 @@ import axiosInstance from "@/config/axios-config";
 import { NO_PROFILE_IMAGE } from "@/lib/constant";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 
 const fetchUserInfo = async () => {
   const { data } = await axiosInstance.get(`/api/v1/authors/info`);
@@ -19,7 +20,7 @@ const AuthAvatar = () => {
 
   if (isLoggedIn) {
     return (
-      <Link to={`/profile/${userInfo?.id}`}>
+      <Link to={ROUTES.profile}>
         <Pecha.Avatar className="w-9 h-9 object-cover rounded-full">
           <Pecha.AvatarImage
             src={
