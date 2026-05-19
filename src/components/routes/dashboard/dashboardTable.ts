@@ -20,27 +20,12 @@ export interface DashboardTableRow {
   featured: boolean;
 }
 
-export function applyDashboardRowFilters(
-  rows: DashboardTableRow[],
-  language: string,
-  status: string,
-): DashboardTableRow[] {
-  return rows.filter((r) => {
-    if (language && !r.languages.includes(language as DashboardLanguageCode)) {
-      return false;
-    }
-    if (status && r.status !== status) return false;
-    return true;
-  });
-}
-
 function normalizeOneLanguageCode(v: string): DashboardLanguageCode | null {
   const u = v.trim().toUpperCase();
   if (u === "EN" || u === "ZH" || u === "BO") return u;
   return null;
 }
 
-/** Accepts a single code, an array of codes, or API-shaped values; defaults to EN. */
 export function parseDashboardLanguages(raw: unknown): DashboardLanguageCode[] {
   const out: DashboardLanguageCode[] = [];
   const push = (s: string) => {
@@ -52,7 +37,7 @@ export function parseDashboardLanguages(raw: unknown): DashboardLanguageCode[] {
   } else if (raw != null && String(raw).trim() !== "") {
     push(String(raw));
   }
-  return out.length > 0 ? out : ["EN"];
+  return out;
 }
 
 export function formatRowModified(row: DashboardTableRow): string {
@@ -81,7 +66,7 @@ export function pickSeriesTitle(name: unknown): string {
   return "Untitled";
 }
 
-function normalizeStatus(raw: unknown): string {
+export function normalizeStatus(raw: unknown): string {
   const s = String(raw ?? "DRAFT");
   if (s.includes(".")) return s.split(".").pop() || "DRAFT";
   return s;

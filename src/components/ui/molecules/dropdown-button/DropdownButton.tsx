@@ -46,8 +46,7 @@ export function DropdownButton({
       toast.success("Plan deleted successfully!", {
         description: "The plan has been deleted.",
       });
-      queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
-      queryClient.refetchQueries({ queryKey: ["dashboard-all-feed"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
     },
     onError: (error: any) => {
       toast.error("Failed to delete plan", {
@@ -74,8 +73,7 @@ export function DropdownButton({
       );
 
       toast.success(`Status updated to ${newStatus}`);
-      queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
-      queryClient.refetchQueries({ queryKey: ["dashboard-all-feed"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
       queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
     } catch (error: any) {
       toast.error(error.response.data.detail.message);

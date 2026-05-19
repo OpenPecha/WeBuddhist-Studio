@@ -6,6 +6,11 @@ import Dashboard from "./Dashboard";
 import axiosInstance from "@/config/axios-config";
 import { vi } from "vitest";
 
+const emptyDashboardResponse = {
+  items: [],
+  pagination: { page: 1, page_size: 10, total: 0, total_pages: 0 },
+};
+
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -29,6 +34,9 @@ describe("Dashboard Component", () => {
   });
 
   it("renders dashboard with search input and add button", () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
     renderWithProviders(<Dashboard />);
 
     expect(
@@ -38,8 +46,15 @@ describe("Dashboard Component", () => {
     expect(screen.getByLabelText("Add")).toBeDefined();
   });
 
-  it("displays table headers correctly", () => {
+  it("displays table headers correctly", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
     renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
 
     expect(screen.getByText("studio.dashboard.cover_image")).toBeDefined();
     expect(screen.getByText("studio.dashboard.title")).toBeDefined();
@@ -50,6 +65,9 @@ describe("Dashboard Component", () => {
   });
 
   it("renders search input with correct placeholder", () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
     renderWithProviders(<Dashboard />);
 
     const searchInput = screen.getByPlaceholderText(
@@ -60,6 +78,9 @@ describe("Dashboard Component", () => {
   });
 
   it("allows typing in search input", () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
     renderWithProviders(<Dashboard />);
 
     const searchInput = screen.getByPlaceholderText(
@@ -73,7 +94,7 @@ describe("Dashboard Component", () => {
 
   it("renders add dropdown with plan and series links", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plans: [], total: 0 },
+      data: emptyDashboardResponse,
     });
     const user = userEvent.setup();
     renderWithProviders(<Dashboard />);
@@ -96,47 +117,75 @@ describe("Dashboard Component", () => {
     );
   });
 
-  it("renders loading state by default", async () => {
+  it("has proper table structure when items exist", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "plan-1",
+            type: "plan",
+            title: "Sample",
+            image_url: "",
+            status: "DRAFT",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
+    });
     renderWithProviders(<Dashboard />);
 
-    expect(await screen.findByText("Loading...")).toBeDefined();
-  });
-
-  it("has proper table structure", () => {
-    renderWithProviders(<Dashboard />);
-
-    const table = screen.getByRole("table");
-    expect(table).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByRole("table")).toBeDefined();
+    });
 
     const coverImageHeader = screen.getByText("studio.dashboard.cover_image");
     expect(coverImageHeader.tagName).toBe("TH");
   });
 
-  it("fetches plans correctly and returns the correct data", async () => {
-    vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plans: [], total: 0 },
+  it("fetches dashboard items from unified CMS endpoint", async () => {
+    const getSpy = vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
     });
 
     renderWithProviders(<Dashboard />);
     await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      expect(getSpy).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/cms/dashboard/items"),
+        expect.objectContaining({
+          params: expect.objectContaining({
+            tab: "all",
+            page: 1,
+            page_size: 10,
+          }),
+        }),
+      );
     });
   });
 
-  it("requests plans sorted by recently modified (updated_at desc)", async () => {
+  it("passes tab and filters when switching to plans", async () => {
     const getSpy = vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plans: [], total: 0 },
+      data: emptyDashboardResponse,
     });
-
+    const user = userEvent.setup();
     renderWithProviders(<Dashboard />);
 
     await waitFor(() => {
+      expect(getSpy).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Plans" }));
+
+    await waitFor(() => {
       expect(getSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plans`),
+        expect.stringContaining("/api/v1/cms/dashboard/items"),
         expect.objectContaining({
           params: expect.objectContaining({
-            sort_by: "updated_at",
-            sort_order: "desc",
+            tab: "plans",
           }),
         }),
       );
@@ -146,29 +195,26 @@ describe("Dashboard Component", () => {
   it("handles toggle featured on a plan", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
       data: {
-        plans: [
+        items: [
           {
             id: "plan-1",
-            image_url: "",
+            type: "plan",
             title: "Test Plan",
-            description: "Test description",
-            total_days: "7",
-            subscription_count: "10",
+            image_url: "",
             status: "PUBLISHED",
             featured: false,
-            language: "EN",
+            languages: ["EN"],
+            enrolled_count: 10,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
           },
         ],
-        total: 1,
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
       },
     });
     axiosInstance.patch = vi.fn().mockResolvedValue({ data: {} });
 
     renderWithProviders(<Dashboard />);
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
 
     await waitFor(() => {
       expect(screen.getByText("Test Plan")).toBeInTheDocument();

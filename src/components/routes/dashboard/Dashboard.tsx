@@ -1,6 +1,10 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { DashboardContentTable } from "@/components/routes/dashboard/DashboardContentTable";
-import { fetchDashboardAllImaginary } from "@/components/routes/dashboard/dashboardAllFeed";
+import {
+  DASHBOARD_PAGE_SIZE,
+  fetchDashboardItems,
+  type DashboardTab,
+} from "@/components/routes/dashboard/dashboardApi";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useState, Activity, type ReactNode } from "react";
 import { useDebounce } from "use-debounce";
@@ -12,56 +16,6 @@ import { Link } from "react-router-dom";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
-import type { DashboardTableRow } from "@/components/routes/dashboard/dashboardTable";
-
-type DashboardView = "all" | "plans" | "series";
-
-const fetchSeries = async (
-  page: number,
-  limit: number,
-  search: string,
-): Promise<{
-  series: Record<string, unknown>[];
-  total: number;
-  skip: number;
-  limit: number;
-}> => {
-  const skip = (page - 1) * limit;
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(`/api/v1/cms/series`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    params: {
-      skip,
-      limit,
-      ...(search && { search }),
-    },
-  });
-  return data;
-};
-
-const fetchPlans = async (
-  page: number,
-  limit: number,
-  search: string,
-  sortBy: string,
-) => {
-  const skip = (page - 1) * limit;
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(`/api/v1/cms/plans`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    params: {
-      skip,
-      limit,
-      ...(search && { search }),
-      ...(sortBy && { sort_by: sortBy }),
-    },
-  });
-  return data;
-};
 
 const toggleFeatured = async (planId: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
@@ -102,71 +56,61 @@ function DashboardListPlaceholder({
 
 const Dashboard = () => {
   const { t } = useTranslate();
-  const [view, setView] = useState<DashboardView>("all");
+  const [view, setView] = useState<DashboardTab>("all");
   const [search, setSearch] = useState("");
-  const [plansPage, setPlansPage] = useState(1);
-  const [seriesPage, setSeriesPage] = useState(1);
-  const [allPage, setAllPage] = useState(1);
+  const [page, setPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
   const [sortBy, setSortBy] = useState("");
   const [languageFilter, setLanguageFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const setViewAndResetPages = (next: DashboardView) => {
+  const setViewAndReset = (next: DashboardTab) => {
     setView(next);
-    setPlansPage(1);
-    setSeriesPage(1);
-    setAllPage(1);
+    setPage(1);
     setLanguageFilter("");
     setStatusFilter("");
   };
 
-  //  Series Query
   const {
-    data: seriesData,
-    isLoading: isSeriesLoading,
-    error: seriesError,
-  } = useQuery({
-    queryKey: ["dashboard-series", seriesPage, debouncedSearch],
-    queryFn: () => fetchSeries(seriesPage, 10, debouncedSearch),
-    refetchOnWindowFocus: false,
-    retry: false,
-    enabled: view === "series",
-  });
-
-  //  Plans Query
-  const {
-    data: planData,
-    isLoading,
+    data: dashboardData,
+    status,
+    isFetching,
     error,
+    isError,
   } = useQuery({
-    queryKey: ["dashboard-plans", plansPage, debouncedSearch],
-    queryFn: () => fetchPlans(plansPage, 10, debouncedSearch, sortBy),
+    queryKey: [
+      "dashboard-items",
+      view,
+      page,
+      debouncedSearch,
+      languageFilter,
+      statusFilter,
+      sortBy,
+    ],
+    queryFn: () =>
+      fetchDashboardItems({
+        tab: view,
+        page,
+        pageSize: DASHBOARD_PAGE_SIZE,
+        search: debouncedSearch,
+        ...(languageFilter && { language: languageFilter }),
+        ...(statusFilter && { status: statusFilter }),
+      }),
     refetchOnWindowFocus: false,
     retry: false,
-    enabled: view === "plans",
-  });
-
-  //  All Feed Query
-  const { data: allFeedData, isLoading: isAllLoading } = useQuery({
-    queryKey: ["dashboard-all-feed", allPage, debouncedSearch],
-    queryFn: () => fetchDashboardAllImaginary(allPage, 10, debouncedSearch),
-    refetchOnWindowFocus: false,
-    retry: false,
-    enabled: view === "all",
   });
 
   const queryClient = useQueryClient();
   const featuredMutation = useMutation({
     mutationFn: (planId: string) => toggleFeatured(planId),
     onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ["dashboard-plans"] });
-      queryClient.refetchQueries({ queryKey: ["dashboard-all-feed"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
     },
-    onError: (err: any) => {
-      toast.error(
-        err?.response?.data?.detail?.message ?? "Could not update featured",
-      );
+    onError: (err: unknown) => {
+      const message =
+        (err as { response?: { data?: { detail?: { message?: string } } } })
+          ?.response?.data?.detail?.message ?? "Could not update featured";
+      toast.error(message);
     },
   });
 
@@ -174,23 +118,11 @@ const Dashboard = () => {
     featuredMutation.mutate(planId);
   };
 
-  const totalPlanPages = planData ? Math.ceil(planData.total / 10) : 1;
-  const totalSeriesPages = seriesData ? Math.ceil(seriesData.total / 10) : 1;
-  const totalAllPages = allFeedData
-    ? Math.ceil(allFeedData.total / 10) || 1
-    : 1;
-
-  const plansHasServerRows = (planData?.plans?.length ?? 0) > 0;
-  const seriesHasServerRows = (seriesData?.series?.length ?? 0) > 0;
-
-  const plansEmpty =
-    view === "plans" && !isLoading && (!!error || !plansHasServerRows);
-  const seriesEmpty =
-    view === "series" &&
-    !isSeriesLoading &&
-    (!!seriesError || !seriesHasServerRows);
-  const allEmpty =
-    view === "all" && !isAllLoading && (allFeedData?.rows?.length ?? 0) === 0;
+  const rows = dashboardData?.rows ?? [];
+  const totalPages = dashboardData?.pagination.total_pages ?? 1;
+  const hasRows = rows.length > 0;
+  const isLoadingTable = status === "pending" || isFetching;
+  const showEmpty = status === "success" && !hasRows;
 
   const chipClass = (active: boolean) =>
     `rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
@@ -199,12 +131,19 @@ const Dashboard = () => {
         : "border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:border-[#313132] dark:bg-transparent dark:text-gray-200 dark:hover:bg-[#2a2a2a]"
     }`;
 
-  const showPagination =
+  const emptyTitle =
     view === "plans"
-      ? plansHasServerRows
+      ? t("studio.dashboard.no_plan_found")
       : view === "series"
-        ? seriesHasServerRows
-        : (allFeedData?.rows?.length ?? 0) > 0;
+        ? "No series found."
+        : "Nothing to show yet";
+
+  const emptyDescription =
+    view === "plans"
+      ? "Create a plan to see it listed here."
+      : view === "series"
+        ? "Create a series to see it listed here."
+        : "Try clearing search or add new plans and series.";
 
   const filterBar = (
     <div className="flex w-full flex-wrap items-end gap-4 px-4 pb-2 pt-3">
@@ -229,9 +168,7 @@ const Dashboard = () => {
           value={languageFilter || "all"}
           onValueChange={(v) => {
             setLanguageFilter(v === "all" ? "" : v);
-            setPlansPage(1);
-            setSeriesPage(1);
-            setAllPage(1);
+            setPage(1);
           }}
         >
           <Pecha.SelectTrigger className="h-9 w-[180px] bg-white dark:bg-input/30">
@@ -253,9 +190,7 @@ const Dashboard = () => {
           value={statusFilter || "all"}
           onValueChange={(v) => {
             setStatusFilter(v === "all" ? "" : v);
-            setPlansPage(1);
-            setSeriesPage(1);
-            setAllPage(1);
+            setPage(1);
           }}
         >
           <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
@@ -285,9 +220,7 @@ const Dashboard = () => {
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
-                setPlansPage(1);
-                setSeriesPage(1);
-                setAllPage(1);
+                setPage(1);
               }}
             />
           </div>
@@ -321,21 +254,21 @@ const Dashboard = () => {
             <button
               type="button"
               className={chipClass(view === "all")}
-              onClick={() => setViewAndResetPages("all")}
+              onClick={() => setViewAndReset("all")}
             >
               All
             </button>
             <button
               type="button"
               className={chipClass(view === "plans")}
-              onClick={() => setViewAndResetPages("plans")}
+              onClick={() => setViewAndReset("plans")}
             >
               Plans
             </button>
             <button
               type="button"
               className={chipClass(view === "series")}
-              onClick={() => setViewAndResetPages("series")}
+              onClick={() => setViewAndReset("series")}
             >
               Series
             </button>
@@ -347,10 +280,15 @@ const Dashboard = () => {
       {filterBar}
 
       <div className="flex flex-1 flex-col items-center px-4 pb-6 pt-2">
-        {view === "all" && allEmpty ? (
+        {isError && error ? (
           <DashboardListPlaceholder
-            title="Nothing to show yet"
-            description="Try clearing search or add new plans and series."
+            title="Unable to load dashboard"
+            description={String(error.message)}
+          />
+        ) : showEmpty ? (
+          <DashboardListPlaceholder
+            title={emptyTitle}
+            description={emptyDescription}
           >
             <Link to="/plan/new">
               <Pecha.Button variant="outline" size="sm">
@@ -363,65 +301,11 @@ const Dashboard = () => {
               </Pecha.Button>
             </Link>
           </DashboardListPlaceholder>
-        ) : plansEmpty ? (
-          <DashboardListPlaceholder
-            title={
-              error
-                ? "Unable to load plans"
-                : t("studio.dashboard.no_plan_found")
-            }
-            description={
-              error?.message
-                ? String(error.message)
-                : "Create a plan to see it listed here."
-            }
-          >
-            <Link to="/plan/new">
-              <Pecha.Button variant="outline" size="sm">
-                <IoMdAdd className="h-4 w-4" /> {t("studio.dashboard.add_plan")}
-              </Pecha.Button>
-            </Link>
-          </DashboardListPlaceholder>
-        ) : seriesEmpty ? (
-          <DashboardListPlaceholder
-            title={seriesError ? "Unable to load series" : "No series found."}
-            description={
-              seriesError?.message
-                ? String(seriesError.message)
-                : "Create a series to see it listed here."
-            }
-          >
-            <Link to="/series/new">
-              <Pecha.Button variant="outline" size="sm">
-                <IoMdAdd className="h-4 w-4" /> Add Series
-              </Pecha.Button>
-            </Link>
-          </DashboardListPlaceholder>
-        ) : view === "all" ? (
-          <div className="w-full overflow-x-auto">
-            <DashboardContentTable
-              rows={allFeedData?.rows ?? []}
-              isLoading={isAllLoading}
-              t={t}
-              handleFeatured={handleFeatured}
-            />
-          </div>
-        ) : view === "plans" ? (
-          <div className="w-full overflow-x-auto">
-            <DashboardContentTable
-              rows={planData?.plans ?? []}
-              isLoading={isLoading}
-              t={t}
-              handleFeatured={handleFeatured}
-            />
-          </div>
         ) : (
           <div className="w-full overflow-x-auto">
             <DashboardContentTable
-              rows={
-                (seriesData?.series ?? []) as unknown as DashboardTableRow[]
-              }
-              isLoading={isSeriesLoading}
+              rows={rows}
+              isLoading={isLoadingTable}
               t={t}
               handleFeatured={handleFeatured}
               onDeleteSeries={(seriesId) => {
@@ -436,29 +320,11 @@ const Dashboard = () => {
         )}
       </div>
 
-      <Activity mode={showPagination ? "visible" : "hidden"}>
+      <Activity mode={hasRows ? "visible" : "hidden"}>
         <Pagination
-          currentPage={
-            view === "plans"
-              ? plansPage
-              : view === "series"
-                ? seriesPage
-                : allPage
-          }
-          totalPages={
-            view === "plans"
-              ? totalPlanPages
-              : view === "series"
-                ? totalSeriesPages
-                : totalAllPages
-          }
-          onPageChange={
-            view === "plans"
-              ? setPlansPage
-              : view === "series"
-                ? setSeriesPage
-                : setAllPage
-          }
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
         />
       </Activity>
     </div>

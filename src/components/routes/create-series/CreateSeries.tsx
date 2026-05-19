@@ -136,7 +136,7 @@ const CreateSeries = () => {
       toast.success(
         isNew ? "Series created successfully!" : "Series updated successfully!",
       );
-      void queryClient.invalidateQueries({ queryKey: ["dashboard-series"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
       if (series_id && !isNew) {
         void queryClient.invalidateQueries({ queryKey: ["series", series_id] });
       }
