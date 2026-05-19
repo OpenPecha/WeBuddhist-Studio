@@ -9,7 +9,42 @@ import type {
   DashboardLanguageCode,
   DashboardTableRow,
 } from "./dashboardTable";
-import { formatRowModified, isMockDashboardId } from "./dashboardTable";
+import {
+  DASHBOARD_TABLE_ICON_BTN,
+  formatRowModified,
+  isMockDashboardId,
+} from "./dashboardTable";
+
+function FeaturedStar({
+  featured,
+  disabled,
+}: {
+  featured: boolean;
+  disabled?: boolean;
+}) {
+  if (disabled) {
+    return (
+      <FaStar
+        className="h-3.5 w-3.5 fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600"
+        aria-hidden
+      />
+    );
+  }
+  if (featured) {
+    return (
+      <FaStar
+        className="h-3.5 w-3.5 fill-black text-black dark:fill-white dark:text-white"
+        aria-hidden
+      />
+    );
+  }
+  return (
+    <FaStar
+      className="h-3.5 w-3.5 fill-gray-400 text-gray-400 dark:fill-gray-500 dark:text-gray-500"
+      aria-hidden
+    />
+  );
+}
 
 function statusChip(status: string) {
   switch (status) {
@@ -67,7 +102,7 @@ interface DashboardContentTableProps {
   rows: DashboardTableRow[];
   isLoading?: boolean;
   t: (key: string, parameters?: any) => string;
-  handleFeatured: (planId: string) => void;
+  handleFeatured: (id: string, kind: DashboardTableRow["kind"]) => void;
 }
 
 export function DashboardContentTable({
@@ -86,6 +121,10 @@ export function DashboardContentTable({
           ? `/plan/${row.id}/plan-details`
           : `/series/${row.id}`;
       const modifiedDisplay = formatRowModified(row);
+      const canToggleFeatured =
+        row.kind === "series" ||
+        (row.kind === "plan" && !isMockDashboardId(row.id));
+      const featuredDisabled = row.status !== "PUBLISHED";
 
       return (
         <Pecha.TableRow
@@ -135,34 +174,28 @@ export function DashboardContentTable({
           <Pecha.TableCell className="text-sm text-muted-foreground">
             {modifiedDisplay}
           </Pecha.TableCell>
-          <Pecha.TableCell>
-            {row.kind === "plan" && !isMockDashboardId(row.id) ? (
+          <Pecha.TableCell className="text-center">
+            {canToggleFeatured ? (
               <Pecha.Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="h-9 w-9"
-                disabled={row.status !== "PUBLISHED"}
+                className={`${DASHBOARD_TABLE_ICON_BTN} disabled:bg-[#F3F4F6] disabled:hover:bg-[#F3F4F6] dark:disabled:bg-[#2a2a2a] dark:disabled:hover:bg-[#2a2a2a]`}
+                disabled={featuredDisabled}
                 aria-label={row.featured ? "Featured" : "Not featured"}
-                onClick={() => handleFeatured(row.id)}
+                onClick={() => handleFeatured(row.id, row.kind)}
               >
-                <FaStar
-                  className={
-                    row.featured
-                      ? "text-yellow-500"
-                      : "text-gray-300 dark:text-gray-600"
-                  }
+                <FeaturedStar
+                  featured={row.featured}
+                  disabled={featuredDisabled}
                 />
               </Pecha.Button>
             ) : (
-              <span className="inline-flex h-9 w-9 items-center justify-center">
-                <FaStar
-                  className={
-                    row.featured
-                      ? "text-yellow-500"
-                      : "text-gray-300 dark:text-gray-600"
-                  }
-                />
+              <span
+                className={`${DASHBOARD_TABLE_ICON_BTN} cursor-default`}
+                aria-hidden
+              >
+                <FeaturedStar featured={row.featured} disabled />
               </span>
             )}
           </Pecha.TableCell>
@@ -193,6 +226,7 @@ export function DashboardContentTable({
                 entityType={row.kind}
                 currentStatus={row.status}
                 triggerVariant="icon"
+                triggerClassName={DASHBOARD_TABLE_ICON_BTN}
               />
             )}
           </Pecha.TableCell>
@@ -217,7 +251,7 @@ export function DashboardContentTable({
           <Pecha.TableHead className="w-[130px] font-bold">
             Date Modified
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[72px] font-bold">
+          <Pecha.TableHead className="w-[72px] text-center font-bold">
             Featured
           </Pecha.TableHead>
           <Pecha.TableHead className="w-[100px] font-bold">

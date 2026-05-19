@@ -25,11 +25,13 @@ export function DropdownButton({
   planId,
   currentStatus,
   triggerVariant = "default",
+  triggerClassName,
   entityType = "plan",
 }: {
   planId: string;
   currentStatus: string;
   triggerVariant?: "default" | "icon";
+  triggerClassName?: string;
   entityType?: DropdownButtonEntityType;
 }) {
   const queryClient = useQueryClient();
@@ -112,9 +114,10 @@ export function DropdownButton({
             <Pecha.Button
               variant="outline"
               size="icon"
+              className={triggerClassName}
               aria-label={`${entityName} actions`}
             >
-              <BsThreeDotsVertical />
+              <BsThreeDotsVertical className="h-4 w-4" />
             </Pecha.Button>
           ) : (
             <Pecha.Button variant="outline">

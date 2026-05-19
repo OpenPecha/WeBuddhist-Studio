@@ -260,4 +260,44 @@ describe("Dashboard Component", () => {
       );
     });
   });
+
+  it("handles toggle featured on a series", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "series-1",
+            type: "series",
+            title: "Test Series",
+            image_url: "",
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            plans_count: 3,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
+    });
+    axiosInstance.patch = vi.fn().mockResolvedValue({ data: {} });
+
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Series")).toBeInTheDocument();
+    });
+
+    const featuredButton = screen.getByRole("button", { name: "Not featured" });
+    fireEvent.click(featuredButton);
+
+    await waitFor(() => {
+      expect(axiosInstance.patch).toHaveBeenCalledWith(
+        "/api/v1/cms/series/series-1/featured",
+        expect.any(Object),
+      );
+    });
+  });
 });

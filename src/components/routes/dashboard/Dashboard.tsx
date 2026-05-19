@@ -5,6 +5,7 @@ import {
   fetchDashboardItems,
   type DashboardTab,
 } from "@/components/routes/dashboard/dashboardApi";
+import type { DashboardRowKind } from "@/components/routes/dashboard/dashboardTable";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useState, Activity, type ReactNode } from "react";
 import { useDebounce } from "use-debounce";
@@ -17,16 +18,23 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
 
-const toggleFeatured = async (planId: string) => {
+const toggleFeatured = async ({
+  id,
+  kind,
+}: {
+  id: string;
+  kind: DashboardRowKind;
+}) => {
   const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.patch(
-    `/api/v1/cms/plans/${planId}/featured`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const path =
+    kind === "series"
+      ? `/api/v1/cms/series/${id}/featured`
+      : `/api/v1/cms/plans/${id}/featured`;
+  const { data } = await axiosInstance.patch(path, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
   return data;
 };
 
@@ -102,7 +110,7 @@ const Dashboard = () => {
 
   const queryClient = useQueryClient();
   const featuredMutation = useMutation({
-    mutationFn: (planId: string) => toggleFeatured(planId),
+    mutationFn: toggleFeatured,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
     },
@@ -114,8 +122,8 @@ const Dashboard = () => {
     },
   });
 
-  const handleFeatured = (planId: string) => {
-    featuredMutation.mutate(planId);
+  const handleFeatured = (id: string, kind: DashboardRowKind) => {
+    featuredMutation.mutate({ id, kind });
   };
 
   const rows = dashboardData?.rows ?? [];
