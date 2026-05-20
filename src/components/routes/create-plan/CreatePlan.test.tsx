@@ -147,7 +147,7 @@ describe("CreatePlan Component", () => {
       screen.getByText("studio.dashboard.cover_image"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("studio.plan.cover_image.description"),
+      screen.getByText("studio.plan.cover_image.constraints"),
     ).toBeInTheDocument();
   });
 
@@ -162,7 +162,7 @@ describe("CreatePlan Component", () => {
   it("renders submit button", () => {
     renderWithProviders(<CreatePlan />);
 
-    const submitButton = screen.getByText("studio.plan.update_button");
+    const submitButton = screen.getByText("studio.plan.next_button");
     expect(submitButton).toBeInTheDocument();
     expect(submitButton.tagName).toBe("BUTTON");
   });
@@ -211,7 +211,7 @@ describe("CreatePlan Component", () => {
       screen.getByText("studio.dashboard.cover_image"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("studio.plan.cover_image.description"),
+      screen.getByText("studio.plan.cover_image.constraints"),
     ).toBeInTheDocument();
     const uploadButton = screen.getByLabelText("Upload cover image");
     expect(uploadButton).toBeInTheDocument();
@@ -301,7 +301,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("shows validation errors for required fields", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "new" });
+    vi.mocked(useParams).mockReturnValue({});
     renderWithProviders(<CreatePlan />);
     const submitButton = screen.getByText("studio.plan.next_button");
     fireEvent.click(submitButton);
@@ -350,7 +350,7 @@ describe("CreatePlan Component", () => {
     fireEvent.click(difficultyButton);
     const difficultyOption = screen.getByText("Beginner");
     fireEvent.click(difficultyOption);
-    const submitButton = screen.getByText("studio.plan.update_button");
+    const submitButton = screen.getByText("studio.plan.next_button");
     fireEvent.click(submitButton);
     await waitFor(() => {
       expect(titleInput).toHaveValue("Test Plan");
@@ -396,7 +396,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("fetches and populates form in edit mode", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    vi.mocked(useParams).mockReturnValue({ planId: "plan-123" });
 
     renderWithProviders(<CreatePlan />);
 
@@ -442,7 +442,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("submits update in edit mode", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    vi.mocked(useParams).mockReturnValue({ planId: "plan-123" });
     vi.spyOn(axiosInstance, "put").mockResolvedValue({ data: {} });
     renderWithProviders(<CreatePlan />);
 
@@ -472,7 +472,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("clears start_date when switching from specific to enroll mode on submit", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    vi.mocked(useParams).mockReturnValue({ planId: "plan-123" });
     const putSpy = vi
       .spyOn(axiosInstance, "put")
       .mockResolvedValue({ data: {} });

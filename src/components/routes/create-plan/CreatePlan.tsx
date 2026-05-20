@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
@@ -80,7 +81,8 @@ const Createplan = () => {
   );
 
   const [isDateOpen, setIsDateOpen] = useState(false);
-  const { plan_id } = useParams();
+  const { planId } = useParams<{ planId?: string }>();
+  const isCreateMode = !planId;
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
   const navigate = useNavigate();
@@ -99,13 +101,13 @@ const Createplan = () => {
   });
 
   const { data: planData } = useQuery({
-    queryKey: ["plan", plan_id],
-    queryFn: () => getPlan(plan_id!),
-    enabled: !!plan_id && plan_id !== "new",
+    queryKey: ["plan", planId],
+    queryFn: () => getPlan(planId!),
+    enabled: !!planId,
     refetchOnWindowFocus: false,
   });
   useEffect(() => {
-    if (plan_id !== "new" && planData) {
+    if (planId && planData) {
       form.reset({
         title: planData.title || "",
         description: planData.description || "",
@@ -119,7 +121,7 @@ const Createplan = () => {
       setStartDateMode(planData.start_date ? "specific" : "enroll");
       setImagePreview(planData.image_url ? `${planData.image_url}` : null);
     }
-  }, [plan_id, planData]);
+  }, [planId, planData]);
 
   const canUpdate = form.formState.isDirty;
 
@@ -138,7 +140,7 @@ const Createplan = () => {
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
-      navigate(`/plan/${data.id}/plan-details`);
+      navigate(ROUTES.plan(data.id));
     },
     onError: (error) => {
       toast.error("Failed to create plan", {
@@ -152,7 +154,7 @@ const Createplan = () => {
       toast.success("Plan updated successfully!", {
         description: "Your plan has been updated and is now available.",
       });
-      navigate("/dashboard");
+      navigate(ROUTES.dashboard);
     },
     onError: (error) => {
       toast.error("Failed to update plan", {
@@ -191,7 +193,7 @@ const Createplan = () => {
     try {
       const { image, key } = await uploadImageToS3(
         file,
-        plan_id === "new" ? "" : plan_id || "",
+        isCreateMode ? "" : planId || "",
       );
       const imageUrl = image.original;
       const imageKey = key;
@@ -222,8 +224,8 @@ const Createplan = () => {
       ...data,
       start_date: startDateMode === "specific" ? data.start_date : null,
     };
-    if (plan_id !== "new") {
-      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: payload });
+    if (planId) {
+      updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
     } else {
       createPlanMutation.mutate(payload);
     }
@@ -430,7 +432,7 @@ const Createplan = () => {
                     <Pecha.FormControl>
                       <Pecha.Input
                         type="number"
-                        disabled={plan_id !== "new"}
+                        disabled={!isCreateMode}
                         placeholder={t(
                           "studio.plan.form.placeholder.number_of_days",
                         )}
@@ -634,7 +636,7 @@ const Createplan = () => {
               )}
             />
             <div className="pt-8 w-full flex justify-end">
-              {plan_id == "new" ? (
+              {isCreateMode ? (
                 <Pecha.Button
                   type="submit"
                   variant="default"
@@ -652,7 +654,7 @@ const Createplan = () => {
                     type="button"
                     variant="outline"
                     className="sm:h-12 sm:px-12 font-medium"
-                    onClick={() => navigate(`/dashboard`)}
+                    onClick={() => navigate(ROUTES.dashboard)}
                   >
                     {t("common.button.cancel")}
                   </Pecha.Button>

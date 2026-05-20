@@ -19,14 +19,6 @@ const mockUserInfo = {
   ],
 };
 
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    useParams: vi.fn().mockReturnValue({ author_id: "author-123" }),
-  };
-});
-
 vi.mock("@/components/ui/molecules/user-card/UserCard", () => ({
   default: ({ userInfo }: any) => (
     <div data-testid="user-card">
@@ -37,16 +29,6 @@ vi.mock("@/components/ui/molecules/user-card/UserCard", () => ({
     </div>
   ),
 }));
-
-Object.defineProperty(window, "sessionStorage", {
-  value: {
-    getItem: vi.fn((key) => {
-      if (key === "accessToken") return "test-token";
-      return null;
-    }),
-  },
-  writable: true,
-});
 
 const renderWithProviders = (
   component: React.ReactElement,
@@ -59,7 +41,7 @@ const renderWithProviders = (
   });
 
   if (queryData) {
-    queryClient.setQueryData(["userInfo", "author-123"], queryData);
+    queryClient.setQueryData(["userInfo"], queryData);
   }
 
   return render(
@@ -85,21 +67,14 @@ describe("Profile Component", () => {
     expect(screen.getByText("Edit")).toBeInTheDocument();
   });
 
-  it("fetches user info with correct parameters", async () => {
+  it("fetches current user info from authors info endpoint", async () => {
     const { default: axiosInstance } = await import("@/config/axios-config");
     vi.mocked(axiosInstance.get).mockResolvedValue({
       data: mockUserInfo,
     });
     renderWithProviders(<Profile />);
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        "/api/v1/authors/author-123",
-        {
-          headers: {
-            Authorization: "Bearer test-token",
-          },
-        },
-      );
+      expect(axiosInstance.get).toHaveBeenCalledWith("/api/v1/authors/info");
     });
   });
 });

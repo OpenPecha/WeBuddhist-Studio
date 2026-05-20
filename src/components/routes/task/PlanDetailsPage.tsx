@@ -10,12 +10,12 @@ const PlanDetailsPage = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<any>(null);
-  const { plan_id } = useParams<{ plan_id: string }>();
+  const { planId } = useParams<{ planId: string }>();
 
   const { data: planDetails } = useQuery({
-    queryKey: ["planDetails", plan_id],
-    queryFn: () => fetchPlanDetails(plan_id!),
-    enabled: !!plan_id,
+    queryKey: ["planDetails", planId],
+    queryFn: () => fetchPlanDetails(planId!),
+    enabled: !!planId,
   });
 
   const status = planDetails?.status || "DRAFT";

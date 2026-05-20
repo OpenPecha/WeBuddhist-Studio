@@ -29,7 +29,6 @@ interface SocialProfile {
 
 interface ProfileEditFormProps {
   userInfo: any;
-  author_id: string;
   onSuccess: () => void;
 }
 
@@ -49,11 +48,7 @@ const updateUserProfile = async (
   return data;
 };
 
-const ProfileEditForm = ({
-  userInfo,
-  author_id,
-  onSuccess,
-}: ProfileEditFormProps) => {
+const ProfileEditForm = ({ userInfo, onSuccess }: ProfileEditFormProps) => {
   const queryClient = useQueryClient();
 
   const [isSocialDirty, setIsSocialDirty] = useState(false);
@@ -94,7 +89,7 @@ const ProfileEditForm = ({
       profileData: ProfileFormData & { social_profiles?: SocialProfile[] },
     ) => updateUserProfile(profileData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userInfo", author_id] });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
       onSuccess();
       toast.success("Profile updated successfully!");
     },
