@@ -74,7 +74,9 @@ export function DropdownButton({
 
       toast.success(`Status updated to ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
-      if (!isSeries) {
+      if (isSeries) {
+        queryClient.invalidateQueries({ queryKey: ["series", planId] });
+      } else {
         queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
       }
     } catch (error: unknown) {

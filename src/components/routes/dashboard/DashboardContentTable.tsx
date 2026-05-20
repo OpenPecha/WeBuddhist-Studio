@@ -1,4 +1,5 @@
 import { Pecha } from "@/components/ui/shadimport";
+import type { useTranslate } from "@tolgee/react";
 import { useNavigate } from "react-router-dom";
 import defaultCover from "/default-image.webp";
 import { FaStar } from "react-icons/fa";
@@ -101,8 +102,12 @@ function languageChip(code: DashboardLanguageCode) {
 interface DashboardContentTableProps {
   rows: DashboardTableRow[];
   isLoading?: boolean;
-  t: (key: string, parameters?: any) => string;
-  handleFeatured: (id: string, kind: DashboardTableRow["kind"]) => void;
+  t: ReturnType<typeof useTranslate>["t"];
+  handleFeatured: (
+    id: string,
+    kind: DashboardTableRow["kind"],
+    featured: boolean,
+  ) => void;
 }
 
 export function DashboardContentTable({
@@ -119,7 +124,7 @@ export function DashboardContentTable({
       const titleHref =
         row.kind === "plan"
           ? `/plan/${row.id}/plan-details`
-          : `/series/${row.id}`;
+          : `/series/${row.id}/series-details`;
       const modifiedDisplay = formatRowModified(row);
       const canToggleFeatured =
         row.kind === "series" ||
@@ -183,7 +188,7 @@ export function DashboardContentTable({
                 className={`${DASHBOARD_TABLE_ICON_BTN} disabled:bg-[#F3F4F6] disabled:hover:bg-[#F3F4F6] dark:disabled:bg-[#2a2a2a] dark:disabled:hover:bg-[#2a2a2a]`}
                 disabled={featuredDisabled}
                 aria-label={row.featured ? "Featured" : "Not featured"}
-                onClick={() => handleFeatured(row.id, row.kind)}
+                onClick={() => handleFeatured(row.id, row.kind, row.featured)}
               >
                 <FeaturedStar
                   featured={row.featured}

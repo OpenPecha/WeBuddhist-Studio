@@ -5,12 +5,21 @@ import type {
   SeriesPlan,
 } from "@/schema/SeriesSchema";
 
+export type SeriesMetadataInput = {
+  title: string;
+  description: string;
+  language: LanguageCode;
+};
+
 export type SeriesPayload = {
-  name: Record<string, { title: string; description: string }>;
+  metadata: SeriesMetadataInput[];
   image_key?: string;
   featured: boolean;
   plans: Partial<Record<LanguageCode, string[]>>;
 };
+
+/** Partial body for CMS PUT (all fields optional). */
+export type SeriesUpdatePayload = Partial<SeriesPayload>;
 
 export type SeriesPlanDTO = {
   id: string;
@@ -20,36 +29,43 @@ export type SeriesPlanDTO = {
   image_url?: string | null;
   image_key?: string | null;
   display_order?: number | null;
+  total_days?: number | null;
+};
+
+export type SeriesMetadataDTO = {
+  id?: string;
+  language?: string;
+  lang?: string;
+  title?: string;
+  description?: string;
 };
 
 export type SeriesDetailDTO = {
   id: string;
-  name: Record<string, unknown>;
+  name?: Record<string, unknown>;
+  metadata?: SeriesMetadataDTO[];
   image?: string | null;
   image_key?: string | null;
-  author_id: string;
+  author_id?: string;
   featured: boolean;
   status: string;
   plans: SeriesPlanDTO[];
   total_days?: number;
 };
 
-const authHeaders = () => ({
-  Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-});
-
 export const getSeries = async (seriesId: string): Promise<SeriesDetailDTO> => {
-  const { data } = await axiosInstance.get(`/api/v1/cms/series/${seriesId}`, {
-    headers: authHeaders(),
-  });
+  const { data } = await axiosInstance.get<SeriesDetailDTO>(
+    `/api/v1/cms/series/${seriesId}`,
+  );
   return data;
 };
 
 export const postSeries = async (body: SeriesPayload) => {
-  const { data } = await axiosInstance.post(`/api/v1/cms/series`, body, {
-    headers: authHeaders(),
-  });
-  return data as SeriesDetailDTO;
+  const { data } = await axiosInstance.post<SeriesDetailDTO>(
+    `/api/v1/cms/series`,
+    body,
+  );
+  return data;
 };
 
 export const putUpdateSeries = async ({
@@ -57,14 +73,20 @@ export const putUpdateSeries = async ({
   body,
 }: {
   seriesId: string;
-  body: SeriesPayload;
+  body: SeriesPayload | SeriesUpdatePayload;
 }) => {
-  const { data } = await axiosInstance.put(
+  const { data } = await axiosInstance.put<SeriesDetailDTO>(
     `/api/v1/cms/series/${seriesId}`,
     body,
-    { headers: authHeaders() },
   );
-  return data as SeriesDetailDTO;
+  return data;
+};
+
+export const putSeriesFeatured = async (
+  seriesId: string,
+  featured: boolean,
+) => {
+  return putUpdateSeries({ seriesId, body: { featured } });
 };
 
 function normalizeLang(raw: string): LanguageCode | null {
@@ -73,11 +95,10 @@ function normalizeLang(raw: string): LanguageCode | null {
   return null;
 }
 
-export function mapSeriesDetailToFormData(
-  dto: SeriesDetailDTO,
-): SeriesFormData {
+function parseNameObject(
+  name: Record<string, unknown>,
+): SeriesFormData["languages"] {
   const languages: SeriesFormData["languages"] = {};
-  const name = dto.name ?? {};
   const order: LanguageCode[] = ["EN", "BO", "ZH"];
   for (const code of order) {
     const raw = name[code];
@@ -92,6 +113,61 @@ export function mapSeriesDetailToFormData(
       };
     }
   }
+  return languages;
+}
+
+function parseMetadataArray(
+  metadata: SeriesMetadataDTO[],
+): SeriesFormData["languages"] {
+  const languages: SeriesFormData["languages"] = {};
+  for (const row of metadata) {
+    const code = normalizeLang(String(row.language ?? row.lang ?? ""));
+    if (!code) continue;
+    languages[code] = {
+      title: String(row.title ?? "").trim(),
+      description: String(row.description ?? "").trim(),
+    };
+  }
+  return languages;
+}
+
+/** Infer language tabs from attached plans when name/metadata are empty. */
+function languagesFromPlans(
+  plans: SeriesPlanDTO[],
+): SeriesFormData["languages"] {
+  const languages: SeriesFormData["languages"] = {};
+  const seen = new Set<LanguageCode>();
+  for (const p of plans) {
+    const code = normalizeLang(p.language);
+    if (!code || seen.has(code)) continue;
+    seen.add(code);
+    languages[code] = { title: "", description: "" };
+  }
+  return languages;
+}
+
+function resolveSeriesLanguages(
+  dto: SeriesDetailDTO,
+): SeriesFormData["languages"] {
+  if (dto.name && Object.keys(dto.name).length > 0) {
+    return parseNameObject(dto.name);
+  }
+  if (Array.isArray(dto.metadata) && dto.metadata.length > 0) {
+    return parseMetadataArray(dto.metadata);
+  }
+  return languagesFromPlans(dto.plans ?? []);
+}
+
+function resolveSeriesImageKey(dto: SeriesDetailDTO): string {
+  if (dto.image_key?.trim()) return dto.image_key.trim();
+  if (dto.image && !/^https?:\/\//i.test(dto.image)) return dto.image.trim();
+  return "";
+}
+
+export function mapSeriesDetailToFormData(
+  dto: SeriesDetailDTO,
+): SeriesFormData {
+  const languages = resolveSeriesLanguages(dto);
 
   const buckets: Partial<
     Record<LanguageCode, { item: SeriesPlan; ord: number }[]>
@@ -111,6 +187,8 @@ export function mapSeriesDetailToFormData(
     if (!buckets[code]) buckets[code] = [];
     buckets[code]!.push({ item, ord });
   }
+
+  const order: LanguageCode[] = ["EN", "BO", "ZH"];
   const plans: SeriesFormData["plans"] = {};
   for (const code of order) {
     const row = buckets[code];
@@ -118,36 +196,30 @@ export function mapSeriesDetailToFormData(
     plans[code] = [...row].sort((a, b) => a.ord - b.ord).map((x) => x.item);
   }
 
-  const imageKey =
-    (dto.image_key && dto.image_key.trim()) ||
-    (dto.image && !/^https?:\/\//i.test(dto.image) ? dto.image.trim() : "") ||
-    "";
-
   return {
     languages,
     plans,
-    image_url: imageKey,
+    image_url: resolveSeriesImageKey(dto),
   };
 }
 
-export function buildSeriesNameJson(
+export function buildSeriesMetadata(
   languages: SeriesFormData["languages"],
-): Record<string, { title: string; description: string }> {
-  const out: Record<string, { title: string; description: string }> = {};
+): SeriesMetadataInput[] {
   const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const out: SeriesMetadataInput[] = [];
   for (const code of order) {
     const block = languages[code];
-    if (block) {
-      out[code] = {
-        title: block.title.trim(),
-        description: block.description.trim(),
-      };
-    }
+    if (!block) continue;
+    out.push({
+      language: code,
+      title: block.title.trim(),
+      description: block.description.trim(),
+    });
   }
   return out;
 }
 
-/** Plan ids per added language; array order is display order. */
 export function buildSeriesPlansJson(
   data: SeriesFormData,
   languageCodes: LanguageCode[],
@@ -164,11 +236,11 @@ export function buildSeriesWriteBody(
   data: SeriesFormData,
   featured: boolean,
 ): SeriesPayload {
-  const name = buildSeriesNameJson(data.languages);
-  const languageCodes = Object.keys(name) as LanguageCode[];
+  const metadata = buildSeriesMetadata(data.languages);
+  const languageCodes = metadata.map((m) => m.language);
   const imageKey = data.image_url.trim();
   return {
-    name,
+    metadata,
     featured,
     plans: buildSeriesPlansJson(data, languageCodes),
     ...(imageKey ? { image_key: imageKey } : {}),

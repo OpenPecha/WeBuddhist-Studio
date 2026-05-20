@@ -21,15 +21,21 @@ import { toast } from "sonner";
 const toggleFeatured = async ({
   id,
   kind,
+  featured,
 }: {
   id: string;
   kind: DashboardRowKind;
+  featured: boolean;
 }) => {
-  const path =
-    kind === "series"
-      ? `/api/v1/cms/series/${id}/featured`
-      : `/api/v1/cms/plans/${id}/featured`;
-  const { data } = await axiosInstance.patch(path);
+  if (kind === "series") {
+    const { data } = await axiosInstance.put(`/api/v1/cms/series/${id}`, {
+      featured: !featured,
+    });
+    return data;
+  }
+  const { data } = await axiosInstance.patch(
+    `/api/v1/cms/plans/${id}/featured`,
+  );
   return data;
 };
 
@@ -117,8 +123,12 @@ const Dashboard = () => {
     },
   });
 
-  const handleFeatured = (id: string, kind: DashboardRowKind) => {
-    featuredMutation.mutate({ id, kind });
+  const handleFeatured = (
+    id: string,
+    kind: DashboardRowKind,
+    featured: boolean,
+  ) => {
+    featuredMutation.mutate({ id, kind, featured });
   };
 
   const rows = dashboardData?.rows ?? [];

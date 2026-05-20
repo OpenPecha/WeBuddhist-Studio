@@ -51,11 +51,34 @@ export function formatRowModified(row: DashboardTableRow): string {
   return formatDistanceToNow(d, { addSuffix: true });
 }
 
-export function pickSeriesTitle(name: unknown): string {
-  if (!name) return "Untitled";
-  if (typeof name === "string") return name || "Untitled";
-  if (typeof name === "object") {
-    const o = name as Record<string, unknown>;
+function titleFromMetadataRow(row: Record<string, unknown>): string {
+  const title = row.title;
+  return typeof title === "string" && title.trim() ? title.trim() : "";
+}
+
+export function pickSeriesTitle(
+  nameOrTitle: unknown,
+  metadata?: unknown,
+): string {
+  if (Array.isArray(metadata) && metadata.length > 0) {
+    const rows = metadata as Record<string, unknown>[];
+    const order = ["EN", "BO", "ZH"];
+    for (const lang of order) {
+      const row = rows.find(
+        (r) => String(r.language ?? r.lang ?? "").toUpperCase() === lang,
+      );
+      const t = row ? titleFromMetadataRow(row) : "";
+      if (t) return t;
+    }
+    for (const row of rows) {
+      const t = titleFromMetadataRow(row);
+      if (t) return t;
+    }
+  }
+  if (!nameOrTitle) return "Untitled";
+  if (typeof nameOrTitle === "string") return nameOrTitle || "Untitled";
+  if (typeof nameOrTitle === "object") {
+    const o = nameOrTitle as Record<string, unknown>;
     const candidate =
       o.en ||
       o.EN ||
@@ -70,9 +93,9 @@ export function pickSeriesTitle(name: unknown): string {
 }
 
 export function normalizeStatus(raw: unknown): string {
-  const s = String(raw ?? "DRAFT");
-  if (s.includes(".")) return s.split(".").pop() || "DRAFT";
-  return s;
+  let s = String(raw ?? "DRAFT").trim();
+  if (s.includes(".")) s = (s.split(".").pop() ?? s).trim();
+  return s.toUpperCase();
 }
 
 export function mapPlanToTableRow(
@@ -112,7 +135,9 @@ export function mapSeriesToTableRow(
     : [];
   const firstLang = plans[0]?.language as string | undefined;
   const title =
-    typeof s.title === "string" && s.title ? s.title : pickSeriesTitle(s.name);
+    typeof s.title === "string" && s.title
+      ? s.title
+      : pickSeriesTitle(s.name, s.metadata);
   const td = s.total_days ?? 0;
   const days =
     typeof td === "number" ? td : parseInt(String(td ?? "0"), 10) || 0;

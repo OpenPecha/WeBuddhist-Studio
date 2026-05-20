@@ -2,18 +2,28 @@ import axiosInstance from "@/config/axios-config";
 import {
   normalizeStatus,
   parseDashboardLanguages,
+  pickSeriesTitle,
   type DashboardTableRow,
 } from "./dashboardTable";
+
+/** Series rows omit `title` in JSON; titles live in `metadata`. */
+export function displayDashboardItemTitle(item: DashboardApiItem): string {
+  if (item.type === "plan") {
+    return item.title?.trim() || "Untitled plan";
+  }
+  const fromMeta = pickSeriesTitle(undefined, item.metadata);
+  return fromMeta === "Untitled" ? "Untitled series" : fromMeta;
+}
 
 function mapDashboardItemToTableRow(item: DashboardApiItem): DashboardTableRow {
   return {
     kind: item.type,
     id: String(item.id),
-    title: item.title || "Untitled",
+    title: displayDashboardItemTitle(item),
     image_url: item.image_url ?? "",
     languages: parseDashboardLanguages(item.languages),
     status: normalizeStatus(item.status),
-    total_days: 0,
+    total_days: item.total_days ?? 0,
     enrolled: item.enrolled_count ?? 0,
     modifiedAt: item.updated_at ?? item.created_at ?? null,
     featured: !!item.featured,
@@ -25,18 +35,30 @@ function mapDashboardItemToTableRow(item: DashboardApiItem): DashboardTableRow {
 
 export type DashboardTab = "all" | "plans" | "series";
 
+export interface DashboardSeriesMetadataDTO {
+  id: string;
+  title: string;
+  description?: string;
+  language: string;
+}
+
 export interface DashboardApiItem {
   id: string;
   type: "plan" | "series";
-  title: string;
+  /** Plans only; omitted from JSON for series. */
+  title?: string;
+  metadata?: DashboardSeriesMetadataDTO[];
+  author_id?: string;
   image_url?: string | null;
+  image_key?: string | null;
   status: string;
   featured: boolean;
   languages: string[];
   enrolled_count: number;
   plans_count?: number | null;
+  total_days?: number | null;
   updated_at?: string | null;
-  created_at?: string | null;
+  created_at: string;
 }
 
 export interface DashboardPagination {

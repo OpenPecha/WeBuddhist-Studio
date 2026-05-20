@@ -199,7 +199,13 @@ describe("Dashboard Component", () => {
           {
             id: "series-1",
             type: "series",
-            title: "Test Series",
+            metadata: [
+              {
+                id: "meta-1",
+                title: "Test Series",
+                language: "EN",
+              },
+            ],
             image_url: "https://example.com/cover.jpg",
             status: "PUBLISHED",
             featured: false,
@@ -220,6 +226,67 @@ describe("Dashboard Component", () => {
     });
 
     expect(screen.getByLabelText("Series, 10 plans")).toBeInTheDocument();
+  });
+
+  it("shows same published actions for series as plans (Unpublish, no Edit)", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "series-1",
+            type: "series",
+            metadata: [{ id: "m1", title: "Published Series", language: "EN" }],
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            plans_count: 2,
+            created_at: "2025-01-01T00:00:00Z",
+          },
+          {
+            id: "plan-1",
+            type: "plan",
+            title: "Published Plan",
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 2, total_pages: 1 },
+      },
+    });
+    const user = userEvent.setup();
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Published Series")).toBeInTheDocument();
+    });
+
+    const seriesActions = screen.getByRole("button", {
+      name: "Series actions",
+    });
+    await user.click(seriesActions);
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Unpublish" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: "Edit Series" }),
+    ).not.toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+
+    const planActions = screen.getByRole("button", { name: "Plan actions" });
+    await user.click(planActions);
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Unpublish" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: "Edit Plan" }),
+    ).not.toBeInTheDocument();
   });
 
   it("handles toggle featured on a plan", async () => {
@@ -267,7 +334,13 @@ describe("Dashboard Component", () => {
           {
             id: "series-1",
             type: "series",
-            title: "Test Series",
+            metadata: [
+              {
+                id: "meta-1",
+                title: "Test Series",
+                language: "EN",
+              },
+            ],
             image_url: "",
             status: "PUBLISHED",
             featured: false,
@@ -281,7 +354,7 @@ describe("Dashboard Component", () => {
         pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
       },
     });
-    axiosInstance.patch = vi.fn().mockResolvedValue({ data: {} });
+    axiosInstance.put = vi.fn().mockResolvedValue({ data: {} });
 
     renderWithProviders(<Dashboard />);
 
@@ -293,8 +366,9 @@ describe("Dashboard Component", () => {
     fireEvent.click(featuredButton);
 
     await waitFor(() => {
-      expect(axiosInstance.patch).toHaveBeenCalledWith(
-        "/api/v1/cms/series/series-1/featured",
+      expect(axiosInstance.put).toHaveBeenCalledWith(
+        "/api/v1/cms/series/series-1",
+        { featured: true },
       );
     });
   });
