@@ -48,10 +48,7 @@ const updateUserProfile = async (
   return data;
 };
 
-const ProfileEditForm = ({
-  userInfo,
-  onSuccess,
-}: ProfileEditFormProps) => {
+const ProfileEditForm = ({ userInfo, onSuccess }: ProfileEditFormProps) => {
   const queryClient = useQueryClient();
 
   const [isSocialDirty, setIsSocialDirty] = useState(false);

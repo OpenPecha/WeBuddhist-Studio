@@ -29,7 +29,11 @@ const navItems = [
 const tooltipItems = [
   {
     id: "avatar",
-    component: <div className="block md:hidden"><AuthAvatar /></div>,
+    component: (
+      <div className="block md:hidden">
+        <AuthAvatar />
+      </div>
+    ),
     label: "View Profile",
   },
   {

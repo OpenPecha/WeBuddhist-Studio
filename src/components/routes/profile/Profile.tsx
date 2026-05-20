@@ -60,10 +60,7 @@ const Profile = () => {
         {!isEditing ? (
           <UserCard userInfo={userInfo} />
         ) : (
-          <ProfileEditForm
-            userInfo={userInfo}
-            onSuccess={handleEditSuccess}
-          />
+          <ProfileEditForm userInfo={userInfo} onSuccess={handleEditSuccess} />
         )}
       </div>
     </div>
