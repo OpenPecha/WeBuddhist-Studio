@@ -74,7 +74,9 @@ const PlanTagSearchInput = ({
     },
   });
 
-  const suggestions = (data?.tags ?? []).filter((tag) => !value.includes(tag.id));
+  const suggestions = (data?.tags ?? []).filter(
+    (tag) => !value.includes(tag.id),
+  );
   const trimmedInput = inputValue.trim();
   const normalizedInput = normalizeName(trimmedInput);
 
@@ -229,13 +231,11 @@ const PlanTagSearchInput = ({
                 </button>
               </li>
             ))}
-            {!isFetching &&
-              suggestions.length === 0 &&
-              !showCreateOption && (
-                <li className="px-3 py-2 text-sm text-muted-foreground">
-                  No tags found
-                </li>
-              )}
+            {!isFetching && suggestions.length === 0 && !showCreateOption && (
+              <li className="px-3 py-2 text-sm text-muted-foreground">
+                No tags found
+              </li>
+            )}
           </ul>
         )}
       </div>

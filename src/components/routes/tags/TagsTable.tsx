@@ -28,7 +28,9 @@ const TagsTable = ({ tags, isLoading, onEdit, onDelete }: TagsTableProps) => {
             <Pecha.TableHead>Name</Pecha.TableHead>
             <Pecha.TableHead>Description</Pecha.TableHead>
             <Pecha.TableHead className="w-24">Plans</Pecha.TableHead>
-            <Pecha.TableHead className="w-28 text-right">Actions</Pecha.TableHead>
+            <Pecha.TableHead className="w-28 text-right">
+              Actions
+            </Pecha.TableHead>
           </Pecha.TableRow>
         </Pecha.TableHeader>
         <Pecha.TableBody>
@@ -41,7 +43,9 @@ const TagsTable = ({ tags, isLoading, onEdit, onDelete }: TagsTableProps) => {
                   className="w-12 h-12 object-cover rounded-md border"
                 />
               </Pecha.TableCell>
-              <Pecha.TableCell className="font-medium">{tag.name}</Pecha.TableCell>
+              <Pecha.TableCell className="font-medium">
+                {tag.name}
+              </Pecha.TableCell>
               <Pecha.TableCell className="text-muted-foreground max-w-xs truncate">
                 {tag.description || "—"}
               </Pecha.TableCell>

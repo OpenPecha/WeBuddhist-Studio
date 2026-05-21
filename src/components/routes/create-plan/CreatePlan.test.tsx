@@ -384,7 +384,9 @@ describe("CreatePlan Component", () => {
       name: /Remove Meditation/i,
     });
     fireEvent.click(removeButton);
-    expect(screen.queryByRole("button", { name: /Remove Meditation/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /Remove Meditation/i }),
+    ).toBeNull();
   });
 
   it("creates a new tag when typing a name that does not exist", async () => {

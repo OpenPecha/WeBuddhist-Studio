@@ -204,8 +204,8 @@ const Tags = () => {
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Delete tag?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              This will permanently delete &quot;{deleteTarget?.name}&quot;. This
-              action cannot be undone.
+              This will permanently delete &quot;{deleteTarget?.name}&quot;.
+              This action cannot be undone.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>

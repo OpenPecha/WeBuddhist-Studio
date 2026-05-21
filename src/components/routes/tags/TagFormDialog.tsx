@@ -112,94 +112,93 @@ const TagFormDialog = ({
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-bold">Name</label>
-              <Pecha.Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Tag name"
-                required
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold">Name</label>
+                <Pecha.Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Tag name"
+                  required
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold">Description</label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional description"
-                className="field-sizing-fixed min-h-[80px] max-h-32 resize-none"
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold">Description</label>
+                <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Optional description"
+                  className="field-sizing-fixed min-h-[80px] max-h-32 resize-none"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold">Image</label>
-              <div className="flex gap-4 items-start">
-                {!imagePreview && (
-                  <button
-                    type="button"
-                    onClick={() => setIsImageDialogOpen(true)}
-                    className="border w-32 h-24 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
-                    aria-label="Upload tag image"
-                  >
-                    <IoMdAdd className="h-8 w-8 text-gray-400" />
-                  </button>
-                )}
-                {imagePreview && (
-                  <div className="relative">
-                    <img
-                      src={imagePreview}
-                      alt="Tag preview"
-                      className="w-32 h-24 object-cover rounded-lg border"
-                    />
+              <div className="space-y-2">
+                <label className="text-sm font-bold">Image</label>
+                <div className="flex gap-4 items-start">
+                  {!imagePreview && (
                     <button
                       type="button"
-                      onClick={handleRemoveImage}
-                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1"
-                      aria-label="Remove image"
+                      onClick={() => setIsImageDialogOpen(true)}
+                      className="border w-32 h-24 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
+                      aria-label="Upload tag image"
                     >
-                      <IoMdClose className="h-4 w-4" />
+                      <IoMdAdd className="h-8 w-8 text-gray-400" />
                     </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold">Linked plans</label>
-              <Pecha.Input
-                value={planSearch}
-                onChange={(e) => setPlanSearch(e.target.value)}
-                placeholder="Search plans..."
-              />
-              <div className="max-h-40 overflow-y-auto border rounded-md p-2 space-y-2">
-                {filteredPlans.length === 0 ? (
-                  <p className="text-sm text-muted-foreground px-2 py-1">
-                    No plans found
-                  </p>
-                ) : (
-                  filteredPlans.map((plan) => (
-                    <label
-                      key={plan.id}
-                      className="flex min-w-0 items-center gap-2 rounded px-2 py-1 hover:bg-muted/50 cursor-pointer"
-                    >
-                      <Pecha.Checkbox
-                        className="shrink-0"
-                        checked={selectedPlanIds.includes(plan.id)}
-                        onCheckedChange={() => togglePlan(plan.id)}
+                  )}
+                  {imagePreview && (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt="Tag preview"
+                        className="w-32 h-24 object-cover rounded-lg border"
                       />
-                      <span className="min-w-0 flex-1 truncate text-sm">
-                        {plan.title}
-                      </span>
-                    </label>
-                  ))
-                )}
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1"
+                        aria-label="Remove image"
+                      >
+                        <IoMdClose className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {selectedPlanIds.length} plan(s) selected
-              </p>
-            </div>
 
+              <div className="space-y-2">
+                <label className="text-sm font-bold">Linked plans</label>
+                <Pecha.Input
+                  value={planSearch}
+                  onChange={(e) => setPlanSearch(e.target.value)}
+                  placeholder="Search plans..."
+                />
+                <div className="max-h-40 overflow-y-auto border rounded-md p-2 space-y-2">
+                  {filteredPlans.length === 0 ? (
+                    <p className="text-sm text-muted-foreground px-2 py-1">
+                      No plans found
+                    </p>
+                  ) : (
+                    filteredPlans.map((plan) => (
+                      <label
+                        key={plan.id}
+                        className="flex min-w-0 items-center gap-2 rounded px-2 py-1 hover:bg-muted/50 cursor-pointer"
+                      >
+                        <Pecha.Checkbox
+                          className="shrink-0"
+                          checked={selectedPlanIds.includes(plan.id)}
+                          onCheckedChange={() => togglePlan(plan.id)}
+                        />
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          {plan.title}
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {selectedPlanIds.length} plan(s) selected
+                </p>
+              </div>
             </div>
             <div className="flex shrink-0 justify-end gap-2 border-t bg-background px-6 py-4">
               <Button
@@ -228,7 +227,10 @@ const TagFormDialog = ({
         </Pecha.DialogContent>
       </Pecha.Dialog>
 
-      <Pecha.Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+      <Pecha.Dialog
+        open={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+      >
         <Pecha.DialogContent showCloseButton>
           <Pecha.DialogHeader>
             <Pecha.DialogTitle>Upload & Crop Image</Pecha.DialogTitle>

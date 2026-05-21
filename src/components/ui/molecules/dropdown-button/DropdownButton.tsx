@@ -96,17 +96,17 @@ export function DropdownButton({
           </Pecha.Button>
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
-            <>
-              <Pecha.DropdownMenuGroup>
-                <Link to={ROUTES.planEdit(planId)}>
-                  <Pecha.DropdownMenuItem>
-                    <FaPen className="h-4 w-4" />
-                    Edit Plan
-                  </Pecha.DropdownMenuItem>
-                </Link>
-              </Pecha.DropdownMenuGroup>
-              <Pecha.DropdownMenuSeparator />
-            </>
+          <>
+            <Pecha.DropdownMenuGroup>
+              <Link to={ROUTES.planEdit(planId)}>
+                <Pecha.DropdownMenuItem>
+                  <FaPen className="h-4 w-4" />
+                  Edit Plan
+                </Pecha.DropdownMenuItem>
+              </Link>
+            </Pecha.DropdownMenuGroup>
+            <Pecha.DropdownMenuSeparator />
+          </>
           <Pecha.DropdownMenuItem disabled>Status</Pecha.DropdownMenuItem>
           <Pecha.DropdownMenuGroup>
             {availableTransitions.map((status) => {
