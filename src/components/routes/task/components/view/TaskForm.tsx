@@ -38,7 +38,7 @@ const TaskForm = ({
   onCancel,
   isEditable = true,
 }: TaskFormProps) => {
-  const { plan_id } = useParams();
+  const { planId } = useParams<{ planId: string }>();
   const queryClient = useQueryClient();
   const form = useForm({
     resolver: zodResolver(taskSchema),
@@ -53,7 +53,7 @@ const TaskForm = ({
   const isEditMode = Boolean(editingTask);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
 
-  const currentPlan = queryClient.getQueryData<any>(["planDetails", plan_id]);
+  const currentPlan = queryClient.getQueryData<any>(["planDetails", planId]);
   const currentDayData = currentPlan?.days?.find(
     (day: any) => day.day_number === selectedDay,
   );
@@ -96,7 +96,7 @@ const TaskForm = ({
         description: "Your task has been added to the day.",
       });
       clearFormData(taskResponse.id);
-      queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
+      queryClient.refetchQueries({ queryKey: ["planDetails", planId] });
     },
     onError: (error: Error) => {
       toast.error("Failed to create task", {
@@ -124,7 +124,7 @@ const TaskForm = ({
     },
     onSuccess: () => {
       toast.success("Task updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+      queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
       queryClient.invalidateQueries({
         queryKey: ["taskDetails", editingTask?.id],
       });
@@ -144,7 +144,7 @@ const TaskForm = ({
     onSuccess: () => {
       toast.success("Title updated successfully!");
       setIsTitleEditing(false);
-      queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+      queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
       queryClient.invalidateQueries({
         queryKey: ["taskDetails", editingTask?.id],
       });
@@ -291,7 +291,7 @@ const TaskForm = ({
       return;
     }
     try {
-      const { image, key } = await uploadImageToS3(file, plan_id || "");
+      const { image, key } = await uploadImageToS3(file, planId || "");
       updateSubTask(index, {
         imagePreview: image.original,
         content: key,
@@ -323,7 +323,7 @@ const TaskForm = ({
 
   const onSubmit = async (data: TaskFormData) => {
     const taskData: any = {
-      plan_id: plan_id!,
+      plan_id: planId!,
       day_id: currentDayData!.id,
       title: data.title,
       estimated_time: 30,

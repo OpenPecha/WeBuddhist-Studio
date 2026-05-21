@@ -29,12 +29,11 @@ import {
 import type { SeriesFormData } from "@/schema/SeriesSchema";
 
 const CreateSeries = () => {
-  const { series_id } = useParams<{ series_id: string }>();
+  const { seriesId } = useParams<{ seriesId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslate();
-  const isNew = series_id === "new";
-
+  const isNew = !seriesId;
   const {
     form,
     languages,
@@ -54,9 +53,9 @@ const CreateSeries = () => {
     isError: isSeriesError,
     error: seriesError,
   } = useQuery({
-    queryKey: ["series", series_id],
-    queryFn: () => getSeries(series_id!),
-    enabled: Boolean(series_id) && !isNew,
+    queryKey: ["series", seriesId],
+    queryFn: () => getSeries(seriesId!),
+    enabled: Boolean(seriesId) && !isNew,
     refetchOnWindowFocus: false,
   });
 
@@ -64,7 +63,7 @@ const CreateSeries = () => {
 
   useEffect(() => {
     seriesHydratedIdRef.current = null;
-  }, [series_id]);
+  }, [seriesId]);
 
   useEffect(() => {
     if (isNew || !seriesData) return;
@@ -127,18 +126,18 @@ const CreateSeries = () => {
         return { id: String(created.id) };
       }
       await putUpdateSeries({
-        seriesId: series_id!,
+        seriesId: seriesId!,
         body,
       });
-      return { id: series_id! };
+      return { id: seriesId! };
     },
     onSuccess: () => {
       toast.success(
         isNew ? "Series created successfully!" : "Series updated successfully!",
       );
       void queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
-      if (series_id && !isNew) {
-        void queryClient.invalidateQueries({ queryKey: ["series", series_id] });
+      if (seriesId && !isNew) {
+        void queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
       }
       if (isNew) {
         form.reset({ languages: {}, plans: {}, image_url: "" });
@@ -182,7 +181,7 @@ const CreateSeries = () => {
     try {
       const { image, key } = await uploadImageToS3(
         file,
-        isNew ? "" : series_id || "",
+        isNew ? "" : seriesId || "",
       );
       const imageUrlUploaded = image.original;
       setImagePreview(imageUrlUploaded);
@@ -251,7 +250,7 @@ const CreateSeries = () => {
     <div className="flex flex-col lg:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F3F3F3] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
       <div className="flex-1 p-4 sm:p-10 border-b lg:border-b-0 border-border">
         <h1 className="text-xl font-bold my-4 border-b border-dashed border-black dark:border-white">
-          {isNew ? "Series details" : "Edit series"}
+          {isNew ? "Series details" : "Series Edit"}
         </h1>
 
         <Pecha.Form {...form}>

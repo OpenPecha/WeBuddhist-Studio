@@ -29,12 +29,14 @@ import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
+import { Navigate } from "react-router-dom";
+import { ROUTES } from "./routes/paths.ts";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
-const tolgee = new (Tolgee as any)()
-  .use(DevTools)
-  .use(FormatSimple)
+const tolgee = Tolgee()
+  .use(DevTools())
+  .use(FormatSimple())
   .use(
     BackendFetch({
       prefix:
@@ -73,7 +75,11 @@ const router = createBrowserRouter([
         element: <EmailVerification />,
       },
       {
-        path: "/",
+        path: ROUTES.home,
+        element: <Navigate to={ROUTES.dashboard} replace />,
+      },
+      {
+        path: ROUTES.dashboard,
         element: (
           <ProtectedRoute>
             <Dashboard />
@@ -81,15 +87,11 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/dashboard",
-        element: (
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        ),
+        path: "/plan",
+        element: <Navigate to={ROUTES.dashboard} replace />,
       },
       {
-        path: "/plan/:plan_id",
+        path: ROUTES.planNew,
         element: (
           <ProtectedRoute>
             <CreatePlan />
@@ -97,7 +99,23 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/series/:series_id",
+        path: "/plan/:planId/edit",
+        element: (
+          <ProtectedRoute>
+            <CreatePlan />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/plan/:planId",
+        element: (
+          <ProtectedRoute>
+            <PlanDetailsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.seriesNew,
         element: (
           <ProtectedRoute>
             <CreateSeries />
@@ -105,10 +123,19 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/plan/:plan_id/plan-details",
+        path: "/series/:seriesId/edit",
         element: (
           <ProtectedRoute>
-            <PlanDetailsPage />
+            <CreateSeries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/series/:seriesId",
+        element: (
+          <ProtectedRoute>
+            <div>Series Details</div>
+            {/* <SeriesDetailsPage /> */}
           </ProtectedRoute>
         ),
       },
@@ -121,18 +148,18 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "*",
+        path: ROUTES.profile,
         element: (
           <ProtectedRoute>
-            <Dashboard />
+            <Profile />
           </ProtectedRoute>
         ),
       },
       {
-        path: "/profile/:author_id",
+        path: "*",
         element: (
           <ProtectedRoute>
-            <Profile />
+            <Navigate to={ROUTES.dashboard} replace />
           </ProtectedRoute>
         ),
       },

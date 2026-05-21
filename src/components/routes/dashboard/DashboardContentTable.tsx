@@ -15,6 +15,7 @@ import {
   formatRowModified,
   isMockDashboardId,
 } from "./dashboardTable";
+import { ROUTES } from "@/routes/paths";
 
 function FeaturedStar({
   featured,
@@ -122,9 +123,7 @@ export function DashboardContentTable({
     return rows.map((row) => {
       const daysLabel = `${row.total_days} ${row.total_days === 1 ? "Day" : "Days"}`;
       const titleHref =
-        row.kind === "plan"
-          ? `/plan/${row.id}/plan-details`
-          : `/series/${row.id}/series-details`;
+        row.kind === "plan" ? ROUTES.plan(row.id) : ROUTES.series(row.id);
       const modifiedDisplay = formatRowModified(row);
       const canToggleFeatured =
         row.kind === "series" ||
@@ -160,7 +159,7 @@ export function DashboardContentTable({
           <Pecha.TableCell>
             <button
               type="button"
-              className="text-left"
+              className="text-left cursor-pointer"
               onClick={() => navigate(titleHref)}
             >
               <div className="text-sm font-semibold">{row.title}</div>
@@ -169,14 +168,18 @@ export function DashboardContentTable({
                   <span key={`${row.id}-${code}`}>{languageChip(code)}</span>
                 ))}
                 {statusChip(row.status)}
-                <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
-                  {daysLabel}
-                </span>
+                {row.kind === "plan" && (
+                  <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
+                    {daysLabel}
+                  </span>
+                )}
               </div>
             </button>
           </Pecha.TableCell>
-          <Pecha.TableCell className="text-sm">{row.enrolled}</Pecha.TableCell>
-          <Pecha.TableCell className="text-sm text-muted-foreground">
+          <Pecha.TableCell className="text-sm text-center">
+            {row.enrolled}
+          </Pecha.TableCell>
+          <Pecha.TableCell className="text-sm text-center">
             {modifiedDisplay}
           </Pecha.TableCell>
           <Pecha.TableCell className="text-center">
@@ -204,7 +207,7 @@ export function DashboardContentTable({
               </span>
             )}
           </Pecha.TableCell>
-          <Pecha.TableCell className="w-[100px]">
+          <Pecha.TableCell className="px-auto">
             {row.kind === "plan" && isMockDashboardId(row.id) ? (
               <Pecha.DropdownMenu>
                 <Pecha.DropdownMenuTrigger asChild>
@@ -227,7 +230,7 @@ export function DashboardContentTable({
               </Pecha.DropdownMenu>
             ) : (
               <DropdownButton
-                planId={row.id}
+                id={row.id}
                 entityType={row.kind}
                 currentStatus={row.status}
                 triggerVariant="icon"
@@ -250,16 +253,16 @@ export function DashboardContentTable({
           <Pecha.TableHead className="font-bold">
             {t("studio.dashboard.title")}
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[100px] font-bold">
-            Enrolled
+          <Pecha.TableHead className="w-[100px] font-bold text-center">
+            {t("studio.dashboard.plan_used")}
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[130px] font-bold">
+          <Pecha.TableHead className="w-[130px] font-bold text-center">
             Date Modified
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[72px] text-center font-bold">
+          <Pecha.TableHead className="w-[72px] font-bold text-center">
             Featured
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[100px] font-bold">
+          <Pecha.TableHead className="w-[100px] font-bold text-center">
             {t("studio.dashboard.actions")}
           </Pecha.TableHead>
         </Pecha.TableRow>

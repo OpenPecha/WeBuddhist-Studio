@@ -3,14 +3,14 @@ import { IoMdTrash } from "react-icons/io";
 import { useState } from "react";
 
 interface PlanDeleteDialogProps {
-  planId: string;
-  onDelete: (planId: string) => void;
+  id: string;
+  onDelete: (id: string) => void;
   trigger?: React.ReactNode;
   entityLabel?: string;
 }
 
 const PlanDeleteDialog = ({
-  planId,
+  id,
   onDelete,
   trigger,
   entityLabel = "Plan",
@@ -18,7 +18,7 @@ const PlanDeleteDialog = ({
   const [open, setOpen] = useState(false);
 
   const handleDelete = () => {
-    onDelete(planId);
+    onDelete(id);
     setOpen(false);
   };
 

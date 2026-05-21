@@ -78,7 +78,7 @@ describe("Dashboard Component", () => {
     });
 
     expect(screen.getByText("studio.dashboard.title")).toBeDefined();
-    expect(screen.getByText("Enrolled")).toBeDefined();
+    expect(screen.getByText("studio.dashboard.plan_used")).toBeDefined();
     expect(screen.getByText("Date Modified")).toBeDefined();
     expect(screen.getByText("Featured")).toBeDefined();
     expect(screen.getByText("studio.dashboard.actions")).toBeDefined();

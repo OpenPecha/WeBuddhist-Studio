@@ -7,6 +7,7 @@ import { IoEyeOffSharp } from "react-icons/io5";
 import { RiDraftLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
@@ -22,13 +23,13 @@ const STATUS_ICONS = {
 export type DropdownButtonEntityType = "plan" | "series";
 
 export function DropdownButton({
-  planId,
+  id,
   currentStatus,
   triggerVariant = "default",
   triggerClassName,
   entityType = "plan",
 }: {
-  planId: string;
+  id: string;
   currentStatus: string;
   triggerVariant?: "default" | "icon";
   triggerClassName?: string;
@@ -37,7 +38,7 @@ export function DropdownButton({
   const queryClient = useQueryClient();
   const isSeries = entityType === "series";
   const apiBase = isSeries ? "/api/v1/cms/series" : "/api/v1/cms/plans";
-  const editHref = isSeries ? `/series/${planId}` : `/plan/${planId}`;
+  const editHref = isSeries ? ROUTES.seriesEdit(id) : ROUTES.planEdit(id);
   const editLabel = isSeries ? "Edit Series" : "Edit Plan";
   const deleteLabel = isSeries ? "Delete Series" : "Delete Plan";
   const entityName = isSeries ? "Series" : "Plan";
@@ -63,21 +64,21 @@ export function DropdownButton({
   });
 
   const handleDelete = () => {
-    deleteMutation.mutate(planId);
+    deleteMutation.mutate(id);
   };
 
   const handleStatusChange = async (newStatus: string) => {
     try {
-      await axiosInstance.patch(`${apiBase}/${planId}/status`, {
+      await axiosInstance.patch(`${apiBase}/${id}/status`, {
         status: newStatus,
       });
 
       toast.success(`Status updated to ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
       if (isSeries) {
-        queryClient.invalidateQueries({ queryKey: ["series", planId] });
+        queryClient.invalidateQueries({ queryKey: ["series", id] });
       } else {
-        queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
+        queryClient.invalidateQueries({ queryKey: ["planDetails", id] });
       }
     } catch (error: unknown) {
       const message = (
@@ -97,7 +98,7 @@ export function DropdownButton({
   const canDelete = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
 
   return (
-    <Pecha.ButtonGroup>
+    <Pecha.ButtonGroup className="mx-auto">
       <Pecha.DropdownMenu>
         <Pecha.DropdownMenuTrigger asChild>
           {triggerVariant === "icon" ? (
@@ -150,7 +151,7 @@ export function DropdownButton({
               <Pecha.DropdownMenuSeparator />
               <Pecha.DropdownMenuGroup>
                 <PlanDeleteDialog
-                  planId={planId}
+                  id={id}
                   entityLabel={entityName}
                   onDelete={handleDelete}
                   trigger={

@@ -1,29 +1,21 @@
 import axiosInstance from "@/config/axios-config";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
 import { Pecha } from "@/components/ui/shadimport";
 import { useState } from "react";
 import UserCard from "@/components/ui/molecules/user-card/UserCard";
 import ProfileEditForm from "@/components/ui/molecules/profile-edit-form/ProfileEditForm";
 
-const fetchUserInfo = async (author_id: string) => {
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(`/api/v1/authors/${author_id}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+const fetchUserInfo = async () => {
+  const { data } = await axiosInstance.get(`/api/v1/authors/info`);
   return data;
 };
 
 const Profile = () => {
-  const { author_id } = useParams();
   const [isEditing, setIsEditing] = useState(false);
 
   const { data: userInfo, isLoading } = useQuery({
-    queryKey: ["userInfo", author_id],
-    queryFn: () => fetchUserInfo(author_id as string),
-    enabled: !!author_id,
+    queryKey: ["userInfo"],
+    queryFn: fetchUserInfo,
   });
 
   const handleEdit = () => {
@@ -46,10 +38,14 @@ const Profile = () => {
     );
   }
 
+  if (!userInfo?.id) {
+    return null;
+  }
+
   return (
     <div className="container flex items-center justify-center mx-auto p-6">
-      <div className={`border w-full border-dashed rounded-lg space-y-6 `}>
-        <div className="flex h-full  border-b border-dashed border-gray-300 dark:border-input justify-between items-center p-4">
+      <div className="border w-full border-dashed rounded-lg space-y-6">
+        <div className="flex h-full border-b border-dashed border-gray-300 dark:border-input justify-between items-center p-4">
           <h1 className="text-xl font-semibold">Profile</h1>
           {!isEditing ? (
             <Pecha.Button variant="outline" onClick={handleEdit}>
@@ -64,11 +60,7 @@ const Profile = () => {
         {!isEditing ? (
           <UserCard userInfo={userInfo} />
         ) : (
-          <ProfileEditForm
-            userInfo={userInfo}
-            author_id={author_id as string}
-            onSuccess={handleEditSuccess}
-          />
+          <ProfileEditForm userInfo={userInfo} onSuccess={handleEditSuccess} />
         )}
       </div>
     </div>

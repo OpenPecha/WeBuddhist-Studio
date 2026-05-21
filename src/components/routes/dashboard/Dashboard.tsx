@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/atoms/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
@@ -253,10 +254,10 @@ const Dashboard = () => {
             </Pecha.DropdownMenuTrigger>
             <Pecha.DropdownMenuContent align="start">
               <Pecha.DropdownMenuGroup>
-                <Link to="/series/new">
+                <Link to={ROUTES.seriesNew}>
                   <Pecha.DropdownMenuItem>Add Series</Pecha.DropdownMenuItem>
                 </Link>
-                <Link to="/plan/new">
+                <Link to={ROUTES.planNew}>
                   <Pecha.DropdownMenuItem>Add Plan</Pecha.DropdownMenuItem>
                 </Link>
               </Pecha.DropdownMenuGroup>
@@ -303,12 +304,12 @@ const Dashboard = () => {
             title={emptyTitle}
             description={emptyDescription}
           >
-            <Link to="/plan/new">
+            <Link to={ROUTES.planNew}>
               <Pecha.Button variant="outline" size="sm">
                 <IoMdAdd className="h-4 w-4" /> {t("studio.dashboard.add_plan")}
               </Pecha.Button>
             </Link>
-            <Link to="/series/new">
+            <Link to={ROUTES.seriesNew}>
               <Pecha.Button variant="outline" size="sm">
                 <IoMdAdd className="h-4 w-4" /> Add Series
               </Pecha.Button>

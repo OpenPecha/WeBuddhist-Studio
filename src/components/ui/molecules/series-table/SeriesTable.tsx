@@ -131,7 +131,7 @@ export function SeriesTable({
                 className="[--radius:1rem]"
               >
                 <PlanDeleteDialog
-                  planId={s.id}
+                  id={s.id}
                   entityLabel="Series"
                   onDelete={onDeleteSeries}
                   trigger={
