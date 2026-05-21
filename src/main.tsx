@@ -27,6 +27,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
+import Tags from "./components/routes/tags/Tags.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
@@ -126,6 +127,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.tags,
+        element: (
+          <ProtectedRoute>
+            <Tags />
           </ProtectedRoute>
         ),
       },

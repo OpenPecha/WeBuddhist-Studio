@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { ModeToggle } from "../mode-toggle/modetoggle";
 // import { IoAnalytics } from "react-icons/io5";
 import { MdDashboard } from "react-icons/md";
+import { IoPricetags } from "react-icons/io5";
+import { ROUTES } from "@/routes/paths";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import AuthLogout from "../auth-logout/AuthLogout";
 import {
@@ -17,8 +19,14 @@ const navItems = [
   {
     icon: <MdDashboard className="w-4 h-4" />,
     label: "studio.nav.dashboard",
-    path: "/dashboard",
+    path: ROUTES.dashboard,
     tooltip: "Go to dashboard",
+  },
+  {
+    icon: <IoPricetags className="w-4 h-4" />,
+    label: "Tags",
+    path: ROUTES.tags,
+    tooltip: "Manage tags",
   },
   // {
   //   icon: <IoAnalytics className="w-4 h-4" />,
@@ -76,7 +84,7 @@ const Navbar = () => {
                 <TooltipTrigger asChild>
                   <Link
                     to={item.path}
-                    className={` border p-2 rounded-md dark:hover:text-white hover:text-black transition-all duration-300 hover:cursor-pointer ${location.pathname === item.path || location.pathname === "/" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-600"}`}
+                    className={` border p-2 rounded-md dark:hover:text-white hover:text-black transition-all duration-300 hover:cursor-pointer ${location.pathname === item.path || (item.path === ROUTES.dashboard && location.pathname === "/") ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-600"}`}
                   >
                     {item.icon}
                   </Link>
