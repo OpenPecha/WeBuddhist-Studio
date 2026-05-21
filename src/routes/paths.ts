@@ -11,6 +11,7 @@ export const ROUTES = {
   planEdit: (planId: string) => `/plan/${planId}/edit`,
   analytics: "/analytics",
   profile: "/profile",
+  tags: "/tags",
 } as const;
 
 export const AUTH_ROUTE_PATHS: readonly string[] = [

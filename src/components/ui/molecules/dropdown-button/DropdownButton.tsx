@@ -85,7 +85,6 @@ export function DropdownButton({
     allowedStatuses.includes(status.value),
   );
 
-  const canEdit = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
   const canDelete = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
 
   return (
@@ -97,7 +96,6 @@ export function DropdownButton({
           </Pecha.Button>
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
-          {canEdit && (
             <>
               <Pecha.DropdownMenuGroup>
                 <Link to={ROUTES.planEdit(planId)}>
@@ -109,7 +107,6 @@ export function DropdownButton({
               </Pecha.DropdownMenuGroup>
               <Pecha.DropdownMenuSeparator />
             </>
-          )}
           <Pecha.DropdownMenuItem disabled>Status</Pecha.DropdownMenuItem>
           <Pecha.DropdownMenuGroup>
             {availableTransitions.map((status) => {

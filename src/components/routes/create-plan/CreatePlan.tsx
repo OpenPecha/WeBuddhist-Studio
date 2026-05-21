@@ -13,7 +13,11 @@ import { ROUTES } from "@/routes/paths";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
-import TagInput from "@/components/ui/molecules/tag-input/TagInput";
+import PlanTagSearchInput from "./PlanTagSearchInput";
+import {
+  planTagsToIds,
+  type PlanTagSummary,
+} from "@/components/routes/tags/api/tagsApi";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
@@ -114,7 +118,7 @@ const Createplan = () => {
         total_days: planData.total_days?.toString() || "",
         difficulty_level: planData.difficulty_level || "",
         image_url: planData.plan_image_url || "",
-        tags: planData.tags || [],
+        tags: planTagsToIds(planData.tags),
         language: planData.language || "",
         start_date: planData.start_date || null,
       });
@@ -629,7 +633,21 @@ const Createplan = () => {
               render={({ field }) => (
                 <Pecha.FormItem>
                   <Pecha.FormControl>
-                    <TagInput value={field.value} onChange={field.onChange} />
+                    <PlanTagSearchInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      planId={planId}
+                      initialTags={
+                        Array.isArray(planData?.tags)
+                          ? planData.tags.filter(
+                              (t: unknown): t is PlanTagSummary =>
+                                typeof t === "object" &&
+                                t !== null &&
+                                "id" in t,
+                            )
+                          : undefined
+                      }
+                    />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />
                 </Pecha.FormItem>
