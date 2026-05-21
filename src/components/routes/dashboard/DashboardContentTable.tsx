@@ -245,7 +245,7 @@ export function DashboardContentTable({
       <Pecha.TableHeader className="dark:bg-[#1d1d1f]">
         <Pecha.TableRow className="font-dynamic">
           <Pecha.TableHead className="w-[120px] font-bold">
-            {t("studio.dashboard.cover_image")}
+            {/* {t("studio.dashboard.cover_image")} */}
           </Pecha.TableHead>
           <Pecha.TableHead className="font-bold">
             {t("studio.dashboard.title")}

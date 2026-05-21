@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -48,15 +54,29 @@ describe("Dashboard Component", () => {
 
   it("displays table headers correctly", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: emptyDashboardResponse,
+      data: {
+        items: [
+          {
+            id: "plan-1",
+            type: "plan",
+            title: "Header Test Plan",
+            image_url: "",
+            status: "DRAFT",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
     });
     renderWithProviders(<Dashboard />);
 
     await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      expect(screen.getByRole("table")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("studio.dashboard.cover_image")).toBeDefined();
     expect(screen.getByText("studio.dashboard.title")).toBeDefined();
     expect(screen.getByText("Enrolled")).toBeDefined();
     expect(screen.getByText("Date Modified")).toBeDefined();
@@ -143,8 +163,10 @@ describe("Dashboard Component", () => {
       expect(screen.getByRole("table")).toBeDefined();
     });
 
-    const coverImageHeader = screen.getByText("studio.dashboard.cover_image");
-    expect(coverImageHeader.tagName).toBe("TH");
+    const table = screen.getByRole("table");
+    const headers = within(table).getAllByRole("columnheader");
+    expect(headers).toHaveLength(6);
+    expect(headers[0]?.textContent?.trim()).toBe("");
   });
 
   it("fetches dashboard items from unified CMS endpoint", async () => {
