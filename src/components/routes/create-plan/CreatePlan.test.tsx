@@ -66,7 +66,7 @@ describe("CreatePlan Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useParams).mockReturnValue({});
-    vi.spyOn(axiosInstance, "post").mockImplementation((url) => {
+    vi.spyOn(axiosInstance, "post").mockImplementation((url: string) => {
       if (url.includes("/media/upload")) {
         return Promise.resolve({
           data: {
@@ -81,21 +81,70 @@ describe("CreatePlan Component", () => {
           },
         });
       }
+      if (url.includes("/cms/tags")) {
+        return Promise.resolve({
+          data: {
+            id: "tag-new",
+            name: "Newtag",
+            image: null,
+            image_key: null,
+            description: null,
+            plan_ids: [],
+          },
+        });
+      }
       return Promise.resolve({ data: {} });
     });
-    vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: {
-        id: "plan-123",
-        title: "Existing Plan",
-        description: "Existing description",
-        total_days: 14,
-        difficulty_level: "Beginner",
-        plan_image_url: "https://example.com/image.jpg",
-        image_url: "https://example.com/image.jpg",
-        tags: ["meditation"],
-        language: "en",
-        start_date: "2026-04-30T00:00:00Z",
-      },
+    vi.spyOn(axiosInstance, "get").mockImplementation((url: string) => {
+      if (url.includes("/cms/tags")) {
+        return Promise.resolve({
+          data: {
+            tags: [
+              {
+                id: "tag-1",
+                name: "Meditation",
+                image: null,
+                image_key: null,
+                description: null,
+                plan_ids: [],
+              },
+              {
+                id: "tag-2",
+                name: "Daily tipitaka",
+                image: null,
+                image_key: null,
+                description: null,
+                plan_ids: [],
+              },
+            ],
+            skip: 0,
+            limit: 500,
+            total: 2,
+          },
+        });
+      }
+      return Promise.resolve({
+        data: {
+          id: "plan-123",
+          title: "Existing Plan",
+          description: "Existing description",
+          total_days: 14,
+          difficulty_level: "Beginner",
+          plan_image_url: "https://example.com/image.jpg",
+          image_url: "https://example.com/image.jpg",
+          tags: [
+            {
+              id: "tag-1",
+              name: "Meditation",
+              image: null,
+              image_key: null,
+              description: null,
+            },
+          ],
+          language: "en",
+          start_date: "2026-04-30T00:00:00Z",
+        },
+      });
     });
   });
   it("renders create plan form with main heading", () => {
@@ -147,7 +196,7 @@ describe("CreatePlan Component", () => {
       screen.getByText("studio.dashboard.cover_image"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("studio.plan.cover_image.description"),
+      screen.getByText("studio.plan.cover_image.constraints"),
     ).toBeInTheDocument();
   });
 
@@ -162,7 +211,7 @@ describe("CreatePlan Component", () => {
   it("renders submit button", () => {
     renderWithProviders(<CreatePlan />);
 
-    const submitButton = screen.getByText("studio.plan.update_button");
+    const submitButton = screen.getByText("studio.plan.next_button");
     expect(submitButton).toBeInTheDocument();
     expect(submitButton.tagName).toBe("BUTTON");
   });
@@ -211,7 +260,7 @@ describe("CreatePlan Component", () => {
       screen.getByText("studio.dashboard.cover_image"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("studio.plan.cover_image.description"),
+      screen.getByText("studio.plan.cover_image.constraints"),
     ).toBeInTheDocument();
     const uploadButton = screen.getByLabelText("Upload cover image");
     expect(uploadButton).toBeInTheDocument();
@@ -301,7 +350,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("shows validation errors for required fields", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "new" });
+    vi.mocked(useParams).mockReturnValue({});
     renderWithProviders(<CreatePlan />);
     const submitButton = screen.getByText("studio.plan.next_button");
     fireEvent.click(submitButton);
@@ -316,12 +365,53 @@ describe("CreatePlan Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("handles tag input add and remove", () => {
+  it("handles tag search selection and remove", async () => {
     renderWithProviders(<CreatePlan />);
-    const tagInput = screen.getByPlaceholderText("Add a tag");
-    fireEvent.change(tagInput, { target: { value: "tag1" } });
-    fireEvent.keyDown(tagInput, { key: "Enter", code: "Enter" });
-    expect(screen.getByText("Tag1")).toBeInTheDocument();
+    const tagInput = screen.getByPlaceholderText("Search or add tags...");
+    fireEvent.change(tagInput, { target: { value: "Med" } });
+    fireEvent.focus(tagInput);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Meditation" }),
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Meditation" }));
+    expect(screen.getAllByText("Meditation").length).toBeGreaterThan(0);
+
+    const removeButton = screen.getByRole("button", {
+      name: /Remove Meditation/i,
+    });
+    fireEvent.click(removeButton);
+    expect(
+      screen.queryByRole("button", { name: /Remove Meditation/i }),
+    ).toBeNull();
+  });
+
+  it("creates a new tag when typing a name that does not exist", async () => {
+    renderWithProviders(<CreatePlan />);
+    const tagInput = screen.getByPlaceholderText("Search or add tags...");
+    fireEvent.change(tagInput, { target: { value: "Brand New Tag" } });
+    fireEvent.focus(tagInput);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: 'Create "Brand New Tag"' }),
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: 'Create "Brand New Tag"' }),
+    );
+
+    await waitFor(() => {
+      expect(axiosInstance.post).toHaveBeenCalledWith(
+        "/api/v1/cms/tags",
+        expect.objectContaining({ name: "Brand New Tag" }),
+        expect.any(Object),
+      );
+    });
   });
 
   it("shows no image preview initially", () => {
@@ -350,7 +440,7 @@ describe("CreatePlan Component", () => {
     fireEvent.click(difficultyButton);
     const difficultyOption = screen.getByText("Beginner");
     fireEvent.click(difficultyOption);
-    const submitButton = screen.getByText("studio.plan.update_button");
+    const submitButton = screen.getByText("studio.plan.next_button");
     fireEvent.click(submitButton);
     await waitFor(() => {
       expect(titleInput).toHaveValue("Test Plan");
@@ -396,7 +486,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("fetches and populates form in edit mode", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    vi.mocked(useParams).mockReturnValue({ planId: "plan-123" });
 
     renderWithProviders(<CreatePlan />);
 
@@ -442,7 +532,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("submits update in edit mode", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    vi.mocked(useParams).mockReturnValue({ planId: "plan-123" });
     vi.spyOn(axiosInstance, "put").mockResolvedValue({ data: {} });
     renderWithProviders(<CreatePlan />);
 
@@ -472,7 +562,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("clears start_date when switching from specific to enroll mode on submit", async () => {
-    vi.mocked(useParams).mockReturnValue({ plan_id: "plan-123" });
+    vi.mocked(useParams).mockReturnValue({ planId: "plan-123" });
     const putSpy = vi
       .spyOn(axiosInstance, "put")
       .mockResolvedValue({ data: {} });

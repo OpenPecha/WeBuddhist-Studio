@@ -1,15 +1,24 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
-import { IoCalendarClearOutline } from "react-icons/io5";
+import {
+  IoCalendarClearOutline,
+  IoInformationCircleOutline,
+} from "react-icons/io5";
+
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
-import TagInput from "@/components/ui/molecules/tag-input/TagInput";
+import PlanTagSearchInput from "./PlanTagSearchInput";
+import {
+  planTagsToIds,
+  type PlanTagSummary,
+} from "@/components/routes/tags/api/tagsApi";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
@@ -18,6 +27,12 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadImageToS3 } from "../task/api/taskApi";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/atoms/tooltip";
 
 export const getPlan = async (plan_id: string) => {
   const accessToken = sessionStorage.getItem("accessToken");
@@ -28,6 +43,7 @@ export const getPlan = async (plan_id: string) => {
   });
   return data;
 };
+
 export const updatePlan = async ({
   plan_id,
   formdata,
@@ -47,6 +63,7 @@ export const updatePlan = async ({
   );
   return data;
 };
+
 export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.post(`/api/v1/cms/plans`, formdata, {
@@ -56,17 +73,21 @@ export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   });
   return data;
 };
+
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [showNavigationDialog, setShowNavigationDialog] = useState(false);
   const [startDateMode, setStartDateMode] = useState<"enroll" | "specific">(
     "enroll",
   );
+
   const [isDateOpen, setIsDateOpen] = useState(false);
-  const { plan_id } = useParams();
+  const { planId } = useParams<{ planId?: string }>();
+  const isCreateMode = !planId;
   const { t } = useTranslate();
   type PlanFormData = z.infer<typeof planSchema>;
   const navigate = useNavigate();
@@ -85,27 +106,27 @@ const Createplan = () => {
   });
 
   const { data: planData } = useQuery({
-    queryKey: ["plan", plan_id],
-    queryFn: () => getPlan(plan_id!),
-    enabled: !!plan_id && plan_id !== "new",
+    queryKey: ["plan", planId],
+    queryFn: () => getPlan(planId!),
+    enabled: !!planId,
     refetchOnWindowFocus: false,
   });
   useEffect(() => {
-    if (plan_id !== "new" && planData) {
+    if (planId && planData) {
       form.reset({
         title: planData.title || "",
         description: planData.description || "",
         total_days: planData.total_days?.toString() || "",
         difficulty_level: planData.difficulty_level || "",
         image_url: planData.plan_image_url || "",
-        tags: planData.tags || [],
+        tags: planTagsToIds(planData.tags),
         language: planData.language || "",
         start_date: planData.start_date || null,
       });
       setStartDateMode(planData.start_date ? "specific" : "enroll");
       setImagePreview(planData.image_url ? `${planData.image_url}` : null);
     }
-  }, [plan_id, planData]);
+  }, [planId, planData]);
 
   const canUpdate = form.formState.isDirty;
 
@@ -124,7 +145,7 @@ const Createplan = () => {
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
-      navigate(`/plan/${data.id}/plan-details`);
+      navigate(ROUTES.plan(data.id));
     },
     onError: (error) => {
       toast.error("Failed to create plan", {
@@ -138,7 +159,7 @@ const Createplan = () => {
       toast.success("Plan updated successfully!", {
         description: "Your plan has been updated and is now available.",
       });
-      navigate("/dashboard");
+      navigate(ROUTES.dashboard);
     },
     onError: (error) => {
       toast.error("Failed to update plan", {
@@ -171,11 +192,13 @@ const Createplan = () => {
     setShowNavigationDialog(false);
     blocker.reset?.();
   };
+
   const handleImageUpload = async (file: File) => {
+    setIsImageUploading(true);
     try {
       const { image, key } = await uploadImageToS3(
         file,
-        plan_id === "new" ? "" : plan_id || "",
+        isCreateMode ? "" : planId || "",
       );
       const imageUrl = image.original;
       const imageKey = key;
@@ -196,6 +219,8 @@ const Createplan = () => {
         console.error("Image upload failed:", error);
         toast.error("Failed to upload image");
       }
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
@@ -204,8 +229,8 @@ const Createplan = () => {
       ...data,
       start_date: startDateMode === "specific" ? data.start_date : null,
     };
-    if (plan_id !== "new") {
-      updatePlanMutation.mutate({ plan_id: plan_id!, formdata: payload });
+    if (planId) {
+      updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
     } else {
       createPlanMutation.mutate(payload);
     }
@@ -266,12 +291,39 @@ const Createplan = () => {
               name="image_url"
               render={({ field }) => (
                 <Pecha.FormItem>
-                  <div>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <h3 className="text-sm font-bold">
                       {t("studio.dashboard.cover_image")}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t("studio.plan.cover_image.description")}
+
+                    {/* Tooltip only on desktop */}
+                    <div className="hidden sm:block">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <IoInformationCircleOutline className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+
+                          <TooltipContent
+                            side="right"
+                            className="bg-black text-white text-xs rounded-md px-3 py-2 shadow-md max-w-xs"
+                          >
+                            <p className="whitespace-pre-line">
+                              {t("studio.plan.cover_image.constraints")}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+
+                    {/* ✅ Mobile only */}
+                    <p className="text-sm sm:hidden text-muted-foreground whitespace-pre-line">
+                      {t("studio.plan.cover_image.constraints")}
                     </p>
                   </div>
                   <Pecha.FormControl>
@@ -328,7 +380,10 @@ const Createplan = () => {
                 <Pecha.DialogHeader>
                   <Pecha.DialogTitle>Upload & Crop Image</Pecha.DialogTitle>
                 </Pecha.DialogHeader>
-                <ImageContentData onUpload={handleImageUpload} />
+                <ImageContentData
+                  onUpload={handleImageUpload}
+                  isLoading={isImageUploading}
+                />
               </Pecha.DialogContent>
             </Pecha.Dialog>
 
@@ -382,7 +437,7 @@ const Createplan = () => {
                     <Pecha.FormControl>
                       <Pecha.Input
                         type="number"
-                        disabled={plan_id !== "new"}
+                        disabled={!isCreateMode}
                         placeholder={t(
                           "studio.plan.form.placeholder.number_of_days",
                         )}
@@ -579,14 +634,28 @@ const Createplan = () => {
               render={({ field }) => (
                 <Pecha.FormItem>
                   <Pecha.FormControl>
-                    <TagInput value={field.value} onChange={field.onChange} />
+                    <PlanTagSearchInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      planId={planId}
+                      initialTags={
+                        Array.isArray(planData?.tags)
+                          ? planData.tags.filter(
+                              (t: unknown): t is PlanTagSummary =>
+                                typeof t === "object" &&
+                                t !== null &&
+                                "id" in t,
+                            )
+                          : undefined
+                      }
+                    />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />
                 </Pecha.FormItem>
               )}
             />
             <div className="pt-8 w-full flex justify-end">
-              {plan_id == "new" ? (
+              {isCreateMode ? (
                 <Pecha.Button
                   type="submit"
                   variant="default"
@@ -604,7 +673,7 @@ const Createplan = () => {
                     type="button"
                     variant="outline"
                     className="sm:h-12 sm:px-12 font-medium"
-                    onClick={() => navigate(`/dashboard`)}
+                    onClick={() => navigate(ROUTES.dashboard)}
                   >
                     {t("common.button.cancel")}
                   </Pecha.Button>

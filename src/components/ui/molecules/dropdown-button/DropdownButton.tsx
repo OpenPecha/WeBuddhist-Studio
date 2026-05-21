@@ -7,6 +7,7 @@ import { IoEyeOffSharp } from "react-icons/io5";
 import { RiDraftLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
@@ -84,7 +85,6 @@ export function DropdownButton({
     allowedStatuses.includes(status.value),
   );
 
-  const canEdit = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
   const canDelete = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
 
   return (
@@ -96,19 +96,17 @@ export function DropdownButton({
           </Pecha.Button>
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
-          {canEdit && (
-            <>
-              <Pecha.DropdownMenuGroup>
-                <Link to={`/plan/${planId}`}>
-                  <Pecha.DropdownMenuItem>
-                    <FaPen className="h-4 w-4" />
-                    Edit Plan
-                  </Pecha.DropdownMenuItem>
-                </Link>
-              </Pecha.DropdownMenuGroup>
-              <Pecha.DropdownMenuSeparator />
-            </>
-          )}
+          <>
+            <Pecha.DropdownMenuGroup>
+              <Link to={ROUTES.planEdit(planId)}>
+                <Pecha.DropdownMenuItem>
+                  <FaPen className="h-4 w-4" />
+                  Edit Plan
+                </Pecha.DropdownMenuItem>
+              </Link>
+            </Pecha.DropdownMenuGroup>
+            <Pecha.DropdownMenuSeparator />
+          </>
           <Pecha.DropdownMenuItem disabled>Status</Pecha.DropdownMenuItem>
           <Pecha.DropdownMenuGroup>
             {availableTransitions.map((status) => {

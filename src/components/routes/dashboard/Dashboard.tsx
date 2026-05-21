@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/atoms/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
@@ -120,7 +121,7 @@ const Dashboard = () => {
               }}
             />
           </div>
-          <Link to="/plan/new">
+          <Link to={ROUTES.planNew}>
             <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
               <IoMdAdd /> Add Plan
             </Button>
@@ -135,7 +136,7 @@ const Dashboard = () => {
             <p className="text-base text-muted-foreground">
               {t("studio.dashboard.no_plan_found")}
             </p>
-            <Link to="/plan/new">
+            <Link to={ROUTES.planNew}>
               <Pecha.Button variant="outline" className="mt-2">
                 <IoMdAdd /> {t("studio.dashboard.add_plan")}
               </Pecha.Button>

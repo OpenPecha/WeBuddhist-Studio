@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./index.css";
 import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -26,7 +27,10 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
+import Tags from "./components/routes/tags/Tags.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
+import { Navigate } from "react-router-dom";
+import { ROUTES } from "./routes/paths.ts";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
@@ -71,7 +75,11 @@ const router = createBrowserRouter([
         element: <EmailVerification />,
       },
       {
-        path: "/",
+        path: ROUTES.home,
+        element: <Navigate to={ROUTES.dashboard} replace />,
+      },
+      {
+        path: ROUTES.dashboard,
         element: (
           <ProtectedRoute>
             <Dashboard />
@@ -79,15 +87,11 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/dashboard",
-        element: (
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        ),
+        path: "/plan",
+        element: <Navigate to={ROUTES.dashboard} replace />,
       },
       {
-        path: "/plan/:plan_id",
+        path: ROUTES.planNew,
         element: (
           <ProtectedRoute>
             <CreatePlan />
@@ -95,7 +99,15 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/plan/:plan_id/plan-details",
+        path: "/plan/:planId/edit",
+        element: (
+          <ProtectedRoute>
+            <CreatePlan />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/plan/:planId",
         element: (
           <ProtectedRoute>
             <PlanDetailsPage />
@@ -111,24 +123,33 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "*",
-        element: (
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/profile/:author_id",
+        path: ROUTES.profile,
         element: (
           <ProtectedRoute>
             <Profile />
           </ProtectedRoute>
         ),
       },
+      {
+        path: ROUTES.tags,
+        element: (
+          <ProtectedRoute>
+            <Tags />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "*",
+        element: (
+          <ProtectedRoute>
+            <Navigate to={ROUTES.dashboard} replace />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 ]);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -137,6 +158,7 @@ createRoot(document.getElementById("root")!).render(
           <UserbackProvider>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
               <RouterProvider router={router} />
+              <ReactQueryDevtools initialIsOpen={false} />
               <Toaster />
             </ThemeProvider>
           </UserbackProvider>

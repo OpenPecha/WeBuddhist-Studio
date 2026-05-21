@@ -6,6 +6,7 @@ import { ACCESS_TOKEN, LANGUAGE, REFRESH_TOKEN } from "./lib/constant";
 import { useAuth } from "./config/auth-context";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "./config/axios-config";
+import { AUTH_ROUTE_PATHS, ROUTES } from "./routes/paths";
 
 function App() {
   const location = useLocation();
@@ -13,14 +14,7 @@ function App() {
   const navigate = useNavigate();
   const [intervalId, setIntervalId] = useState(null);
 
-  const authRoutes = [
-    "/login",
-    "/signup",
-    "/forgot-password",
-    "/reset-password",
-    "/verify-email",
-  ];
-  const hideNavbar = authRoutes.includes(location.pathname);
+  const hideNavbar = AUTH_ROUTE_PATHS.includes(location.pathname);
   const loginMutation = useMutation({
     mutationFn: async (refreshToken: string) => {
       const { data } = await axiosInstance.post(
@@ -41,7 +35,7 @@ function App() {
     onError: () => {
       sessionStorage.removeItem(ACCESS_TOKEN);
       localStorage.removeItem(REFRESH_TOKEN);
-      navigate("/login");
+      navigate(ROUTES.login);
     },
   });
 

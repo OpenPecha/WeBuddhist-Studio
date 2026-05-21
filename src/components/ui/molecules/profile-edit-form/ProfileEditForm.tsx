@@ -29,7 +29,6 @@ interface SocialProfile {
 
 interface ProfileEditFormProps {
   userInfo: any;
-  author_id: string;
   onSuccess: () => void;
 }
 
@@ -49,12 +48,10 @@ const updateUserProfile = async (
   return data;
 };
 
-const ProfileEditForm = ({
-  userInfo,
-  author_id,
-  onSuccess,
-}: ProfileEditFormProps) => {
+const ProfileEditForm = ({ userInfo, onSuccess }: ProfileEditFormProps) => {
   const queryClient = useQueryClient();
+
+  const [isSocialDirty, setIsSocialDirty] = useState(false);
   const [socialProfiles, setSocialProfiles] = useState<SocialProfile[]>(() => {
     const existingProfiles = userInfo?.social_profiles || [];
     const hasEmail = existingProfiles.some(
@@ -69,10 +66,13 @@ const ProfileEditForm = ({
       ...existingProfiles,
     ];
   });
+
   const [imagePreview, setImagePreview] = useState<string | null>(
     userInfo?.image?.medium || null,
   );
+
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -80,7 +80,7 @@ const ProfileEditForm = ({
       firstname: userInfo.firstname || "",
       lastname: userInfo.lastname || "",
       bio: userInfo.bio || "",
-      image_url: userInfo.image_url || "",
+      image_url: decodeURIComponent(userInfo?.image?.original) || "",
     },
   });
 
@@ -89,7 +89,7 @@ const ProfileEditForm = ({
       profileData: ProfileFormData & { social_profiles?: SocialProfile[] },
     ) => updateUserProfile(profileData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userInfo", author_id] });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
       onSuccess();
       toast.success("Profile updated successfully!");
     },
@@ -99,27 +99,35 @@ const ProfileEditForm = ({
   });
 
   const handleImageUpload = async (file: File) => {
+    setIsImageUploading(true);
     try {
-      const { image, key } = await uploadImageToS3(file, "");
-      const imageUrl = image.original;
-      const imageKey = key;
+      const data = await uploadImageToS3(file, "");
+      const imageUrl = data.image.original;
+      const imageKey = data.key;
       setImagePreview(imageUrl);
-      form.setValue("image_url", imageKey);
+      form.setValue("image_url", imageKey, {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image");
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
   const handleAddSocialProfile = () => {
     if (socialProfiles.length < 7) {
       setSocialProfiles([{ account: "", url: "" }, ...socialProfiles]);
+      setIsSocialDirty(false);
     }
   };
 
   const handleRemoveSocialProfile = (index: number) => {
     setSocialProfiles(socialProfiles.filter((_, i) => i !== index));
+    setIsSocialDirty(true);
   };
 
   const handleSocialProfileChange = (
@@ -155,6 +163,7 @@ const ProfileEditForm = ({
       }
     }
   };
+
   return (
     <Pecha.Form {...form}>
       <form
@@ -175,22 +184,23 @@ const ProfileEditForm = ({
                   <IoMdAdd className="h-8 w-8 text-gray-400" />
                 </div>
               ) : (
-                <div className=" w-32 h-32  rounded-full  overflow-hidden  cursor-pointer relative">
+                <div className="w-32 h-32 rounded-full overflow-hidden relative">
                   <img
                     src={imagePreview}
                     alt="Profile"
                     className=" w-full h-full object-cover rounded-full border "
                   />
-                  <div className=" absolute inset-0 bg-black/60 rounded-lg opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <FaEdit
-                      onClick={() => setIsImageDialogOpen(true)}
-                      className="text-white cursor-pointer text-xl"
-                    />
+                  <div
+                    className="absolute inset-0 bg-black/60 rounded-lg opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    onClick={() => setIsImageDialogOpen(true)}
+                  >
+                    <FaEdit className="text-white text-xl" />
                   </div>
                 </div>
               )}
             </div>
           </div>
+
           <Pecha.FormField
             control={form.control}
             name="firstname"
@@ -260,6 +270,7 @@ const ProfileEditForm = ({
                 Add Social Link
               </Pecha.Button>
             </div>
+
             <div className=" h-[300px] overflow-y-auto space-y-4">
               {socialProfiles.map((social, index) => {
                 const usedPlatforms = socialProfiles
@@ -334,13 +345,14 @@ const ProfileEditForm = ({
                           type="url"
                           id={`social-url-${index}`}
                           value={social.url}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             handleSocialProfileChange(
                               index,
                               "url",
                               e.target.value,
-                            )
-                          }
+                            );
+                            setIsSocialDirty(true);
+                          }}
                           placeholder="https://example.com/yourprofile"
                           disabled={
                             social.account === "email" &&
@@ -362,6 +374,7 @@ const ProfileEditForm = ({
               type="submit"
               className=" h-12 px-12 font-medium dark:text-white  bg-[#A51C21] hover:bg-[#A51C21]/90"
               disabled={
+                (!form.formState.isDirty && !isSocialDirty) ||
                 updateProfileMutation.isPending ||
                 socialProfiles.some((sp) => getUrlError(sp.account, sp.url))
               }
@@ -381,7 +394,10 @@ const ProfileEditForm = ({
                 Upload & Crop Profile Picture
               </Pecha.DialogTitle>
             </Pecha.DialogHeader>
-            <ImageContentData onUpload={handleImageUpload} />
+            <ImageContentData
+              onUpload={handleImageUpload}
+              isLoading={isImageUploading}
+            />
           </Pecha.DialogContent>
         </Pecha.Dialog>
       </form>

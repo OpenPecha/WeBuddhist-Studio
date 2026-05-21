@@ -30,22 +30,22 @@ const SideBar = ({
   isEditable,
 }: SideBarProps) => {
   const [expandedDay, setExpandedDay] = useState<number>(selectedDay);
-  const { plan_id } = useParams<{ plan_id: string }>();
+  const { planId } = useParams<{ planId: string }>();
   const queryClient = useQueryClient();
   const { data: currentPlan, isLoading } = useQuery({
-    queryKey: ["planDetails", plan_id],
-    queryFn: () => fetchPlanDetails(plan_id!),
-    enabled: !!plan_id,
+    queryKey: ["planDetails", planId],
+    queryFn: () => fetchPlanDetails(planId!),
+    enabled: !!planId,
     refetchOnWindowFocus: false,
   });
-  const { deleteTask, deleteDay, createNewDay } = usePlanMutations(plan_id);
+  const { deleteTask, deleteDay, createNewDay } = usePlanMutations(planId);
   const { handleTaskReorder, getDisplayTasks } = useTaskReorder(
     currentPlan,
-    plan_id,
+    planId,
   );
   const { handleDayReorder, getDisplayDays } = useDayReorder(
     currentPlan,
-    plan_id,
+    planId,
   );
 
   const displayDays = getDisplayDays();
@@ -68,12 +68,12 @@ const SideBar = ({
   };
 
   const addNewDay = () => {
-    if (!currentPlan || !plan_id) return;
+    if (!currentPlan || !planId) return;
     createNewDay.mutate(undefined, {
       onSuccess: (newDay) => {
         onDaySelect(newDay.day_number);
         setExpandedDay(newDay.day_number);
-        queryClient.invalidateQueries({ queryKey: ["planDetails", plan_id] });
+        queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
       },
     });
   };

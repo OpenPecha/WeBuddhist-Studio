@@ -1,6 +1,7 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import defaultCover from "/default-image.webp";
 import { DropdownButton } from "../dropdown-button/DropdownButton";
 import { FaStar } from "react-icons/fa";
@@ -148,7 +149,7 @@ export function DashBoardTable({
         </Pecha.TableCell>
         <Pecha.TableCell
           className="cursor-pointer"
-          onClick={() => navigate(`/plan/${plan.id}/plan-details`)}
+          onClick={() => navigate(ROUTES.plan(plan.id))}
         >
           <div className="font-semibold text-sm">{plan.title}</div>
           <div className="text-xs text-muted-foreground max-w-2xl truncate">
