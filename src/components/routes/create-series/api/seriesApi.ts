@@ -18,7 +18,6 @@ export type SeriesPayload = {
   plans: Partial<Record<LanguageCode, string[]>>;
 };
 
-/** Partial body for CMS PUT (all fields optional). */
 export type SeriesUpdatePayload = Partial<SeriesPayload>;
 
 export type SeriesPlanDTO = {
@@ -30,6 +29,11 @@ export type SeriesPlanDTO = {
   image_key?: string | null;
   display_order?: number | null;
   total_days?: number | null;
+  status?: string;
+  featured?: boolean;
+  enrolled_count?: number | null;
+  subscription_count?: number | null;
+  updated_at?: string | null;
 };
 
 export type SeriesMetadataDTO = {
@@ -259,4 +263,26 @@ export function buildSeriesUpdateBody(
   featured: boolean,
 ): SeriesPayload {
   return buildSeriesWriteBody(data, featured);
+}
+
+export function buildSeriesPlansPayloadFromIds(
+  plansByLang: Partial<Record<LanguageCode, string[]>>,
+): Partial<Record<LanguageCode, string[]>> {
+  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const out: Partial<Record<LanguageCode, string[]>> = {};
+  for (const code of order) {
+    const ids = plansByLang[code];
+    if (ids?.length) out[code] = ids;
+  }
+  return out;
+}
+
+export async function putSeriesPlans(
+  seriesId: string,
+  plansByLang: Partial<Record<LanguageCode, string[]>>,
+) {
+  return putUpdateSeries({
+    seriesId,
+    body: { plans: buildSeriesPlansPayloadFromIds(plansByLang) },
+  });
 }

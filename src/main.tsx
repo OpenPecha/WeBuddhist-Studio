@@ -24,6 +24,7 @@ import Dashboard from "./components/routes/dashboard/Dashboard";
 import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
 import CreateSeries from "./components/routes/create-series/CreateSeries";
+import SeriesDetailsPage from "./components/routes/series-details/SeriesDetailsPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
@@ -135,8 +136,7 @@ const router = createBrowserRouter([
         path: "/series/:seriesId",
         element: (
           <ProtectedRoute>
-            <div>Series Details</div>
-            {/* <SeriesDetailsPage /> */}
+            <SeriesDetailsPage />
           </ProtectedRoute>
         ),
       },

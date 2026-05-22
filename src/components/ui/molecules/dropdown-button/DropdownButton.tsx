@@ -12,6 +12,12 @@ import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanD
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { STATUS_TRANSITIONS, ALLOWED_TRANSITIONS } from "@/lib/constant";
+import { normalizeStatus } from "@/components/routes/dashboard/dashboardTable";
+
+export type DropdownAdditionalMenuItem = {
+  label: string;
+  onClick: () => void;
+};
 
 const STATUS_ICONS = {
   PUBLISHED: MdOutlineFileUpload,
@@ -28,12 +34,17 @@ export function DropdownButton({
   triggerVariant = "default",
   triggerClassName,
   entityType = "plan",
+  additionalMenuItems,
+  invalidateSeriesId,
 }: {
   id: string;
   currentStatus: string;
   triggerVariant?: "default" | "icon";
   triggerClassName?: string;
   entityType?: DropdownButtonEntityType;
+  additionalMenuItems?: DropdownAdditionalMenuItem[];
+  /** When plan actions run on series details, refresh that series query too. */
+  invalidateSeriesId?: string;
 }) {
   const queryClient = useQueryClient();
   const isSeries = entityType === "series";
@@ -53,6 +64,11 @@ export function DropdownButton({
         description: `The ${entityName.toLowerCase()} has been deleted.`,
       });
       queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
+      if (invalidateSeriesId) {
+        queryClient.invalidateQueries({
+          queryKey: ["series", invalidateSeriesId],
+        });
+      }
     },
     onError: (error: {
       response?: { data?: { detail?: { message?: string } } };
@@ -79,6 +95,11 @@ export function DropdownButton({
         queryClient.invalidateQueries({ queryKey: ["series", id] });
       } else {
         queryClient.invalidateQueries({ queryKey: ["planDetails", id] });
+        if (invalidateSeriesId) {
+          queryClient.invalidateQueries({
+            queryKey: ["series", invalidateSeriesId],
+          });
+        }
       }
     } catch (error: unknown) {
       const message = (
@@ -88,14 +109,16 @@ export function DropdownButton({
     }
   };
 
-  const allowedStatuses =
-    ALLOWED_TRANSITIONS[currentStatus as keyof typeof ALLOWED_TRANSITIONS];
-  const availableTransitions = STATUS_TRANSITIONS.filter((status) =>
-    allowedStatuses.includes(status.value),
+  const status = normalizeStatus(
+    currentStatus,
+  ) as keyof typeof ALLOWED_TRANSITIONS;
+  const allowedStatuses = ALLOWED_TRANSITIONS[status] ?? [];
+  const availableTransitions = STATUS_TRANSITIONS.filter((statusOption) =>
+    allowedStatuses.includes(statusOption.value),
   );
 
-  const canEditDelete =
-    currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
+  const canEditDelete = status === "DRAFT" || status === "ARCHIVED";
+  const extraItems = additionalMenuItems ?? [];
 
   return (
     <Pecha.ButtonGroup className="mx-auto">
@@ -146,6 +169,21 @@ export function DropdownButton({
               );
             })}
           </Pecha.DropdownMenuGroup>
+          {extraItems.length > 0 && (
+            <>
+              <Pecha.DropdownMenuSeparator />
+              <Pecha.DropdownMenuGroup>
+                {extraItems.map((item) => (
+                  <Pecha.DropdownMenuItem
+                    key={item.label}
+                    onClick={item.onClick}
+                  >
+                    {item.label}
+                  </Pecha.DropdownMenuItem>
+                ))}
+              </Pecha.DropdownMenuGroup>
+            </>
+          )}
           {canEditDelete && (
             <>
               <Pecha.DropdownMenuSeparator />

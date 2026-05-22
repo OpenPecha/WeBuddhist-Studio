@@ -29,12 +29,19 @@ type PlanSearchSelectorProps = {
   value: SeriesPlan[];
   onChange: (plans: SeriesPlan[]) => void;
   searchLanguage?: string;
+  /** Hide the inline selected list (e.g. series details shows plans in a table). */
+  hideSelectedList?: boolean;
+  searchPlaceholder?: string;
+  className?: string;
 };
 
 const PlanSearchSelector = ({
   value,
   onChange,
   searchLanguage,
+  hideSelectedList = false,
+  searchPlaceholder = "Find plans to add",
+  className = "",
 }: PlanSearchSelectorProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -105,12 +112,14 @@ const PlanSearchSelector = ({
   const canReorder = value.length > 1;
 
   return (
-    <div className="rounded-md min-h-[200px]">
-      {value.length === 0 ? (
+    <div
+      className={`rounded-md ${hideSelectedList ? "" : "min-h-[200px]"} ${className}`}
+    >
+      {!hideSelectedList && value.length === 0 ? (
         <div className="rounded-md border border-dashed border-muted-foreground/40 px-4 py-8 text-center text-sm text-muted-foreground">
           No plans added yet — use the search to add plans to this series.
         </div>
-      ) : (
+      ) : !hideSelectedList ? (
         <SortableList
           items={sortableIds}
           onReorder={handleReorder}
@@ -157,14 +166,14 @@ const PlanSearchSelector = ({
             ))}
           </div>
         </SortableList>
-      )}
+      ) : null}
 
-      <div className="relative pt-16">
+      <div className={`relative ${hideSelectedList ? "" : "pt-16"}`}>
         <div className="relative">
           <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Find plans to add"
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsDropdownOpen(true)}
