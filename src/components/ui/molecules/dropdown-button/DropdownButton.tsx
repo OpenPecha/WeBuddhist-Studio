@@ -94,8 +94,8 @@ export function DropdownButton({
     allowedStatuses.includes(status.value),
   );
 
-  const canEdit = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
-  const canDelete = currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
+  const canEditDelete =
+    currentStatus === "DRAFT" || currentStatus === "ARCHIVED";
 
   return (
     <Pecha.ButtonGroup className="mx-auto">
@@ -117,7 +117,7 @@ export function DropdownButton({
           )}
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
-          {canEdit && (
+          {canEditDelete && (
             <>
               <Pecha.DropdownMenuGroup>
                 <Link to={editHref}>
@@ -146,7 +146,7 @@ export function DropdownButton({
               );
             })}
           </Pecha.DropdownMenuGroup>
-          {canDelete && (
+          {canEditDelete && (
             <>
               <Pecha.DropdownMenuSeparator />
               <Pecha.DropdownMenuGroup>

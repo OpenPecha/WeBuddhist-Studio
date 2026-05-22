@@ -1,0 +1,231 @@
+import { useState, Activity } from "react";
+import { IoMdAdd, IoMdSearch } from "react-icons/io";
+import { useDebounce } from "use-debounce";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Pecha } from "@/components/ui/shadimport";
+import { Button } from "@/components/ui/atoms/button";
+import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
+import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
+import {
+  createTag,
+  deleteTag,
+  fetchPlanOptions,
+  fetchTags,
+  updateTag,
+  type Tag,
+  type TagPayload,
+} from "./api/tagsApi";
+import TagFormDialog from "./TagFormDialog";
+import TagsTable from "./TagsTable";
+
+const PAGE_SIZE = 10;
+
+const getErrorMessage = (error: unknown): string => {
+  const err = error as { response?: { data?: { detail?: unknown } } };
+  const detail = err?.response?.data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg;
+  if (
+    detail &&
+    typeof detail === "object" &&
+    "message" in detail &&
+    typeof (detail as { message: string }).message === "string"
+  ) {
+    return (detail as { message: string }).message;
+  }
+  return "Something went wrong";
+};
+
+const Tags = () => {
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch] = useDebounce(search, 500);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null);
+
+  const queryClient = useQueryClient();
+
+  const {
+    data: tagsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["cms-tags", currentPage, debouncedSearch],
+    queryFn: () => fetchTags(currentPage, PAGE_SIZE, debouncedSearch),
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  const { data: planOptions = [] } = useQuery({
+    queryKey: ["cms-plans-options"],
+    queryFn: fetchPlanOptions,
+    refetchOnWindowFocus: false,
+  });
+
+  const invalidateTags = () => {
+    queryClient.invalidateQueries({ queryKey: ["cms-tags"] });
+  };
+
+  const createMutation = useMutation({
+    mutationFn: createTag,
+    onSuccess: () => {
+      toast.success("Tag created successfully");
+      setFormOpen(false);
+      invalidateTags();
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: TagPayload }) =>
+      updateTag(id, payload),
+    onSuccess: () => {
+      toast.success("Tag updated successfully");
+      setFormOpen(false);
+      setEditingTag(null);
+      invalidateTags();
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteTag,
+    onSuccess: () => {
+      toast.success("Tag deleted successfully");
+      setDeleteTarget(null);
+      invalidateTags();
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+
+  const handleOpenCreate = () => {
+    setEditingTag(null);
+    setFormOpen(true);
+  };
+
+  const handleOpenEdit = (tag: Tag) => {
+    setEditingTag(tag);
+    setFormOpen(true);
+  };
+
+  const handleFormSubmit = (payload: TagPayload) => {
+    if (editingTag) {
+      updateMutation.mutate({ id: editingTag.id, payload });
+    } else {
+      createMutation.mutate(payload);
+    }
+  };
+
+  const totalPages = tagsData ? Math.ceil(tagsData.total / PAGE_SIZE) : 1;
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <div className="flex flex-col border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
+      <div className="mb-4 px-4 pt-10 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <div className="border w-fit px-2 bg-white dark:bg-input/30 rounded-md border-gray-200 dark:border-[#313132] flex items-center">
+            <IoMdSearch className="w-4 h-4" />
+            <Pecha.Input
+              placeholder="Search tags..."
+              className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                if (currentPage !== 1) setCurrentPage(1);
+              }}
+            />
+          </div>
+          <Button
+            variant="outline"
+            className="bg-gray-100 hover:bg-gray-200"
+            onClick={handleOpenCreate}
+          >
+            <IoMdAdd /> Add Tag
+          </Button>
+        </div>
+        <AuthButton />
+      </div>
+
+      <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
+
+      <div className="px-4 pt-4 h-full flex flex-col items-center justify-between flex-1 min-h-0">
+        {error ? (
+          <p className="text-sm text-red-500 py-8">
+            Failed to load tags. {getErrorMessage(error)}
+          </p>
+        ) : tagsData?.tags.length === 0 && !isLoading ? (
+          <div className="flex flex-col h-full items-center justify-center">
+            <p className="text-base text-muted-foreground">No tags found</p>
+            <Button
+              variant="outline"
+              className="mt-2"
+              onClick={handleOpenCreate}
+            >
+              <IoMdAdd /> Add Tag
+            </Button>
+          </div>
+        ) : (
+          <TagsTable
+            tags={tagsData?.tags ?? []}
+            isLoading={isLoading}
+            onEdit={handleOpenEdit}
+            onDelete={setDeleteTarget}
+          />
+        )}
+      </div>
+
+      <Activity mode={tagsData?.tags?.length ? "visible" : "hidden"}>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </Activity>
+
+      <TagFormDialog
+        open={formOpen}
+        onOpenChange={(open) => {
+          setFormOpen(open);
+          if (!open) setEditingTag(null);
+        }}
+        tag={editingTag}
+        plans={planOptions}
+        isSubmitting={isSubmitting}
+        onSubmit={handleFormSubmit}
+      />
+
+      <Pecha.AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <Pecha.AlertDialogContent>
+          <Pecha.AlertDialogHeader>
+            <Pecha.AlertDialogTitle>Delete tag?</Pecha.AlertDialogTitle>
+            <Pecha.AlertDialogDescription>
+              This will permanently delete &quot;{deleteTarget?.name}&quot;.
+              This action cannot be undone.
+            </Pecha.AlertDialogDescription>
+          </Pecha.AlertDialogHeader>
+          <Pecha.AlertDialogFooter>
+            <Pecha.AlertDialogCancel disabled={deleteMutation.isPending}>
+              Cancel
+            </Pecha.AlertDialogCancel>
+            <Pecha.AlertDialogAction
+              className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
+              disabled={deleteMutation.isPending}
+              onClick={() =>
+                deleteTarget && deleteMutation.mutate(deleteTarget.id)
+              }
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Pecha.AlertDialogAction>
+          </Pecha.AlertDialogFooter>
+        </Pecha.AlertDialogContent>
+      </Pecha.AlertDialog>
+    </div>
+  );
+};
+
+export default Tags;

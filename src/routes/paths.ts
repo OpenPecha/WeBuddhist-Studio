@@ -14,6 +14,7 @@ export const ROUTES = {
   seriesEdit: (seriesId: string) => `/series/${seriesId}/edit`,
   analytics: "/analytics",
   profile: "/profile",
+  tags: "/tags",
 } as const;
 
 export const AUTH_ROUTE_PATHS: readonly string[] = [
