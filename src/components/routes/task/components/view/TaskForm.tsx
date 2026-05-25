@@ -22,6 +22,12 @@ import {
   type SubTask,
 } from "@/components/ui/molecules/subtask-card/SubTaskCard";
 import DaySelector from "@/components/ui/molecules/day-selector/DaySelector";
+import DayAudioSection from "@/components/ui/molecules/day-audio-section/DayAudioSection";
+import {
+  buildSubTaskTimestampFields,
+  mapApiSubtaskTimestamps,
+  validateSubTaskTimestamps,
+} from "@/components/ui/molecules/subtask-card/subtaskTimestamps";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -86,6 +92,7 @@ const TaskForm = ({
             pecha_segment_id: subTask.pecha_segment_id || null,
             segment_ids: subTask.segment_ids || null,
           }),
+          ...buildSubTaskTimestampFields(subTask, false),
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
@@ -119,6 +126,7 @@ const TaskForm = ({
           pecha_segment_id: subTask.pecha_segment_id || null,
           segment_ids: subTask.segment_ids || null,
         }),
+        ...buildSubTaskTimestampFields(subTask, true),
       }));
       await updateSubTasks(editingTask.id, subTasksPayload);
     },
@@ -163,6 +171,11 @@ const TaskForm = ({
         (a: { display_order: number }, b: { display_order: number }) =>
           a.display_order - b.display_order,
       );
+      const timestamps = (data: {
+        start_ms?: number | null;
+        end_ms?: number | null;
+      }) => mapApiSubtaskTimestamps(data);
+
       const subTasksData: SubTask[] = sorted.map((data: any) => {
         switch (data.content_type) {
           case "VIDEO":
@@ -171,18 +184,21 @@ const TaskForm = ({
               content_type: "VIDEO" as const,
               content: data.content,
               duration: data.duration,
+              ...timestamps(data),
             };
           case "TEXT":
             return {
               id: data.id,
               content_type: "TEXT" as const,
               content: data.content,
+              ...timestamps(data),
             };
           case "AUDIO":
             return {
               id: data.id,
               content_type: "AUDIO" as const,
               content: data.content,
+              ...timestamps(data),
             };
           case "IMAGE":
             return {
@@ -190,6 +206,7 @@ const TaskForm = ({
               content_type: "IMAGE" as const,
               imagePreview: data.content,
               content: data.image_url,
+              ...timestamps(data),
             };
           case "SOURCE_REFERENCE":
             return {
@@ -199,12 +216,14 @@ const TaskForm = ({
               source_text_id: data.source_text_id || null,
               pecha_segment_id: data.pecha_segment_id || null,
               segment_ids: data.segment_ids || null,
+              ...timestamps(data),
             };
           default:
             return {
               id: data.id,
               content_type: "TEXT" as const,
               content: data.content,
+              ...timestamps(data),
             };
         }
       });
@@ -322,6 +341,15 @@ const TaskForm = ({
   };
 
   const onSubmit = async (data: TaskFormData) => {
+    const timestampError = validateSubTaskTimestamps(
+      subTasks,
+      currentDayData?.audio_duration_ms,
+    );
+    if (timestampError) {
+      toast.error(timestampError);
+      return;
+    }
+
     const taskData: any = {
       plan_id: planId!,
       day_id: currentDayData!.id,
@@ -340,6 +368,18 @@ const TaskForm = ({
       <h2 className="text-xl font-semibold p-4">
         {isEditMode ? "Edit Task" : "Add Task"}
       </h2>
+      {currentDayData && planId && (
+        <DayAudioSection
+          planId={planId}
+          dayId={currentDayData.id}
+          dayNumber={selectedDay}
+          audioUrl={currentDayData.audio_url}
+          audioDurationMs={currentDayData.audio_duration_ms}
+          hasAudio={currentDayData.has_audio}
+          isEditable={isEditable}
+        />
+      )}
+
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex w-full p-4 lg:w-2/3 justify-between items-center gap-4">
@@ -374,6 +414,8 @@ const TaskForm = ({
                   onRemove={removeSubTask}
                   onImageUpload={handleSubTaskImageUpload}
                   onRemoveImage={handleRemoveSubTaskImage}
+                  dayAudioUrl={currentDayData?.audio_url}
+                  dayAudioDurationMs={currentDayData?.audio_duration_ms}
                 />
               ))}
             </div>

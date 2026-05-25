@@ -54,3 +54,38 @@ export const reorderDays = async (
   );
   return data;
 };
+
+export interface PlanDayAudioUploadResponse {
+  plan_item_id: string;
+  audio_key: string;
+  audio_url: string;
+  duration_ms: number | null;
+  message: string;
+}
+
+export const uploadDayAudio = async (
+  day_id: string,
+  file: File,
+  duration_ms?: number,
+) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (duration_ms != null) {
+    formData.append("duration_ms", String(duration_ms));
+  }
+  const { data } = await axiosInstance.post<PlanDayAudioUploadResponse>(
+    `/api/v1/cms/media/upload/day-audio`,
+    formData,
+    {
+      params: { day_id },
+      headers: getAuthHeaders(),
+    },
+  );
+  return data;
+};
+
+export const deleteDayAudio = async (day_id: string) => {
+  await axiosInstance.delete(`/api/v1/cms/plans/days/${day_id}/audio`, {
+    headers: getAuthHeaders(),
+  });
+};
