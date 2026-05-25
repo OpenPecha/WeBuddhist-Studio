@@ -83,7 +83,8 @@ const SubtaskCard = ({
         )}
       </div>
       <SubtaskContent type={subtask.content_type} content={subtask.content} />
-      {subtask.start_ms != null && subtask.end_ms != null &&
+      {subtask.start_ms != null &&
+        subtask.end_ms != null &&
         (dayAudioUrl ? (
           <AudioSegmentPlayer
             audioUrl={dayAudioUrl}

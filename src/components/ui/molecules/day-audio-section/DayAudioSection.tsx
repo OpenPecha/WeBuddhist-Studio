@@ -12,7 +12,6 @@ import {
 } from "@/components/routes/task/api/planApi";
 import { AiOutlineSound } from "react-icons/ai";
 
-
 interface DayAudioSectionProps {
   planId: string;
   dayId: string;
@@ -96,7 +95,7 @@ const DayAudioSection = ({
           size="sm"
           onClick={() => setIsExpanded(true)}
         >
-        <AiOutlineSound /> Add narration
+          <AiOutlineSound /> Add narration
         </Pecha.Button>
       </div>
     );
