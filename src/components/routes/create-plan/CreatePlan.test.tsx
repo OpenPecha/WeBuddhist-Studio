@@ -151,7 +151,7 @@ describe("CreatePlan Component", () => {
     renderWithProviders(<CreatePlan />);
 
     expect(
-      screen.getByText("studio.plan.form_field.details"),
+      screen.getByRole("heading", { name: "Plan Details" }),
     ).toBeInTheDocument();
   });
 
@@ -555,8 +555,7 @@ describe("CreatePlan Component", () => {
     await waitFor(() => {
       expect(axiosInstance.put).toHaveBeenCalledWith(
         "/api/v1/cms/plans/plan-123",
-        expect.any(Object),
-        expect.any(Object),
+        expect.objectContaining({ title: "Updated Plan" }),
       );
     });
   });
@@ -588,7 +587,6 @@ describe("CreatePlan Component", () => {
       expect(putSpy).toHaveBeenCalledWith(
         "/api/v1/cms/plans/plan-123",
         expect.objectContaining({ start_date: null }),
-        expect.any(Object),
       );
     });
   });

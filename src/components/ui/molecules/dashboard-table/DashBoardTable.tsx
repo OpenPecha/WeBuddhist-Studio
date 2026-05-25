@@ -5,6 +5,7 @@ import { ROUTES } from "@/routes/paths";
 import defaultCover from "/default-image.webp";
 import { DropdownButton } from "../dropdown-button/DropdownButton";
 import { FaStar } from "react-icons/fa";
+import type { useTranslate } from "@tolgee/react";
 
 export interface Plan {
   id: string;
@@ -20,13 +21,13 @@ export interface Plan {
 
 interface DashBoardTableProps {
   plans: Plan[];
-  t: (key: string, parameters?: any) => string;
+  t: ReturnType<typeof useTranslate>["t"];
   isLoading?: boolean;
-  error?: any;
+  error?: { message: string };
   sortBy: string;
   sortOrder: string;
   onSort: (column: string) => void;
-  handleFeatured: (planId: string) => void;
+  handleFeatured: (id: string) => void;
 }
 
 export function DashBoardTable({
@@ -177,7 +178,7 @@ export function DashBoardTable({
         </Pecha.TableCell>
         <Pecha.TableCell>
           <div className="flex items-center gap-2">
-            <DropdownButton planId={plan.id} currentStatus={plan.status} />
+            <DropdownButton id={plan.id} currentStatus={plan.status} />
           </div>
         </Pecha.TableCell>
       </Pecha.TableRow>

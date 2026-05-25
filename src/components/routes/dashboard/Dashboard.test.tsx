@@ -1,9 +1,21 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Dashboard from "./Dashboard";
 import axiosInstance from "@/config/axios-config";
 import { vi } from "vitest";
+
+const emptyDashboardResponse = {
+  items: [],
+  pagination: { page: 1, page_size: 10, total: 0, total_pages: 0 },
+};
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -23,28 +35,59 @@ const renderWithProviders = (component: React.ReactElement) => {
 };
 
 describe("Dashboard Component", () => {
-  it("renders dashboard with search input and add plan button", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("renders dashboard with search input and add button", () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
     renderWithProviders(<Dashboard />);
 
     expect(
       screen.getByPlaceholderText("common.placeholder.search"),
     ).toBeDefined();
 
-    expect(screen.getByText("Add Plan")).toBeDefined();
+    expect(screen.getByLabelText("Add")).toBeDefined();
   });
 
-  it("displays table headers correctly", () => {
+  it("displays table headers correctly", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "plan-1",
+            type: "plan",
+            title: "Header Test Plan",
+            image_url: "",
+            status: "DRAFT",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
+    });
     renderWithProviders(<Dashboard />);
 
-    expect(screen.getByText("studio.dashboard.cover_image")).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByRole("table")).toBeInTheDocument();
+    });
+
     expect(screen.getByText("studio.dashboard.title")).toBeDefined();
-    expect(screen.getByText("studio.dashboard.plan_days")).toBeDefined();
     expect(screen.getByText("studio.dashboard.plan_used")).toBeDefined();
-    expect(screen.getByText("Status")).toBeDefined();
+    expect(screen.getByText("Date Modified")).toBeDefined();
+    expect(screen.getByText("Featured")).toBeDefined();
     expect(screen.getByText("studio.dashboard.actions")).toBeDefined();
   });
 
   it("renders search input with correct placeholder", () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
     renderWithProviders(<Dashboard />);
 
     const searchInput = screen.getByPlaceholderText(
@@ -55,6 +98,9 @@ describe("Dashboard Component", () => {
   });
 
   it("allows typing in search input", () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
     renderWithProviders(<Dashboard />);
 
     const searchInput = screen.getByPlaceholderText(
@@ -66,106 +112,223 @@ describe("Dashboard Component", () => {
     expect(searchInput.value).toBe("test search");
   });
 
-  it("renders add plan button with correct link", () => {
-    renderWithProviders(<Dashboard />);
-
-    const addPlanButton = screen.getByText("Add Plan");
-    expect(addPlanButton).toBeDefined();
-
-    const linkElement = addPlanButton.closest("a");
-    expect(linkElement).toBeDefined();
-    expect(linkElement?.getAttribute("href")).toBe("/plan/new");
-  });
-
-  it("renders loading state by default", () => {
-    renderWithProviders(<Dashboard />);
-
-    expect(screen.getByText("Loading...")).toBeDefined();
-  });
-
-  it("has proper table structure", () => {
-    renderWithProviders(<Dashboard />);
-
-    const table = screen.getByRole("table");
-    expect(table).toBeDefined();
-
-    const coverImageHeader = screen.getByText("studio.dashboard.cover_image");
-    expect(coverImageHeader.tagName).toBe("TH");
-  });
-
-  it("fetches plans correctly and returns the correct data", async () => {
+  it("renders add dropdown with plan and series links", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plans: [], total: 0 },
+      data: emptyDashboardResponse,
     });
-
+    const user = userEvent.setup();
     renderWithProviders(<Dashboard />);
+
     await waitFor(() => {
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    await user.click(screen.getByLabelText("Add"));
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Add Plan" }),
+    ).toBeInTheDocument();
+    const addPlanItem = screen.getByRole("menuitem", { name: "Add Plan" });
+    expect(addPlanItem.closest("a")?.getAttribute("href")).toBe("/plan/new");
+
+    const addSeriesItem = screen.getByRole("menuitem", { name: "Add Series" });
+    expect(addSeriesItem.closest("a")?.getAttribute("href")).toBe(
+      "/series/new",
+    );
   });
 
-  it("should toggle sort order when clicking column header multiple times", async () => {
+  it("has proper table structure when items exist", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: { plans: [], total: 0 },
+      data: {
+        items: [
+          {
+            id: "plan-1",
+            type: "plan",
+            title: "Sample",
+            image_url: "",
+            status: "DRAFT",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
+    });
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("table")).toBeDefined();
+    });
+
+    const table = screen.getByRole("table");
+    const headers = within(table).getAllByRole("columnheader");
+    expect(headers).toHaveLength(6);
+    expect(headers[0]?.textContent?.trim()).toBe("");
+  });
+
+  it("fetches dashboard items from unified CMS endpoint", async () => {
+    const getSpy = vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
     });
 
     renderWithProviders(<Dashboard />);
-    const titleHeader = screen.getByText("studio.dashboard.title");
-    fireEvent.click(titleHeader);
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
+      expect(getSpy).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/cms/dashboard/items"),
         expect.objectContaining({
           params: expect.objectContaining({
-            sort_by: "title",
-            sort_order: "asc",
+            tab: "all",
+            page: 1,
+            page_size: 10,
           }),
         }),
       );
     });
-    fireEvent.click(titleHeader);
+  });
+
+  it("passes tab and filters when switching to plans", async () => {
+    const getSpy = vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: emptyDashboardResponse,
+    });
+    const user = userEvent.setup();
+    renderWithProviders(<Dashboard />);
+
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
+      expect(getSpy).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Plans" }));
+
+    await waitFor(() => {
+      expect(getSpy).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/cms/dashboard/items"),
         expect.objectContaining({
           params: expect.objectContaining({
-            sort_by: "title",
-            sort_order: "desc",
+            tab: "plans",
           }),
         }),
       );
     });
-    fireEvent.click(titleHeader);
-    await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/v1/cms/plan`),
-        expect.objectContaining({
-          params: expect.objectContaining({
-            sort_by: "title",
-            sort_order: "asc",
-          }),
-        }),
-      );
+  });
+
+  it("shows stack badge on series cover image", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "series-1",
+            type: "series",
+            metadata: [
+              {
+                id: "meta-1",
+                title: "Test Series",
+                language: "EN",
+              },
+            ],
+            image_url: "https://example.com/cover.jpg",
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 5,
+            plans_count: 10,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
     });
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Series")).toBeInTheDocument();
+    });
+
+    expect(screen.getByLabelText("Series, 10 plans")).toBeInTheDocument();
+  });
+
+  it("shows same published actions for series as plans (Unpublish, no Edit)", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "series-1",
+            type: "series",
+            metadata: [{ id: "m1", title: "Published Series", language: "EN" }],
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            plans_count: 2,
+            created_at: "2025-01-01T00:00:00Z",
+          },
+          {
+            id: "plan-1",
+            type: "plan",
+            title: "Published Plan",
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 2, total_pages: 1 },
+      },
+    });
+    const user = userEvent.setup();
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Published Series")).toBeInTheDocument();
+    });
+
+    const seriesActions = screen.getByRole("button", {
+      name: "Series actions",
+    });
+    await user.click(seriesActions);
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Unpublish" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: "Edit Series" }),
+    ).not.toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+
+    const planActions = screen.getByRole("button", { name: "Plan actions" });
+    await user.click(planActions);
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Unpublish" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: "Edit Plan" }),
+    ).not.toBeInTheDocument();
   });
 
   it("handles toggle featured on a plan", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
       data: {
-        plans: [
+        items: [
           {
             id: "plan-1",
-            image_url: "",
+            type: "plan",
             title: "Test Plan",
-            description: "Test description",
-            total_days: "7",
-            subscription_count: "10",
+            image_url: "",
             status: "PUBLISHED",
             featured: false,
-            language: "EN",
+            languages: ["EN"],
+            enrolled_count: 10,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
           },
         ],
-        total: 1,
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
       },
     });
     axiosInstance.patch = vi.fn().mockResolvedValue({ data: {} });
@@ -173,18 +336,61 @@ describe("Dashboard Component", () => {
     renderWithProviders(<Dashboard />);
 
     await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      expect(screen.getByText("Test Plan")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Test Plan")).toBeInTheDocument();
-
-    const featuredButton = screen.getByText("Not Featured");
+    const featuredButton = screen.getByRole("button", { name: "Not featured" });
     fireEvent.click(featuredButton);
 
     await waitFor(() => {
       expect(axiosInstance.patch).toHaveBeenCalledWith(
         "/api/v1/cms/plans/plan-1/featured",
-        expect.any(Object),
+      );
+    });
+  });
+
+  it("handles toggle featured on a series", async () => {
+    vi.spyOn(axiosInstance, "get").mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: "series-1",
+            type: "series",
+            metadata: [
+              {
+                id: "meta-1",
+                title: "Test Series",
+                language: "EN",
+              },
+            ],
+            image_url: "",
+            status: "PUBLISHED",
+            featured: false,
+            languages: ["EN"],
+            enrolled_count: 0,
+            plans_count: 3,
+            updated_at: "2025-01-01T00:00:00Z",
+            created_at: "2025-01-01T00:00:00Z",
+          },
+        ],
+        pagination: { page: 1, page_size: 10, total: 1, total_pages: 1 },
+      },
+    });
+    axiosInstance.put = vi.fn().mockResolvedValue({ data: {} });
+
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Series")).toBeInTheDocument();
+    });
+
+    const featuredButton = screen.getByRole("button", { name: "Not featured" });
+    fireEvent.click(featuredButton);
+
+    await waitFor(() => {
+      expect(axiosInstance.put).toHaveBeenCalledWith(
+        "/api/v1/cms/series/series-1",
+        { featured: true },
       );
     });
   });

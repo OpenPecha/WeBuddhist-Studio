@@ -23,6 +23,8 @@ import Signup from "./components/auth/signup/Signup";
 import Dashboard from "./components/routes/dashboard/Dashboard";
 import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
+import CreateSeries from "./components/routes/create-series/CreateSeries";
+import SeriesDetailsPage from "./components/routes/series-details/SeriesDetailsPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
@@ -34,9 +36,9 @@ import { ROUTES } from "./routes/paths.ts";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
-const tolgee = new (Tolgee as any)()
-  .use(DevTools)
-  .use(FormatSimple)
+const tolgee = Tolgee()
+  .use(DevTools())
+  .use(FormatSimple())
   .use(
     BackendFetch({
       prefix:
@@ -111,6 +113,30 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <PlanDetailsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.seriesNew,
+        element: (
+          <ProtectedRoute>
+            <CreateSeries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/series/:seriesId/edit",
+        element: (
+          <ProtectedRoute>
+            <CreateSeries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/series/:seriesId",
+        element: (
+          <ProtectedRoute>
+            <SeriesDetailsPage />
           </ProtectedRoute>
         ),
       },
