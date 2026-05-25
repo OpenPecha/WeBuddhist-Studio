@@ -228,9 +228,7 @@ export const SubTaskCard = ({
   dayAudioDurationMs,
 }: SubTaskCardProps) => {
   const showTimestamps =
-    dayAudioUrl &&
-    dayAudioDurationMs != null &&
-    dayAudioDurationMs > 0;
+    dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
 
   const renderContent = () => {
     switch (subTask.content_type) {

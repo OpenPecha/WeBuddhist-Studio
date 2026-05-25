@@ -26,7 +26,11 @@ export function validateSubTaskTimestamps(
     if (hasStart !== hasEnd) {
       return `Subtask ${i + 1}: provide both start and end times, or clear both.`;
     }
-    if (hasStart && hasEnd && (st.start_ms as number) >= (st.end_ms as number)) {
+    if (
+      hasStart &&
+      hasEnd &&
+      (st.start_ms as number) >= (st.end_ms as number)
+    ) {
       return `Subtask ${i + 1}: start must be before end.`;
     }
     if (
