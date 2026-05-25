@@ -34,7 +34,10 @@ export const AudioTrimmer = ({
 
   const commitRange = useCallback(
     (start: number, end: number) => {
-      const clampedStart = Math.max(0, Math.min(start, maxDurationMs - MIN_SEGMENT_MS));
+      const clampedStart = Math.max(
+        0,
+        Math.min(start, maxDurationMs - MIN_SEGMENT_MS),
+      );
       const clampedEnd = Math.max(
         clampedStart + MIN_SEGMENT_MS,
         Math.min(end, maxDurationMs),
@@ -107,17 +110,24 @@ export const AudioTrimmer = ({
     onChange(null, null);
   };
 
-  const startPercent = maxDurationMs > 0 ? (localStart / maxDurationMs) * 100 : 0;
+  const startPercent =
+    maxDurationMs > 0 ? (localStart / maxDurationMs) * 100 : 0;
   const endPercent = maxDurationMs > 0 ? (localEnd / maxDurationMs) * 100 : 100;
 
   return (
     <div className="space-y-3 rounded-md border border-dashed border-gray-300 dark:border-input bg-[#FAFAFA] dark:bg-sidebar-secondary p-3">
-      <audio ref={audioRef} src={audioUrl} preload="metadata" className="hidden" />
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        preload="metadata"
+        className="hidden"
+      />
 
       <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
         <span>Day audio segment</span>
         <span>
-          {formatMs(localStart)} – {formatMs(localEnd)} ({localEnd - localStart} ms)
+          {formatMs(localStart)} – {formatMs(localEnd)} ({localEnd - localStart}{" "}
+          ms)
         </span>
       </div>
 
