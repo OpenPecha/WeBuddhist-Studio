@@ -222,3 +222,28 @@ export const isPastDate = (d: Date): boolean => {
   today.setHours(0, 0, 0, 0);
   return d < today;
 };
+
+/** Format milliseconds as m:ss for audio timestamps */
+export const formatMs = (ms: number): string => {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+};
+
+/** Read duration from a local audio file before upload */
+export const getAudioDurationMs = (file: File): Promise<number> =>
+  new Promise((resolve, reject) => {
+    const audio = document.createElement("audio");
+    audio.preload = "metadata";
+    const url = URL.createObjectURL(file);
+    audio.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(Math.round(audio.duration * 1000));
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to read audio duration"));
+    };
+    audio.src = url;
+  });

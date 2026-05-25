@@ -13,6 +13,7 @@ import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 import { PiDotsSixVertical } from "react-icons/pi";
 import { useSubtaskReorder } from "../../hooks/useSubtaskReorder";
 import { FaPen } from "react-icons/fa";
+import { formatMs } from "@/lib/utils";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
@@ -78,6 +79,11 @@ const SubtaskCard = ({
         )}
       </div>
       <SubtaskContent type={subtask.content_type} content={subtask.content} />
+      {subtask.start_ms != null && subtask.end_ms != null && (
+        <p className="text-xs text-muted-foreground border-t border-dashed pt-2">
+          Timeline: {formatMs(subtask.start_ms)} – {formatMs(subtask.end_ms)}
+        </p>
+      )}
     </div>
   );
 };

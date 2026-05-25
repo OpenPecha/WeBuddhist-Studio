@@ -37,17 +37,21 @@ export const uploadImageToS3 = async (file: File, plan_id: string) => {
   return data;
 };
 
+export interface SubTaskPayload {
+  content: string | null;
+  content_type: string;
+  display_order: number;
+  duration?: string;
+  source_text_id?: string | null;
+  pecha_segment_id?: string | null;
+  segment_ids?: string[] | null;
+  start_ms?: number | null;
+  end_ms?: number | null;
+}
+
 export const createSubTasks = async (
   task_id: string,
-  subTasksData: {
-    content: string | null;
-    content_type: string;
-    display_order: number;
-    duration?: string;
-    source_text_id?: string | null;
-    pecha_segment_id?: string | null;
-    segment_ids?: string[] | null;
-  }[],
+  subTasksData: SubTaskPayload[],
 ) => {
   const { data } = await axiosInstance.post(
     `/api/v1/cms/sub-tasks`,
@@ -62,18 +66,13 @@ export const createSubTasks = async (
   return data;
 };
 
+export interface SubTaskUpdatePayload extends SubTaskPayload {
+  id: string | null;
+}
+
 export const updateSubTasks = async (
   task_id: string,
-  subTasksData: {
-    id: string | null;
-    content: string | null;
-    content_type: string;
-    display_order: number;
-    duration?: string;
-    source_text_id?: string | null;
-    pecha_segment_id?: string | null;
-    segment_ids?: string[] | null;
-  }[],
+  subTasksData: SubTaskUpdatePayload[],
 ) => {
   await axiosInstance.put(
     `/api/v1/cms/sub-tasks`,
