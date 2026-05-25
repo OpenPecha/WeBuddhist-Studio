@@ -140,8 +140,6 @@ export function DropdownButton({
           )}
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
-          {canEditDelete && (
-            <>
               <Pecha.DropdownMenuGroup>
                 <Link to={editHref}>
                   <Pecha.DropdownMenuItem>
@@ -151,8 +149,6 @@ export function DropdownButton({
                 </Link>
               </Pecha.DropdownMenuGroup>
               <Pecha.DropdownMenuSeparator />
-            </>
-          )}
           <Pecha.DropdownMenuItem disabled>Status</Pecha.DropdownMenuItem>
           <Pecha.DropdownMenuGroup>
             {availableTransitions.map((status) => {

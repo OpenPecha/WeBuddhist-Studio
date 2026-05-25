@@ -19,7 +19,11 @@ const PlanDetailsPage = () => {
   });
 
   const status = planDetails?.status || "DRAFT";
-  const isEditable = status === "DRAFT" || status === "ARCHIVED";
+  const isEditable = true;
+  const currentDayData = planDetails?.days?.find(
+    (day: { day_number: number }) => day.day_number === selectedDay,
+  );
+  // const isEditable = status === "DRAFT" || status === "ARCHIVED";
 
   const handleDaySelect = (dayNumber: number) => {
     setSelectedDay(dayNumber);
@@ -68,6 +72,7 @@ const PlanDetailsPage = () => {
             taskId={selectedTaskId}
             onEditTask={handleEditTask}
             isEditable={isEditable}
+            dayAudioUrl={currentDayData?.audio_url}
           />
         ) : (
           <TaskForm
