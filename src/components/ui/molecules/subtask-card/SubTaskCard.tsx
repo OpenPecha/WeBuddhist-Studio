@@ -9,8 +9,14 @@ import {
   SourceReferenceContent,
 } from "../content-sub/ContentComponents";
 import { getYouTubeDuration } from "@/lib/utils";
+import { AudioTrimmer } from "@/components/ui/molecules/audio-trimmer/AudioTrimmer";
 
-interface VideoSubTask {
+interface SubTaskTimestamps {
+  start_ms?: number | null;
+  end_ms?: number | null;
+}
+
+interface VideoSubTask extends SubTaskTimestamps {
   id?: string | null;
   content_type: "VIDEO";
   content: string;
@@ -18,21 +24,21 @@ interface VideoSubTask {
   duration?: string;
 }
 
-interface TextSubTask {
+interface TextSubTask extends SubTaskTimestamps {
   id?: string | null;
   content_type: "TEXT";
   content: string;
   display_order?: number;
 }
 
-interface AudioSubTask {
+interface AudioSubTask extends SubTaskTimestamps {
   id?: string | null;
   content_type: "AUDIO";
   content: string;
   display_order?: number;
 }
 
-interface ImageSubTask {
+interface ImageSubTask extends SubTaskTimestamps {
   id?: string | null;
   content_type: "IMAGE";
   content: string | null;
@@ -40,7 +46,7 @@ interface ImageSubTask {
   display_order?: number;
 }
 
-interface SourceSubTask {
+interface SourceSubTask extends SubTaskTimestamps {
   id?: string | null;
   content_type: "SOURCE_REFERENCE";
   content: string;
@@ -63,6 +69,8 @@ interface SubTaskCardProps {
   onRemove: (index: number) => void;
   onImageUpload: (index: number, file: File) => Promise<void> | void;
   onRemoveImage: (index: number) => void;
+  dayAudioUrl?: string | null;
+  dayAudioDurationMs?: number | null;
 }
 
 const VideoSubtask = ({
@@ -184,6 +192,31 @@ const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
   <SourceReferenceContent content={subTask.content} />
 );
 
+const SubtaskTimestampSection = ({
+  subTask,
+  index,
+  onUpdate,
+  dayAudioUrl,
+  dayAudioDurationMs,
+}: {
+  subTask: SubTask;
+  index: number;
+  onUpdate: (index: number, updates: Partial<SubTask>) => void;
+  dayAudioUrl: string;
+  dayAudioDurationMs: number;
+}) => (
+  <div className="space-y-2 pt-2 border-t border-dashed border-gray-200 dark:border-input">
+    <p className="text-sm font-medium">Timeline (day audio)</p>
+    <AudioTrimmer
+      audioUrl={dayAudioUrl}
+      maxDurationMs={dayAudioDurationMs}
+      startMs={subTask.start_ms ?? null}
+      endMs={subTask.end_ms ?? null}
+      onChange={(start_ms, end_ms) => onUpdate(index, { start_ms, end_ms })}
+    />
+  </div>
+);
+
 export const SubTaskCard = ({
   subTask,
   index,
@@ -191,7 +224,12 @@ export const SubTaskCard = ({
   onRemove,
   onImageUpload,
   onRemoveImage,
+  dayAudioUrl,
+  dayAudioDurationMs,
 }: SubTaskCardProps) => {
+  const showTimestamps =
+    dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
+
   const renderContent = () => {
     switch (subTask.content_type) {
       case "VIDEO":
@@ -239,6 +277,15 @@ export const SubTaskCard = ({
         </Pecha.Button>
       </div>
       {renderContent()}
+      {showTimestamps && (
+        <SubtaskTimestampSection
+          subTask={subTask}
+          index={index}
+          onUpdate={onUpdate}
+          dayAudioUrl={dayAudioUrl}
+          dayAudioDurationMs={dayAudioDurationMs}
+        />
+      )}
     </div>
   );
 };

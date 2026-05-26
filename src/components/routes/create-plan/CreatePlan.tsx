@@ -5,7 +5,6 @@ import {
   IoCalendarClearOutline,
   IoInformationCircleOutline,
 } from "react-icons/io5";
-
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
@@ -35,12 +34,7 @@ import {
 } from "@/components/ui/atoms/tooltip";
 
 export const getPlan = async (plan_id: string) => {
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`);
   return data;
 };
 
@@ -51,26 +45,15 @@ export const updatePlan = async ({
   plan_id: string;
   formdata: z.infer<typeof planSchema>;
 }) => {
-  const accessToken = sessionStorage.getItem("accessToken");
   const { data } = await axiosInstance.put(
     `/api/v1/cms/plans/${plan_id}`,
     formdata,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
   );
   return data;
 };
 
 export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
-  const accessToken = sessionStorage.getItem("accessToken");
-  const { data } = await axiosInstance.post(`/api/v1/cms/plans`, formdata, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const { data } = await axiosInstance.post(`/api/v1/cms/plans`, formdata);
   return data;
 };
 
@@ -155,7 +138,7 @@ const Createplan = () => {
   });
   const updatePlanMutation = useMutation({
     mutationFn: updatePlan,
-    onSuccess: (_) => {
+    onSuccess: () => {
       toast.success("Plan updated successfully!", {
         description: "Your plan has been updated and is now available.",
       });
@@ -210,13 +193,15 @@ const Createplan = () => {
       });
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
-    } catch (error: any) {
-      if (error?.response?.status === 413) {
+    } catch (error: unknown) {
+      if (
+        (error as { response?: { status?: number } }).response?.status === 413
+      ) {
         toast.error("Failed to update Image", {
           description: "file exceeds the maximum size of 1MB",
         });
       } else {
-        console.error("Image upload failed:", error);
+        console.error("Image upload failed:", error as Error);
         toast.error("Failed to upload image");
       }
     } finally {
@@ -239,7 +224,7 @@ const Createplan = () => {
     <div className="flex flex-col sm:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
       <div className="flex-1 p-4 sm:p-10">
         <h1 className="text-xl font-bold my-4">
-          {t("studio.plan.form_field.details")}
+          Plan {isCreateMode ? "Details" : "Edit"}
         </h1>
 
         <Pecha.Form {...form}>
