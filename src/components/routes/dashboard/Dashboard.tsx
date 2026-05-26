@@ -1,23 +1,40 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { DashboardContentTable } from "@/components/routes/dashboard/DashboardContentTable";
 import {
-  DASHBOARD_PAGE_SIZE,
   fetchDashboardItems,
   type DashboardTab,
 } from "@/components/routes/dashboard/dashboardApi";
 import type { DashboardRowKind } from "@/components/routes/dashboard/dashboardTable";
+import {
+  buildDashboardSearchParams,
+  dashboardUrlStateToFetchParams,
+  mergeDashboardUrlState,
+  parseDashboardSearchParams,
+  type DashboardPlanStatus,
+  type DashboardSort,
+  type DashboardUrlState,
+} from "@/components/routes/dashboard/dashboardUrlState";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
-import { useState, Activity, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  Activity,
+  type ReactNode,
+} from "react";
 import { useDebounce } from "use-debounce";
 import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/atoms/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/routes/paths";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
+
+const SEARCH_DEBOUNCE_MS = 500;
 
 const toggleFeatured = async ({
   id,
@@ -66,20 +83,44 @@ function DashboardListPlaceholder({
 
 const Dashboard = () => {
   const { t } = useTranslate();
-  const [view, setView] = useState<DashboardTab>("all");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [debouncedSearch] = useDebounce(search, 500);
-  const [sortBy, setSortBy] = useState("");
-  const [languageFilter, setLanguageFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const setViewAndReset = (next: DashboardTab) => {
-    setView(next);
-    setPage(1);
-    setLanguageFilter("");
-    setStatusFilter("");
-  };
+  const urlState = useMemo(
+    () => parseDashboardSearchParams(searchParams),
+    [searchParams],
+  );
+
+  const [searchDraft, setSearchDraft] = useState(urlState.search ?? "");
+  const [debouncedSearchDraft] = useDebounce(searchDraft, SEARCH_DEBOUNCE_MS);
+
+  useEffect(() => {
+    setSearchDraft(urlState.search ?? "");
+  }, [urlState.search]);
+
+  const replaceUrlState = useCallback(
+    (patch: Partial<DashboardUrlState>) => {
+      const next = mergeDashboardUrlState(urlState, patch);
+      setSearchParams(buildDashboardSearchParams(next), { replace: true });
+    },
+    [urlState, setSearchParams],
+  );
+
+  const resetPageFilters = { page: 1 as const };
+
+  useEffect(() => {
+    const trimmed = debouncedSearchDraft.trim();
+    const committed = urlState.search ?? "";
+    if (trimmed === committed) return;
+    replaceUrlState({
+      search: trimmed || null,
+      ...resetPageFilters,
+    });
+  }, [debouncedSearchDraft, urlState.search, replaceUrlState]);
+
+  const fetchParams = useMemo(
+    () => dashboardUrlStateToFetchParams(urlState),
+    [urlState],
+  );
 
   const {
     data: dashboardData,
@@ -88,27 +129,20 @@ const Dashboard = () => {
     error,
     isError,
   } = useQuery({
-    queryKey: [
-      "dashboard-items",
-      view,
-      page,
-      debouncedSearch,
-      languageFilter,
-      statusFilter,
-      sortBy,
-    ],
-    queryFn: () =>
-      fetchDashboardItems({
-        tab: view,
-        page,
-        pageSize: DASHBOARD_PAGE_SIZE,
-        search: debouncedSearch,
-        ...(languageFilter && { language: languageFilter }),
-        ...(statusFilter && { status: statusFilter }),
-      }),
+    queryKey: ["dashboard-items", fetchParams],
+    queryFn: () => fetchDashboardItems(fetchParams),
     refetchOnWindowFocus: false,
     retry: false,
   });
+
+  const totalPages = dashboardData?.pagination.total_pages ?? 1;
+
+  useEffect(() => {
+    if (status !== "success") return;
+    if (urlState.page > totalPages && totalPages > 0) {
+      replaceUrlState({ page: totalPages });
+    }
+  }, [status, urlState.page, totalPages, replaceUrlState]);
 
   const queryClient = useQueryClient();
   const featuredMutation = useMutation({
@@ -132,8 +166,11 @@ const Dashboard = () => {
     featuredMutation.mutate({ id, kind, featured });
   };
 
+  const setTab = (next: DashboardTab) => {
+    replaceUrlState({ tab: next, ...resetPageFilters });
+  };
+
   const rows = dashboardData?.rows ?? [];
-  const totalPages = dashboardData?.pagination.total_pages ?? 1;
   const hasRows = rows.length > 0;
   const isLoadingTable = status === "pending" || isFetching;
   const showEmpty = status === "success" && !hasRows;
@@ -146,28 +183,36 @@ const Dashboard = () => {
     }`;
 
   const emptyTitle =
-    view === "plans"
+    urlState.tab === "plans"
       ? t("studio.dashboard.no_plan_found")
-      : view === "series"
+      : urlState.tab === "series"
         ? "No series found."
         : "Nothing to show yet";
 
   const emptyDescription =
-    view === "plans"
+    urlState.tab === "plans"
       ? "Create a plan to see it listed here."
-      : view === "series"
+      : urlState.tab === "series"
         ? "Create a series to see it listed here."
         : "Try clearing search or add new plans and series.";
+
+  const sortValue: DashboardSort = urlState.sort ?? "recent";
 
   const filterBar = (
     <div className="flex w-full flex-wrap items-end gap-4 px-4 pb-2 pt-3">
       <div className="flex min-w-[180px] flex-col gap-1">
         <span className="text-xs font-medium text-muted-foreground">Sort</span>
-        <Pecha.Select defaultValue="recent">
+        <Pecha.Select
+          value={sortValue}
+          onValueChange={() => {
+            // Backend sort is fixed; keep URL clean (omit `sort` = default).
+            replaceUrlState({ sort: null });
+          }}
+        >
           <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
             <Pecha.SelectValue placeholder="Sort" />
           </Pecha.SelectTrigger>
-          <Pecha.SelectContent onClick={() => setSortBy("recent")}>
+          <Pecha.SelectContent>
             <Pecha.SelectItem value="recent">
               Recently modified
             </Pecha.SelectItem>
@@ -179,10 +224,12 @@ const Dashboard = () => {
           Language
         </span>
         <Pecha.Select
-          value={languageFilter || "all"}
+          value={urlState.language || "all"}
           onValueChange={(v) => {
-            setLanguageFilter(v === "all" ? "" : v);
-            setPage(1);
+            replaceUrlState({
+              language: v === "all" ? null : v,
+              ...resetPageFilters,
+            });
           }}
         >
           <Pecha.SelectTrigger className="h-9 w-[180px] bg-white dark:bg-input/30">
@@ -201,10 +248,12 @@ const Dashboard = () => {
           Status
         </span>
         <Pecha.Select
-          value={statusFilter || "all"}
+          value={urlState.status || "all"}
           onValueChange={(v) => {
-            setStatusFilter(v === "all" ? "" : v);
-            setPage(1);
+            replaceUrlState({
+              status: v === "all" ? null : (v as DashboardPlanStatus),
+              ...resetPageFilters,
+            });
           }}
         >
           <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
@@ -231,11 +280,8 @@ const Dashboard = () => {
             <Pecha.Input
               placeholder={t("common.placeholder.search")}
               className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
             />
           </div>
 
@@ -267,22 +313,22 @@ const Dashboard = () => {
           <div className="flex flex-wrap items-center gap-2 pl-1">
             <button
               type="button"
-              className={chipClass(view === "all")}
-              onClick={() => setViewAndReset("all")}
+              className={chipClass(urlState.tab === "all")}
+              onClick={() => setTab("all")}
             >
               All
             </button>
             <button
               type="button"
-              className={chipClass(view === "plans")}
-              onClick={() => setViewAndReset("plans")}
+              className={chipClass(urlState.tab === "plans")}
+              onClick={() => setTab("plans")}
             >
               Plans
             </button>
             <button
               type="button"
-              className={chipClass(view === "series")}
-              onClick={() => setViewAndReset("series")}
+              className={chipClass(urlState.tab === "series")}
+              onClick={() => setTab("series")}
             >
               Series
             </button>
@@ -329,9 +375,9 @@ const Dashboard = () => {
 
       <Activity mode={hasRows ? "visible" : "hidden"}>
         <Pagination
-          currentPage={page}
+          currentPage={urlState.page}
           totalPages={totalPages}
-          onPageChange={setPage}
+          onPageChange={(nextPage) => replaceUrlState({ page: nextPage })}
         />
       </Activity>
     </div>
