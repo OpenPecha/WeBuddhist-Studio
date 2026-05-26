@@ -14,6 +14,7 @@ import { PiDotsSixVertical } from "react-icons/pi";
 import { useSubtaskReorder } from "../../hooks/useSubtaskReorder";
 import { FaPen } from "react-icons/fa";
 import { formatMs } from "@/lib/utils";
+import { AudioSegmentPlayer } from "@/components/ui/molecules/audio-segment-player/AudioSegmentPlayer";
 
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
@@ -21,6 +22,7 @@ interface TaskViewProps {
   taskId: string;
   onEditTask: (task: any) => void;
   isEditable?: boolean;
+  dayAudioUrl?: string | null;
 }
 
 const fetchTaskDetails = async (task_id: string) => {
@@ -58,10 +60,12 @@ const SubtaskCard = ({
   subtask,
   listeners,
   isEditable,
+  dayAudioUrl,
 }: {
   subtask: any;
   listeners?: any;
   isEditable?: boolean;
+  dayAudioUrl?: string | null;
 }) => {
   return (
     <div
@@ -79,16 +83,29 @@ const SubtaskCard = ({
         )}
       </div>
       <SubtaskContent type={subtask.content_type} content={subtask.content} />
-      {subtask.start_ms != null && subtask.end_ms != null && (
-        <p className="text-xs text-muted-foreground border-t border-dashed pt-2">
-          Timeline: {formatMs(subtask.start_ms)} – {formatMs(subtask.end_ms)}
-        </p>
-      )}
+      {subtask.start_ms != null &&
+        subtask.end_ms != null &&
+        (dayAudioUrl ? (
+          <AudioSegmentPlayer
+            audioUrl={dayAudioUrl}
+            startMs={subtask.start_ms}
+            endMs={subtask.end_ms}
+          />
+        ) : (
+          <p className="text-xs text-muted-foreground border-t border-dashed pt-2">
+            Timeline: {formatMs(subtask.start_ms)} – {formatMs(subtask.end_ms)}
+          </p>
+        ))}
     </div>
   );
 };
 
-const TaskView = ({ taskId, onEditTask, isEditable }: TaskViewProps) => {
+const TaskView = ({
+  taskId,
+  onEditTask,
+  isEditable,
+  dayAudioUrl,
+}: TaskViewProps) => {
   const { data: taskDetails, isLoading } = useQuery({
     queryKey: ["taskDetails", taskId],
     queryFn: () => fetchTaskDetails(taskId),
@@ -155,6 +172,7 @@ const TaskView = ({ taskId, onEditTask, isEditable }: TaskViewProps) => {
                       subtask={subtask}
                       listeners={listeners}
                       isEditable={isEditable}
+                      dayAudioUrl={dayAudioUrl}
                     />
                   )}
                 </SortableItem>
