@@ -99,11 +99,24 @@ const Createplan = () => {
     refetchOnWindowFocus: false,
   });
 
-  const { data: seriesOptions = [] } = useQuery({
+  const {
+    data: seriesOptions = [],
+    isLoading: isSeriesLoading,
+    isError: isSeriesError,
+  } = useQuery({
     queryKey: ["cms-series-list"],
     queryFn: fetchSeriesList,
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (isSeriesError) {
+      toast.error("Couldn't load collections", {
+        description:
+          "The collection list is unavailable. The plan's current collection won't be changed.",
+      });
+    }
+  }, [isSeriesError]);
 
   useEffect(() => {
     if (planId && planData) {
@@ -227,7 +240,12 @@ const Createplan = () => {
       start_date: startDateMode === "specific" ? data.start_date : null,
     };
     if (planId) {
-      updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
+      if (isSeriesError) {
+        const { series_id, ...rest } = payload;
+        updatePlanMutation.mutate({ plan_id: planId, formdata: rest });
+      } else {
+        updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
+      }
     } else {
       const { series_id, ...rest } = payload;
       createPlanMutation.mutate(series_id ? { ...rest, series_id } : rest);
@@ -555,17 +573,26 @@ const Createplan = () => {
               render={({ field }) => (
                 <Pecha.FormItem>
                   <Pecha.FormLabel className="text-sm font-bold">
-                    Series
+                    Collection
                   </Pecha.FormLabel>
                   <Pecha.Select
                     value={field.value ?? NO_SERIES}
                     onValueChange={(v) =>
                       field.onChange(v === NO_SERIES ? null : v)
                     }
+                    disabled={isSeriesLoading || isSeriesError}
                   >
                     <Pecha.FormControl>
                       <Pecha.SelectTrigger className="h-12 w-full bg-white">
-                        <Pecha.SelectValue placeholder="None" />
+                        <Pecha.SelectValue
+                          placeholder={
+                            isSeriesLoading
+                              ? "Loading collections…"
+                              : isSeriesError
+                                ? "Collections unavailable"
+                                : "None"
+                          }
+                        />
                       </Pecha.SelectTrigger>
                     </Pecha.FormControl>
                     <Pecha.SelectContent>
@@ -579,6 +606,12 @@ const Createplan = () => {
                       ))}
                     </Pecha.SelectContent>
                   </Pecha.Select>
+                  {isSeriesError && (
+                    <p className="text-sm text-destructive">
+                      Couldn't load collections. This plan's current collection
+                      will not be changed.
+                    </p>
+                  )}
                   <Pecha.FormMessage />
                 </Pecha.FormItem>
               )}
