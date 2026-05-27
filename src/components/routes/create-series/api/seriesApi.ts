@@ -286,3 +286,52 @@ export async function putSeriesPlans(
     body: { plans: buildSeriesPlansPayloadFromIds(plansByLang) },
   });
 }
+
+export type SeriesListItemDTO = {
+  id: string;
+  metadata?: SeriesMetadataDTO[];
+  image?: string | null;
+  image_key?: string | null;
+  author_id?: string;
+  featured?: boolean;
+  status?: string;
+  plan_count?: number;
+  total_days?: number;
+};
+
+export type SeriesListResponse = {
+  series: SeriesListItemDTO[];
+};
+
+export type SeriesOption = {
+  id: string;
+  title: string;
+};
+
+function resolveSeriesListTitle(metadata?: SeriesMetadataDTO[]): string {
+  if (!Array.isArray(metadata) || metadata.length === 0) return "Untitled";
+  const order = ["EN", "BO", "ZH"];
+  for (const lang of order) {
+    const row = metadata.find(
+      (r) => String(r.language ?? r.lang ?? "").toUpperCase() === lang,
+    );
+    const t = row?.title?.trim();
+    if (t) return t;
+  }
+  for (const row of metadata) {
+    const t = row.title?.trim();
+    if (t) return t;
+  }
+  return "Untitled";
+}
+
+export const fetchSeriesList = async (): Promise<SeriesOption[]> => {
+  const { data } = await axiosInstance.get<SeriesListResponse>(
+    `/api/v1/cms/series`,
+    { params: { limit: 100 } },
+  );
+  return (data?.series ?? []).map((s) => ({
+    id: s.id,
+    title: resolveSeriesListTitle(s.metadata),
+  }));
+};

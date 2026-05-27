@@ -18,6 +18,7 @@ import {
   planTagsToIds,
   type PlanTagSummary,
 } from "@/components/routes/tags/api/tagsApi";
+import { fetchSeriesList } from "@/components/routes/create-series/api/seriesApi";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
@@ -32,6 +33,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/atoms/tooltip";
+
+const NO_SERIES = "none";
 
 export const getPlan = async (plan_id: string) => {
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`);
@@ -85,6 +88,7 @@ const Createplan = () => {
       tags: [],
       language: "",
       start_date: null,
+      series_id: null,
     },
   });
 
@@ -94,6 +98,13 @@ const Createplan = () => {
     enabled: !!planId,
     refetchOnWindowFocus: false,
   });
+
+  const { data: seriesOptions = [] } = useQuery({
+    queryKey: ["cms-series-list"],
+    queryFn: fetchSeriesList,
+    refetchOnWindowFocus: false,
+  });
+
   useEffect(() => {
     if (planId && planData) {
       form.reset({
@@ -105,6 +116,7 @@ const Createplan = () => {
         tags: planTagsToIds(planData.tags),
         language: planData.language || "",
         start_date: planData.start_date || null,
+        series_id: planData.series_id ?? null,
       });
       setStartDateMode(planData.start_date ? "specific" : "enroll");
       setImagePreview(planData.image_url ? `${planData.image_url}` : null);
@@ -217,7 +229,8 @@ const Createplan = () => {
     if (planId) {
       updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
     } else {
-      createPlanMutation.mutate(payload);
+      const { series_id, ...rest } = payload;
+      createPlanMutation.mutate(series_id ? { ...rest, series_id } : rest);
     }
   };
   return (
@@ -535,6 +548,42 @@ const Createplan = () => {
                 )}
               />
             </div>
+
+            <Pecha.FormField
+              control={form.control}
+              name="series_id"
+              render={({ field }) => (
+                <Pecha.FormItem>
+                  <Pecha.FormLabel className="text-sm font-bold">
+                    Series
+                  </Pecha.FormLabel>
+                  <Pecha.Select
+                    value={field.value ?? NO_SERIES}
+                    onValueChange={(v) =>
+                      field.onChange(v === NO_SERIES ? null : v)
+                    }
+                  >
+                    <Pecha.FormControl>
+                      <Pecha.SelectTrigger className="h-12 w-full bg-white">
+                        <Pecha.SelectValue placeholder="None" />
+                      </Pecha.SelectTrigger>
+                    </Pecha.FormControl>
+                    <Pecha.SelectContent>
+                      <Pecha.SelectItem value={NO_SERIES}>
+                        None
+                      </Pecha.SelectItem>
+                      {seriesOptions.map((series) => (
+                        <Pecha.SelectItem key={series.id} value={series.id}>
+                          {series.title}
+                        </Pecha.SelectItem>
+                      ))}
+                    </Pecha.SelectContent>
+                  </Pecha.Select>
+                  <Pecha.FormMessage />
+                </Pecha.FormItem>
+              )}
+            />
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Pecha.FormField
                 control={form.control}
