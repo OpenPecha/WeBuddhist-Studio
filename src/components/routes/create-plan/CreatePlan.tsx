@@ -608,7 +608,7 @@ const Createplan = () => {
                   </Pecha.Select>
                   {isSeriesError && (
                     <p className="text-sm text-destructive">
-                      Couldn't load collections. This plan's current collection
+                      Couldn't load series. This plan's current series
                       will not be changed.
                     </p>
                   )}
