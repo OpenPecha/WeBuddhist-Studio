@@ -30,6 +30,9 @@ import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
 import Tags from "./components/routes/tags/Tags.tsx";
+import Groups from "./components/routes/groups/Groups.tsx";
+import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
+import GroupDetailsPage from "./components/routes/groups/GroupDetailsPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
@@ -161,6 +164,38 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Tags />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.groups,
+        element: (
+          <ProtectedRoute>
+            <Groups />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.groupNew,
+        element: (
+          <ProtectedRoute>
+            <GroupFormPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/groups/:groupId/edit",
+        element: (
+          <ProtectedRoute>
+            <GroupFormPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/groups/:groupId",
+        element: (
+          <ProtectedRoute>
+            <GroupDetailsPage />
           </ProtectedRoute>
         ),
       },

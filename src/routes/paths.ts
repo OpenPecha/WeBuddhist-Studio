@@ -15,6 +15,10 @@ export const ROUTES = {
   analytics: "/analytics",
   profile: "/profile",
   tags: "/tags",
+  groups: "/groups",
+  groupNew: "/groups/new",
+  group: (groupId: string) => `/groups/${groupId}`,
+  groupEdit: (groupId: string) => `/groups/${groupId}/edit`,
 } as const;
 
 export const AUTH_ROUTE_PATHS: readonly string[] = [

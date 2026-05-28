@@ -16,6 +16,7 @@ interface PlanTagSearchInputProps {
   onChange?: (tagIds: string[]) => void;
   initialTags?: PlanTagSummary[];
   planId?: string;
+  hideLabel?: boolean;
 }
 
 const SUGGESTIONS_LIMIT = 10;
@@ -28,6 +29,7 @@ const PlanTagSearchInput = ({
   onChange,
   initialTags = [],
   planId,
+  hideLabel = false,
 }: PlanTagSearchInputProps) => {
   const queryClient = useQueryClient();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -152,7 +154,7 @@ const PlanTagSearchInput = ({
       ref={containerRef}
       className="w-full space-y-2 h-full font-dynamic flex flex-col"
     >
-      <p className="text-sm font-bold">Tags</p>
+      {!hideLabel ? <p className="text-sm font-bold">Tags</p> : null}
 
       {value.length > 0 && (
         <div className="flex flex-wrap items-center justify-start h-fit gap-2">
