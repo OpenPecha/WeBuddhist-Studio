@@ -63,6 +63,48 @@ export interface PlanDayAudioUploadResponse {
   message: string;
 }
 
+export interface PlanAudioDTO {
+  id: string;
+  audio_key: string;
+  file_name: string;
+  audio_url: string;
+  duration_ms: number | null;
+  mime_type: string | null;
+  file_size_bytes: number | null;
+  plan_item_id: string;
+  plan_id: string;
+  day_number: number;
+  created_at: string;
+}
+
+export interface PlanAudioListResponse {
+  audio: PlanAudioDTO[];
+  skip: number;
+  limit: number;
+  total: number;
+}
+
+export const fetchPlanAudioList = async (params?: {
+  search?: string;
+  plan_id?: string;
+  skip?: number;
+  limit?: number;
+}) => {
+  const { data } = await axiosInstance.get<PlanAudioListResponse>(
+    `/api/v1/cms/plans/audio`,
+    {
+      params: {
+        search: params?.search?.trim() || undefined,
+        plan_id: params?.plan_id || undefined,
+        skip: params?.skip ?? 0,
+        limit: params?.limit ?? 10,
+      },
+      headers: getAuthHeaders(),
+    },
+  );
+  return data;
+};
+
 export const uploadDayAudio = async (
   day_id: string,
   file: File,
@@ -80,6 +122,22 @@ export const uploadDayAudio = async (
       params: { day_id },
       headers: getAuthHeaders(),
     },
+  );
+  return data;
+};
+
+export const attachDayAudio = async (
+  day_id: string,
+  audio_key: string,
+  duration_ms?: number | null,
+) => {
+  const { data } = await axiosInstance.patch<PlanDayAudioUploadResponse>(
+    `/api/v1/cms/plans/days/${day_id}/audio`,
+    {
+      audio_key,
+      ...(duration_ms != null ? { duration_ms } : {}),
+    },
+    { headers: getAuthHeaders() },
   );
   return data;
 };

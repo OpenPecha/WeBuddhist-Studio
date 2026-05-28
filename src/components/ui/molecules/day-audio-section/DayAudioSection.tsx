@@ -11,9 +11,11 @@ import {
   uploadDayAudio,
 } from "@/components/routes/task/api/planApi";
 import { AiOutlineSound } from "react-icons/ai";
+import PlanAudioSearchInput from "@/components/ui/molecules/day-audio-section/PlanAudioSearchInput";
 
 interface DayAudioSectionProps {
   planId: string;
+  planTitle?: string;
   dayId: string;
   dayNumber: number;
   audioUrl?: string | null;
@@ -24,6 +26,7 @@ interface DayAudioSectionProps {
 
 const DayAudioSection = ({
   planId,
+  planTitle,
   dayId,
   dayNumber,
   audioUrl,
@@ -156,7 +159,30 @@ const DayAudioSection = ({
       )}
 
       {isEditable && (
-        <div className="space-y-2">
+        <div className="space-y-3">
+          <PlanAudioSearchInput
+            dayId={dayId}
+            planId={planId}
+            planTitle={planTitle}
+            disabled={isBusy}
+            onAttached={() => {
+              queryClient.invalidateQueries({
+                queryKey: ["planDetails", planId],
+              });
+            }}
+          />
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-[#161616] px-2 text-muted-foreground">
+                or upload new
+              </span>
+            </div>
+          </div>
+
           <Dropzone
             accept={{ "audio/*": [".mp3", ".m4a", ".wav", ".ogg"] }}
             multiple={false}
@@ -209,8 +235,8 @@ const DayAudioSection = ({
 
       {!showExisting && isEditable && (
         <p className="text-xs text-muted-foreground">
-          Upload day narration first, then set subtask timestamps against this
-          track.
+          Search for existing narration or upload a new file, then set subtask
+          timestamps against this track.
         </p>
       )}
     </div>
