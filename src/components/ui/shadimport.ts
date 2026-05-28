@@ -60,6 +60,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/atoms/popover";
+import {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from "@/components/ui/atoms/command";
 import { Calendar } from "@/components/ui/atoms/calendar";
 import {
   Pagination,
@@ -157,4 +168,13 @@ export const Pecha = {
   PopoverContent,
   PopoverTrigger,
   Calendar,
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
 };

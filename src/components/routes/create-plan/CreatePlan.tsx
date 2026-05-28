@@ -3,9 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import {
   IoCalendarClearOutline,
+  IoChevronDown,
   IoInformationCircleOutline,
 } from "react-icons/io5";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
@@ -18,6 +19,7 @@ import {
   planTagsToIds,
   type PlanTagSummary,
 } from "@/components/routes/tags/api/tagsApi";
+import { fetchSeriesList } from "@/components/routes/create-series/api/seriesApi";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
 import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
@@ -85,6 +87,7 @@ const Createplan = () => {
       tags: [],
       language: "",
       start_date: null,
+      series_id: null,
     },
   });
 
@@ -94,6 +97,35 @@ const Createplan = () => {
     enabled: !!planId,
     refetchOnWindowFocus: false,
   });
+
+  const {
+    data: seriesOptions = [],
+    isLoading: isSeriesLoading,
+    isError: isSeriesError,
+  } = useQuery({
+    queryKey: ["cms-series-list"],
+    queryFn: fetchSeriesList,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (isSeriesError) {
+      toast.error("Couldn't load series", {
+        description:
+          "The series list is unavailable. The plan's current series won't be changed.",
+      });
+    }
+  }, [isSeriesError]);
+
+  const [isSeriesOpen, setIsSeriesOpen] = useState(false);
+  const [seriesQuery, setSeriesQuery] = useState("");
+
+  const filteredSeriesOptions = useMemo(() => {
+    const q = seriesQuery.trim().toLowerCase();
+    if (!q) return seriesOptions;
+    return seriesOptions.filter((s) => s.title.toLowerCase().includes(q));
+  }, [seriesOptions, seriesQuery]);
+
   useEffect(() => {
     if (planId && planData) {
       form.reset({
@@ -105,6 +137,7 @@ const Createplan = () => {
         tags: planTagsToIds(planData.tags),
         language: planData.language || "",
         start_date: planData.start_date || null,
+        series_id: planData.series_id ?? null,
       });
       setStartDateMode(planData.start_date ? "specific" : "enroll");
       setImagePreview(planData.image_url ? `${planData.image_url}` : null);
@@ -215,9 +248,15 @@ const Createplan = () => {
       start_date: startDateMode === "specific" ? data.start_date : null,
     };
     if (planId) {
-      updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
+      if (isSeriesError) {
+        const { series_id, ...rest } = payload;
+        updatePlanMutation.mutate({ plan_id: planId, formdata: rest });
+      } else {
+        updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
+      }
     } else {
-      createPlanMutation.mutate(payload);
+      const { series_id, ...rest } = payload;
+      createPlanMutation.mutate(series_id ? { ...rest, series_id } : rest);
     }
   };
   return (
@@ -535,6 +574,115 @@ const Createplan = () => {
                 )}
               />
             </div>
+
+            <Pecha.FormField
+              control={form.control}
+              name="series_id"
+              render={({ field }) => {
+                const selectedSeries = seriesOptions.find(
+                  (s) => s.id === field.value,
+                );
+
+                let seriesTriggerLabel: string;
+                if (isSeriesLoading) {
+                  seriesTriggerLabel = "Loading series…";
+                } else if (isSeriesError) {
+                  seriesTriggerLabel = "Series unavailable";
+                } else {
+                  seriesTriggerLabel = selectedSeries?.title ?? "None";
+                }
+
+                return (
+                  <Pecha.FormItem className="flex flex-col">
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      Series
+                    </Pecha.FormLabel>
+                    <Pecha.Popover
+                      open={isSeriesOpen}
+                      onOpenChange={(open) => {
+                        setIsSeriesOpen(open);
+                        if (!open) setSeriesQuery("");
+                      }}
+                    >
+                      <Pecha.PopoverTrigger asChild>
+                        <Pecha.FormControl>
+                          <Pecha.Button
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={isSeriesOpen}
+                            disabled={isSeriesLoading || isSeriesError}
+                            className="h-12 w-full justify-between rounded-md bg-white px-3 font-normal"
+                          >
+                            <span
+                              className={
+                                selectedSeries
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              }
+                            >
+                              {seriesTriggerLabel}
+                            </span>
+                            <IoChevronDown className="size-4 opacity-50" />
+                          </Pecha.Button>
+                        </Pecha.FormControl>
+                      </Pecha.PopoverTrigger>
+                      <Pecha.PopoverContent
+                        className="w-[--radix-popover-trigger-width] p-0"
+                        align="start"
+                      >
+                        <Pecha.Command shouldFilter={false}>
+                          <Pecha.CommandInput
+                            placeholder="Search series…"
+                            value={seriesQuery}
+                            onValueChange={setSeriesQuery}
+                          />
+                          <Pecha.CommandList>
+                            <Pecha.CommandGroup>
+                              <Pecha.CommandItem
+                                value="__none__"
+                                onSelect={() => {
+                                  field.onChange(null);
+                                  setIsSeriesOpen(false);
+                                }}
+                              >
+                                None
+                              </Pecha.CommandItem>
+                              {filteredSeriesOptions.map((series) => (
+                                <Pecha.CommandItem
+                                  key={series.id}
+                                  value={series.id}
+                                  onSelect={() => {
+                                    field.onChange(series.id);
+                                    setIsSeriesOpen(false);
+                                  }}
+                                >
+                                  {series.title}
+                                </Pecha.CommandItem>
+                              ))}
+                            </Pecha.CommandGroup>
+                            {seriesQuery &&
+                              filteredSeriesOptions.length === 0 && (
+                                <Pecha.CommandEmpty>
+                                  No series found.
+                                </Pecha.CommandEmpty>
+                              )}
+                          </Pecha.CommandList>
+                        </Pecha.Command>
+                      </Pecha.PopoverContent>
+                    </Pecha.Popover>
+                    {isSeriesError && (
+                      <p className="text-sm text-destructive">
+                        Couldn't load series. This plan's current series will
+                        not be changed.
+                      </p>
+                    )}
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                );
+              }}
+            />
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Pecha.FormField
                 control={form.control}
