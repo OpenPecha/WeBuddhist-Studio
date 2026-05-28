@@ -3,9 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import {
   IoCalendarClearOutline,
+  IoChevronDown,
   IoInformationCircleOutline,
 } from "react-icons/io5";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
@@ -33,8 +34,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/atoms/tooltip";
-
-const NO_SERIES = "none";
 
 export const getPlan = async (plan_id: string) => {
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`);
@@ -111,12 +110,21 @@ const Createplan = () => {
 
   useEffect(() => {
     if (isSeriesError) {
-      toast.error("Couldn't load collections", {
+      toast.error("Couldn't load series", {
         description:
-          "The collection list is unavailable. The plan's current collection won't be changed.",
+          "The series list is unavailable. The plan's current series won't be changed.",
       });
     }
   }, [isSeriesError]);
+
+  const [isSeriesOpen, setIsSeriesOpen] = useState(false);
+  const [seriesQuery, setSeriesQuery] = useState("");
+
+  const filteredSeriesOptions = useMemo(() => {
+    const q = seriesQuery.trim().toLowerCase();
+    if (!q) return seriesOptions;
+    return seriesOptions.filter((s) => s.title.toLowerCase().includes(q));
+  }, [seriesOptions, seriesQuery]);
 
   useEffect(() => {
     if (planId && planData) {
@@ -570,51 +578,109 @@ const Createplan = () => {
             <Pecha.FormField
               control={form.control}
               name="series_id"
-              render={({ field }) => (
-                <Pecha.FormItem>
-                  <Pecha.FormLabel className="text-sm font-bold">
-                    Collection
-                  </Pecha.FormLabel>
-                  <Pecha.Select
-                    value={field.value ?? NO_SERIES}
-                    onValueChange={(v) =>
-                      field.onChange(v === NO_SERIES ? null : v)
-                    }
-                    disabled={isSeriesLoading || isSeriesError}
-                  >
-                    <Pecha.FormControl>
-                      <Pecha.SelectTrigger className="h-12 w-full bg-white">
-                        <Pecha.SelectValue
-                          placeholder={
-                            isSeriesLoading
-                              ? "Loading collections…"
-                              : isSeriesError
-                                ? "Collections unavailable"
-                                : "None"
-                          }
-                        />
-                      </Pecha.SelectTrigger>
-                    </Pecha.FormControl>
-                    <Pecha.SelectContent>
-                      <Pecha.SelectItem value={NO_SERIES}>
-                        None
-                      </Pecha.SelectItem>
-                      {seriesOptions.map((series) => (
-                        <Pecha.SelectItem key={series.id} value={series.id}>
-                          {series.title}
-                        </Pecha.SelectItem>
-                      ))}
-                    </Pecha.SelectContent>
-                  </Pecha.Select>
-                  {isSeriesError && (
-                    <p className="text-sm text-destructive">
-                      Couldn't load series. This plan's current series will not
-                      be changed.
-                    </p>
-                  )}
-                  <Pecha.FormMessage />
-                </Pecha.FormItem>
-              )}
+              render={({ field }) => {
+                const selectedSeries = seriesOptions.find(
+                  (s) => s.id === field.value,
+                );
+
+                let seriesTriggerLabel: string;
+                if (isSeriesLoading) {
+                  seriesTriggerLabel = "Loading series…";
+                } else if (isSeriesError) {
+                  seriesTriggerLabel = "Series unavailable";
+                } else {
+                  seriesTriggerLabel = selectedSeries?.title ?? "None";
+                }
+
+                return (
+                  <Pecha.FormItem className="flex flex-col">
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      Series
+                    </Pecha.FormLabel>
+                    <Pecha.Popover
+                      open={isSeriesOpen}
+                      onOpenChange={(open) => {
+                        setIsSeriesOpen(open);
+                        if (!open) setSeriesQuery("");
+                      }}
+                    >
+                      <Pecha.PopoverTrigger asChild>
+                        <Pecha.FormControl>
+                          <Pecha.Button
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={isSeriesOpen}
+                            disabled={isSeriesLoading || isSeriesError}
+                            className="h-12 w-full justify-between rounded-md bg-white px-3 font-normal"
+                          >
+                            <span
+                              className={
+                                selectedSeries
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              }
+                            >
+                              {seriesTriggerLabel}
+                            </span>
+                            <IoChevronDown className="size-4 opacity-50" />
+                          </Pecha.Button>
+                        </Pecha.FormControl>
+                      </Pecha.PopoverTrigger>
+                      <Pecha.PopoverContent
+                        className="w-[--radix-popover-trigger-width] p-0"
+                        align="start"
+                      >
+                        <Pecha.Command shouldFilter={false}>
+                          <Pecha.CommandInput
+                            placeholder="Search series…"
+                            value={seriesQuery}
+                            onValueChange={setSeriesQuery}
+                          />
+                          <Pecha.CommandList>
+                            <Pecha.CommandGroup>
+                              <Pecha.CommandItem
+                                value="__none__"
+                                onSelect={() => {
+                                  field.onChange(null);
+                                  setIsSeriesOpen(false);
+                                }}
+                              >
+                                None
+                              </Pecha.CommandItem>
+                              {filteredSeriesOptions.map((series) => (
+                                <Pecha.CommandItem
+                                  key={series.id}
+                                  value={series.id}
+                                  onSelect={() => {
+                                    field.onChange(series.id);
+                                    setIsSeriesOpen(false);
+                                  }}
+                                >
+                                  {series.title}
+                                </Pecha.CommandItem>
+                              ))}
+                            </Pecha.CommandGroup>
+                            {seriesQuery &&
+                              filteredSeriesOptions.length === 0 && (
+                                <Pecha.CommandEmpty>
+                                  No series found.
+                                </Pecha.CommandEmpty>
+                              )}
+                          </Pecha.CommandList>
+                        </Pecha.Command>
+                      </Pecha.PopoverContent>
+                    </Pecha.Popover>
+                    {isSeriesError && (
+                      <p className="text-sm text-destructive">
+                        Couldn't load series. This plan's current series will
+                        not be changed.
+                      </p>
+                    )}
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                );
+              }}
             />
 
             <div className="flex flex-col sm:flex-row gap-4">
