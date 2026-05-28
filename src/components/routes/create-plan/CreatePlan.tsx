@@ -608,8 +608,8 @@ const Createplan = () => {
                   </Pecha.Select>
                   {isSeriesError && (
                     <p className="text-sm text-destructive">
-                      Couldn't load series. This plan's current series
-                      will not be changed.
+                      Couldn't load series. This plan's current series will not
+                      be changed.
                     </p>
                   )}
                   <Pecha.FormMessage />
