@@ -1,6 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createNewDay, deleteDay, deleteTask } from "../api/planApi";
+import {
+  createNewDays,
+  deleteDays,
+  deleteTask,
+  type CreateDaysRequest,
+} from "../api/planApi";
 
 export const usePlanMutations = (plan_id: string | undefined) => {
   const queryClient = useQueryClient();
@@ -21,25 +26,27 @@ export const usePlanMutations = (plan_id: string | undefined) => {
     },
   });
 
-  const deleteDayMutation = useMutation({
-    mutationFn: (day_id: string) => deleteDay(plan_id!, day_id),
-    onSuccess: () => {
-      toast.success("Day deleted successfully!", {
-        description: "The day has been deleted.",
-      });
+  const deleteDaysMutation = useMutation({
+    mutationFn: (day_ids: string[]) => deleteDays(plan_id!, day_ids),
+    onSuccess: (_data, day_ids) => {
+      const count = day_ids.length;
+      toast.success(
+        count === 1 ? "Day deleted successfully!" : `${count} days deleted.`,
+        { description: "Remaining days have been renumbered." },
+      );
       queryClient.refetchQueries({ queryKey: ["planDetails", plan_id] });
     },
     onError: (error: any) => {
-      toast.error("Failed to delete day", {
+      toast.error("Failed to delete day(s)", {
         description: error.response?.data?.detail || "Something went wrong",
       });
     },
   });
 
-  const createNewDayMutation = useMutation({
-    mutationFn: () => createNewDay(plan_id!),
+  const createNewDaysMutation = useMutation({
+    mutationFn: (body?: CreateDaysRequest) => createNewDays(plan_id!, body),
     onError: (error: any) => {
-      toast.error("Failed to create new day", {
+      toast.error("Failed to create days", {
         description: error.response?.data?.detail || "Something went wrong",
       });
     },
@@ -47,7 +54,7 @@ export const usePlanMutations = (plan_id: string | undefined) => {
 
   return {
     deleteTask: deleteTaskMutation,
-    deleteDay: deleteDayMutation,
-    createNewDay: createNewDayMutation,
+    deleteDay: deleteDaysMutation,
+    createNewDay: createNewDaysMutation,
   };
 };

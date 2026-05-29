@@ -4,6 +4,38 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
 });
 
+export interface CmsPlanSummary {
+  id: string;
+  title: string;
+  total_days: number;
+}
+
+export interface CmsPlansResponse {
+  plans: CmsPlanSummary[];
+  skip: number;
+  limit: number;
+  total: number;
+}
+
+export const searchCmsPlans = async (params?: {
+  search?: string;
+  skip?: number;
+  limit?: number;
+}) => {
+  const { data } = await axiosInstance.get<CmsPlansResponse>(
+    `/api/v1/cms/plans`,
+    {
+      params: {
+        search: params?.search?.trim() || undefined,
+        skip: params?.skip ?? 0,
+        limit: params?.limit ?? 10,
+      },
+      headers: getAuthHeaders(),
+    },
+  );
+  return data;
+};
+
 export const fetchPlanDetails = async (plan_id: string) => {
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`, {
     headers: getAuthHeaders(),
@@ -11,10 +43,31 @@ export const fetchPlanDetails = async (plan_id: string) => {
   return data;
 };
 
-export const createNewDay = async (plan_id: string) => {
-  const { data } = await axiosInstance.post(
+export const fetchPlanDays = async (plan_id: string) => {
+  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}/days`, {
+    headers: getAuthHeaders(),
+  });
+  return data;
+};
+
+export interface CreateDaysRequest {
+  number_of_days?: number;
+  source_day_id?: string;
+}
+
+export interface DayDTO {
+  id: string;
+  day_number: number;
+  tasks: Record<string, unknown>[];
+}
+
+export const createNewDays = async (
+  plan_id: string,
+  body?: CreateDaysRequest,
+) => {
+  const { data } = await axiosInstance.post<DayDTO[]>(
     `/api/v1/cms/plans/${plan_id}/days`,
-    {},
+    body ?? {},
     {
       headers: getAuthHeaders(),
     },
@@ -22,14 +75,11 @@ export const createNewDay = async (plan_id: string) => {
   return data;
 };
 
-export const deleteDay = async (plan_id: string, day_id: string) => {
-  const { data } = await axiosInstance.delete(
-    `/api/v1/cms/plans/${plan_id}/days/${day_id}`,
-    {
-      headers: getAuthHeaders(),
-    },
-  );
-  return data;
+export const deleteDays = async (plan_id: string, day_ids: string[]) => {
+  await axiosInstance.delete(`/api/v1/cms/plans/${plan_id}/days`, {
+    data: { day_ids },
+    headers: getAuthHeaders(),
+  });
 };
 
 export const deleteTask = async (task_id: string) => {
