@@ -35,8 +35,7 @@ const MobileView = () => {
       </div>
     );
   }
-  const ViewURL =
-    import.meta.env.VITE_WEBUDDHIST_PLAN_VIEWER_URL + `/plan/${planId}`;
+  const ViewURL ="https://plans.webuddhist.com" + `/plan/${planId}`;
   return (
     <div className="w-full h-full">
       {/* Embedded WeBuddhist Plan Viewer */}
