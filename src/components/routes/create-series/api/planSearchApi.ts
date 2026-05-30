@@ -43,7 +43,7 @@ export type SearchPlansParams = {
 export const searchPlans = async (
   params: SearchPlansParams,
 ): Promise<SearchPlansResponse> => {
-  const { data } = await axiosInstance.get("/api/v1/search/plans", {
+  const { data } = await axiosInstance.get("/api/v1/cms/plans", {
     params,
   });
   return data;
