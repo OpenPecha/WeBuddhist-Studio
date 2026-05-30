@@ -22,7 +22,6 @@ import {
   type SubTask,
 } from "@/components/ui/molecules/subtask-card/SubTaskCard";
 import DaySelector from "@/components/ui/molecules/day-selector/DaySelector";
-import DayAudioSection from "@/components/ui/molecules/day-audio-section/DayAudioSection";
 import {
   buildSubTaskTimestampFields,
   mapApiSubtaskTimestamps,
@@ -368,18 +367,6 @@ const TaskForm = ({
       <h2 className="text-xl font-semibold p-4">
         {isEditMode ? "Edit Task" : "Add Task"}
       </h2>
-      {currentDayData && planId && (
-        <DayAudioSection
-          planId={planId}
-          planTitle={currentPlan?.title}
-          dayId={currentDayData.id}
-          dayNumber={selectedDay}
-          audioUrl={currentDayData.audio_url}
-          audioDurationMs={currentDayData.audio_duration_ms}
-          hasAudio={currentDayData.has_audio}
-          isEditable={isEditable}
-        />
-      )}
 
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>

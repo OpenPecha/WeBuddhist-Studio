@@ -133,6 +133,19 @@ export const reorderTasks = async (
   return data;
 };
 
+export const generateDayAudio = async (
+  params: { day_id: string } | { sub_task_id: string },
+  language: string,
+  type: string = "TEXT_READING",
+) => {
+  const { data } = await axiosInstance.post(
+    `/api/v1/cms/plans/audio/generate`,
+    { ...params, language, type },
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
 export const reorderSubtasks = async (
   task_id: string,
   subtasks: Array<{ id: string; display_order: number }>,

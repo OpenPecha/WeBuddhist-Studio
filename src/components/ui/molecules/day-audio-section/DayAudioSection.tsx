@@ -28,7 +28,6 @@ const DayAudioSection = ({
   planId,
   planTitle,
   dayId,
-  dayNumber,
   audioUrl,
   audioDurationMs,
   hasAudio,
@@ -105,9 +104,8 @@ const DayAudioSection = ({
   }
 
   return (
-    <div className="mx-4 mb-4 rounded-lg border border-dashed border-gray-300 dark:border-input bg-white dark:bg-[#161616] p-3 space-y-2">
+    <div className=" rounded-lg border border-dashed border-gray-300 dark:border-input bg-white dark:bg-[#161616] p-3 space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-base font-semibold">Day {dayNumber} narration</h3>
         <div className="flex items-center gap-2 shrink-0">
           {showExisting && audioDurationMs != null && (
             <span className="text-sm text-muted-foreground">

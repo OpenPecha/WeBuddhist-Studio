@@ -6,6 +6,7 @@ import { FiTrash } from "react-icons/fi";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
+import DayAudioDialog from "@/components/ui/molecules/modals/day-audio/DayAudioDialog";
 import DayCreateDialog from "@/components/ui/molecules/modals/day-create/DayCreateDialog";
 import { useParams } from "react-router-dom";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
@@ -275,6 +276,22 @@ const SideBar = ({
                                     <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                                   </Pecha.DropdownMenuTrigger>
                                   <Pecha.DropdownMenuContent side="right">
+                                    <Pecha.DropdownMenuItem
+                                      className="gap-2 cursor-pointer"
+                                      onSelect={(e) => e.preventDefault()}
+                                    >
+                                      <DayAudioDialog
+                                        planId={planId!}
+                                        planTitle={currentPlan?.title}
+                                        dayId={day.id}
+                                        dayNumber={day.day_number}
+                                        audioUrl={day.audio_url}
+                                        audioDurationMs={day.audio_duration_ms}
+                                        hasAudio={day.has_audio}
+                                        isEditable={isEditable}
+                                        language={currentPlan?.language}
+                                      />
+                                    </Pecha.DropdownMenuItem>
                                     <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
                                       <DayDeleteDialog
                                         onDelete={() => handleDeleteDay(day.id)}
