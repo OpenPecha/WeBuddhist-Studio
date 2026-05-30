@@ -19,6 +19,7 @@ import { useDayReorder } from "../../hooks/useDayReorder";
 
 interface SideBarProps {
   selectedDay: number;
+  selectedDayId?: string;
   onDaySelect: (dayNumber: number) => void;
   onTaskClick?: (taskId: string) => void;
   onTaskDelete?: (taskId: string) => void;

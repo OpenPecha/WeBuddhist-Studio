@@ -77,12 +77,32 @@ vi.mock("react-router-dom", async () => {
   return {
     ...actual,
     useParams: vi.fn().mockReturnValue({ planId: "test-plan-id" }),
+    useSearchParams: vi.fn().mockReturnValue([
+      new URLSearchParams(), // searchParams
+      vi.fn(), // setSearchParams
+    ]),
   };
 });
 
 vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
+
+vi.mock("react-split-pane", () => ({
+  SplitPane: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="split-pane">{children}</div>
+  ),
+  Pane: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pane">{children}</div>
+  ),
+}));
+
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 Object.defineProperty(window, "sessionStorage", {
   value: {
