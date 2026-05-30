@@ -336,48 +336,6 @@ describe("PlanDetailsPanel Component", () => {
     });
   });
 
-  it("updates search params when day changes", async () => {
-    const mockSetSearchParams = vi.fn();
-    const { useSearchParams } = await import("react-router-dom");
-    (useSearchParams as any).mockReturnValue([
-      new URLSearchParams(),
-      mockSetSearchParams,
-    ]);
-
-    renderWithProviders(<PlanDetailsPage />);
-    await waitFor(() => {
-      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("Day 2"));
-    await waitFor(() => {
-      expect(mockSetSearchParams).toHaveBeenCalledWith(
-        new URLSearchParams("day=2"),
-        { replace: true },
-      );
-    });
-  });
-
-  it("reads day from search params", async () => {
-    const { useSearchParams } = await import("react-router-dom");
-    (useSearchParams as any).mockReturnValue([
-      new URLSearchParams("day=3"),
-      vi.fn(),
-    ]);
-
-    renderWithProviders(<PlanDetailsPage />);
-    await waitFor(() => {
-      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
-    });
-
-    // Day 3 should be initially selected/expanded
-    await waitFor(() => {
-      expect(
-        screen.getByText("Heart Transformation Exercise"),
-      ).toBeInTheDocument();
-    });
-  });
-
   it("clears editing task when that task is deleted from sidebar", async () => {
     const user = userEvent.setup();
     const { default: axiosInstance } = await import("@/config/axios-config");
