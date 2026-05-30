@@ -222,13 +222,16 @@ const SeriesDetailsPage = () => {
             activePlans.length > 0 ? "py-8" : "py-16"
           }`}
         >
-          <Link to={ROUTES.planNew}>
+          <Link
+            to={ROUTES.planNew}
+            state={{ seriesId: seriesId!, language: activeLanguage }}
+          >
             <Pecha.Button
               type="button"
               className="gap-2 bg-[#A51C21] hover:bg-[#8a171c] text-white"
             >
               <IoMdAdd className="h-4 w-4" />
-              Add plan
+              Add New Plan
             </Pecha.Button>
           </Link>
         </div>
