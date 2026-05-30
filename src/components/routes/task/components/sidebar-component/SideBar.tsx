@@ -6,6 +6,7 @@ import { BsThreeDots } from "react-icons/bs";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
+import DayAddDialog from "@/components/ui/molecules/modals/day-add/DayAddDialog";
 import { useParams } from "react-router-dom";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 import { PiDotsSixVertical } from "react-icons/pi";
@@ -288,18 +289,11 @@ const SideBar = ({
           )}
         </div>
         <div className="px-2 py-2 border-t shrink-0">
-          <Pecha.Button
-            type="button"
-            onClick={addNewDay}
-            disabled={!isEditable || createNewDay.isPending}
-            variant="destructive"
-            className="cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <IoMdAdd className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              {createNewDay.isPending ? "Adding..." : "Add New Day"}
-            </span>
-          </Pecha.Button>
+          <DayAddDialog
+            onAdd={addNewDay}
+            isPending={createNewDay.isPending}
+            disabled={!isEditable}
+          />
         </div>
       </div>
     </div>
