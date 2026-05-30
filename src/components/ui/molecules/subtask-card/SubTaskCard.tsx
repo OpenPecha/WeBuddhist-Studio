@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { Pecha } from "@/components/ui/shadimport";
 import { IoMdClose } from "react-icons/io";
 import { FaMinus } from "react-icons/fa6";
+import { FiLoader } from "react-icons/fi";
+import { AiOutlineSound } from "react-icons/ai";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
 import {
   VideoContent,
@@ -10,6 +15,7 @@ import {
 } from "../content-sub/ContentComponents";
 import { getYouTubeDuration } from "@/lib/utils";
 import { AudioTrimmer } from "@/components/ui/molecules/audio-trimmer/AudioTrimmer";
+import { generateDayAudio } from "@/components/routes/task/api/taskApi";
 
 interface SubTaskTimestamps {
   start_ms?: number | null;
@@ -192,6 +198,51 @@ const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
   <SourceReferenceContent content={subTask.content} />
 );
 
+const GenerateAudioButton = ({ subTaskId }: { subTaskId: string }) => {
+  const [audioType, setAudioType] = useState<string>("INSTRUCTION");
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      generateDayAudio({ sub_task_id: subTaskId }, "eng", audioType),
+    onSuccess: () => {
+      toast.success("Audio generation started");
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to generate audio", {
+        description: error.message,
+      });
+    },
+  });
+
+  return (
+    <div className="flex items-center gap-2 pt-2 border-t border-dashed border-gray-200 dark:border-input">
+      <Pecha.Select value={audioType} onValueChange={setAudioType}>
+        <Pecha.SelectTrigger className="w-[160px] h-9">
+          <Pecha.SelectValue />
+        </Pecha.SelectTrigger>
+        <Pecha.SelectContent>
+          <Pecha.SelectItem value="INSTRUCTION">Instruction</Pecha.SelectItem>
+          <Pecha.SelectItem value="TEXT_READING">Text Reading</Pecha.SelectItem>
+        </Pecha.SelectContent>
+      </Pecha.Select>
+      <Pecha.Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={mutation.isPending}
+        onClick={() => mutation.mutate()}
+      >
+        {mutation.isPending ? (
+          <FiLoader className="w-4 h-4 animate-spin" />
+        ) : (
+          <AiOutlineSound className="w-4 h-4" />
+        )}
+        {mutation.isPending ? "Generating..." : "Generate Audio"}
+      </Pecha.Button>
+    </div>
+  );
+};
+
 const SubtaskTimestampSection = ({
   subTask,
   index,
@@ -277,6 +328,11 @@ export const SubTaskCard = ({
         </Pecha.Button>
       </div>
       {renderContent()}
+      {subTask.id &&
+        (subTask.content_type === "TEXT" ||
+          subTask.content_type === "SOURCE_REFERENCE") && (
+          <GenerateAudioButton subTaskId={subTask.id} />
+        )}
       {showTimestamps && (
         <SubtaskTimestampSection
           subTask={subTask}
