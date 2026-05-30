@@ -163,7 +163,6 @@ const TaskForm = ({
     },
   });
 
-
   useEffect(() => {
     if (editingTask && taskDetails) {
       form.setValue("title", editingTask.title);
@@ -446,7 +445,6 @@ const TaskForm = ({
                   ? "Update"
                   : "Submit"}
             </Pecha.Button>
-
           </div>
         </form>
       </Pecha.Form>

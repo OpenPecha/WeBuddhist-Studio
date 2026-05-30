@@ -192,10 +192,11 @@ const SideBar = ({
                   {({ listeners }: any) => (
                     <div className="group space-y-2">
                       <div
-                        className={`flex items-center justify-between px-4 py-2 border-b border-dashed transition-colors cursor-pointer hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10 ${isSelectMode && selectedDayIds.has(day.id)
-                          ? "bg-[#fdf2f2] dark:bg-[#AD1B21]/10"
-                          : ""
-                          }`}
+                        className={`flex items-center justify-between px-4 py-2 border-b border-dashed transition-colors cursor-pointer hover:bg-[#f6f6f6] dark:hover:bg-[#000000]/10 ${
+                          isSelectMode && selectedDayIds.has(day.id)
+                            ? "bg-[#fdf2f2] dark:bg-[#AD1B21]/10"
+                            : ""
+                        }`}
                         onClick={() => {
                           if (isSelectMode) {
                             toggleDaySelection(day.id);
@@ -222,16 +223,18 @@ const SideBar = ({
                             )
                           )}
                           <div
-                            className={`w-4 h-4 rounded-full ${!isSelectMode && selectedDay === day.day_number
-                              ? "bg-[#ba0909]"
-                              : "bg-input"
-                              }`}
+                            className={`w-4 h-4 rounded-full ${
+                              !isSelectMode && selectedDay === day.day_number
+                                ? "bg-[#ba0909]"
+                                : "bg-input"
+                            }`}
                           />
                           <span
-                            className={`text-sm ${!isSelectMode && selectedDay === day.day_number
-                              ? "text-zinc-900 dark:text-zinc-100"
-                              : "text-zinc-400 dark:text-zinc-600"
-                              }`}
+                            className={`text-sm ${
+                              !isSelectMode && selectedDay === day.day_number
+                                ? "text-zinc-900 dark:text-zinc-100"
+                                : "text-zinc-400 dark:text-zinc-600"
+                            }`}
                           >
                             Day {day.day_number}
                           </span>
@@ -252,10 +255,11 @@ const SideBar = ({
                                 }
                               >
                                 <MdExpandMore
-                                  className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${expandedDay === day.day_number
-                                    ? "rotate-180"
-                                    : ""
-                                    }`}
+                                  className={`w-4 h-4 text-gray-400 dark:text-muted-foreground cursor-pointer transition-transform ${
+                                    expandedDay === day.day_number
+                                      ? "rotate-180"
+                                      : ""
+                                  }`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setExpandedDay(
@@ -272,7 +276,10 @@ const SideBar = ({
                                     <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
                                   </Pecha.DropdownMenuTrigger>
                                   <Pecha.DropdownMenuContent side="right">
-                                    <Pecha.DropdownMenuItem className="gap-2 cursor-pointer" onSelect={(e) => e.preventDefault()}>
+                                    <Pecha.DropdownMenuItem
+                                      className="gap-2 cursor-pointer"
+                                      onSelect={(e) => e.preventDefault()}
+                                    >
                                       <DayAudioDialog
                                         planId={planId!}
                                         planTitle={currentPlan?.title}
@@ -302,7 +309,7 @@ const SideBar = ({
                         <Activity
                           mode={
                             expandedDay === day.day_number &&
-                              day.tasks.length > 0
+                            day.tasks.length > 0
                               ? "visible"
                               : "hidden"
                           }
