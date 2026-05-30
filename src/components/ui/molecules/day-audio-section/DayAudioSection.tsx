@@ -28,7 +28,6 @@ const DayAudioSection = ({
   planId,
   planTitle,
   dayId,
-  dayNumber,
   audioUrl,
   audioDurationMs,
   hasAudio,
