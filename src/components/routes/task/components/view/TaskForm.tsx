@@ -165,6 +165,14 @@ const TaskForm = ({
   });
 
   useEffect(() => {
+    if (selectedDay && !isEditMode) {
+      // Reset form when day changes (only in create mode, not edit mode)
+      setSubTasks([]);
+      form.reset();
+    }
+  }, [selectedDay, isEditMode, form]);
+
+  useEffect(() => {
     if (editingTask && taskDetails) {
       form.setValue("title", editingTask.title);
       const sorted = [...taskDetails.subtasks].sort(

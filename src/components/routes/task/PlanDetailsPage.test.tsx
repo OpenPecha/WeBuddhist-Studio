@@ -77,12 +77,32 @@ vi.mock("react-router-dom", async () => {
   return {
     ...actual,
     useParams: vi.fn().mockReturnValue({ planId: "test-plan-id" }),
+    useSearchParams: vi.fn().mockReturnValue([
+      new URLSearchParams(), // searchParams
+      vi.fn(), // setSearchParams
+    ]),
   };
 });
 
 vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
+
+vi.mock("react-split-pane", () => ({
+  SplitPane: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="split-pane">{children}</div>
+  ),
+  Pane: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pane">{children}</div>
+  ),
+}));
+
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 Object.defineProperty(window, "sessionStorage", {
   value: {
@@ -313,6 +333,48 @@ describe("PlanDetailsPanel Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Add Task")).toBeInTheDocument();
+    });
+  });
+
+  it("updates search params when day changes", async () => {
+    const mockSetSearchParams = vi.fn();
+    const { useSearchParams } = await import("react-router-dom");
+    (useSearchParams as any).mockReturnValue([
+      new URLSearchParams(),
+      mockSetSearchParams,
+    ]);
+
+    renderWithProviders(<PlanDetailsPage />);
+    await waitFor(() => {
+      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Day 2"));
+    await waitFor(() => {
+      expect(mockSetSearchParams).toHaveBeenCalledWith(
+        new URLSearchParams("day=2"),
+        { replace: true },
+      );
+    });
+  });
+
+  it("reads day from search params", async () => {
+    const { useSearchParams } = await import("react-router-dom");
+    (useSearchParams as any).mockReturnValue([
+      new URLSearchParams("day=3"),
+      vi.fn(),
+    ]);
+
+    renderWithProviders(<PlanDetailsPage />);
+    await waitFor(() => {
+      expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
+    });
+
+    // Day 3 should be initially selected/expanded
+    await waitFor(() => {
+      expect(
+        screen.getByText("Heart Transformation Exercise"),
+      ).toBeInTheDocument();
     });
   });
 

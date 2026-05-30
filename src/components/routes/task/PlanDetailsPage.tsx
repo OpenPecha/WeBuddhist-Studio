@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { SplitPane, Pane } from "react-split-pane";
 import TaskForm from "./components/view/TaskForm";
@@ -10,12 +10,33 @@ import { fetchPlanDetails } from "./api/planApi";
 import { HiOutlineDeviceMobile } from "react-icons/hi";
 
 const PlanDetailsPage = () => {
-  const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [showMobilePreview, setShowMobilePreview] = useState<boolean>(true);
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+
+  // Get selected day from URL params, default to day 1
+  const selectedDay = useMemo(() => {
+    const dayParam = searchParams.get("day");
+    return dayParam ? Number.parseInt(dayParam, 10) : 1;
+  }, [searchParams]);
+
+  // Function to update search params
+  const updateSearchParams = useCallback(
+    (day: number) => {
+      const newParams = new URLSearchParams(searchParams);
+      if (day === 1) {
+        // Remove day param if it's the default (day 1)
+        newParams.delete("day");
+      } else {
+        newParams.set("day", day.toString());
+      }
+      setSearchParams(newParams, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   // Use the specific plan ID from the URL or redirect if not provided
   useEffect(() => {
@@ -26,6 +47,12 @@ const PlanDetailsPage = () => {
     }
   }, [planId, navigate]);
 
+  // Clear selected task and editing task when day changes
+  useEffect(() => {
+    setSelectedTaskId(null);
+    setEditingTask(null);
+  }, [selectedDay]);
+
   const { data: planDetails } = useQuery({
     queryKey: ["planDetails", planId],
     queryFn: () => fetchPlanDetails(planId!),
@@ -33,6 +60,7 @@ const PlanDetailsPage = () => {
   });
 
   const isEditable = true;
+  const isPlanPublished = planDetails?.status === "PUBLISHED";
   const currentDayData = planDetails?.days?.find(
     (day: { day_number: number }) => day.day_number === selectedDay,
   );
@@ -41,7 +69,7 @@ const PlanDetailsPage = () => {
   const selectedDayId = currentDayData?.id;
 
   const handleDaySelect = (dayNumber: number) => {
-    setSelectedDay(dayNumber);
+    updateSearchParams(dayNumber);
     setSelectedTaskId(null);
     setEditingTask(null);
   };
@@ -85,7 +113,7 @@ const PlanDetailsPage = () => {
           isEditable={isEditable}
         />
         
-        {showMobilePreview ? (
+        {showMobilePreview && isPlanPublished ? (
           <SplitPane direction="horizontal" className="flex-1">
             <Pane defaultSize="60%" minSize="300px">
               <div className="pl-4 rounded-l-2xl overflow-y-auto h-full">
@@ -134,14 +162,16 @@ const PlanDetailsPage = () => {
         )}
       </div>
       
-      {/* Toggle Button */}
-      <button
-        onClick={() => setShowMobilePreview(!showMobilePreview)}
-        className="fixed bottom-4 right-4 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors z-20"
-        title={showMobilePreview ? "Hide Mobile Preview" : "Show Mobile Preview"}
-      >
-        <HiOutlineDeviceMobile className="h-5 w-5" />
-      </button>
+      {/* Toggle Button - Only show if plan is published */}
+      {isPlanPublished && (
+        <button
+          onClick={() => setShowMobilePreview(!showMobilePreview)}
+          className="fixed bottom-4 right-4 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors z-20"
+          title={showMobilePreview ? "Hide Mobile Preview" : "Show Mobile Preview"}
+        >
+          <HiOutlineDeviceMobile className="h-5 w-5" />
+        </button>
+      )}
     </div>
   );
 };
