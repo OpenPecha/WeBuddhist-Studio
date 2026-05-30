@@ -137,7 +137,7 @@ const PlanDetailsPage = () => {
             
             <Pane>
               <div className="h-full border-l border-gray-200 dark:border-gray-700">
-                <MobileView selectedDayId={selectedDayId} />
+                <MobileView />
               </div>
             </Pane>
           </SplitPane>

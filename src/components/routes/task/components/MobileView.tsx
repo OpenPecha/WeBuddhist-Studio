@@ -2,11 +2,9 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPlanDetails } from "../api/planApi";
 
-interface MobileViewProps {
-  selectedDayId?: string;
-}
 
-const MobileView = ({ selectedDayId }: MobileViewProps) => {
+
+const MobileView = () => {
   const { planId } = useParams<{ planId: string }>();
 
   const { data: planDetails, isLoading } = useQuery({
@@ -15,10 +13,6 @@ const MobileView = ({ selectedDayId }: MobileViewProps) => {
     enabled: !!planId,
   });
 
-  // Find the current day data based on selectedDayId
-  const currentDayData = selectedDayId 
-    ? planDetails?.days?.find((day: any) => day.id === selectedDayId)
-    : planDetails?.days?.[0]; // Default to first day if no selectedDayId
 
   if (isLoading) {
     return (

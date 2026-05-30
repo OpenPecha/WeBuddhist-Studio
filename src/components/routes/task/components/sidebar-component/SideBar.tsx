@@ -25,7 +25,6 @@ interface SideBarProps {
 
 const SideBar = ({
   selectedDay,
-  selectedDayId,
   onDaySelect,
   onTaskClick,
   onTaskDelete,
