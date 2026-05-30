@@ -28,7 +28,9 @@ const GroupImageField = ({
         className="w-fit"
         onClick={onUploadClick}
       >
-        {hasStoredImage ? `Change ${label.toLowerCase()}` : `Upload ${label.toLowerCase()}`}
+        {hasStoredImage
+          ? `Change ${label.toLowerCase()}`
+          : `Upload ${label.toLowerCase()}`}
       </Button>
     </div>
   </div>

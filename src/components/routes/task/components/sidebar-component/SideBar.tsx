@@ -102,7 +102,10 @@ const SideBar = ({
     setShowBulkDeleteConfirm(false);
   };
 
-  const handleCreateDays = (req: { number_of_days?: number; source_day_id?: string }) => {
+  const handleCreateDays = (req: {
+    number_of_days?: number;
+    source_day_id?: string;
+  }) => {
     createNewDay.mutate(req, {
       onSuccess: (newDays) => {
         if (newDays && newDays.length > 0) {
@@ -205,9 +208,7 @@ const SideBar = ({
                           {isSelectMode ? (
                             <Pecha.Checkbox
                               checked={selectedDayIds.has(day.id)}
-                              onCheckedChange={() =>
-                                toggleDaySelection(day.id)
-                              }
+                              onCheckedChange={() => toggleDaySelection(day.id)}
                               onClick={(e) => e.stopPropagation()}
                               className="shrink-0"
                             />
@@ -222,16 +223,14 @@ const SideBar = ({
                           )}
                           <div
                             className={`w-4 h-4 rounded-full ${
-                              !isSelectMode &&
-                              selectedDay === day.day_number
+                              !isSelectMode && selectedDay === day.day_number
                                 ? "bg-[#ba0909]"
                                 : "bg-input"
                             }`}
                           />
                           <span
                             className={`text-sm ${
-                              !isSelectMode &&
-                              selectedDay === day.day_number
+                              !isSelectMode && selectedDay === day.day_number
                                 ? "text-zinc-900 dark:text-zinc-100"
                                 : "text-zinc-400 dark:text-zinc-600"
                             }`}
@@ -270,23 +269,20 @@ const SideBar = ({
                                   }}
                                 />
                               </Activity>
-                              {isEditable &&
-                                currentPlan?.days.length > 1 && (
-                                  <Pecha.DropdownMenu>
-                                    <Pecha.DropdownMenuTrigger asChild>
-                                      <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
-                                    </Pecha.DropdownMenuTrigger>
-                                    <Pecha.DropdownMenuContent side="right">
-                                      <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
-                                        <DayDeleteDialog
-                                          onDelete={() =>
-                                            handleDeleteDay(day.id)
-                                          }
-                                        />
-                                      </Pecha.DropdownMenuItem>
-                                    </Pecha.DropdownMenuContent>
-                                  </Pecha.DropdownMenu>
-                                )}
+                              {isEditable && currentPlan?.days.length > 1 && (
+                                <Pecha.DropdownMenu>
+                                  <Pecha.DropdownMenuTrigger asChild>
+                                    <BsThreeDots className="w-3 h-3 text-gray-400 dark:text-muted-foreground cursor-pointer" />
+                                  </Pecha.DropdownMenuTrigger>
+                                  <Pecha.DropdownMenuContent side="right">
+                                    <Pecha.DropdownMenuItem className="gap-2 cursor-pointer">
+                                      <DayDeleteDialog
+                                        onDelete={() => handleDeleteDay(day.id)}
+                                      />
+                                    </Pecha.DropdownMenuItem>
+                                  </Pecha.DropdownMenuContent>
+                                </Pecha.DropdownMenu>
+                              )}
                             </div>
                           </Activity>
                         )}
@@ -385,9 +381,7 @@ const SideBar = ({
               </Pecha.Button>
               <Pecha.Button
                 type="button"
-                disabled={
-                  selectedDayIds.size === 0 || deleteDay.isPending
-                }
+                disabled={selectedDayIds.size === 0 || deleteDay.isPending}
                 className="w-full bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => setShowBulkDeleteConfirm(true)}
               >

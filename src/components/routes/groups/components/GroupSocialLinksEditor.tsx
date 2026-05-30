@@ -46,7 +46,11 @@ const GroupSocialLinksEditor = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        {!hideLabel ? <p className="text-sm font-bold">Social links</p> : <span />}
+        {!hideLabel ? (
+          <p className="text-sm font-bold">Social links</p>
+        ) : (
+          <span />
+        )}
         <Button type="button" variant="outline" size="sm" onClick={addLink}>
           <IoMdAdd className="w-4 h-4" /> Add link
         </Button>
@@ -77,7 +81,9 @@ const GroupSocialLinksEditor = ({
                       <Pecha.SelectValue placeholder="Platform" />
                     </Pecha.SelectTrigger>
                     <Pecha.SelectContent>
-                      <Pecha.SelectItem value="website">Website</Pecha.SelectItem>
+                      <Pecha.SelectItem value="website">
+                        Website
+                      </Pecha.SelectItem>
                       {SOCIAL_PLATFORMS.map((p) => (
                         <Pecha.SelectItem key={p.value} value={p.value}>
                           {p.label}

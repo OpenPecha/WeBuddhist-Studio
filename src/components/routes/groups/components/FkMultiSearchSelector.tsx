@@ -51,7 +51,10 @@ const FkMultiSearchSelector = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), DEBOUNCE_MS);
+    const timer = setTimeout(
+      () => setDebouncedQuery(searchQuery.trim()),
+      DEBOUNCE_MS,
+    );
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -118,7 +121,9 @@ const FkMultiSearchSelector = ({
                 alt=""
                 className="w-9 h-9 rounded object-cover shrink-0"
               />
-              <span className="flex-1 text-sm min-w-0 truncate">{item.title}</span>
+              <span className="flex-1 text-sm min-w-0 truncate">
+                {item.title}
+              </span>
               <button
                 type="button"
                 onClick={() => handleRemove(item.id)}

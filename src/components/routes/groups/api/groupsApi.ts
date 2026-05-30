@@ -298,8 +298,6 @@ export function pickGroupTitle(
   return first?.title?.trim() || fallback;
 }
 
-
-
 export function resolveGroupBannerUrl(group: {
   banner?: string | null;
   banner_key?: string | null;

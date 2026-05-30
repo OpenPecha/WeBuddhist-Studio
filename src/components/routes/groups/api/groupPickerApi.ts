@@ -10,7 +10,9 @@ type PickerSearchParams = {
   limit?: number;
 };
 
-const mapSearchResult = <T extends { id: string; title: string; image_url?: string }>(
+const mapSearchResult = <
+  T extends { id: string; title: string; image_url?: string },
+>(
   items: T[],
   skip: number,
   limit: number,
@@ -33,7 +35,12 @@ export const searchPlansForPicker = async (params: PickerSearchParams) => {
 
 export const searchSeriesForPicker = async (params: PickerSearchParams) => {
   const result = await searchSeries(params);
-  return mapSearchResult(result.series, result.skip, result.limit, result.total);
+  return mapSearchResult(
+    result.series,
+    result.skip,
+    result.limit,
+    result.total,
+  );
 };
 
 export function mapGroupTagsToPlanTagSummaries(

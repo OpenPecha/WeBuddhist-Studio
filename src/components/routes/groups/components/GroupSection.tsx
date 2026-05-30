@@ -6,7 +6,10 @@ type GroupSectionHeaderProps = {
   action?: ReactNode;
 };
 
-export const GroupSectionHeader = ({ title, action }: GroupSectionHeaderProps) => (
+export const GroupSectionHeader = ({
+  title,
+  action,
+}: GroupSectionHeaderProps) => (
   <div className="flex items-center justify-between gap-3 border-b border-dashed pb-2">
     <h2 className="text-base font-bold">{title}</h2>
     {action}

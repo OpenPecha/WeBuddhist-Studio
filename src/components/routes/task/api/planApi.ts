@@ -44,9 +44,12 @@ export const fetchPlanDetails = async (plan_id: string) => {
 };
 
 export const fetchPlanDays = async (plan_id: string) => {
-  const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}/days`, {
-    headers: getAuthHeaders(),
-  });
+  const { data } = await axiosInstance.get(
+    `/api/v1/cms/plans/${plan_id}/days`,
+    {
+      headers: getAuthHeaders(),
+    },
+  );
   return data;
 };
 

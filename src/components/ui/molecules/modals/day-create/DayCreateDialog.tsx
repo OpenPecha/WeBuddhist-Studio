@@ -40,7 +40,10 @@ const DayCreateDialog = ({
   const [sourceDayId, setSourceDayId] = useState<string | undefined>();
 
   const [planSearch, setPlanSearch] = useState("");
-  const [debouncedPlanSearch] = useDebounce(planSearch, PLAN_SEARCH_DEBOUNCE_MS);
+  const [debouncedPlanSearch] = useDebounce(
+    planSearch,
+    PLAN_SEARCH_DEBOUNCE_MS,
+  );
   const [showPlanPicker, setShowPlanPicker] = useState(false);
 
   const { data: planSearchData, isFetching: isPlanFetching } = useInfiniteQuery(
@@ -70,8 +73,7 @@ const DayCreateDialog = ({
       refetchOnWindowFocus: false,
     });
 
-  const planOptions =
-    planSearchData?.pages.flatMap((page) => page.plans) ?? [];
+  const planOptions = planSearchData?.pages.flatMap((page) => page.plans) ?? [];
   const templateDays: Array<{ id: string; day_number: number }> =
     templatePlanData?.days ?? [];
 
@@ -268,11 +270,13 @@ const DayCreateDialog = ({
                           No plans found
                         </li>
                       )}
-                    {!isPlanFetching && planOptions.length === 0 && debouncedPlanSearch.trim().length === 0 && (
-                      <li className="px-3 py-2 text-sm text-muted-foreground">
-                        Start typing to search plans
-                      </li>
-                    )}
+                    {!isPlanFetching &&
+                      planOptions.length === 0 &&
+                      debouncedPlanSearch.trim().length === 0 && (
+                        <li className="px-3 py-2 text-sm text-muted-foreground">
+                          Start typing to search plans
+                        </li>
+                      )}
                   </ul>
                 )}
               </div>
@@ -297,13 +301,13 @@ const DayCreateDialog = ({
                         <Pecha.SelectValue placeholder="Select a day…" />
                       </Pecha.SelectTrigger>
                       <Pecha.SelectContent>
-                        
                         {templateDays.map((day) => {
-                          return <Pecha.SelectItem key={day.id} value={day.id}>
-                            Day {day.day_number}
-                          </Pecha.SelectItem>
-                          }
-                        )}
+                          return (
+                            <Pecha.SelectItem key={day.id} value={day.id}>
+                              Day {day.day_number}
+                            </Pecha.SelectItem>
+                          );
+                        })}
                         {templateDays.length === 0 && (
                           <Pecha.SelectItem value="" disabled>
                             No days in this plan
@@ -332,7 +336,11 @@ const DayCreateDialog = ({
             className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
             onClick={handleSubmit}
           >
-            {isPending ? <FiLoader className="w-4 h-4 animate-spin" /> : addLabel}
+            {isPending ? (
+              <FiLoader className="w-4 h-4 animate-spin" />
+            ) : (
+              addLabel
+            )}
           </Pecha.Button>
         </DialogFooter>
       </Pecha.DialogContent>

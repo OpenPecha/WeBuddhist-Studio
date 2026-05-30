@@ -2,10 +2,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { IoMdCreate } from "react-icons/io";
 import { Link, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/routes/paths";
-import {
-  pickGroupTitle,
-  type AuthorGroupListItem,
-} from "./api/groupsApi";
+import { pickGroupTitle, type AuthorGroupListItem } from "./api/groupsApi";
 import GroupTitleWithAvatar from "./components/GroupTitleWithAvatar";
 
 interface GroupsTableProps {
@@ -35,7 +32,9 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
             <Pecha.TableHead>Members</Pecha.TableHead>
             <Pecha.TableHead>Followers</Pecha.TableHead>
             <Pecha.TableHead>Tags</Pecha.TableHead>
-            <Pecha.TableHead className="w-20 text-right">Actions</Pecha.TableHead>
+            <Pecha.TableHead className="w-20 text-right">
+              Actions
+            </Pecha.TableHead>
           </Pecha.TableRow>
         </Pecha.TableHeader>
         <Pecha.TableBody>
@@ -56,7 +55,9 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
               </Pecha.TableCell>
               <Pecha.TableCell>
                 {group.is_public ? (
-                  <span className="text-green-600 dark:text-green-400">Public</span>
+                  <span className="text-green-600 dark:text-green-400">
+                    Public
+                  </span>
                 ) : (
                   <span className="text-muted-foreground">Private</span>
                 )}

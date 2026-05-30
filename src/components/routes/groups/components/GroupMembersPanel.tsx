@@ -172,7 +172,10 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
                     size="sm"
                     className="text-red-600 hover:text-red-700"
                     onClick={() => setRemoveTarget(member)}
-                    disabled={member.role === "OWNER" && members.filter((m) => m.role === "OWNER").length <= 1}
+                    disabled={
+                      member.role === "OWNER" &&
+                      members.filter((m) => m.role === "OWNER").length <= 1
+                    }
                   >
                     Remove
                   </Button>
@@ -183,7 +186,10 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
         </Pecha.Table>
       </div>
 
-      <Pecha.Dialog open={inviteOpen} onOpenChange={(open) => !open && resetInviteDialog()}>
+      <Pecha.Dialog
+        open={inviteOpen}
+        onOpenChange={(open) => !open && resetInviteDialog()}
+      >
         <Pecha.DialogContent>
           <Pecha.DialogHeader>
             <Pecha.DialogTitle>
@@ -197,9 +203,17 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
                 Copy this token now — it is only shown once. Share it with{" "}
                 <strong>{targetEmail}</strong> to accept the invite.
               </p>
-              <Pecha.Input value={createdToken} readOnly className="font-mono text-xs" />
+              <Pecha.Input
+                value={createdToken}
+                readOnly
+                className="font-mono text-xs"
+              />
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={handleCopyToken}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCopyToken}
+                >
                   Copy token
                 </Button>
                 <Button type="button" onClick={resetInviteDialog}>
@@ -222,7 +236,9 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
                 <label className="text-sm font-medium">Role</label>
                 <Pecha.Select
                   value={inviteRole}
-                  onValueChange={(v) => setInviteRole(v as AuthorGroupMemberRole)}
+                  onValueChange={(v) =>
+                    setInviteRole(v as AuthorGroupMemberRole)
+                  }
                 >
                   <Pecha.SelectTrigger>
                     <Pecha.SelectValue />
@@ -237,7 +253,11 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
                 </Pecha.Select>
               </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={resetInviteDialog}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetInviteDialog}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -261,8 +281,8 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Remove member?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              Remove {removeTarget?.firstname} {removeTarget?.lastname} from this
-              group?
+              Remove {removeTarget?.firstname} {removeTarget?.lastname} from
+              this group?
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>

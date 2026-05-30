@@ -14,10 +14,7 @@ import { getApiErrorMessage } from "@/lib/apiErrors";
 import { PLAN_LANGUAGE } from "@/lib/constant";
 import { ROUTES } from "@/routes/paths";
 import type { LanguageCode } from "@/schema/SeriesSchema";
-import {
-  groupCoreSchema,
-  type GroupCoreFormData,
-} from "@/schema/GroupSchema";
+import { groupCoreSchema, type GroupCoreFormData } from "@/schema/GroupSchema";
 import { mapIdsToFkOptions } from "./api/groupPickerApi";
 import {
   buildGroupMetadata,
@@ -151,9 +148,13 @@ const GroupFormPage = () => {
   const addLanguage = (code: LanguageCode) => {
     if (addedLanguages.includes(code)) return;
     setAddedLanguages((prev) => [...prev, code]);
-    form.setValue(`languages.${code}`, { title: "", description: "" }, {
-      shouldDirty: true,
-    });
+    form.setValue(
+      `languages.${code}`,
+      { title: "", description: "" },
+      {
+        shouldDirty: true,
+      },
+    );
   };
 
   const removeLanguage = (code: LanguageCode) => {
@@ -172,8 +173,7 @@ const GroupFormPage = () => {
     }
   };
 
-  const toastOnError = (err: unknown) =>
-    toast.error(getApiErrorMessage(err));
+  const toastOnError = (err: unknown) => toast.error(getApiErrorMessage(err));
 
   const createMutation = useMutation({
     mutationFn: createGroup,
@@ -238,10 +238,7 @@ const GroupFormPage = () => {
     onError: toastOnError,
   });
 
-  const handleImageUpload = async (
-    file: File,
-    kind: "avatar" | "banner",
-  ) => {
+  const handleImageUpload = async (file: File, kind: "avatar" | "banner") => {
     const setUploading =
       kind === "avatar" ? setAvatarUploading : setBannerUploading;
     const setPreview = kind === "avatar" ? setAvatarPreview : setBannerPreview;
@@ -284,10 +281,11 @@ const GroupFormPage = () => {
   const corePending = createMutation.isPending || patchMutation.isPending;
   const pageTitle = useMemo(
     () =>
-      isNew ? "Create group" : pickGroupTitle(groupData?.metadata, "Edit group"),
+      isNew
+        ? "Create group"
+        : pickGroupTitle(groupData?.metadata, "Edit group"),
     [isNew, groupData?.metadata],
   );
-
 
   if (!isNew && isGroupLoading) {
     return (
@@ -444,9 +442,7 @@ const GroupFormPage = () => {
                 <div className="grid sm:grid-cols-2 gap-6">
                   <GroupImageField
                     label="Avatar"
-                    displayUrl={
-                      avatarPreview 
-                    }
+                    displayUrl={avatarPreview}
                     hasStoredImage={Boolean(avatarKey)}
                     onUploadClick={() => setAvatarDialogOpen(true)}
                     imageClassName="w-20 h-20 rounded-full object-cover border"

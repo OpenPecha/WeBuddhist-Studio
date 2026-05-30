@@ -146,7 +146,10 @@ const Groups = () => {
             </Button>
           </div>
         ) : (
-          <GroupsTable groups={groupsData?.groups ?? []} isLoading={isLoading} />
+          <GroupsTable
+            groups={groupsData?.groups ?? []}
+            isLoading={isLoading}
+          />
         )}
       </div>
     </GroupListShell>
