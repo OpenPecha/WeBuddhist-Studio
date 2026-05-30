@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import SeriesDetailsPage from "./SeriesDetailsPage";
@@ -63,6 +63,47 @@ describe("SeriesDetailsPage", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("navigates to plan new with series and active language in location state", async () => {
+    function PlanNewStateProbe() {
+      const { state } = useLocation();
+      return (
+        <div data-testid="plan-new-location-state">{JSON.stringify(state)}</div>
+      );
+    }
+
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={["/series/series-1"]}>
+          <Routes>
+            <Route path="/series/:seriesId" element={<SeriesDetailsPage />} />
+            <Route path="/plan/new" element={<PlanNewStateProbe />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Abhidhamma in a year")).toBeInTheDocument();
+    });
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /中文/i }));
+    await user.click(screen.getByRole("link", { name: /Add New Plan/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("plan-new-location-state")).toHaveTextContent(
+        JSON.stringify({ seriesId: "series-1", language: "ZH" }),
+      );
+    });
   });
 
   it("renders series title and plans for selected language tab", async () => {

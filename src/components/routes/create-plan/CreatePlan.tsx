@@ -9,7 +9,13 @@ import {
 import { useState, useRef, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/atoms/textarea";
-import { useBlocker, useNavigate, useParams } from "react-router-dom";
+import {
+  useBlocker,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+import { parsePlanNewFromSeriesState } from "./planNewFromSeriesState";
 import { ROUTES } from "@/routes/paths";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
@@ -19,9 +25,12 @@ import {
   planTagsToIds,
   type PlanTagSummary,
 } from "@/components/routes/tags/api/tagsApi";
-import { fetchSeriesList } from "@/components/routes/create-series/api/seriesApi";
+import {
+  fetchSeriesList,
+  type SeriesOption,
+} from "@/components/routes/create-series/api/seriesApi";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
-import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
+import { cn, toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -59,6 +68,8 @@ export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   return data;
 };
 
+const EMPTY_SERIES_OPTIONS: SeriesOption[] = [];
+
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -72,8 +83,13 @@ const Createplan = () => {
 
   const [isDateOpen, setIsDateOpen] = useState(false);
   const { planId } = useParams<{ planId?: string }>();
+  const location = useLocation();
   const isCreateMode = !planId;
   const { t } = useTranslate();
+  const planNewFromSeries = useMemo(
+    () => (isCreateMode ? parsePlanNewFromSeriesState(location.state) : null),
+    [isCreateMode, location.state],
+  );
   type PlanFormData = z.infer<typeof planSchema>;
   const navigate = useNavigate();
   const form = useForm({
@@ -99,7 +115,7 @@ const Createplan = () => {
   });
 
   const {
-    data: seriesOptions = [],
+    data: seriesOptionsData,
     isLoading: isSeriesLoading,
     isError: isSeriesError,
   } = useQuery({
@@ -107,6 +123,7 @@ const Createplan = () => {
     queryFn: fetchSeriesList,
     refetchOnWindowFocus: false,
   });
+  const seriesOptions = seriesOptionsData ?? EMPTY_SERIES_OPTIONS;
 
   useEffect(() => {
     if (isSeriesError) {
@@ -125,6 +142,67 @@ const Createplan = () => {
     if (!q) return seriesOptions;
     return seriesOptions.filter((s) => s.title.toLowerCase().includes(q));
   }, [seriesOptions, seriesQuery]);
+
+  const lockSeriesAndLanguageFields = useMemo(() => {
+    if (!planNewFromSeries) return false;
+    if (isSeriesLoading) return true;
+    if (isSeriesError) return false;
+    return seriesOptions.some((s) => s.id === planNewFromSeries.seriesId);
+  }, [planNewFromSeries, isSeriesLoading, isSeriesError, seriesOptions]);
+
+  const pageHeading = useMemo(() => {
+    if (!isCreateMode) return "Plan Edit";
+    if (!planNewFromSeries) return "Plan Details";
+    if (lockSeriesAndLanguageFields) {
+      const seriesTitle = seriesOptions.find(
+        (s) => s.id === planNewFromSeries.seriesId,
+      )?.title;
+      const languageLabel = PLAN_LANGUAGE.find(
+        (l) => l.value === planNewFromSeries.language,
+      )?.label;
+      if (seriesTitle && languageLabel) {
+        return `Add New Plan for ${seriesTitle} (${languageLabel})`;
+      }
+      if (seriesTitle) return `Add New Plan for ${seriesTitle}`;
+    }
+    if (isSeriesLoading) return "Add New Plan";
+    return "Plan Details";
+  }, [
+    isCreateMode,
+    planNewFromSeries,
+    lockSeriesAndLanguageFields,
+    seriesOptions,
+    isSeriesLoading,
+  ]);
+
+  useEffect(() => {
+    if (!isCreateMode || !planNewFromSeries) return;
+
+    if (isSeriesLoading) {
+      form.setValue("series_id", planNewFromSeries.seriesId);
+      form.setValue("language", planNewFromSeries.language);
+      return;
+    }
+
+    const seriesExists = seriesOptions.some(
+      (s) => s.id === planNewFromSeries.seriesId,
+    );
+
+    if (!isSeriesError && seriesExists) {
+      form.setValue("series_id", planNewFromSeries.seriesId);
+      form.setValue("language", planNewFromSeries.language);
+      return;
+    }
+
+    form.setValue("series_id", null);
+    form.setValue("language", "");
+  }, [
+    isCreateMode,
+    planNewFromSeries,
+    isSeriesLoading,
+    isSeriesError,
+    seriesOptions,
+  ]);
 
   useEffect(() => {
     if (planId && planData) {
@@ -262,9 +340,7 @@ const Createplan = () => {
   return (
     <div className="flex flex-col sm:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
       <div className="flex-1 p-4 sm:p-10">
-        <h1 className="text-xl font-bold my-4">
-          Plan {isCreateMode ? "Details" : "Edit"}
-        </h1>
+        <h1 className="text-xl font-bold my-4">{pageHeading}</h1>
 
         <Pecha.Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -592,41 +668,53 @@ const Createplan = () => {
                   seriesTriggerLabel = selectedSeries?.title ?? "None";
                 }
 
+                const isSeriesFieldDisabled =
+                  lockSeriesAndLanguageFields ||
+                  isSeriesLoading ||
+                  isSeriesError;
+
                 return (
                   <Pecha.FormItem className="flex flex-col">
                     <Pecha.FormLabel className="text-sm font-bold">
                       Series
                     </Pecha.FormLabel>
                     <Pecha.Popover
-                      open={isSeriesOpen}
+                      open={isSeriesFieldDisabled ? false : isSeriesOpen}
                       onOpenChange={(open) => {
+                        if (isSeriesFieldDisabled) return;
                         setIsSeriesOpen(open);
                         if (!open) setSeriesQuery("");
                       }}
                     >
-                      <Pecha.PopoverTrigger asChild>
-                        <Pecha.FormControl>
-                          <Pecha.Button
-                            type="button"
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={isSeriesOpen}
-                            disabled={isSeriesLoading || isSeriesError}
-                            className="h-12 w-full justify-between rounded-md bg-white px-3 font-normal"
-                          >
-                            <span
-                              className={
-                                selectedSeries
-                                  ? "text-foreground"
-                                  : "text-muted-foreground"
-                              }
+                      <div
+                        className={cn(
+                          isSeriesFieldDisabled && "cursor-not-allowed",
+                        )}
+                      >
+                        <Pecha.PopoverTrigger asChild>
+                          <Pecha.FormControl>
+                            <Pecha.Button
+                              type="button"
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={isSeriesOpen}
+                              disabled={isSeriesFieldDisabled}
+                              className="h-12 w-full justify-between rounded-md bg-white px-3 font-normal"
                             >
-                              {seriesTriggerLabel}
-                            </span>
-                            <IoChevronDown className="size-4 opacity-50" />
-                          </Pecha.Button>
-                        </Pecha.FormControl>
-                      </Pecha.PopoverTrigger>
+                              <span
+                                className={
+                                  selectedSeries
+                                    ? "text-foreground"
+                                    : "text-muted-foreground"
+                                }
+                              >
+                                {seriesTriggerLabel}
+                              </span>
+                              <IoChevronDown className="size-4 opacity-50" />
+                            </Pecha.Button>
+                          </Pecha.FormControl>
+                        </Pecha.PopoverTrigger>
+                      </div>
                       <Pecha.PopoverContent
                         className="w-[--radix-popover-trigger-width] p-0"
                         align="start"
@@ -734,9 +822,13 @@ const Createplan = () => {
                     <Pecha.Select
                       onValueChange={field.onChange}
                       value={field.value}
+                      disabled={lockSeriesAndLanguageFields}
                     >
                       <Pecha.FormControl>
-                        <Pecha.SelectTrigger className="h-12 w-full bg-white">
+                        <Pecha.SelectTrigger
+                          className="h-12 w-full bg-white"
+                          disabled={lockSeriesAndLanguageFields}
+                        >
                           <Pecha.SelectValue
                             placeholder={t(
                               "studio.plan.form.placeholder.select_language",

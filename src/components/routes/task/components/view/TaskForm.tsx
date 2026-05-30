@@ -379,6 +379,7 @@ const TaskForm = ({
       {currentDayData && planId && (
         <DayAudioSection
           planId={planId}
+          planTitle={currentPlan?.title}
           dayId={currentDayData.id}
           dayNumber={selectedDay}
           audioUrl={currentDayData.audio_url}

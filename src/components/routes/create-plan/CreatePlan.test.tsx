@@ -4,8 +4,14 @@ import {
   screen,
   waitFor,
   act,
+  within,
 } from "@testing-library/react";
-import { MemoryRouter, useBlocker, useParams } from "react-router-dom";
+import {
+  MemoryRouter,
+  useBlocker,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CreatePlan from "./CreatePlan";
 import { vi } from "vitest";
@@ -21,10 +27,20 @@ vi.mock("react-router-dom", async () => {
       reset: vi.fn(),
     })),
     useParams: vi.fn(() => ({})),
+    useLocation: vi.fn(() => ({
+      pathname: "/plan/new",
+      search: "",
+      hash: "",
+      state: null,
+      key: "default",
+    })),
   };
 });
 
-const renderWithProviders = (component: React.ReactElement) => {
+const renderWithProviders = (
+  component: React.ReactElement,
+  initialEntry: string | { pathname: string; state?: unknown } = "/plan/new",
+) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -33,7 +49,7 @@ const renderWithProviders = (component: React.ReactElement) => {
   });
 
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <QueryClientProvider client={queryClient}>
         {component}
       </QueryClientProvider>
@@ -66,6 +82,13 @@ describe("CreatePlan Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useParams).mockReturnValue({});
+    vi.mocked(useLocation).mockReturnValue({
+      pathname: "/plan/new",
+      search: "",
+      hash: "",
+      state: null,
+      key: "default",
+    });
     vi.spyOn(axiosInstance, "post").mockImplementation((url: string) => {
       if (url.includes("/media/upload")) {
         return Promise.resolve({
@@ -588,6 +611,103 @@ describe("CreatePlan Component", () => {
         "/api/v1/cms/plans/plan-123",
         expect.objectContaining({ start_date: null }),
       );
+    });
+  });
+
+  describe("create plan from series details", () => {
+    beforeEach(() => {
+      vi.spyOn(axiosInstance, "get").mockImplementation((url: string) => {
+        if (url.includes("/api/v1/cms/series")) {
+          return Promise.resolve({
+            data: {
+              series: [
+                {
+                  id: "series-1",
+                  metadata: [{ title: "Abhidhamma in a year", language: "EN" }],
+                },
+              ],
+            },
+          });
+        }
+        if (url.includes("/cms/tags")) {
+          return Promise.resolve({
+            data: {
+              tags: [],
+              skip: 0,
+              limit: 500,
+              total: 0,
+            },
+          });
+        }
+        return Promise.resolve({ data: {} });
+      });
+    });
+
+    it("pre-fills and locks series and language when location state is valid", async () => {
+      vi.mocked(useLocation).mockReturnValue({
+        pathname: "/plan/new",
+        search: "",
+        hash: "",
+        state: { seriesId: "series-1", language: "EN" },
+        key: "default",
+      });
+
+      renderWithProviders(<CreatePlan />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "Add New Plan for Abhidhamma in a year (English)",
+          }),
+        ).toBeInTheDocument();
+        expect(screen.getByText("Abhidhamma in a year")).toBeInTheDocument();
+      });
+
+      const seriesField = screen
+        .getByText("Series")
+        .closest('[data-slot="form-item"]');
+      expect(seriesField).not.toBeNull();
+      expect(
+        within(seriesField as HTMLElement).getByRole("combobox", {
+          hidden: true,
+        }),
+      ).toBeDisabled();
+
+      const languageField = screen
+        .getByText("studio.plan.form_field.language")
+        .closest('[data-slot="form-item"]');
+      expect(languageField).not.toBeNull();
+      const languageSelect = within(languageField as HTMLElement).getByRole(
+        "combobox",
+        { hidden: true },
+      );
+      expect(languageSelect).toBeDisabled();
+      expect(languageSelect).toHaveTextContent("English");
+    });
+
+    it("falls back to normal form when series id is not in the list", async () => {
+      vi.mocked(useLocation).mockReturnValue({
+        pathname: "/plan/new",
+        search: "",
+        hash: "",
+        state: { seriesId: "missing-series", language: "EN" },
+        key: "default",
+      });
+
+      renderWithProviders(<CreatePlan />);
+
+      await waitFor(() => {
+        const seriesField = screen
+          .getByText("Series")
+          .closest('[data-slot="form-item"]');
+        expect(seriesField).not.toBeNull();
+        const seriesCombobox = within(seriesField as HTMLElement).getByRole(
+          "combobox",
+          { hidden: true },
+        );
+        expect(seriesCombobox).toHaveTextContent("None");
+        expect(seriesCombobox).not.toBeDisabled();
+      });
     });
   });
 });
