@@ -41,7 +41,8 @@ const DayAddDialog = ({ onAdd, isPending, disabled }: DayAddDialogProps) => {
         <Pecha.AlertDialogHeader>
           <Pecha.AlertDialogTitle>Add New Day</Pecha.AlertDialogTitle>
           <Pecha.AlertDialogDescription>
-            This will create a new day in your plan. You can start adding tasks to it right away.
+            This will create a new day in your plan. You can start adding tasks
+            to it right away.
           </Pecha.AlertDialogDescription>
         </Pecha.AlertDialogHeader>
         <Pecha.AlertDialogFooter>

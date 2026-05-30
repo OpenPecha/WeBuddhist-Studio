@@ -98,7 +98,6 @@ const PlanDetailsPage = () => {
     }
   };
 
-
   return (
     <div className="h-full relative">
       <div className="flex h-full">
@@ -112,7 +111,7 @@ const PlanDetailsPage = () => {
           onTaskDelete={handleTaskDelete}
           isEditable={isEditable}
         />
-        
+
         {showMobilePreview && isPlanPublished ? (
           <SplitPane direction="horizontal" className="flex-1">
             <Pane defaultSize="60%" minSize="300px">
@@ -134,7 +133,7 @@ const PlanDetailsPage = () => {
                 )}
               </div>
             </Pane>
-            
+
             <Pane>
               <div className="h-full border-l border-gray-200 dark:border-gray-700">
                 <MobileView />
@@ -161,13 +160,15 @@ const PlanDetailsPage = () => {
           </div>
         )}
       </div>
-      
+
       {/* Toggle Button - Only show if plan is published */}
       {isPlanPublished && (
         <button
           onClick={() => setShowMobilePreview(!showMobilePreview)}
           className="fixed bottom-4 right-4 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors z-20"
-          title={showMobilePreview ? "Hide Mobile Preview" : "Show Mobile Preview"}
+          title={
+            showMobilePreview ? "Hide Mobile Preview" : "Show Mobile Preview"
+          }
         >
           <HiOutlineDeviceMobile className="h-5 w-5" />
         </button>
