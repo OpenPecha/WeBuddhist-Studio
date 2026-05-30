@@ -19,6 +19,7 @@ export const PLAN_LANGUAGE = [
 ];
 export const SOCIAL_PLATFORMS = [
   { value: "facebook", label: "Facebook", icon: "Facebook" },
+  { value: "SignIn", label: "SignIn", icon: "SignIn" },
   { value: "x.com", label: "X (Twitter)", icon: "Twitter" },
   { value: "linkedin", label: "LinkedIn", icon: "Linkedin" },
   { value: "youtube", label: "YouTube", icon: "Youtube" },

@@ -3,11 +3,10 @@ import { Pecha } from "@/components/ui/shadimport";
 import { FiTrash } from "react-icons/fi";
 
 interface DayDeleteDialogProps {
-  dayId: string;
-  onDelete: (dayId: string) => void;
+  onDelete: () => void;
 }
 
-const DayDeleteDialog = ({ dayId, onDelete }: DayDeleteDialogProps) => {
+const DayDeleteDialog = ({ onDelete }: DayDeleteDialogProps) => {
   const [open, setOpen] = useState(false);
   return (
     <Pecha.AlertDialog open={open} onOpenChange={setOpen}>
@@ -37,7 +36,7 @@ const DayDeleteDialog = ({ dayId, onDelete }: DayDeleteDialogProps) => {
           <Pecha.AlertDialogAction
             className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
             onClick={() => {
-              onDelete(dayId);
+              onDelete();
               setOpen(false);
             }}
           >

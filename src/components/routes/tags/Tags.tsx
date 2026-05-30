@@ -7,6 +7,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
+import { getApiErrorMessage } from "@/lib/apiErrors";
 import {
   createTag,
   deleteTag,
@@ -20,22 +21,6 @@ import TagFormDialog from "./TagFormDialog";
 import TagsTable from "./TagsTable";
 
 const PAGE_SIZE = 10;
-
-const getErrorMessage = (error: unknown): string => {
-  const err = error as { response?: { data?: { detail?: unknown } } };
-  const detail = err?.response?.data?.detail;
-  if (typeof detail === "string") return detail;
-  if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg;
-  if (
-    detail &&
-    typeof detail === "object" &&
-    "message" in detail &&
-    typeof (detail as { message: string }).message === "string"
-  ) {
-    return (detail as { message: string }).message;
-  }
-  return "Something went wrong";
-};
 
 const Tags = () => {
   const [search, setSearch] = useState("");
@@ -75,7 +60,7 @@ const Tags = () => {
       setFormOpen(false);
       invalidateTags();
     },
-    onError: (err) => toast.error(getErrorMessage(err)),
+    onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
   const updateMutation = useMutation({
@@ -87,7 +72,7 @@ const Tags = () => {
       setEditingTag(null);
       invalidateTags();
     },
-    onError: (err) => toast.error(getErrorMessage(err)),
+    onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
   const deleteMutation = useMutation({
@@ -97,7 +82,7 @@ const Tags = () => {
       setDeleteTarget(null);
       invalidateTags();
     },
-    onError: (err) => toast.error(getErrorMessage(err)),
+    onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
   const handleOpenCreate = () => {
@@ -153,7 +138,7 @@ const Tags = () => {
       <div className="px-4 pt-4 h-full flex flex-col items-center justify-between flex-1 min-h-0">
         {error ? (
           <p className="text-sm text-red-500 py-8">
-            Failed to load tags. {getErrorMessage(error)}
+            Failed to load tags. {getApiErrorMessage(error)}
           </p>
         ) : tagsData?.tags.length === 0 && !isLoading ? (
           <div className="flex flex-col h-full items-center justify-center">
