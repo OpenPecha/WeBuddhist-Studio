@@ -6,7 +6,6 @@ import { FiTrash } from "react-icons/fi";
 import { Pecha } from "@/components/ui/shadimport";
 import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskDeleteDialog";
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
-import DayAddDialog from "@/components/ui/molecules/modals/day-add/DayAddDialog";
 import DayCreateDialog from "@/components/ui/molecules/modals/day-create/DayCreateDialog";
 import { useParams } from "react-router-dom";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
