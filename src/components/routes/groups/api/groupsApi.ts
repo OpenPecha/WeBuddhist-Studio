@@ -1,12 +1,7 @@
 import axiosInstance from "@/config/axios-config";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 
-export type AuthorGroupMemberRole =
-  | "OWNER"
-  | "ADMIN"
-  | "EDITOR"
-  | "AUTHOR"
-  | "VIEWER";
+export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
 export interface GroupMetadataDTO {
   id?: string;
@@ -146,20 +141,41 @@ export interface ReplaceGroupPlansRequest {
   plan_ids: string[];
 }
 
+export type AuthorGroupInviteStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "REVOKED"
+  | "EXPIRED";
+
+export interface GroupInviteDTO {
+  id: string;
+  group_id: string;
+  group_name: string;
+  target_email: string;
+  role: AuthorGroupMemberRole;
+  status: AuthorGroupInviteStatus;
+  expires_at: string;
+  accepted_at?: string | null;
+  rejected_at?: string | null;
+  revoked_at?: string | null;
+  created_at: string;
+  created_by: string;
+}
+
+export interface GroupInviteListResponse {
+  invites: GroupInviteDTO[];
+  total: number;
+}
+
 export interface CreateGroupInviteRequest {
   target_email: string;
   role: AuthorGroupMemberRole;
-  expires_at: string;
-  max_uses: number;
 }
 
 export interface GroupInviteCreatedResponse {
-  invite_id: string;
-  token: string;
-  target_email: string;
-  role: AuthorGroupMemberRole;
-  expires_at: string;
-  max_uses: number;
+  invite: GroupInviteDTO;
+  notification_id?: string | null;
 }
 
 export interface UpdateGroupMemberRoleRequest {
@@ -295,6 +311,48 @@ export const createGroupInvite = async (
   return data;
 };
 
+export const fetchGroupInvites = async (
+  groupId: string,
+  status?: AuthorGroupInviteStatus,
+): Promise<GroupInviteListResponse> => {
+  const { data } = await axiosInstance.get<GroupInviteListResponse>(
+    `/api/v1/cms/author/groups/${groupId}/members/invites`,
+    {
+      headers: getAuthHeaders(),
+      params: status ? { status } : undefined,
+    },
+  );
+  return data;
+};
+
+export const fetchMyPendingGroupInvites =
+  async (): Promise<GroupInviteListResponse> => {
+    const { data } = await axiosInstance.get<GroupInviteListResponse>(
+      `/api/v1/cms/author/groups/invites/me`,
+    );
+    return data;
+  };
+
+export const acceptGroupInvite = async (
+  inviteId: string,
+): Promise<AuthorGroupDetailDTO> => {
+  const { data } = await axiosInstance.post<AuthorGroupDetailDTO>(
+    `/api/v1/cms/author/groups/invites/${inviteId}/accept`,
+  );
+  return data;
+};
+
+export const rejectGroupInvite = async (
+  inviteId: string,
+): Promise<GroupInviteDTO> => {
+  const { data } = await axiosInstance.post<GroupInviteDTO>(
+    `/api/v1/cms/author/groups/invites/${inviteId}/reject`,
+    {},
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
 export const revokeGroupInvite = async (
   groupId: string,
   inviteId: string,
@@ -305,6 +363,11 @@ export const revokeGroupInvite = async (
     { headers: getAuthHeaders() },
   );
 };
+
+export function isGroupInviteExpired(invite: GroupInviteDTO): boolean {
+  if (invite.status === "EXPIRED") return true;
+  return new Date(invite.expires_at).getTime() <= Date.now();
+}
 
 export const updateGroupMemberRole = async (
   groupId: string,

@@ -1,31 +1,28 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import { getApiErrorMessage } from "@/lib/apiErrors";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { ROUTES } from "@/routes/paths";
 import {
-  createGroupInvite,
   removeGroupMember,
   updateGroupMemberRole,
   type AuthorGroupMemberDTO,
   type AuthorGroupMemberRole,
 } from "../api/groupsApi";
+import {
+  canManageGroupInvites,
+  canShowMemberRemovalAction,
+  getEffectiveGroupRole,
+  isCurrentGroupMember,
+  normalizeMemberRole,
+  roleChangeOptions,
+} from "../lib/groupPermissions";
+import GroupInvitesAdminSection from "./GroupInvitesAdminSection";
 import { GroupSectionHeader } from "./GroupSection";
-const MEMBER_ROLES: AuthorGroupMemberRole[] = [
-  "OWNER",
-  "ADMIN",
-  "EDITOR",
-  "AUTHOR",
-  "VIEWER",
-];
-
-const INVITE_ROLES: AuthorGroupMemberRole[] = [
-  "ADMIN",
-  "EDITOR",
-  "AUTHOR",
-  "VIEWER",
-];
 
 type GroupMembersPanelProps = {
   groupId: string;
@@ -34,36 +31,26 @@ type GroupMembersPanelProps = {
 
 const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
   const queryClient = useQueryClient();
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [targetEmail, setTargetEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<AuthorGroupMemberRole>("AUTHOR");
-  const [createdToken, setCreatedToken] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { data: userInfo } = useUserInfo();
+  const actor = userInfo
+    ? {
+        id: userInfo.id,
+        email: userInfo.email,
+        is_admin: userInfo.is_admin,
+      }
+    : undefined;
+  const myRole = getEffectiveGroupRole(members, actor);
   const [removeTarget, setRemoveTarget] = useState<AuthorGroupMemberDTO | null>(
     null,
   );
 
+  const leavingSelf =
+    removeTarget != null && isCurrentGroupMember(removeTarget, actor);
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["cms-group", groupId] });
   };
-
-  const inviteMutation = useMutation({
-    mutationFn: () => {
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
-      return createGroupInvite(groupId, {
-        target_email: targetEmail.trim(),
-        role: inviteRole,
-        expires_at: expiresAt.toISOString(),
-        max_uses: 1,
-      });
-    },
-    onSuccess: (data) => {
-      setCreatedToken(data.token);
-      toast.success("Invite created");
-      invalidate();
-    },
-    onError: (err) => toast.error(getApiErrorMessage(err)),
-  });
 
   const roleMutation = useMutation({
     mutationFn: ({
@@ -81,197 +68,114 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (authorId: string) => removeGroupMember(groupId, authorId),
-    onSuccess: () => {
-      toast.success("Member removed");
+    mutationFn: ({ authorId }: { authorId: string; isSelf: boolean }) =>
+      removeGroupMember(groupId, authorId),
+    onSuccess: (_data, { isSelf }) => {
       setRemoveTarget(null);
+      if (isSelf) {
+        toast.success("You left the group");
+        queryClient.invalidateQueries({ queryKey: ["cms-groups"] });
+        navigate(ROUTES.groups);
+        return;
+      }
+      toast.success("Member removed");
       invalidate();
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
-  const handleCopyToken = async () => {
-    if (!createdToken) return;
-    try {
-      await navigator.clipboard.writeText(createdToken);
-      toast.success("Invite token copied");
-    } catch {
-      toast.error("Could not copy token");
-    }
-  };
-
-  const resetInviteDialog = () => {
-    setInviteOpen(false);
-    setTargetEmail("");
-    setInviteRole("AUTHOR");
-    setCreatedToken(null);
-  };
-
   return (
-    <div className="space-y-4">
-      <GroupSectionHeader
-        title={`Members (${members.length})`}
-        action={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setInviteOpen(true)}
-          >
-            Invite member
-          </Button>
-        }
-      />
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <GroupSectionHeader title={`Members (${members.length})`} />
 
-      <div className="overflow-x-auto">
-        <Pecha.Table>
-          <Pecha.TableHeader>
-            <Pecha.TableRow>
-              <Pecha.TableHead>Name</Pecha.TableHead>
-              <Pecha.TableHead>Email</Pecha.TableHead>
-              <Pecha.TableHead>Role</Pecha.TableHead>
-              <Pecha.TableHead className="text-right">Actions</Pecha.TableHead>
-            </Pecha.TableRow>
-          </Pecha.TableHeader>
-          <Pecha.TableBody>
-            {members.map((member) => (
-              <Pecha.TableRow key={member.author_id}>
-                <Pecha.TableCell>
-                  {member.firstname} {member.lastname}
-                </Pecha.TableCell>
-                <Pecha.TableCell className="text-muted-foreground">
-                  {member.email}
-                </Pecha.TableCell>
-                <Pecha.TableCell>
-                  <Pecha.Select
-                    value={member.role}
-                    onValueChange={(role) =>
-                      roleMutation.mutate({
-                        authorId: member.author_id,
-                        role: role as AuthorGroupMemberRole,
-                      })
-                    }
-                    disabled={roleMutation.isPending}
-                  >
-                    <Pecha.SelectTrigger className="w-32 h-8">
-                      <Pecha.SelectValue />
-                    </Pecha.SelectTrigger>
-                    <Pecha.SelectContent>
-                      {MEMBER_ROLES.map((role) => (
-                        <Pecha.SelectItem key={role} value={role}>
-                          {role}
-                        </Pecha.SelectItem>
-                      ))}
-                    </Pecha.SelectContent>
-                  </Pecha.Select>
-                </Pecha.TableCell>
-                <Pecha.TableCell className="text-right">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700"
-                    onClick={() => setRemoveTarget(member)}
-                    disabled={
-                      member.role === "OWNER" &&
-                      members.filter((m) => m.role === "OWNER").length <= 1
-                    }
-                  >
-                    Remove
-                  </Button>
-                </Pecha.TableCell>
+        <div className="overflow-x-auto">
+          <Pecha.Table>
+            <Pecha.TableHeader>
+              <Pecha.TableRow>
+                <Pecha.TableHead>Name</Pecha.TableHead>
+                <Pecha.TableHead>Email</Pecha.TableHead>
+                <Pecha.TableHead>Role</Pecha.TableHead>
+                <Pecha.TableHead className="text-right">
+                  Actions
+                </Pecha.TableHead>
               </Pecha.TableRow>
-            ))}
-          </Pecha.TableBody>
-        </Pecha.Table>
+            </Pecha.TableHeader>
+            <Pecha.TableBody>
+              {members.map((member) => {
+                const isSelf = isCurrentGroupMember(member, actor);
+                const displayRole = normalizeMemberRole(member.role);
+                const assignableRoles = roleChangeOptions(
+                  myRole,
+                  member,
+                  actor,
+                );
+                const showRemoval = canShowMemberRemovalAction(
+                  members,
+                  myRole,
+                  member,
+                  actor,
+                );
+
+                return (
+                  <Pecha.TableRow key={member.author_id}>
+                    <Pecha.TableCell>
+                      {member.firstname} {member.lastname}
+                    </Pecha.TableCell>
+                    <Pecha.TableCell className="text-muted-foreground">
+                      {member.email}
+                    </Pecha.TableCell>
+                    <Pecha.TableCell>
+                      {assignableRoles ? (
+                        <Pecha.Select
+                          value={displayRole}
+                          onValueChange={(role) =>
+                            roleMutation.mutate({
+                              authorId: member.author_id,
+                              role: role as AuthorGroupMemberRole,
+                            })
+                          }
+                          disabled={roleMutation.isPending}
+                        >
+                          <Pecha.SelectTrigger className="w-32 h-8">
+                            <Pecha.SelectValue />
+                          </Pecha.SelectTrigger>
+                          <Pecha.SelectContent>
+                            {assignableRoles.map((role) => (
+                              <Pecha.SelectItem key={role} value={role}>
+                                {role}
+                              </Pecha.SelectItem>
+                            ))}
+                          </Pecha.SelectContent>
+                        </Pecha.Select>
+                      ) : (
+                        <span className="text-sm">{displayRole}</span>
+                      )}
+                    </Pecha.TableCell>
+                    <Pecha.TableCell className="text-right">
+                      {showRemoval && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => setRemoveTarget(member)}
+                        >
+                          {isSelf ? "Leave" : "Remove"}
+                        </Button>
+                      )}
+                    </Pecha.TableCell>
+                  </Pecha.TableRow>
+                );
+              })}
+            </Pecha.TableBody>
+          </Pecha.Table>
+        </div>
       </div>
 
-      <Pecha.Dialog
-        open={inviteOpen}
-        onOpenChange={(open) => !open && resetInviteDialog()}
-      >
-        <Pecha.DialogContent>
-          <Pecha.DialogHeader>
-            <Pecha.DialogTitle>
-              {createdToken ? "Invite created" : "Invite member"}
-            </Pecha.DialogTitle>
-          </Pecha.DialogHeader>
-
-          {createdToken ? (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Copy this token now — it is only shown once. Share it with{" "}
-                <strong>{targetEmail}</strong> to accept the invite.
-              </p>
-              <Pecha.Input
-                value={createdToken}
-                readOnly
-                className="font-mono text-xs"
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCopyToken}
-                >
-                  Copy token
-                </Button>
-                <Button type="button" onClick={resetInviteDialog}>
-                  Done
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email</label>
-                <Pecha.Input
-                  type="email"
-                  value={targetEmail}
-                  onChange={(e) => setTargetEmail(e.target.value)}
-                  placeholder="author@example.org"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Role</label>
-                <Pecha.Select
-                  value={inviteRole}
-                  onValueChange={(v) =>
-                    setInviteRole(v as AuthorGroupMemberRole)
-                  }
-                >
-                  <Pecha.SelectTrigger>
-                    <Pecha.SelectValue />
-                  </Pecha.SelectTrigger>
-                  <Pecha.SelectContent>
-                    {INVITE_ROLES.map((role) => (
-                      <Pecha.SelectItem key={role} value={role}>
-                        {role}
-                      </Pecha.SelectItem>
-                    ))}
-                  </Pecha.SelectContent>
-                </Pecha.Select>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={resetInviteDialog}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  disabled={!targetEmail.trim() || inviteMutation.isPending}
-                  onClick={() => inviteMutation.mutate()}
-                >
-                  {inviteMutation.isPending ? "Creating…" : "Create invite"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </Pecha.DialogContent>
-      </Pecha.Dialog>
+      {canManageGroupInvites(myRole) && (
+        <GroupInvitesAdminSection groupId={groupId} myRole={myRole} />
+      )}
 
       <Pecha.AlertDialog
         open={!!removeTarget}
@@ -279,10 +183,13 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
       >
         <Pecha.AlertDialogContent>
           <Pecha.AlertDialogHeader>
-            <Pecha.AlertDialogTitle>Remove member?</Pecha.AlertDialogTitle>
+            <Pecha.AlertDialogTitle>
+              {leavingSelf ? "Leave group?" : "Remove member?"}
+            </Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              Remove {removeTarget?.firstname} {removeTarget?.lastname} from
-              this group?
+              {leavingSelf
+                ? "You will lose access to this group. You can rejoin only if invited again."
+                : `Remove ${removeTarget?.firstname} ${removeTarget?.lastname} from this group?`}
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>
@@ -293,10 +200,20 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
               className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
               disabled={removeMutation.isPending}
               onClick={() =>
-                removeTarget && removeMutation.mutate(removeTarget.author_id)
+                removeTarget &&
+                removeMutation.mutate({
+                  authorId: removeTarget.author_id,
+                  isSelf: leavingSelf,
+                })
               }
             >
-              {removeMutation.isPending ? "Removing…" : "Remove"}
+              {removeMutation.isPending
+                ? leavingSelf
+                  ? "Leaving…"
+                  : "Removing…"
+                : leavingSelf
+                  ? "Leave"
+                  : "Remove"}
             </Pecha.AlertDialogAction>
           </Pecha.AlertDialogFooter>
         </Pecha.AlertDialogContent>

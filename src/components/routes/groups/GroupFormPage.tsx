@@ -38,10 +38,17 @@ import GroupImageField from "./components/GroupImageField";
 import { GroupPageShell } from "./components/GroupPageShell";
 import GroupMembersPanel from "./components/GroupMembersPanel";
 import type { FkOption } from "./components/FkMultiSearchSelector";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import {
+  canEditGroupSettings,
+  getEffectiveGroupRole,
+} from "./lib/groupPermissions";
+
 const GroupFormPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { data: userInfo } = useUserInfo();
   const isNew = !groupId;
   const hydratedRef = useRef<string | null>(null);
 
@@ -241,6 +248,7 @@ const GroupFormPage = () => {
   };
 
   const onSaveCore = form.handleSubmit((data) => {
+    if (!isNew && !canEditGroupSettings(myRole)) return;
     const metadata = buildGroupMetadata(data.languages);
     const payload = {
       slug: data.slug.trim(),
@@ -257,12 +265,23 @@ const GroupFormPage = () => {
   });
 
   const corePending = createMutation.isPending || patchMutation.isPending;
+  const myRole = useMemo(
+    () =>
+      isNew || !groupData
+        ? undefined
+        : getEffectiveGroupRole(groupData.members ?? [], userInfo),
+    [isNew, groupData, userInfo],
+  );
+  const canEditSettings = isNew || canEditGroupSettings(myRole);
+
   const pageTitle = useMemo(
     () =>
       isNew
         ? "Create group"
-        : pickGroupTitle(groupData?.metadata, "Edit group"),
-    [isNew, groupData?.metadata],
+        : canEditSettings
+          ? pickGroupTitle(groupData?.metadata, "Edit group")
+          : pickGroupTitle(groupData?.metadata, "View group"),
+    [isNew, canEditSettings, groupData?.metadata],
   );
 
   if (!isNew && isGroupLoading) {
@@ -290,6 +309,12 @@ const GroupFormPage = () => {
       onBack={() => navigate(ROUTES.groups)}
       title={pageTitle}
     >
+      {!isNew && !canEditSettings && (
+        <div className="mx-4 sm:mx-8 mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+          You have view-only access to this group. Settings cannot be changed;
+          you can still leave the group from the Members section below.
+        </div>
+      )}
       <div
         className={
           isNew
@@ -308,146 +333,155 @@ const GroupFormPage = () => {
             <h2 className="text-base font-bold">General</h2>
             <Pecha.Form {...form}>
               <form onSubmit={onSaveCore} className="space-y-6">
-                <Pecha.FormField
-                  control={form.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <Pecha.FormItem>
-                      <Pecha.FormLabel className="text-sm font-bold">
-                        Slug
-                      </Pecha.FormLabel>
-                      <Pecha.FormControl>
-                        <Pecha.Input
-                          placeholder="bodhichitta-authors"
-                          className="font-mono h-12 bg-white dark:bg-[#262626]"
-                          {...field}
-                        />
-                      </Pecha.FormControl>
-                      <Pecha.FormMessage />
-                    </Pecha.FormItem>
-                  )}
-                />
-                <Pecha.FormField
-                  control={form.control}
-                  name="is_public"
-                  render={({ field }) => (
-                    <Pecha.FormItem className="flex items-center gap-3">
-                      <Pecha.FormControl>
-                        <Pecha.Checkbox
-                          checked={field.value}
-                          onCheckedChange={(checked) =>
-                            field.onChange(checked === true)
-                          }
-                        />
-                      </Pecha.FormControl>
-                      <Pecha.FormLabel className="text-sm font-bold !mt-0">
-                        Public group
-                      </Pecha.FormLabel>
-                    </Pecha.FormItem>
-                  )}
-                />
-                <div className="space-y-4">
-                  {addedLanguages.map((code) => (
-                    <div
-                      key={code}
-                      className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => removeLanguage(code)}
-                        className="absolute top-2 right-2 text-muted-foreground hover:text-foreground p-1"
-                        aria-label={`Remove ${languageLabelForCode(code)}`}
+                <fieldset
+                  disabled={!canEditSettings}
+                  className="space-y-6 min-w-0 border-0 p-0 m-0"
+                >
+                  <Pecha.FormField
+                    control={form.control}
+                    name="slug"
+                    render={({ field }) => (
+                      <Pecha.FormItem>
+                        <Pecha.FormLabel className="text-sm font-bold">
+                          Slug
+                        </Pecha.FormLabel>
+                        <Pecha.FormControl>
+                          <Pecha.Input
+                            placeholder="bodhichitta-authors"
+                            className="font-mono h-12 bg-white dark:bg-[#262626]"
+                            {...field}
+                          />
+                        </Pecha.FormControl>
+                        <Pecha.FormMessage />
+                      </Pecha.FormItem>
+                    )}
+                  />
+                  <Pecha.FormField
+                    control={form.control}
+                    name="is_public"
+                    render={({ field }) => (
+                      <Pecha.FormItem className="flex items-center gap-3">
+                        <Pecha.FormControl>
+                          <Pecha.Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) =>
+                              field.onChange(checked === true)
+                            }
+                          />
+                        </Pecha.FormControl>
+                        <Pecha.FormLabel className="text-sm font-bold !mt-0">
+                          Public group
+                        </Pecha.FormLabel>
+                      </Pecha.FormItem>
+                    )}
+                  />
+                  <div className="space-y-4">
+                    {addedLanguages.map((code) => (
+                      <div
+                        key={code}
+                        className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3"
                       >
-                        <IoMdClose className="h-4 w-4" />
-                      </button>
-                      <Pecha.FormField
-                        control={form.control}
-                        name={`languages.${code}.title`}
-                        render={({ field }) => (
-                          <Pecha.FormItem>
-                            <Pecha.FormLabel className="text-sm font-bold">
-                              {languageLabelForCode(code)} title
-                            </Pecha.FormLabel>
-                            <Pecha.FormControl>
-                              <Pecha.Input
-                                className="h-12 bg-white dark:bg-[#181818]"
-                                {...field}
-                              />
-                            </Pecha.FormControl>
-                            <Pecha.FormMessage />
-                          </Pecha.FormItem>
-                        )}
-                      />
-                      <Pecha.FormField
-                        control={form.control}
-                        name={`languages.${code}.description`}
-                        render={({ field }) => (
-                          <Pecha.FormItem>
-                            <Pecha.FormLabel className="text-sm font-bold">
-                              {languageLabelForCode(code)} description
-                            </Pecha.FormLabel>
-                            <Pecha.FormControl>
-                              <Textarea
-                                className="min-h-[100px] resize-none bg-white dark:bg-[#181818]"
-                                {...field}
-                              />
-                            </Pecha.FormControl>
-                          </Pecha.FormItem>
-                        )}
-                      />
-                    </div>
-                  ))}
-                </div>
-                {availableLanguages.length > 0 && (
-                  <Pecha.Select
-                    onValueChange={(v) => addLanguage(v as LanguageCode)}
-                  >
-                    <Pecha.SelectTrigger className="w-fit border-dashed bg-white dark:bg-[#262626]">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <IoMdAdd className="h-4 w-4" />
-                        <Pecha.SelectValue placeholder="Add language" />
+                        <button
+                          type="button"
+                          onClick={() => removeLanguage(code)}
+                          className="absolute top-2 right-2 text-muted-foreground hover:text-foreground p-1"
+                          aria-label={`Remove ${languageLabelForCode(code)}`}
+                        >
+                          <IoMdClose className="h-4 w-4" />
+                        </button>
+                        <Pecha.FormField
+                          control={form.control}
+                          name={`languages.${code}.title`}
+                          render={({ field }) => (
+                            <Pecha.FormItem>
+                              <Pecha.FormLabel className="text-sm font-bold">
+                                {languageLabelForCode(code)} title
+                              </Pecha.FormLabel>
+                              <Pecha.FormControl>
+                                <Pecha.Input
+                                  className="h-12 bg-white dark:bg-[#181818]"
+                                  {...field}
+                                />
+                              </Pecha.FormControl>
+                              <Pecha.FormMessage />
+                            </Pecha.FormItem>
+                          )}
+                        />
+                        <Pecha.FormField
+                          control={form.control}
+                          name={`languages.${code}.description`}
+                          render={({ field }) => (
+                            <Pecha.FormItem>
+                              <Pecha.FormLabel className="text-sm font-bold">
+                                {languageLabelForCode(code)} description
+                              </Pecha.FormLabel>
+                              <Pecha.FormControl>
+                                <Textarea
+                                  className="min-h-[100px] resize-none bg-white dark:bg-[#181818]"
+                                  {...field}
+                                />
+                              </Pecha.FormControl>
+                            </Pecha.FormItem>
+                          )}
+                        />
                       </div>
-                    </Pecha.SelectTrigger>
-                    <Pecha.SelectContent>
-                      {availableLanguages.map((lang) => (
-                        <Pecha.SelectItem key={lang.value} value={lang.value}>
-                          {lang.label}
-                        </Pecha.SelectItem>
-                      ))}
-                    </Pecha.SelectContent>
-                  </Pecha.Select>
-                )}
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <GroupImageField
-                    label="Avatar"
-                    displayUrl={avatarPreview}
-                    hasStoredImage={Boolean(avatarKey)}
-                    onUploadClick={() => setAvatarDialogOpen(true)}
-                    imageClassName="w-20 h-20 rounded-full object-cover border"
-                  />
-                  <GroupImageField
-                    label="Banner"
-                    displayUrl={bannerPreview}
-                    hasStoredImage={Boolean(bannerKey)}
-                    onUploadClick={() => setBannerDialogOpen(true)}
-                    imageClassName="w-full max-w-xs h-24 rounded object-cover border"
-                  />
-                </div>
-                <div className="flex justify-end pt-2">
-                  <Button
-                    type="submit"
-                    className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
-                    disabled={corePending}
-                  >
-                    {corePending
-                      ? isNew
-                        ? "Creating…"
-                        : "Saving…"
-                      : isNew
-                        ? "Create group"
-                        : "Save general"}
-                  </Button>
-                </div>
+                    ))}
+                  </div>
+                  {availableLanguages.length > 0 && (
+                    <Pecha.Select
+                      onValueChange={(v) => addLanguage(v as LanguageCode)}
+                    >
+                      <Pecha.SelectTrigger className="w-fit border-dashed bg-white dark:bg-[#262626]">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <IoMdAdd className="h-4 w-4" />
+                          <Pecha.SelectValue placeholder="Add language" />
+                        </div>
+                      </Pecha.SelectTrigger>
+                      <Pecha.SelectContent>
+                        {availableLanguages.map((lang) => (
+                          <Pecha.SelectItem key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </Pecha.SelectItem>
+                        ))}
+                      </Pecha.SelectContent>
+                    </Pecha.Select>
+                  )}
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <GroupImageField
+                      label="Avatar"
+                      displayUrl={avatarPreview}
+                      hasStoredImage={Boolean(avatarKey)}
+                      onUploadClick={() => setAvatarDialogOpen(true)}
+                      imageClassName="w-20 h-20 rounded-full object-cover border"
+                      readOnly={!canEditSettings}
+                    />
+                    <GroupImageField
+                      label="Banner"
+                      displayUrl={bannerPreview}
+                      hasStoredImage={Boolean(bannerKey)}
+                      onUploadClick={() => setBannerDialogOpen(true)}
+                      imageClassName="w-full max-w-xs h-24 rounded object-cover border"
+                      readOnly={!canEditSettings}
+                    />
+                  </div>
+                  {canEditSettings && (
+                    <div className="flex justify-end pt-2">
+                      <Button
+                        type="submit"
+                        className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
+                        disabled={corePending}
+                      >
+                        {corePending
+                          ? isNew
+                            ? "Creating…"
+                            : "Saving…"
+                          : isNew
+                            ? "Create group"
+                            : "Save general"}
+                      </Button>
+                    </div>
+                  )}
+                </fieldset>
               </form>
             </Pecha.Form>
           </section>
@@ -472,6 +506,7 @@ const GroupFormPage = () => {
             plansSaving={plansMutation.isPending}
             seriesSaving={seriesMutation.isPending}
             socialSaving={socialMutation.isPending}
+            readOnly={!canEditSettings}
           />
         )}
       </div>

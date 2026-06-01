@@ -28,6 +28,7 @@ type GroupFormAssociationsPanelProps = {
   plansSaving: boolean;
   seriesSaving: boolean;
   socialSaving: boolean;
+  readOnly?: boolean;
 };
 
 const GroupFormAssociationsPanel = ({
@@ -48,6 +49,7 @@ const GroupFormAssociationsPanel = ({
   plansSaving,
   seriesSaving,
   socialSaving,
+  readOnly = false,
 }: GroupFormAssociationsPanelProps) => (
   <div className="w-full xl:w-1/2 xl:min-w-0 p-4 sm:p-8 pb-12 space-y-10">
     <GroupEditableSection
@@ -56,6 +58,7 @@ const GroupFormAssociationsPanel = ({
       isSaving={tagsSaving}
       saveLabel="Save tags"
       savingLabel="Saving…"
+      readOnly={readOnly}
     >
       <PlanTagSearchInput
         value={tagIds}
@@ -71,6 +74,7 @@ const GroupFormAssociationsPanel = ({
       isSaving={plansSaving}
       saveLabel="Save plans"
       savingLabel="Saving…"
+      readOnly={readOnly}
     >
       <FkMultiSearchSelector
         value={selectedPlans}
@@ -89,6 +93,7 @@ const GroupFormAssociationsPanel = ({
       isSaving={seriesSaving}
       saveLabel="Save series"
       savingLabel="Saving…"
+      readOnly={readOnly}
     >
       <FkMultiSearchSelector
         value={selectedSeries}
@@ -107,6 +112,7 @@ const GroupFormAssociationsPanel = ({
       isSaving={socialSaving}
       saveLabel="Save links"
       savingLabel="Saving…"
+      readOnly={readOnly}
     >
       <GroupSocialLinksEditor
         value={socialLinks}
