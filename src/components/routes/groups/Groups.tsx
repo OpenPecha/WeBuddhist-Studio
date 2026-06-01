@@ -14,6 +14,7 @@ import { fetchGroups } from "./api/groupsApi";
 import { fetchTags } from "@/components/routes/tags/api/tagsApi";
 import { GroupListShell } from "./components/GroupPageShell";
 import GroupsTable from "./GroupsTable";
+import PendingGroupInvitationsBlock from "./components/PendingGroupInvitationsBlock";
 
 const PAGE_SIZE = 10;
 
@@ -152,6 +153,7 @@ const Groups = () => {
           />
         )}
       </div>
+      <PendingGroupInvitationsBlock />
     </GroupListShell>
   );
 };

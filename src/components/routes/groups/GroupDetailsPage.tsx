@@ -4,7 +4,12 @@ import { IoMdCreate } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import { getApiErrorMessage } from "@/lib/apiErrors";
+import { useUserInfo } from "@/hooks/useUserInfo";
 import { ROUTES } from "@/routes/paths";
+import {
+  canEditGroupSettings,
+  getEffectiveGroupRole,
+} from "./lib/groupPermissions";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import {
   fetchGroup,
@@ -21,6 +26,7 @@ import { GroupPageShell } from "./components/GroupPageShell";
 const GroupDetailsPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
+  const { data: userInfo } = useUserInfo();
 
   const {
     data: group,
@@ -59,6 +65,8 @@ const GroupDetailsPage = () => {
 
   const bannerUrl = resolveGroupBannerUrl(group);
   const memberCount = group.member_count ?? group.members.length;
+  const myRole = getEffectiveGroupRole(group.members ?? [], userInfo);
+  const canEdit = canEditGroupSettings(myRole);
 
   return (
     <GroupPageShell
@@ -71,11 +79,13 @@ const GroupDetailsPage = () => {
         </p>
       }
       headerActions={
-        <Button variant="outline" size="sm" asChild>
-          <Link to={ROUTES.groupEdit(group.id)}>
-            <IoMdCreate className="w-4 h-4" /> Edit
-          </Link>
-        </Button>
+        canEdit ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link to={ROUTES.groupEdit(group.id)}>
+              <IoMdCreate className="w-4 h-4" /> Edit
+            </Link>
+          </Button>
+        ) : undefined
       }
     >
       <div className="px-4 sm:px-8 py-6 pb-12">

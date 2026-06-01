@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from "../../atoms/tooltip";
 import AuthAvatar from "@/components/ui/molecules/auth-avatar/AuthAvatar";
+import NotificationBell from "@/components/ui/molecules/notification-bell/NotificationBell";
 
 const navItems = [
   {
@@ -108,6 +109,7 @@ const Navbar = () => {
                 </TooltipContent>
               </Tooltip>
             ))}
+            <NotificationBell />
           </div>
         </div>
         <div className="flex flex-col items-center h-44 space-y-2 pb-2">

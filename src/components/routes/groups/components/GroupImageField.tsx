@@ -6,6 +6,7 @@ type GroupImageFieldProps = {
   hasStoredImage: boolean;
   onUploadClick: () => void;
   imageClassName: string;
+  readOnly?: boolean;
 };
 
 const GroupImageField = ({
@@ -14,6 +15,7 @@ const GroupImageField = ({
   hasStoredImage,
   onUploadClick,
   imageClassName,
+  readOnly = false,
 }: GroupImageFieldProps) => (
   <div className="space-y-2">
     <p className="text-sm font-bold">{label}</p>
@@ -26,6 +28,7 @@ const GroupImageField = ({
         variant="outline"
         size="sm"
         className="w-fit"
+        disabled={readOnly}
         onClick={onUploadClick}
       >
         {hasStoredImage
