@@ -43,6 +43,46 @@ export interface AuthorGroupMemberDTO {
   email: string;
 }
 
+export interface GroupLinkedSeriesDTO {
+  id: string;
+  metadata: GroupMetadataDTO[];
+  image?: string | null;
+  image_key?: string | null;
+  author_id?: string;
+  featured: boolean;
+  status: string;
+  plan_count?: number;
+  total_days?: number;
+}
+
+export interface GroupLinkedPlanAuthorDTO {
+  id: string;
+  firstname: string;
+  lastname: string;
+  image_url?: string | null;
+  image_key?: string | null;
+}
+
+export interface GroupLinkedPlanDTO {
+  id: string;
+  title: string;
+  description?: string | null;
+  language: LanguageCode;
+  difficulty_level?: string;
+  image_url?: string | null;
+  image_key?: string | null;
+  total_days?: number;
+  tags: TagSummaryDTO[];
+  status: string;
+  featured?: boolean;
+  subscription_count?: number;
+  author?: GroupLinkedPlanAuthorDTO;
+  start_date?: string | null;
+  series_id?: string | null;
+  display_order?: number | null;
+  group_id?: string | null;
+}
+
 export interface AuthorGroupListItem {
   id: string;
   slug: string;
@@ -50,19 +90,21 @@ export interface AuthorGroupListItem {
   metadata: GroupMetadataDTO[];
   tags: TagSummaryDTO[];
   follower_count: number;
-  member_count: number;
+  member_count?: number;
   avatar?: string | null;
   avatar_key?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface AuthorGroupDetailDTO extends AuthorGroupListItem {
   avatar_key?: string | null;
   banner?: string | null;
   banner_key?: string | null;
+  banner_url?: string | null;
   members: AuthorGroupMemberDTO[];
   social_links: GroupSocialLinkDTO[];
-  series_ids: string[];
-  plan_ids: string[];
+  series: GroupLinkedSeriesDTO[];
+  plans: GroupLinkedPlanDTO[];
 }
 
 export interface AuthorGroupListResponse {
@@ -300,13 +342,60 @@ export function pickGroupTitle(
 
 export function resolveGroupBannerUrl(group: {
   banner?: string | null;
+  banner_url?: string | null;
   banner_key?: string | null;
 }): string | null {
-  const url = group.banner?.trim();
+  const url = group.banner_url?.trim() || group.banner?.trim();
   if (url) return url;
   const key = group.banner_key?.trim();
   if (key && /^https?:\/\//i.test(key)) return key;
   return null;
+}
+
+export function resolveGroupAvatarUrl(group: {
+  avatar?: string | null;
+  avatar_url?: string | null;
+  avatar_key?: string | null;
+}): string | null {
+  const url = group.avatar_url?.trim() || group.avatar?.trim();
+  if (url) return url;
+  const key = group.avatar_key?.trim();
+  if (key && /^https?:\/\//i.test(key)) return key;
+  return null;
+}
+
+export function pickGroupLinkedSeriesTitle(
+  series: GroupLinkedSeriesDTO,
+  fallback = "Untitled series",
+): string {
+  return pickGroupTitle(series.metadata, fallback);
+}
+
+export function groupLinkedSeriesToFkOptions(
+  series: GroupLinkedSeriesDTO[],
+): { id: string; title: string; image_url?: string }[] {
+  return series.map((item) => ({
+    id: item.id,
+    title: pickGroupLinkedSeriesTitle(item),
+    image_url: item.image?.trim() || undefined,
+  }));
+}
+
+export function pickGroupLinkedPlanTitle(
+  plan: GroupLinkedPlanDTO,
+  fallback = "Untitled plan",
+): string {
+  return plan.title?.trim() || fallback;
+}
+
+export function groupLinkedPlansToFkOptions(
+  plans: GroupLinkedPlanDTO[],
+): { id: string; title: string; image_url?: string }[] {
+  return plans.map((item) => ({
+    id: item.id,
+    title: pickGroupLinkedPlanTitle(item),
+    image_url: item.image_url?.trim() || undefined,
+  }));
 }
 
 const LANGUAGE_LABELS: Record<LanguageCode, string> = {
