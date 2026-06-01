@@ -9,13 +9,14 @@ import type { LanguageCode } from "@/schema/SeriesSchema";
 import {
   fetchGroup,
   languageLabelForCode,
+  pickGroupLinkedPlanTitle,
+  pickGroupLinkedSeriesTitle,
   pickGroupTitle,
   resolveGroupBannerUrl,
 } from "./api/groupsApi";
 import { GroupDetailCard } from "./components/GroupSection";
 import GroupMembersTable from "./components/GroupMembersTable";
 import { GroupPageShell } from "./components/GroupPageShell";
-import { useGroupLinkedTitles } from "./hooks/useGroupLinkedTitles";
 
 const GroupDetailsPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -32,11 +33,6 @@ const GroupDetailsPage = () => {
     enabled: Boolean(groupId),
     refetchOnWindowFocus: false,
   });
-
-  const { linkedPlans, linkedSeries } = useGroupLinkedTitles(
-    group?.plan_ids,
-    group?.series_ids,
-  );
 
   if (!groupId) return null;
 
@@ -62,6 +58,7 @@ const GroupDetailsPage = () => {
   }
 
   const bannerUrl = resolveGroupBannerUrl(group);
+  const memberCount = group.member_count ?? group.members.length;
 
   return (
     <GroupPageShell
@@ -96,7 +93,7 @@ const GroupDetailsPage = () => {
               {group.is_public ? "Public" : "Private"}
             </Pecha.Badge>
             <span className="text-muted-foreground">
-              {group.member_count} member{group.member_count === 1 ? "" : "s"}
+              {memberCount} member{memberCount === 1 ? "" : "s"}
             </span>
             <span className="text-muted-foreground">
               {group.follower_count} follower
@@ -139,34 +136,53 @@ const GroupDetailsPage = () => {
             </GroupDetailCard>
           )}
 
-          {linkedPlans.length > 0 && (
+          {group.plans.length > 0 && (
             <GroupDetailCard title="Linked plans">
               <ul className="space-y-2">
-                {linkedPlans.map((plan) => (
-                  <li key={plan.id}>
+                {group.plans.map((plan) => (
+                  <li key={plan.id} className="text-sm">
                     <Link
                       to={ROUTES.plan(plan.id)}
-                      className="text-sm text-[#A51C21] hover:underline"
+                      className="text-[#A51C21] hover:underline font-medium"
                     >
-                      {plan.title}
+                      {pickGroupLinkedPlanTitle(plan)}
                     </Link>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {languageLabelForCode(plan.language)}
+                      {plan.total_days != null ? (
+                        <>
+                          {" "}
+                          · {plan.total_days} day
+                          {plan.total_days === 1 ? "" : "s"}
+                        </>
+                      ) : null}
+                      {plan.status ? <> · {plan.status}</> : null}
+                    </span>
                   </li>
                 ))}
               </ul>
             </GroupDetailCard>
           )}
 
-          {linkedSeries.length > 0 && (
+          {group.series.length > 0 && (
             <GroupDetailCard title="Linked series">
               <ul className="space-y-2">
-                {linkedSeries.map((series) => (
-                  <li key={series.id}>
+                {group.series.map((series) => (
+                  <li key={series.id} className="text-sm ">
                     <Link
                       to={ROUTES.series(series.id)}
-                      className="text-sm text-[#A51C21] hover:underline"
+                      className="text-[#A51C21] hover:underline font-medium"
                     >
-                      {series.title}
+                      {pickGroupLinkedSeriesTitle(series)}
                     </Link>
+                    {series.plan_count != null ? (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · {series.plan_count} plan
+                        {series.plan_count === 1 ? "" : "s"}
+                      </span>
+                    ) : null}
                   </li>
                 ))}
               </ul>

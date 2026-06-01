@@ -15,7 +15,6 @@ import { PLAN_LANGUAGE } from "@/lib/constant";
 import { ROUTES } from "@/routes/paths";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { groupCoreSchema, type GroupCoreFormData } from "@/schema/GroupSchema";
-import { mapIdsToFkOptions } from "./api/groupPickerApi";
 import {
   buildGroupMetadata,
   createGroup,
@@ -27,18 +26,18 @@ import {
   replaceGroupSeries,
   replaceGroupSocialLinks,
   replaceGroupTags,
+  groupLinkedPlansToFkOptions,
+  groupLinkedSeriesToFkOptions,
+  resolveGroupAvatarUrl,
   resolveGroupBannerUrl,
   type GroupSocialLinkDTO,
   type TagSummaryDTO,
 } from "./api/groupsApi";
-import { searchSeries } from "./api/seriesSearchApi";
 import GroupFormAssociationsPanel from "./components/GroupFormAssociationsPanel";
 import GroupImageField from "./components/GroupImageField";
 import { GroupPageShell } from "./components/GroupPageShell";
 import GroupMembersPanel from "./components/GroupMembersPanel";
 import type { FkOption } from "./components/FkMultiSearchSelector";
-import { useGroupLinkedTitles } from "./hooks/useGroupLinkedTitles";
-
 const GroupFormPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
@@ -83,11 +82,6 @@ const GroupFormPage = () => {
     refetchOnWindowFocus: false,
   });
 
-  const { planOptions } = useGroupLinkedTitles(
-    groupData?.plan_ids,
-    groupData?.series_ids,
-  );
-
   useEffect(() => {
     if (isNew || !groupData) return;
     if (hydratedRef.current === groupData.id) return;
@@ -115,31 +109,15 @@ const GroupFormPage = () => {
 
     setAvatarKey(groupData.avatar_key ?? null);
     setBannerKey(groupData.banner_key ?? null);
+    setAvatarPreview(resolveGroupAvatarUrl(groupData));
     setBannerPreview(resolveGroupBannerUrl(groupData));
     setTagIds(groupData.tags.map((t) => t.id));
     setInitialTags(groupData.tags);
     setSocialLinks(groupData.social_links ?? []);
 
-    const planTitleMap = new Map(planOptions.map((p) => [p.id, p.title]));
-    setSelectedPlans(mapIdsToFkOptions(groupData.plan_ids ?? [], planTitleMap));
-    setSelectedSeries(
-      (groupData.series_ids ?? []).map((id) => ({ id, title: id })),
-    );
-  }, [isNew, groupData, form, planOptions]);
-
-  useEffect(() => {
-    if (isNew || !groupData?.series_ids?.length) return;
-    let cancelled = false;
-    (async () => {
-      const result = await searchSeries({ limit: 500 });
-      if (cancelled) return;
-      const titleMap = new Map(result.series.map((s) => [s.id, s.title]));
-      setSelectedSeries(mapIdsToFkOptions(groupData.series_ids, titleMap));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isNew, groupData?.id, groupData?.series_ids]);
+    setSelectedPlans(groupLinkedPlansToFkOptions(groupData.plans ?? []));
+    setSelectedSeries(groupLinkedSeriesToFkOptions(groupData.series ?? []));
+  }, [isNew, groupData, form]);
 
   const availableLanguages = PLAN_LANGUAGE.filter(
     (l) => !addedLanguages.includes(l.value as LanguageCode),
