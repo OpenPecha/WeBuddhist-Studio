@@ -17,8 +17,8 @@ import {
   rejectGroupInvite,
 } from "@/components/routes/groups/api/groupsApi";
 import {
-  executeNotificationAction,
   fetchNotifications,
+  isGroupInviteNotification,
   markNotificationRead,
   type NotificationDTO,
 } from "@/components/routes/notifications/api/notificationsApi";
@@ -35,7 +35,7 @@ const NotificationBell = () => {
     refetchOnWindowFocus: true,
   });
 
-  const unreadCount = data?.notifications.length ?? 0;
+  const unreadCount = data?.total ?? 0;
 
   const invalidateNotifications = () => {
     queryClient.invalidateQueries({ queryKey: ["cms-notifications"] });
@@ -50,54 +50,48 @@ const NotificationBell = () => {
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
-  const handleGroupInviteAction = async (
+  const inviteActionMutation = useMutation({
+    mutationFn: async ({
+      inviteId,
+      action,
+    }: {
+      inviteId: string;
+      action: "accept" | "reject";
+    }) => {
+      if (action === "accept") {
+        return acceptGroupInvite(inviteId);
+      }
+      await rejectGroupInvite(inviteId);
+      return null;
+    },
+    onSuccess: (group, { action }) => {
+      if (action === "accept") {
+        toast.success("Invitation accepted");
+        setOpen(false);
+        if (group) {
+          navigate(ROUTES.group(group.id));
+        }
+      } else {
+        toast.success("Invitation declined");
+      }
+      invalidateNotifications();
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err)),
+  });
+
+  const handleInviteAction = (
     notification: NotificationDTO,
-    actionLabel: string,
+    action: "accept" | "reject",
   ) => {
     const inviteId = notification.reference_id;
     if (!inviteId) {
       toast.error("Invalid invitation notification");
       return;
     }
-    try {
-      if (actionLabel.toLowerCase() === "accept") {
-        const group = await acceptGroupInvite(inviteId);
-        toast.success("Invitation accepted");
-        invalidateNotifications();
-        setOpen(false);
-        navigate(ROUTES.group(group.id));
-        return;
-      }
-      if (actionLabel.toLowerCase() === "reject") {
-        await rejectGroupInvite(inviteId);
-        toast.success("Invitation declined");
-        invalidateNotifications();
-        return;
-      }
-      const action = notification.actions.find(
-        (a) => a.label.toLowerCase() === actionLabel.toLowerCase(),
-      );
-      if (action) {
-        await executeNotificationAction(action);
-        toast.success("Done");
-        invalidateNotifications();
-      }
-    } catch (err) {
-      toast.error(getApiErrorMessage(err));
-    }
+    inviteActionMutation.mutate({ inviteId, action });
   };
 
-  const handleGenericAction = async (notification: NotificationDTO) => {
-    const action = notification.actions[0];
-    if (!action) return;
-    try {
-      await executeNotificationAction(action);
-      toast.success("Done");
-      invalidateNotifications();
-    } catch (err) {
-      toast.error(getApiErrorMessage(err));
-    }
-  };
+  const invitePending = inviteActionMutation.isPending;
 
   return (
     <Pecha.DropdownMenu open={open} onOpenChange={setOpen}>
@@ -147,57 +141,39 @@ const NotificationBell = () => {
                     {notification.description}
                   </p>
                 )}
-                {notification.category === "group_invite" &&
-                notification.reference_id ? (
+                {isGroupInviteNotification(notification) ? (
                   <div className="flex flex-wrap gap-2">
-                    {notification.actions.map((action) => (
-                      <Button
-                        key={action.label}
-                        type="button"
-                        size="sm"
-                        variant={
-                          action.label.toLowerCase() === "accept"
-                            ? "default"
-                            : "outline"
-                        }
-                        className={
-                          action.label.toLowerCase() === "accept"
-                            ? "bg-[#A51C21] text-white hover:bg-[#A51C21]/90 h-7 text-xs"
-                            : "h-7 text-xs"
-                        }
-                        onClick={() =>
-                          handleGroupInviteAction(notification, action.label)
-                        }
-                      >
-                        {action.label}
-                      </Button>
-                    ))}
                     <Button
                       type="button"
                       size="sm"
-                      variant="ghost"
-                      className="h-7 text-xs"
-                      onClick={() => dismissMutation.mutate(notification.id)}
+                      className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 h-7 text-xs"
+                      disabled={invitePending}
+                      onClick={() => handleInviteAction(notification, "accept")}
                     >
-                      Dismiss
+                      {inviteActionMutation.isPending &&
+                      inviteActionMutation.variables?.action === "accept"
+                        ? "Accepting…"
+                        : "Accept"}
                     </Button>
-                  </div>
-                ) : notification.actions.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       className="h-7 text-xs"
-                      onClick={() => handleGenericAction(notification)}
+                      disabled={invitePending}
+                      onClick={() => handleInviteAction(notification, "reject")}
                     >
-                      {notification.actions[0].label}
+                      {inviteActionMutation.isPending &&
+                      inviteActionMutation.variables?.action === "reject"
+                        ? "Declining…"
+                        : "Reject"}
                     </Button>
                     <Button
                       type="button"
                       size="sm"
                       variant="ghost"
                       className="h-7 text-xs"
+                      disabled={invitePending || dismissMutation.isPending}
                       onClick={() => dismissMutation.mutate(notification.id)}
                     >
                       Dismiss
@@ -209,6 +185,7 @@ const NotificationBell = () => {
                     size="sm"
                     variant="ghost"
                     className="h-7 text-xs"
+                    disabled={dismissMutation.isPending}
                     onClick={() => dismissMutation.mutate(notification.id)}
                   >
                     Dismiss
