@@ -58,7 +58,7 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
                   <span className="text-muted-foreground">Private</span>
                 )}
               </Pecha.TableCell>
-              <Pecha.TableCell>{group.member_count}</Pecha.TableCell>
+              <Pecha.TableCell>{group.member_count ?? "—"}</Pecha.TableCell>
               <Pecha.TableCell>{group.follower_count}</Pecha.TableCell>
               <Pecha.TableCell>{group.tags.length}</Pecha.TableCell>
             </Pecha.TableRow>
