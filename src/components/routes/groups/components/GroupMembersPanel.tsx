@@ -16,13 +16,16 @@ import {
 import {
   canManageGroupInvites,
   canShowMemberRemovalAction,
+  canTransferOwnership,
   getEffectiveGroupRole,
   isCurrentGroupMember,
   normalizeMemberRole,
   roleChangeOptions,
+  transferOwnershipCandidates,
 } from "../lib/groupPermissions";
 import GroupInvitesAdminSection from "./GroupInvitesAdminSection";
 import { GroupSectionHeader } from "./GroupSection";
+import GroupTransferOwnershipDialog from "./GroupTransferOwnershipDialog";
 
 type GroupMembersPanelProps = {
   groupId: string;
@@ -44,6 +47,10 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
   const [removeTarget, setRemoveTarget] = useState<AuthorGroupMemberDTO | null>(
     null,
   );
+  const [transferOpen, setTransferOpen] = useState(false);
+
+  const showTransferOwnership = canTransferOwnership(members, actor);
+  const transferCandidates = transferOwnershipCandidates(members, actor);
 
   const leavingSelf =
     removeTarget != null && isCurrentGroupMember(removeTarget, actor);
@@ -87,7 +94,21 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <GroupSectionHeader title={`Members (${members.length})`} />
+        <GroupSectionHeader
+          title={`Members (${members.length})`}
+          action={
+            showTransferOwnership ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setTransferOpen(true)}
+              >
+                Transfer ownership
+              </Button>
+            ) : undefined
+          }
+        />
 
         <div className="overflow-x-auto">
           <Pecha.Table>
@@ -175,6 +196,19 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
 
       {canManageGroupInvites(myRole) && (
         <GroupInvitesAdminSection groupId={groupId} myRole={myRole} />
+      )}
+
+      {showTransferOwnership && (
+        <GroupTransferOwnershipDialog
+          groupId={groupId}
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          candidates={transferCandidates}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["cms-groups"] });
+            invalidate();
+          }}
+        />
       )}
 
       <Pecha.AlertDialog

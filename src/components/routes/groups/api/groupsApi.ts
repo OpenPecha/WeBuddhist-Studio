@@ -382,6 +382,22 @@ export const updateGroupMemberRole = async (
   return data;
 };
 
+export interface TransferGroupOwnershipRequest {
+  new_owner_author_id: string;
+}
+
+export const transferGroupOwnership = async (
+  groupId: string,
+  payload: TransferGroupOwnershipRequest,
+): Promise<AuthorGroupDetailDTO> => {
+  const { data } = await axiosInstance.post<AuthorGroupDetailDTO>(
+    `/api/v1/cms/author/groups/${groupId}/transfer-ownership`,
+    payload,
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
 export const removeGroupMember = async (
   groupId: string,
   authorId: string,
