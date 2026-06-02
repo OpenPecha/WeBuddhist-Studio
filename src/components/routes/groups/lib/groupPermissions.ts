@@ -11,6 +11,13 @@ export const ALL_MEMBER_ROLES: AuthorGroupMemberRole[] = [
   "VIEWER",
 ];
 
+/** Roles assignable via invite or role change (never OWNER). */
+export const ASSIGNABLE_MEMBER_ROLES: AuthorGroupMemberRole[] = [
+  "ADMIN",
+  "AUTHOR",
+  "VIEWER",
+];
+
 const MEMBER_MANAGEMENT_ROLES: AuthorGroupMemberRole[] = ["OWNER", "ADMIN"];
 
 export type GroupActor = {
@@ -66,7 +73,7 @@ export function canManageGroupInvites(
 export function inviteRoleOptions(
   myRole: AuthorGroupMemberRole | undefined,
 ): AuthorGroupMemberRole[] {
-  if (myRole === "OWNER") return [...ALL_MEMBER_ROLES];
+  if (myRole === "OWNER") return [...ASSIGNABLE_MEMBER_ROLES];
   if (myRole === "ADMIN") return ["AUTHOR", "VIEWER"];
   return [];
 }
@@ -81,12 +88,31 @@ export function roleChangeOptions(
   const targetRole = normalizeMemberRole(target.role);
   const isSelf = isCurrentGroupMember(target, user);
 
-  if (myRole === "OWNER") return [...ALL_MEMBER_ROLES];
-
   if (targetRole === "OWNER") return null;
+
+  if (myRole === "OWNER") return [...ASSIGNABLE_MEMBER_ROLES];
+
   if (targetRole === "ADMIN" && !isSelf) return null;
   if (isSelf) return ["ADMIN", "AUTHOR", "VIEWER"];
   return ["AUTHOR", "VIEWER"];
+}
+
+/** True only for the actual group OWNER row (platform is_admin does not apply). */
+export function canTransferOwnership(
+  members: AuthorGroupMemberDTO[],
+  user: GroupActor | undefined,
+): boolean {
+  return getCurrentUserGroupRole(members, user?.email) === "OWNER";
+}
+
+export function transferOwnershipCandidates(
+  members: AuthorGroupMemberDTO[],
+  user: GroupActor | undefined,
+): AuthorGroupMemberDTO[] {
+  return members.filter(
+    (m) =>
+      normalizeMemberRole(m.role) !== "OWNER" && !isCurrentGroupMember(m, user),
+  );
 }
 
 export function canRevokeInvite(
