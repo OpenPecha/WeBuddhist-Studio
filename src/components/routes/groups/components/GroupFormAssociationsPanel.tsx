@@ -28,6 +28,10 @@ type GroupFormAssociationsPanelProps = {
   plansSaving: boolean;
   seriesSaving: boolean;
   socialSaving: boolean;
+  tagsSaveDisabled?: boolean;
+  plansSaveDisabled?: boolean;
+  seriesSaveDisabled?: boolean;
+  socialSaveDisabled?: boolean;
   readOnly?: boolean;
 };
 
@@ -49,6 +53,10 @@ const GroupFormAssociationsPanel = ({
   plansSaving,
   seriesSaving,
   socialSaving,
+  tagsSaveDisabled = false,
+  plansSaveDisabled = false,
+  seriesSaveDisabled = false,
+  socialSaveDisabled = false,
   readOnly = false,
 }: GroupFormAssociationsPanelProps) => (
   <div className="w-full xl:w-1/2 xl:min-w-0 p-4 sm:p-8 pb-12 space-y-10">
@@ -56,6 +64,7 @@ const GroupFormAssociationsPanel = ({
       title="Tags"
       onSave={onSaveTags}
       isSaving={tagsSaving}
+      saveDisabled={tagsSaveDisabled}
       saveLabel="Save tags"
       savingLabel="Saving…"
       readOnly={readOnly}
@@ -72,6 +81,7 @@ const GroupFormAssociationsPanel = ({
       title="Linked plans"
       onSave={onSavePlans}
       isSaving={plansSaving}
+      saveDisabled={plansSaveDisabled}
       saveLabel="Save plans"
       savingLabel="Saving…"
       readOnly={readOnly}
@@ -91,6 +101,7 @@ const GroupFormAssociationsPanel = ({
       title="Linked series"
       onSave={onSaveSeries}
       isSaving={seriesSaving}
+      saveDisabled={seriesSaveDisabled}
       saveLabel="Save series"
       savingLabel="Saving…"
       readOnly={readOnly}
@@ -110,6 +121,7 @@ const GroupFormAssociationsPanel = ({
       title="Social links"
       onSave={onSaveSocial}
       isSaving={socialSaving}
+      saveDisabled={socialSaveDisabled}
       saveLabel="Save links"
       savingLabel="Saving…"
       readOnly={readOnly}
