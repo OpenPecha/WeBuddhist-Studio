@@ -1,22 +1,15 @@
 import axiosInstance from "@/config/axios-config";
-import { resolveCmsApiPath } from "@/lib/cmsApiPath";
 
-export interface NotificationActionDTO {
-  label: string;
-  method: string;
-  path: string;
-}
+export type NotificationCategory = "group_invite" | (string & {});
 
 export interface NotificationDTO {
   id: string;
   title: string;
   description?: string | null;
-  category: string;
-  reference_type?: string | null;
+  category: NotificationCategory;
   reference_id?: string | null;
   is_read: boolean;
   read_at?: string | null;
-  actions: NotificationActionDTO[];
   created_at: string;
 }
 
@@ -65,15 +58,8 @@ export const markNotificationRead = async (
   return data;
 };
 
-export const executeNotificationAction = async (
-  action: NotificationActionDTO,
-): Promise<unknown> => {
-  const url = resolveCmsApiPath(action.path);
-  const method = action.method.toUpperCase();
-  const { data } = await axiosInstance.request({
-    method,
-    url,
-    headers: getAuthHeaders(),
-  });
-  return data;
-};
+export const isGroupInviteNotification = (
+  notification: NotificationDTO,
+): boolean =>
+  notification.category === "group_invite" &&
+  Boolean(notification.reference_id);
