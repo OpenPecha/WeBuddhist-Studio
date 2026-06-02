@@ -43,6 +43,25 @@ import {
   canEditGroupSettings,
   getEffectiveGroupRole,
 } from "./lib/groupPermissions";
+import { sameSocialLinks, sameSortedIds } from "./lib/groupFormSectionDirty";
+
+type AssociationBaselines = {
+  tagIds: string[];
+  planIds: string[];
+  seriesIds: string[];
+  socialLinks: GroupSocialLinkDTO[];
+  avatarKey: string | null;
+  bannerKey: string | null;
+};
+
+const emptyAssociationBaselines = (): AssociationBaselines => ({
+  tagIds: [],
+  planIds: [],
+  seriesIds: [],
+  socialLinks: [],
+  avatarKey: null,
+  bannerKey: null,
+});
 
 const GroupFormPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -66,6 +85,9 @@ const GroupFormPage = () => {
   const [selectedPlans, setSelectedPlans] = useState<FkOption[]>([]);
   const [selectedSeries, setSelectedSeries] = useState<FkOption[]>([]);
   const [socialLinks, setSocialLinks] = useState<GroupSocialLinkDTO[]>([]);
+  const [savedBaselines, setSavedBaselines] = useState<AssociationBaselines>(
+    emptyAssociationBaselines,
+  );
 
   const form = useForm<GroupCoreFormData>({
     resolver: zodResolver(groupCoreSchema),
@@ -124,6 +146,14 @@ const GroupFormPage = () => {
 
     setSelectedPlans(groupLinkedPlansToFkOptions(groupData.plans ?? []));
     setSelectedSeries(groupLinkedSeriesToFkOptions(groupData.series ?? []));
+    setSavedBaselines({
+      tagIds: groupData.tags.map((t) => t.id),
+      planIds: (groupData.plans ?? []).map((p) => p.id),
+      seriesIds: (groupData.series ?? []).map((s) => s.id),
+      socialLinks: groupData.social_links ?? [],
+      avatarKey: groupData.avatar_key ?? null,
+      bannerKey: groupData.banner_key ?? null,
+    });
   }, [isNew, groupData, form]);
 
   const availableLanguages = PLAN_LANGUAGE.filter(
@@ -176,6 +206,12 @@ const GroupFormPage = () => {
     onSuccess: () => {
       toast.success("Group updated");
       invalidateGroup();
+      form.reset(form.getValues());
+      setSavedBaselines((prev) => ({
+        ...prev,
+        avatarKey,
+        bannerKey,
+      }));
     },
     onError: toastOnError,
   });
@@ -185,6 +221,7 @@ const GroupFormPage = () => {
     onSuccess: () => {
       toast.success("Tags saved");
       invalidateGroup();
+      setSavedBaselines((prev) => ({ ...prev, tagIds: [...tagIds] }));
     },
     onError: toastOnError,
   });
@@ -197,6 +234,10 @@ const GroupFormPage = () => {
     onSuccess: () => {
       toast.success("Plans saved");
       invalidateGroup();
+      setSavedBaselines((prev) => ({
+        ...prev,
+        planIds: selectedPlans.map((p) => p.id),
+      }));
     },
     onError: toastOnError,
   });
@@ -209,6 +250,10 @@ const GroupFormPage = () => {
     onSuccess: () => {
       toast.success("Series saved");
       invalidateGroup();
+      setSavedBaselines((prev) => ({
+        ...prev,
+        seriesIds: selectedSeries.map((s) => s.id),
+      }));
     },
     onError: toastOnError,
   });
@@ -219,6 +264,10 @@ const GroupFormPage = () => {
     onSuccess: () => {
       toast.success("Social links saved");
       invalidateGroup();
+      setSavedBaselines((prev) => ({
+        ...prev,
+        socialLinks: [...socialLinks],
+      }));
     },
     onError: toastOnError,
   });
@@ -265,6 +314,21 @@ const GroupFormPage = () => {
   });
 
   const corePending = createMutation.isPending || patchMutation.isPending;
+  const { isDirty: isFormDirty } = form.formState;
+  const imagesDirty =
+    avatarKey !== savedBaselines.avatarKey ||
+    bannerKey !== savedBaselines.bannerKey;
+  const isCoreDirty = isFormDirty || imagesDirty;
+  const tagsDirty = !sameSortedIds(tagIds, savedBaselines.tagIds);
+  const plansDirty = !sameSortedIds(
+    selectedPlans.map((p) => p.id),
+    savedBaselines.planIds,
+  );
+  const seriesDirty = !sameSortedIds(
+    selectedSeries.map((s) => s.id),
+    savedBaselines.seriesIds,
+  );
+  const socialDirty = !sameSocialLinks(socialLinks, savedBaselines.socialLinks);
   const myRole = useMemo(
     () =>
       isNew || !groupData
@@ -469,7 +533,7 @@ const GroupFormPage = () => {
                       <Button
                         type="submit"
                         className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
-                        disabled={corePending}
+                        disabled={corePending || !isCoreDirty}
                       >
                         {corePending
                           ? isNew
@@ -506,6 +570,10 @@ const GroupFormPage = () => {
             plansSaving={plansMutation.isPending}
             seriesSaving={seriesMutation.isPending}
             socialSaving={socialMutation.isPending}
+            tagsSaveDisabled={!tagsDirty}
+            plansSaveDisabled={!plansDirty}
+            seriesSaveDisabled={!seriesDirty}
+            socialSaveDisabled={!socialDirty}
             readOnly={!canEditSettings}
           />
         )}

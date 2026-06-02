@@ -22,6 +22,7 @@ type GroupEditableSectionProps = {
   isSaving: boolean;
   saveLabel: string;
   savingLabel: string;
+  saveDisabled?: boolean;
   readOnly?: boolean;
   children: ReactNode;
 };
@@ -32,6 +33,7 @@ export const GroupEditableSection = ({
   isSaving,
   saveLabel,
   savingLabel,
+  saveDisabled = false,
   readOnly = false,
   children,
 }: GroupEditableSectionProps) => (
@@ -40,7 +42,12 @@ export const GroupEditableSection = ({
       title={title}
       action={
         readOnly ? undefined : (
-          <Button type="button" size="sm" disabled={isSaving} onClick={onSave}>
+          <Button
+            type="button"
+            size="sm"
+            disabled={isSaving || saveDisabled}
+            onClick={onSave}
+          >
             {isSaving ? savingLabel : saveLabel}
           </Button>
         )
