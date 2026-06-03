@@ -8,6 +8,7 @@ import {
   createGroupInvite,
   fetchGroupInvites,
   revokeGroupInvite,
+  formatGroupInviteInviter,
   type AuthorGroupInviteStatus,
   type AuthorGroupMemberRole,
 } from "../api/groupsApi";
@@ -174,21 +175,28 @@ const GroupInvitesAdminSection = ({
                     <InviteExpiryLabel invite={invite} />
                   </Pecha.TableCell>
                   <Pecha.TableCell className="text-muted-foreground text-sm">
-                    {invite.created_by}
+                    {(() => {
+                      const inviter = formatGroupInviteInviter(invite);
+                      return inviter.name.toLowerCase() !==
+                        inviter.email.toLowerCase()
+                        ? `${inviter.name} (${inviter.email})`
+                        : inviter.email;
+                    })()}
                   </Pecha.TableCell>
                   <Pecha.TableCell className="text-right">
-                    {canRevokeInvite(myRole, invite) && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        disabled={revokeMutation.isPending}
-                        onClick={() => revokeMutation.mutate(invite.id)}
-                      >
-                        Revoke
-                      </Button>
-                    )}
+                    {invite.status === "PENDING" &&
+                      canRevokeInvite(myRole, invite) && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          disabled={revokeMutation.isPending}
+                          onClick={() => revokeMutation.mutate(invite.id)}
+                        >
+                          Revoke
+                        </Button>
+                      )}
                   </Pecha.TableCell>
                 </Pecha.TableRow>
               ))
