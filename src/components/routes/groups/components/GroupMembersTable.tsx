@@ -1,5 +1,6 @@
 import { Pecha } from "@/components/ui/shadimport";
 import type { AuthorGroupMemberDTO } from "../api/groupsApi";
+import { normalizeMemberRole } from "../lib/groupPermissions";
 
 type GroupMembersTableProps = {
   members: AuthorGroupMemberDTO[];
@@ -24,7 +25,9 @@ const GroupMembersTable = ({ members }: GroupMembersTableProps) => (
             <Pecha.TableCell className="text-muted-foreground">
               {member.email}
             </Pecha.TableCell>
-            <Pecha.TableCell>{member.role}</Pecha.TableCell>
+            <Pecha.TableCell>
+              {normalizeMemberRole(member.role)}
+            </Pecha.TableCell>
           </Pecha.TableRow>
         ))}
       </Pecha.TableBody>

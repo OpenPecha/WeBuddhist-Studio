@@ -1,12 +1,7 @@
 import axiosInstance from "@/config/axios-config";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 
-export type AuthorGroupMemberRole =
-  | "OWNER"
-  | "ADMIN"
-  | "EDITOR"
-  | "AUTHOR"
-  | "VIEWER";
+export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
 export interface GroupMetadataDTO {
   id?: string;
@@ -43,6 +38,46 @@ export interface AuthorGroupMemberDTO {
   email: string;
 }
 
+export interface GroupLinkedSeriesDTO {
+  id: string;
+  metadata: GroupMetadataDTO[];
+  image?: string | null;
+  image_key?: string | null;
+  author_id?: string;
+  featured: boolean;
+  status: string;
+  plan_count?: number;
+  total_days?: number;
+}
+
+export interface GroupLinkedPlanAuthorDTO {
+  id: string;
+  firstname: string;
+  lastname: string;
+  image_url?: string | null;
+  image_key?: string | null;
+}
+
+export interface GroupLinkedPlanDTO {
+  id: string;
+  title: string;
+  description?: string | null;
+  language: LanguageCode;
+  difficulty_level?: string;
+  image_url?: string | null;
+  image_key?: string | null;
+  total_days?: number;
+  tags: TagSummaryDTO[];
+  status: string;
+  featured?: boolean;
+  subscription_count?: number;
+  author?: GroupLinkedPlanAuthorDTO;
+  start_date?: string | null;
+  series_id?: string | null;
+  display_order?: number | null;
+  group_id?: string | null;
+}
+
 export interface AuthorGroupListItem {
   id: string;
   slug: string;
@@ -50,19 +85,21 @@ export interface AuthorGroupListItem {
   metadata: GroupMetadataDTO[];
   tags: TagSummaryDTO[];
   follower_count: number;
-  member_count: number;
+  member_count?: number;
   avatar?: string | null;
   avatar_key?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface AuthorGroupDetailDTO extends AuthorGroupListItem {
   avatar_key?: string | null;
   banner?: string | null;
   banner_key?: string | null;
+  banner_url?: string | null;
   members: AuthorGroupMemberDTO[];
   social_links: GroupSocialLinkDTO[];
-  series_ids: string[];
-  plan_ids: string[];
+  series: GroupLinkedSeriesDTO[];
+  plans: GroupLinkedPlanDTO[];
 }
 
 export interface AuthorGroupListResponse {
@@ -104,20 +141,54 @@ export interface ReplaceGroupPlansRequest {
   plan_ids: string[];
 }
 
+export type AuthorGroupInviteStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "REVOKED"
+  | "EXPIRED";
+
+export interface GroupInviteDTO {
+  id: string;
+  group_id: string;
+  group_name: string;
+  target_email: string;
+  role: AuthorGroupMemberRole;
+  status: AuthorGroupInviteStatus;
+  expires_at: string;
+  accepted_at?: string | null;
+  rejected_at?: string | null;
+  revoked_at?: string | null;
+  created_at: string;
+  created_by: string;
+  inviter_name?: string;
+  inviter_email?: string;
+}
+
+export function formatGroupInviteInviter(invite: GroupInviteDTO): {
+  name: string;
+  email: string;
+} {
+  const email = (invite.inviter_email ?? invite.created_by).trim();
+  const rawName = (invite.inviter_name ?? "").trim();
+  const name =
+    rawName && rawName.toLowerCase() !== email.toLowerCase() ? rawName : email;
+  return { name, email };
+}
+
+export interface GroupInviteListResponse {
+  invites: GroupInviteDTO[];
+  total: number;
+}
+
 export interface CreateGroupInviteRequest {
   target_email: string;
   role: AuthorGroupMemberRole;
-  expires_at: string;
-  max_uses: number;
 }
 
 export interface GroupInviteCreatedResponse {
-  invite_id: string;
-  token: string;
-  target_email: string;
-  role: AuthorGroupMemberRole;
-  expires_at: string;
-  max_uses: number;
+  invite: GroupInviteDTO;
+  notification_id?: string | null;
 }
 
 export interface UpdateGroupMemberRoleRequest {
@@ -253,6 +324,48 @@ export const createGroupInvite = async (
   return data;
 };
 
+export const fetchGroupInvites = async (
+  groupId: string,
+  status?: AuthorGroupInviteStatus,
+): Promise<GroupInviteListResponse> => {
+  const { data } = await axiosInstance.get<GroupInviteListResponse>(
+    `/api/v1/cms/author/groups/${groupId}/members/invites`,
+    {
+      headers: getAuthHeaders(),
+      params: status ? { status } : undefined,
+    },
+  );
+  return data;
+};
+
+export const fetchMyPendingGroupInvites =
+  async (): Promise<GroupInviteListResponse> => {
+    const { data } = await axiosInstance.get<GroupInviteListResponse>(
+      `/api/v1/cms/author/groups/invites/me`,
+    );
+    return data;
+  };
+
+export const acceptGroupInvite = async (
+  inviteId: string,
+): Promise<AuthorGroupDetailDTO> => {
+  const { data } = await axiosInstance.post<AuthorGroupDetailDTO>(
+    `/api/v1/cms/author/groups/invites/${inviteId}/accept`,
+  );
+  return data;
+};
+
+export const rejectGroupInvite = async (
+  inviteId: string,
+): Promise<GroupInviteDTO> => {
+  const { data } = await axiosInstance.post<GroupInviteDTO>(
+    `/api/v1/cms/author/groups/invites/${inviteId}/reject`,
+    {},
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
 export const revokeGroupInvite = async (
   groupId: string,
   inviteId: string,
@@ -264,6 +377,11 @@ export const revokeGroupInvite = async (
   );
 };
 
+export function isGroupInviteExpired(invite: GroupInviteDTO): boolean {
+  if (invite.status === "EXPIRED") return true;
+  return new Date(invite.expires_at).getTime() <= Date.now();
+}
+
 export const updateGroupMemberRole = async (
   groupId: string,
   authorId: string,
@@ -271,6 +389,22 @@ export const updateGroupMemberRole = async (
 ): Promise<AuthorGroupDetailDTO> => {
   const { data } = await axiosInstance.patch<AuthorGroupDetailDTO>(
     `/api/v1/cms/author/groups/${groupId}/members/${authorId}/role`,
+    payload,
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
+export interface TransferGroupOwnershipRequest {
+  new_owner_author_id: string;
+}
+
+export const transferGroupOwnership = async (
+  groupId: string,
+  payload: TransferGroupOwnershipRequest,
+): Promise<AuthorGroupDetailDTO> => {
+  const { data } = await axiosInstance.post<AuthorGroupDetailDTO>(
+    `/api/v1/cms/author/groups/${groupId}/transfer-ownership`,
     payload,
     { headers: getAuthHeaders() },
   );
@@ -300,13 +434,60 @@ export function pickGroupTitle(
 
 export function resolveGroupBannerUrl(group: {
   banner?: string | null;
+  banner_url?: string | null;
   banner_key?: string | null;
 }): string | null {
-  const url = group.banner?.trim();
+  const url = group.banner_url?.trim() || group.banner?.trim();
   if (url) return url;
   const key = group.banner_key?.trim();
   if (key && /^https?:\/\//i.test(key)) return key;
   return null;
+}
+
+export function resolveGroupAvatarUrl(group: {
+  avatar?: string | null;
+  avatar_url?: string | null;
+  avatar_key?: string | null;
+}): string | null {
+  const url = group.avatar_url?.trim() || group.avatar?.trim();
+  if (url) return url;
+  const key = group.avatar_key?.trim();
+  if (key && /^https?:\/\//i.test(key)) return key;
+  return null;
+}
+
+export function pickGroupLinkedSeriesTitle(
+  series: GroupLinkedSeriesDTO,
+  fallback = "Untitled series",
+): string {
+  return pickGroupTitle(series.metadata, fallback);
+}
+
+export function groupLinkedSeriesToFkOptions(
+  series: GroupLinkedSeriesDTO[],
+): { id: string; title: string; image_url?: string }[] {
+  return series.map((item) => ({
+    id: item.id,
+    title: pickGroupLinkedSeriesTitle(item),
+    image_url: item.image?.trim() || undefined,
+  }));
+}
+
+export function pickGroupLinkedPlanTitle(
+  plan: GroupLinkedPlanDTO,
+  fallback = "Untitled plan",
+): string {
+  return plan.title?.trim() || fallback;
+}
+
+export function groupLinkedPlansToFkOptions(
+  plans: GroupLinkedPlanDTO[],
+): { id: string; title: string; image_url?: string }[] {
+  return plans.map((item) => ({
+    id: item.id,
+    title: pickGroupLinkedPlanTitle(item),
+    image_url: item.image_url?.trim() || undefined,
+  }));
 }
 
 const LANGUAGE_LABELS: Record<LanguageCode, string> = {

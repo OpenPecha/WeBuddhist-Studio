@@ -1,22 +1,13 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { useAuth } from "@/config/auth-context";
-import axiosInstance from "@/config/axios-config";
 import { NO_PROFILE_IMAGE } from "@/lib/constant";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes/paths";
-
-const fetchUserInfo = async () => {
-  const { data } = await axiosInstance.get(`/api/v1/authors/info`);
-  return data;
-};
+import { useUserInfo } from "@/hooks/useUserInfo";
 
 const AuthAvatar = () => {
   const { isLoggedIn } = useAuth();
-  const { data: userInfo } = useQuery({
-    queryKey: ["userInfo"],
-    queryFn: fetchUserInfo,
-  });
+  const { data: userInfo } = useUserInfo();
 
   if (isLoggedIn) {
     return (
