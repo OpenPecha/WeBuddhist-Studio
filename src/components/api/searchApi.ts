@@ -12,6 +12,23 @@ type SearchTitle = {
   offset?: number;
 };
 
+export type TextSearchItem = {
+  id: string;
+  title: string;
+  language: string;
+  license: string;
+};
+
+export type TitleSearchResponse = {
+  collection: string | null;
+  texts: TextSearchItem[];
+  skip: number;
+  limit: number;
+  has_more: boolean;
+};
+
+export const MIN_TITLE_SEARCH_LENGTH = 5;
+
 type SearchTextDetails = {
   textId: string;
   contentId?: string;
@@ -39,12 +56,22 @@ export const searchTitles = async ({
   title,
   limit = 20,
   offset = 0,
-}: SearchTitle) => {
-  const { data } = await axiosInstance.get(`/api/v1/texts/title-search`, {
+}: SearchTitle): Promise<TitleSearchResponse> => {
+  if (title.trim().length < MIN_TITLE_SEARCH_LENGTH) {
+    return {
+      collection: null,
+      texts: [],
+      skip: offset,
+      limit,
+      has_more: false,
+    };
+  }
+
+  const { data } = await axiosInstance.get<TitleSearchResponse>(`/api/v1/texts`, {
     params: {
       title,
       limit,
-      offset,
+      skip: offset,
     },
   });
   return data;
@@ -57,7 +84,7 @@ export const fetchTextDetails = async ({
   direction = "next",
   size = 20,
 }: SearchTextDetails) => {
-  const { data } = await axiosInstance.post(`/api/v1/texts/${textId}/details`, {
+  const { data } = await axiosInstance.get(`/api/v1/texts/${textId}/details`, {
     ...(contentId && { content_id: contentId }),
     ...(segmentId && { segment_id: segmentId }),
     direction,
