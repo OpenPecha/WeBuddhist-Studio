@@ -1,7 +1,8 @@
-import type {
-  AuthorGroupMemberDTO,
-  AuthorGroupMemberRole,
-  GroupInviteDTO,
+import {
+  isGroupInviteExpired,
+  type AuthorGroupMemberDTO,
+  type AuthorGroupMemberRole,
+  type GroupInviteDTO,
 } from "../api/groupsApi";
 
 export const ALL_MEMBER_ROLES: AuthorGroupMemberRole[] = [
@@ -119,7 +120,7 @@ export function canRevokeInvite(
   myRole: AuthorGroupMemberRole | undefined,
   invite: GroupInviteDTO,
 ): boolean {
-  if (invite.status !== "PENDING") return false;
+  if (invite.status !== "PENDING" || isGroupInviteExpired(invite)) return false;
   if (myRole === "OWNER") return true;
   if (myRole === "ADMIN") {
     return normalizeMemberRole(invite.role) !== "ADMIN";

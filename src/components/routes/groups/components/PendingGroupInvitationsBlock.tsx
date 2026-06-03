@@ -1,73 +1,92 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { IoMdClose } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
-import { getApiErrorMessage } from "@/lib/apiErrors";
-import { fetchMyPendingGroupInvites } from "../api/groupsApi";
+import { Button } from "@/components/ui/atoms/button";
+import {
+  fetchMyPendingGroupInvites,
+  formatGroupInviteInviter,
+} from "../api/groupsApi";
 import GroupInviteRespondButtons from "./GroupInviteRespondButtons";
 import InviteExpiryLabel from "./InviteExpiryLabel";
 
 const PendingGroupInvitationsBlock = () => {
-  const {
-    data: invitesData,
-    isLoading,
-    error,
-  } = useQuery({
+  const [dismissed, setDismissed] = useState(false);
+
+  const { data: invitesData, isLoading } = useQuery({
     queryKey: ["cms-my-group-invites"],
     queryFn: fetchMyPendingGroupInvites,
     refetchOnWindowFocus: true,
   });
 
   const invites = invitesData?.invites ?? [];
+  const open = !isLoading && invites.length > 0 && !dismissed;
 
-  if (isLoading) return null;
-  if (error) {
-    return (
-      <div className="mx-4 mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-        Could not load pending invitations. {getApiErrorMessage(error)}
-      </div>
-    );
-  }
-  if (invites.length === 0) return null;
+  if (isLoading || invites.length === 0) return null;
 
   return (
-    <section className="mx-4 mb-6 rounded-lg border border-[#A51C21]/30 bg-white p-4 shadow-sm dark:border-[#A51C21]/50 dark:bg-[#262626]">
-      <h2 className="text-lg font-semibold mb-1">Pending invitations</h2>
-      <p className="text-sm text-muted-foreground mb-4">
-        You have been invited to join the following author groups. Invitations
-        expire in about 30 minutes.
-      </p>
-      <div className="overflow-x-auto">
-        <Pecha.Table>
-          <Pecha.TableHeader>
-            <Pecha.TableRow>
-              <Pecha.TableHead>Group</Pecha.TableHead>
-              <Pecha.TableHead>Role</Pecha.TableHead>
-              <Pecha.TableHead>Invited by</Pecha.TableHead>
-              <Pecha.TableHead>Expires</Pecha.TableHead>
-              <Pecha.TableHead className="text-center">Actions</Pecha.TableHead>
-            </Pecha.TableRow>
-          </Pecha.TableHeader>
-          <Pecha.TableBody>
-            {invites.map((invite) => (
-              <Pecha.TableRow key={invite.id}>
-                <Pecha.TableCell className="font-medium">
-                  {invite.group_name?.trim() || "Untitled group"}
-                </Pecha.TableCell>
-                <Pecha.TableCell>{invite.role}</Pecha.TableCell>
-                <Pecha.TableCell className="text-muted-foreground text-sm">
-                  {invite.created_by}
-                </Pecha.TableCell>
-                <Pecha.TableCell>
-                  <InviteExpiryLabel invite={invite} />
-                </Pecha.TableCell>
-                <Pecha.TableCell className="text-center">
-                  <GroupInviteRespondButtons invite={invite} />
-                </Pecha.TableCell>
-              </Pecha.TableRow>
-            ))}
-          </Pecha.TableBody>
-        </Pecha.Table>
-      </div>
-    </section>
+    <Pecha.Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) setDismissed(true);
+      }}
+    >
+      <Pecha.DialogContent className="max-w-md gap-0 p-0 overflow-hidden">
+        <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
+          <div className="min-w-0">
+            <Pecha.DialogHeader className="space-y-1 p-0 text-left">
+              <Pecha.DialogTitle>Group invitations</Pecha.DialogTitle>
+            </Pecha.DialogHeader>
+            <p className="text-sm text-muted-foreground mt-1">
+              {invites.length === 1
+                ? "You have a pending invitation."
+                : `You have ${invites.length} pending invitations.`}
+            </p>
+          </div>
+          {/* <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 shrink-0 p-0"
+            aria-label="Close"
+            onClick={() => setDismissed(true)}
+          >
+            <IoMdClose className="h-5 w-5" />
+          </Button> */}
+        </div>
+
+        <ul className="max-h-[min(20rem,60vh)] overflow-y-auto divide-y">
+          {invites.map((invite) => {
+            const inviter = formatGroupInviteInviter(invite);
+            return (
+              <li key={invite.id} className="px-4 py-4 space-y-3">
+                <div>
+                  <p className="font-medium leading-snug">
+                    {invite.group_name?.trim() || "Untitled group"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Invited by {inviter.name}
+                    {inviter.name.toLowerCase() !==
+                      inviter.email.toLowerCase() && (
+                      <>
+                        <span className="mx-1">·</span>
+                        {inviter.email}
+                      </>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Role: {invite.role}
+                    <span className="mx-1.5">·</span>
+                    <InviteExpiryLabel invite={invite} />
+                  </p>
+                </div>
+                <GroupInviteRespondButtons invite={invite} align="start" />
+              </li>
+            );
+          })}
+        </ul>
+      </Pecha.DialogContent>
+    </Pecha.Dialog>
   );
 };
 

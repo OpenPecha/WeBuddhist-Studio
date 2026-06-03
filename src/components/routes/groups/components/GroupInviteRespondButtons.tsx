@@ -14,12 +14,14 @@ import {
 type GroupInviteRespondButtonsProps = {
   invite: GroupInviteDTO;
   size?: "sm" | "default";
+  align?: "start" | "center";
   onSettled?: () => void;
 };
 
 const GroupInviteRespondButtons = ({
   invite,
   size = "sm",
+  align = "center",
   onSettled,
 }: GroupInviteRespondButtonsProps) => {
   const navigate = useNavigate();
@@ -63,7 +65,9 @@ const GroupInviteRespondButtons = ({
   const pending = acceptMutation.isPending || rejectMutation.isPending;
 
   return (
-    <div className="flex flex-wrap gap-2 justify-center">
+    <div
+      className={`flex flex-wrap gap-2 ${align === "center" ? "justify-center" : "justify-start"}`}
+    >
       <Button
         type="button"
         size={size}

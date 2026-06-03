@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IoNotificationsOutline } from "react-icons/io5";
+import { IoClose, IoNotificationsOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
@@ -27,6 +27,7 @@ const NotificationBell = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["cms-notifications", { unread_only: true }],
@@ -93,9 +94,14 @@ const NotificationBell = () => {
 
   const invitePending = inviteActionMutation.isPending;
 
+  const handleMenuOpenChange = (next: boolean) => {
+    setOpen(next);
+    setTooltipOpen(false);
+  };
+
   return (
-    <Pecha.DropdownMenu open={open} onOpenChange={setOpen}>
-      <Tooltip>
+    <Pecha.DropdownMenu open={open} onOpenChange={handleMenuOpenChange}>
+      <Tooltip open={open ? false : tooltipOpen} onOpenChange={setTooltipOpen}>
         <TooltipTrigger asChild>
           <Pecha.DropdownMenuTrigger asChild>
             <button
@@ -119,6 +125,7 @@ const NotificationBell = () => {
         side="right"
         align="start"
         className="w-80 max-h-[min(24rem,70vh)] overflow-auto p-0"
+        onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <div className="border-b px-3 py-2 font-medium text-sm">
           Notifications
@@ -132,65 +139,61 @@ const NotificationBell = () => {
         ) : (
           <ul className="divide-y">
             {data.notifications.map((notification) => (
-              <li key={notification.id} className="px-3 py-3 space-y-2">
-                <p className="text-sm font-medium leading-snug">
-                  {notification.title}
-                </p>
-                {notification.description && (
-                  <p className="text-xs text-muted-foreground">
-                    {notification.description}
+              <li key={notification.id} className="relative px-3 py-3 pr-9">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-1 h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                  aria-label="Dismiss notification"
+                  disabled={invitePending || dismissMutation.isPending}
+                  onClick={() => dismissMutation.mutate(notification.id)}
+                >
+                  <IoClose className="h-4 w-4" />
+                </Button>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium leading-snug pr-1">
+                    {notification.title}
                   </p>
-                )}
-                {isGroupInviteNotification(notification) ? (
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 h-7 text-xs"
-                      disabled={invitePending}
-                      onClick={() => handleInviteAction(notification, "accept")}
-                    >
-                      {inviteActionMutation.isPending &&
-                      inviteActionMutation.variables?.action === "accept"
-                        ? "Accepting…"
-                        : "Accept"}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs"
-                      disabled={invitePending}
-                      onClick={() => handleInviteAction(notification, "reject")}
-                    >
-                      {inviteActionMutation.isPending &&
-                      inviteActionMutation.variables?.action === "reject"
-                        ? "Declining…"
-                        : "Reject"}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 text-xs"
-                      disabled={invitePending || dismissMutation.isPending}
-                      onClick={() => dismissMutation.mutate(notification.id)}
-                    >
-                      Dismiss
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs"
-                    disabled={dismissMutation.isPending}
-                    onClick={() => dismissMutation.mutate(notification.id)}
-                  >
-                    Dismiss
-                  </Button>
-                )}
+                  {notification.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {notification.description}
+                    </p>
+                  )}
+                  {isGroupInviteNotification(notification) && (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 h-7 text-xs"
+                        disabled={invitePending}
+                        onClick={() =>
+                          handleInviteAction(notification, "accept")
+                        }
+                      >
+                        {inviteActionMutation.isPending &&
+                        inviteActionMutation.variables?.action === "accept"
+                          ? "Accepting…"
+                          : "Accept"}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs"
+                        disabled={invitePending}
+                        onClick={() =>
+                          handleInviteAction(notification, "reject")
+                        }
+                      >
+                        {inviteActionMutation.isPending &&
+                        inviteActionMutation.variables?.action === "reject"
+                          ? "Declining…"
+                          : "Reject"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

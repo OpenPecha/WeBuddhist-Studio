@@ -161,6 +161,19 @@ export interface GroupInviteDTO {
   revoked_at?: string | null;
   created_at: string;
   created_by: string;
+  inviter_name?: string;
+  inviter_email?: string;
+}
+
+export function formatGroupInviteInviter(invite: GroupInviteDTO): {
+  name: string;
+  email: string;
+} {
+  const email = (invite.inviter_email ?? invite.created_by).trim();
+  const rawName = (invite.inviter_name ?? "").trim();
+  const name =
+    rawName && rawName.toLowerCase() !== email.toLowerCase() ? rawName : email;
+  return { name, email };
 }
 
 export interface GroupInviteListResponse {
