@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { IoMdClose } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
-import { Button } from "@/components/ui/atoms/button";
 import {
   fetchMyPendingGroupInvites,
   formatGroupInviteInviter,
@@ -43,16 +41,6 @@ const PendingGroupInvitationsBlock = () => {
                 : `You have ${invites.length} pending invitations.`}
             </p>
           </div>
-          {/* <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 shrink-0 p-0"
-            aria-label="Close"
-            onClick={() => setDismissed(true)}
-          >
-            <IoMdClose className="h-5 w-5" />
-          </Button> */}
         </div>
 
         <ul className="max-h-[min(20rem,60vh)] overflow-y-auto divide-y">
