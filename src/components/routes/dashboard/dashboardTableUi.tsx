@@ -72,7 +72,7 @@ export function languageChip(code: DashboardLanguageCode) {
     case "ZH":
       return (
         <span className="rounded-full bg-[#F8F9FA] px-2.5 py-0.5 text-xs font-medium text-gray-900 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-100 dark:ring-gray-700">
-         中文
+          中文
         </span>
       );
     default:

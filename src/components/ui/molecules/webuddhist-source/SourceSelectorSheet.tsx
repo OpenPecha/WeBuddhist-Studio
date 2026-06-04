@@ -133,9 +133,15 @@ export const SourceSelectorSheet = ({
 
   const sources = useMemo(() => {
     if (!searchOnlyTitles) return multilingualData?.sources ?? [];
-    if (debouncedSearchFilter.trim().length < MIN_TITLE_SEARCH_LENGTH) return [];
+    if (debouncedSearchFilter.trim().length < MIN_TITLE_SEARCH_LENGTH)
+      return [];
     return titleData?.texts ?? [];
-  }, [searchOnlyTitles, multilingualData?.sources, debouncedSearchFilter, titleData?.texts]);
+  }, [
+    searchOnlyTitles,
+    multilingualData?.sources,
+    debouncedSearchFilter,
+    titleData?.texts,
+  ]);
 
   const segments = searchOnlyTitles
     ? detailSegments

@@ -23,12 +23,8 @@ const MobilePreviewSplitDivider = ({
     >
       <button
         type="button"
-        aria-label={
-          showPreview ? "Hide mobile preview" : "Show mobile preview"
-        }
-        title={
-          showPreview ? "Hide Mobile Preview" : "Show Mobile Preview"
-        }
+        aria-label={showPreview ? "Hide mobile preview" : "Show mobile preview"}
+        title={showPreview ? "Hide Mobile Preview" : "Show Mobile Preview"}
         onClick={(event) => {
           event.stopPropagation();
           onToggle();

@@ -67,13 +67,16 @@ export const searchTitles = async ({
     };
   }
 
-  const { data } = await axiosInstance.get<TitleSearchResponse>(`/api/v1/texts`, {
-    params: {
-      title,
-      limit,
-      skip: offset,
+  const { data } = await axiosInstance.get<TitleSearchResponse>(
+    `/api/v1/texts`,
+    {
+      params: {
+        title,
+        limit,
+        skip: offset,
+      },
     },
-  });
+  );
   return data;
 };
 
