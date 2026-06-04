@@ -1,11 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { useTranslate } from "@tolgee/react";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardContentTable } from "./DashboardContentTable";
 import type { DashboardTableRow } from "./dashboardTable";
 
-const t = (key: string) => key;
+const t = ((key: string) => key) as ReturnType<typeof useTranslate>["t"];
 
 const sampleRow: DashboardTableRow = {
   id: "plan-1",

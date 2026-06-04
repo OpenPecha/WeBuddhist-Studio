@@ -1,7 +1,5 @@
-import {
-  fetchDashboardItems,
-  type DashboardTableRow,
-} from "@/components/routes/dashboard/dashboardApi";
+import { fetchDashboardItems } from "@/components/routes/dashboard/dashboardApi";
+import type { DashboardTableRow } from "@/components/routes/dashboard/dashboardTable";
 
 /** Group-scoped plan/series list (client-filtered by group_id after enrichment). */
 export async function fetchGroupContentRows(
