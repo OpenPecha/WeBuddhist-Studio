@@ -1,4 +1,10 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { IoMdCreate } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
@@ -6,26 +12,29 @@ import { Button } from "@/components/ui/atoms/button";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { ROUTES } from "@/routes/paths";
+import { isReviewer } from "@/lib/platformAccess";
 import {
   canEditGroupSettings,
+  canManageGroupInvites,
   getEffectiveGroupRole,
 } from "./lib/groupPermissions";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import {
   fetchGroup,
   languageLabelForCode,
-  pickGroupLinkedPlanTitle,
-  pickGroupLinkedSeriesTitle,
   pickGroupTitle,
   resolveGroupBannerUrl,
 } from "./api/groupsApi";
 import { GroupDetailCard } from "./components/GroupSection";
-import GroupMembersTable from "./components/GroupMembersTable";
+import GroupMembersPanel from "./components/GroupMembersPanel";
+import GroupContentSection from "./components/GroupContentSection";
+import GroupTransfersSection from "./components/GroupTransfersSection";
 import { GroupPageShell } from "./components/GroupPageShell";
 
 const GroupDetailsPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: userInfo } = useUserInfo();
 
   const {
@@ -39,6 +48,12 @@ const GroupDetailsPage = () => {
     enabled: Boolean(groupId),
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (searchParams.get("tab") !== "transfers") return;
+    const el = document.getElementById("group-transfers");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [searchParams, groupId]);
 
   if (!groupId) return null;
 
@@ -67,6 +82,10 @@ const GroupDetailsPage = () => {
   const memberCount = group.member_count ?? group.members.length;
   const myRole = getEffectiveGroupRole(group.members ?? [], userInfo);
   const canEdit = canEditGroupSettings(myRole);
+  const canManageTransfers =
+    canManageGroupInvites(myRole) || myRole === "OWNER";
+  const readOnlyPlatform = isReviewer(userInfo?.platform_role);
+  const showTransfersSection = !readOnlyPlatform;
 
   return (
     <GroupPageShell
@@ -79,7 +98,7 @@ const GroupDetailsPage = () => {
         </p>
       }
       headerActions={
-        canEdit ? (
+        canEdit && !readOnlyPlatform ? (
           <Button variant="outline" size="sm" asChild>
             <Link to={ROUTES.groupEdit(group.id)}>
               <IoMdCreate className="w-4 h-4" /> Edit
@@ -146,58 +165,21 @@ const GroupDetailsPage = () => {
             </GroupDetailCard>
           )}
 
-          {group.plans.length > 0 && (
-            <GroupDetailCard title="Linked plans">
-              <ul className="space-y-2">
-                {group.plans.map((plan) => (
-                  <li key={plan.id} className="text-sm">
-                    <Link
-                      to={ROUTES.plan(plan.id)}
-                      className="text-[#A51C21] hover:underline font-medium"
-                    >
-                      {pickGroupLinkedPlanTitle(plan)}
-                    </Link>
-                    <span className="text-muted-foreground">
-                      {" "}
-                      · {languageLabelForCode(plan.language)}
-                      {plan.total_days != null ? (
-                        <>
-                          {" "}
-                          · {plan.total_days} day
-                          {plan.total_days === 1 ? "" : "s"}
-                        </>
-                      ) : null}
-                      {plan.status ? <> · {plan.status}</> : null}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </GroupDetailCard>
-          )}
+          <div id="group-transfers">
+            <GroupTransfersSection
+              groupId={group.id}
+              canManageIncoming={canManageTransfers && !readOnlyPlatform}
+              canManageOutgoing={canManageTransfers && !readOnlyPlatform}
+              alwaysVisible={showTransfersSection}
+            />
+          </div>
 
-          {group.series.length > 0 && (
-            <GroupDetailCard title="Linked series">
-              <ul className="space-y-2">
-                {group.series.map((series) => (
-                  <li key={series.id} className="text-sm ">
-                    <Link
-                      to={ROUTES.series(series.id)}
-                      className="text-[#A51C21] hover:underline font-medium"
-                    >
-                      {pickGroupLinkedSeriesTitle(series)}
-                    </Link>
-                    {series.plan_count != null ? (
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · {series.plan_count} plan
-                        {series.plan_count === 1 ? "" : "s"}
-                      </span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </GroupDetailCard>
-          )}
+          <GroupContentSection
+            groupId={group.id}
+            userInfo={userInfo}
+            groupRole={myRole}
+            readOnlyPlatform={readOnlyPlatform}
+          />
 
           {group.social_links.length > 0 && (
             <GroupDetailCard title="Social links">
@@ -221,11 +203,7 @@ const GroupDetailsPage = () => {
             </GroupDetailCard>
           )}
 
-          {group.members.length > 0 && (
-            <GroupDetailCard title={`Members (${group.members.length})`}>
-              <GroupMembersTable members={group.members} />
-            </GroupDetailCard>
-          )}
+          <GroupMembersPanel groupId={group.id} members={group.members ?? []} />
         </div>
       </div>
     </GroupPageShell>

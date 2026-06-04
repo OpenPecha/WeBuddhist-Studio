@@ -21,6 +21,8 @@ export interface DashboardTableRow {
   dateModifiedLabel?: string;
   featured: boolean;
   plans_count?: number;
+  group_id?: string | null;
+  series_id?: string | null;
 }
 
 function normalizeOneLanguageCode(v: string): DashboardLanguageCode | null {

@@ -1,4 +1,5 @@
 import axiosInstance from "@/config/axios-config";
+import { enrichDashboardRows } from "./enrichDashboardRows";
 import {
   normalizeStatus,
   parseDashboardLanguages,
@@ -39,6 +40,8 @@ function mapDashboardItemToTableRow(
     enrolled: item.enrolled_count ?? 0,
     modifiedAt: item.updated_at ?? item.created_at ?? null,
     featured: !!item.featured,
+    group_id: item.group_id ?? null,
+    series_id: item.series_id ?? null,
     ...(item.type === "series" && {
       plans_count: item.plans_count ?? 0,
     }),
@@ -61,6 +64,8 @@ export interface DashboardApiItem {
   title?: string;
   metadata?: DashboardSeriesMetadataDTO[];
   author_id?: string;
+  group_id?: string | null;
+  series_id?: string | null;
   image_url?: string | null;
   image_key?: string | null;
   status: string;
@@ -93,6 +98,7 @@ export interface FetchDashboardItemsParams {
   status?: string;
   language?: string;
   featured?: boolean;
+  group_id?: string;
   /** Tolgee UI locale used to pick localized series titles from metadata. */
   localeLanguage?: string;
 }
@@ -122,6 +128,7 @@ export async function fetchDashboardItems(
         ...(params.status && { status: params.status }),
         ...(params.language && { language: params.language }),
         ...(params.featured != null && { featured: params.featured }),
+        ...(params.group_id && { group_id: params.group_id }),
       },
     },
   );
@@ -132,11 +139,15 @@ export async function fetchDashboardItems(
     total: items.length,
     total_pages: items.length > 0 ? 1 : 0,
   };
-  
-  return {
-    rows: items.map((item) =>
+
+  const rows = await enrichDashboardRows(
+    items.map((item) =>
       mapDashboardItemToTableRow(item, params.localeLanguage),
     ),
+  );
+
+  return {
+    rows,
     pagination,
   };
 }

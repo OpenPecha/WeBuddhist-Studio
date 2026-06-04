@@ -29,6 +29,8 @@ type PlanSearchSelectorProps = {
   value: SeriesPlan[];
   onChange: (plans: SeriesPlan[]) => void;
   searchLanguage?: string;
+  /** Only plans in this group can be searched and added. */
+  groupId?: string;
   /** Hide the inline selected list (e.g. series details shows plans in a table). */
   hideSelectedList?: boolean;
   searchPlaceholder?: string;
@@ -39,6 +41,7 @@ const PlanSearchSelector = ({
   value,
   onChange,
   searchLanguage,
+  groupId,
   hideSelectedList = false,
   searchPlaceholder = "Find plans to add",
   className = "",
@@ -56,20 +59,21 @@ const PlanSearchSelector = ({
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["search-plans", debouncedQuery, searchLanguage],
+      queryKey: ["search-plans", debouncedQuery, searchLanguage, groupId],
       queryFn: ({ pageParam = 0 }) =>
         searchPlans({
           search: debouncedQuery || undefined,
           language: searchLanguage,
           skip: pageParam,
           limit: PAGE_SIZE,
+          ...(groupId ? { group_id: groupId } : {}),
         }),
       getNextPageParam: (lastPage) => {
         const fetched = lastPage.skip + lastPage.plans.length;
         return fetched < lastPage.total ? fetched : undefined;
       },
       initialPageParam: 0,
-      enabled: isDropdownOpen,
+      enabled: isDropdownOpen && Boolean(groupId),
     });
 
   const searchResults: Plan[] = data?.pages.flatMap((page) => page.plans) ?? [];
@@ -104,9 +108,10 @@ const PlanSearchSelector = ({
     if (next) onChange(next);
   };
 
-  const showDropdown = isDropdownOpen;
+  const showDropdown = isDropdownOpen && Boolean(groupId);
   const showNoResults =
     showDropdown && !isLoading && searchResults.length === 0;
+  const showMissingGroup = isDropdownOpen && !groupId;
 
   const sortableIds = value.map((p) => p.id);
   const canReorder = value.length > 1;
@@ -181,6 +186,14 @@ const PlanSearchSelector = ({
             className="h-12 w-full rounded-md border border-input bg-white dark:bg-[#262626] dark:text-white pl-10 pr-3 text-base placeholder:text-muted-foreground focus-visible:outline-none"
           />
         </div>
+
+        {showMissingGroup && (
+          <div className="absolute z-10 mt-1 w-full rounded-md border border-input bg-background dark:bg-[#262626] shadow-md px-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Save the series with a group before adding plans.
+            </p>
+          </div>
+        )}
 
         {showDropdown && (
           <div className="absolute z-10 mt-1 w-full rounded-md border border-input bg-background dark:bg-[#262626] shadow-md max-h-60 overflow-auto">

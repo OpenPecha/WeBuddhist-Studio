@@ -15,6 +15,7 @@ vi.mock(
 
 const seriesFixture = {
   id: "series-1",
+  group_id: "group-1",
   metadata: [{ id: "m1", title: "Abhidhamma in a year", language: "EN" }],
   featured: false,
   status: "DRAFT",
@@ -67,9 +68,14 @@ describe("SeriesDetailsPage", () => {
 
   it("navigates to plan new with series and active language in location state", async () => {
     function PlanNewStateProbe() {
-      const { state } = useLocation();
+      const { state, pathname } = useLocation();
       return (
-        <div data-testid="plan-new-location-state">{JSON.stringify(state)}</div>
+        <>
+          <div data-testid="plan-new-location-state">
+            {JSON.stringify(state)}
+          </div>
+          <div data-testid="plan-new-pathname">{pathname}</div>
+        </>
       );
     }
 
@@ -85,7 +91,10 @@ describe("SeriesDetailsPage", () => {
         <MemoryRouter initialEntries={["/series/series-1"]}>
           <Routes>
             <Route path="/series/:seriesId" element={<SeriesDetailsPage />} />
-            <Route path="/plan/new" element={<PlanNewStateProbe />} />
+            <Route
+              path="/groups/:groupId/plan/new"
+              element={<PlanNewStateProbe />}
+            />
           </Routes>
         </MemoryRouter>
       </QueryClientProvider>,
@@ -102,6 +111,9 @@ describe("SeriesDetailsPage", () => {
     await waitFor(() => {
       expect(screen.getByTestId("plan-new-location-state")).toHaveTextContent(
         JSON.stringify({ seriesId: "series-1", language: "ZH" }),
+      );
+      expect(screen.getByTestId("plan-new-pathname")).toHaveTextContent(
+        "/groups/group-1/plan/new",
       );
     });
   });

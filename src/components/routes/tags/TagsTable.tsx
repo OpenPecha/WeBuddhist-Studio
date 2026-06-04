@@ -6,11 +6,18 @@ import type { Tag } from "./api/tagsApi";
 interface TagsTableProps {
   tags: Tag[];
   isLoading?: boolean;
+  showActionsColumn?: boolean;
   onEdit: (tag: Tag) => void;
   onDelete: (tag: Tag) => void;
 }
 
-const TagsTable = ({ tags, isLoading, onEdit, onDelete }: TagsTableProps) => {
+const TagsTable = ({
+  tags,
+  isLoading,
+  showActionsColumn = true,
+  onEdit,
+  onDelete,
+}: TagsTableProps) => {
   if (isLoading) {
     return (
       <p className="text-sm text-muted-foreground py-8 text-center">
@@ -28,9 +35,11 @@ const TagsTable = ({ tags, isLoading, onEdit, onDelete }: TagsTableProps) => {
             <Pecha.TableHead>Name</Pecha.TableHead>
             <Pecha.TableHead>Description</Pecha.TableHead>
             <Pecha.TableHead className="w-24">Plans</Pecha.TableHead>
-            <Pecha.TableHead className="w-28 text-right">
-              Actions
-            </Pecha.TableHead>
+            {showActionsColumn ? (
+              <Pecha.TableHead className="w-28 text-right">
+                Actions
+              </Pecha.TableHead>
+            ) : null}
           </Pecha.TableRow>
         </Pecha.TableHeader>
         <Pecha.TableBody>
@@ -50,26 +59,28 @@ const TagsTable = ({ tags, isLoading, onEdit, onDelete }: TagsTableProps) => {
                 {tag.description || "—"}
               </Pecha.TableCell>
               <Pecha.TableCell>{tag.plan_ids.length}</Pecha.TableCell>
-              <Pecha.TableCell>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onEdit(tag)}
-                    className="p-2 rounded-md border hover:bg-muted/50 transition-colors"
-                    aria-label={`Edit ${tag.name}`}
-                  >
-                    <IoMdCreate className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onDelete(tag)}
-                    className="p-2 rounded-md border text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                    aria-label={`Delete ${tag.name}`}
-                  >
-                    <IoMdTrash className="w-4 h-4" />
-                  </button>
-                </div>
-              </Pecha.TableCell>
+              {showActionsColumn ? (
+                <Pecha.TableCell>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(tag)}
+                      className="p-2 rounded-md border hover:bg-muted/50 transition-colors"
+                      aria-label={`Edit ${tag.name}`}
+                    >
+                      <IoMdCreate className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(tag)}
+                      className="p-2 rounded-md border text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      aria-label={`Delete ${tag.name}`}
+                    >
+                      <IoMdTrash className="w-4 h-4" />
+                    </button>
+                  </div>
+                </Pecha.TableCell>
+              ) : null}
             </Pecha.TableRow>
           ))}
         </Pecha.TableBody>

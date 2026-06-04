@@ -67,14 +67,10 @@ describe("Profile Component", () => {
     expect(screen.getByText("Edit")).toBeInTheDocument();
   });
 
-  it("fetches current user info from authors info endpoint", async () => {
-    const { default: axiosInstance } = await import("@/config/axios-config");
-    vi.mocked(axiosInstance.get).mockResolvedValue({
-      data: mockUserInfo,
-    });
-    renderWithProviders(<Profile />);
+  it("shows user info from shared userInfo query", async () => {
+    renderWithProviders(<Profile />, mockUserInfo);
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith("/api/v1/authors/info");
+      expect(screen.getByText("Tenzin la")).toBeInTheDocument();
     });
   });
 });

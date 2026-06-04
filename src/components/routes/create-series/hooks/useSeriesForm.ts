@@ -70,8 +70,12 @@ export const useSeriesForm = (): UseSeriesFormReturn => {
     (code: LanguageCode) => {
       const currentLanguages = form.getValues("languages") ?? {};
       const currentPlans = form.getValues("plans") ?? {};
-      const { [code]: _l, ...restLanguages } = currentLanguages;
-      const { [code]: _p, ...restPlans } = currentPlans;
+      const restLanguages = Object.fromEntries(
+        Object.entries(currentLanguages).filter(([key]) => key !== code),
+      ) as typeof currentLanguages;
+      const restPlans = Object.fromEntries(
+        Object.entries(currentPlans).filter(([key]) => key !== code),
+      ) as typeof currentPlans;
       form.setValue("languages", restLanguages, {
         shouldDirty: true,
         shouldValidate: true,

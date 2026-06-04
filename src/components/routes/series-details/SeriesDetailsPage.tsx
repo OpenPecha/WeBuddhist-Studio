@@ -26,6 +26,8 @@ import {
   seriesPlansToRows,
 } from "./seriesDetailsMappers";
 import type { PlansByLanguage } from "./seriesDetailsTypes";
+import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
+import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
 
 const togglePlanFeatured = async (planId: string) => {
   const { data } = await axiosInstance.patch(
@@ -78,6 +80,21 @@ const SeriesDetailsPage = () => {
     [activePlans],
   );
 
+  const seriesStatus = seriesData?.status ?? "DRAFT";
+  const {
+    platformRole,
+    groupRole,
+    platformReadOnly,
+    canEdit: canEditSeries,
+    canChangeStatus: canFeaturePlans,
+    canTransfer: canTransferSeries,
+  } = useGroupContentPermissions(
+    seriesData?.group_id ?? undefined,
+    seriesStatus,
+  );
+
+  const canManageSeriesPlans = canEditSeries && !platformReadOnly;
+
   const persistPlansMutation = useMutation({
     mutationFn: (grouped: PlansByLanguage) =>
       putSeriesPlans(seriesId!, plansByLanguageToIdMap(grouped)),
@@ -108,15 +125,18 @@ const SeriesDetailsPage = () => {
   };
 
   const handleActivePlansChange = (next: SeriesPlan[]) => {
+    if (!canManageSeriesPlans) return;
     const nextRows = seriesPlansToRows(next, activeLanguage, activePlans);
     applyGrouped({ ...plansByLang, [activeLanguage]: nextRows });
   };
 
   const handleRemove = (planId: string) => {
+    if (!canManageSeriesPlans) return;
     applyGrouped(removePlanFromLanguage(plansByLang, activeLanguage, planId));
   };
 
   const handleReorder = (activeId: string, overId: string) => {
+    if (!canManageSeriesPlans) return;
     applyGrouped(
       reorderPlansInLanguage(plansByLang, activeLanguage, activeId, overId),
     );
@@ -168,13 +188,37 @@ const SeriesDetailsPage = () => {
           <IoMdArrowBack className="h-4 w-4" />
         </Pecha.Button>
         <h1 className="text-lg font-semibold">{headerTitle}</h1>
-        <Link
-          to={ROUTES.seriesEdit(seriesId)}
-          className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
-        >
-          Edit series
-        </Link>
+        {canEditSeries && !platformReadOnly ? (
+          <Link
+            to={ROUTES.seriesEdit(seriesId)}
+            className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+          >
+            Edit series
+          </Link>
+        ) : null}
+        {canTransferSeries && seriesData?.group_id && !platformReadOnly ? (
+          <DropdownButton
+            id={seriesId}
+            entityType="series"
+            currentStatus={seriesStatus}
+            triggerVariant="icon"
+            platformRole={platformRole}
+            groupRole={groupRole}
+            sourceGroupId={seriesData.group_id}
+            contentTitle={headerTitle}
+          />
+        ) : null}
       </div>
+
+      {platformReadOnly ? (
+        <p className="mx-4 mt-2 text-sm text-muted-foreground">
+          You have read-only access to this series.
+        </p>
+      ) : !canEditSeries ? (
+        <p className="mx-4 mt-2 text-sm text-muted-foreground">
+          This series cannot be edited with your current role.
+        </p>
+      ) : null}
 
       <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
         <div className="flex flex-wrap gap-6">
@@ -193,15 +237,18 @@ const SeriesDetailsPage = () => {
             );
           })}
         </div>
-        <div className="w-full max-w-md min-w-[280px]">
-          <PlanSearchSelector
-            value={activeSeriesPlans}
-            onChange={handleActivePlansChange}
-            searchLanguage={activeLanguage}
-            hideSelectedList
-            searchPlaceholder="Find Plans to add to series"
-          />
-        </div>
+        {canManageSeriesPlans ? (
+          <div className="w-full max-w-md min-w-[280px]">
+            <PlanSearchSelector
+              value={activeSeriesPlans}
+              onChange={handleActivePlansChange}
+              searchLanguage={activeLanguage}
+              groupId={seriesData?.group_id ?? undefined}
+              hideSelectedList
+              searchPlaceholder="Find Plans to add to series"
+            />
+          </div>
+        ) : null}
       </div>
 
       <div className="flex-1 px-4 pb-6">
@@ -210,6 +257,11 @@ const SeriesDetailsPage = () => {
             <SeriesPlansTable
               plans={activePlans}
               seriesId={seriesId}
+              sourceGroupId={seriesData?.group_id}
+              groupRole={groupRole}
+              platformRole={platformRole}
+              readOnly={platformReadOnly || !canManageSeriesPlans}
+              canFeature={canFeaturePlans}
               onReorder={handleReorder}
               onToggleFeatured={(planId) => featuredMutation.mutate(planId)}
               onRemoveFromSeries={handleRemove}
@@ -217,24 +269,26 @@ const SeriesDetailsPage = () => {
           </div>
         ) : null}
 
-        <div
-          className={`mt-4 flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white/80 dark:border-input dark:bg-[#1d1d1f]/80 ${
-            activePlans.length > 0 ? "py-8" : "py-16"
-          }`}
-        >
-          <Link
-            to={ROUTES.planNew}
-            state={{ seriesId: seriesId!, language: activeLanguage }}
+        {canManageSeriesPlans && seriesData?.group_id ? (
+          <div
+            className={`mt-4 flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white/80 dark:border-input dark:bg-[#1d1d1f]/80 ${
+              activePlans.length > 0 ? "py-8" : "py-16"
+            }`}
           >
-            <Pecha.Button
-              type="button"
-              className="gap-2 bg-[#A51C21] hover:bg-[#8a171c] text-white"
+            <Link
+              to={ROUTES.groupPlanNew(seriesData.group_id)}
+              state={{ seriesId: seriesId!, language: activeLanguage }}
             >
-              <IoMdAdd className="h-4 w-4" />
-              Add New Plan
-            </Pecha.Button>
-          </Link>
-        </div>
+              <Pecha.Button
+                type="button"
+                className="gap-2 bg-[#A51C21] hover:bg-[#8a171c] text-white"
+              >
+                <IoMdAdd className="h-4 w-4" />
+                Add New Plan
+              </Pecha.Button>
+            </Link>
+          </div>
+        ) : null}
       </div>
     </div>
   );

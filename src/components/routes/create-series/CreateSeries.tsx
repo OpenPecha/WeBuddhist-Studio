@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslate } from "@tolgee/react";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
@@ -27,13 +28,25 @@ import {
   putUpdateSeries,
 } from "@/components/routes/create-series/api/seriesApi";
 import type { SeriesFormData } from "@/schema/SeriesSchema";
+import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
+import { canWriteCms } from "@/lib/platformAccess";
 
 const CreateSeries = () => {
-  const { seriesId } = useParams<{ seriesId: string }>();
+  const { seriesId, groupId } = useParams<{
+    seriesId?: string;
+    groupId?: string;
+  }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslate();
   const isNew = !seriesId;
+
+  useEffect(() => {
+    if (isNew && !groupId) {
+      navigate(ROUTES.groups, { replace: true });
+    }
+  }, [isNew, groupId, navigate]);
+
   const {
     form,
     languages,
@@ -58,6 +71,26 @@ const CreateSeries = () => {
     enabled: Boolean(seriesId) && !isNew,
     refetchOnWindowFocus: false,
   });
+
+  const seriesGroupId = groupId ?? seriesData?.group_id ?? undefined;
+  const seriesStatus = isNew ? "DRAFT" : (seriesData?.status ?? "DRAFT");
+  const {
+    userInfo,
+    groupRole,
+    platformReadOnly,
+    canEdit: canEditSeries,
+  } = useGroupContentPermissions(seriesGroupId, seriesStatus);
+
+  const canSaveSeries =
+    !platformReadOnly &&
+    (isNew
+      ? Boolean(seriesGroupId) &&
+        canWriteCms(userInfo) &&
+        groupRole != null &&
+        groupRole !== "VIEWER"
+      : canEditSeries);
+
+  const formReadOnly = !canSaveSeries;
 
   const seriesHydratedIdRef = useRef<string | null>(null);
 
@@ -120,7 +153,11 @@ const CreateSeries = () => {
 
   const saveSeriesMutation = useMutation({
     mutationFn: async (input: { data: SeriesFormData; featured: boolean }) => {
-      const body = buildSeriesUpdateBody(input.data, input.featured);
+      const body = buildSeriesUpdateBody(
+        input.data,
+        input.featured,
+        isNew ? groupId : undefined,
+      );
       if (isNew) {
         const created = await postSeries(body);
         return { id: String(created.id) };
@@ -144,8 +181,12 @@ const CreateSeries = () => {
         setSelectedImage(null);
         setImagePreview(null);
         setActivePlansLanguage(null);
+        if (groupId) {
+          navigate(ROUTES.group(groupId));
+          return;
+        }
       }
-      navigate("/dashboard");
+      navigate(ROUTES.dashboard);
     },
     onError: (error: Error) => {
       toast.error(
@@ -205,6 +246,7 @@ const CreateSeries = () => {
   };
 
   const onSubmit = form.handleSubmit((data) => {
+    if (formReadOnly) return;
     const featured = isNew ? false : (seriesData?.featured ?? false);
     saveSeriesMutation.mutate({ data, featured });
   });
@@ -236,7 +278,8 @@ const CreateSeries = () => {
     imageUrl.trim().length > 0 &&
     (isNew || !!seriesData);
 
-  const saveDisabled = !submitEnabled || (!isNew && !form.formState.isDirty);
+  const saveDisabled =
+    formReadOnly || !submitEnabled || (!isNew && !form.formState.isDirty);
 
   const saveLabel = saveSeriesMutation.isPending
     ? isNew
@@ -252,6 +295,16 @@ const CreateSeries = () => {
         <h1 className="text-xl font-bold my-4 border-b border-dashed border-black dark:border-white">
           {isNew ? "Series details" : "Series Edit"}
         </h1>
+
+        {formReadOnly ? (
+          <p className="mb-4 text-sm text-muted-foreground">
+            {platformReadOnly
+              ? "You have read-only access to series in this group."
+              : isNew
+                ? "You cannot create a series in this group with your current role."
+                : "This series cannot be edited with your current role."}
+          </p>
+        ) : null}
 
         <Pecha.Form {...form}>
           <form onSubmit={onSubmit} className="space-y-6">
@@ -274,7 +327,8 @@ const CreateSeries = () => {
                     <button
                       type="button"
                       onClick={() => removeLanguage(code)}
-                      className="absolute top-2 right-2 text-muted-foreground hover:text-foreground p-1 rounded"
+                      disabled={formReadOnly}
+                      className="absolute top-2 right-2 text-muted-foreground hover:text-foreground p-1 rounded disabled:opacity-40"
                       aria-label={`Remove ${label}`}
                     >
                       <IoMdClose className="h-4 w-4" />
@@ -291,6 +345,7 @@ const CreateSeries = () => {
                             <Pecha.Input
                               placeholder={`Title in ${label}`}
                               className="h-12 text-base bg-white dark:bg-[#181818]"
+                              disabled={formReadOnly}
                               {...field}
                             />
                           </Pecha.FormControl>
@@ -311,6 +366,7 @@ const CreateSeries = () => {
                             <Textarea
                               placeholder={`Description in ${label}`}
                               className="min-h-[100px] w-full rounded-md border border-input bg-white dark:bg-[#181818] px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none resize-none"
+                              disabled={formReadOnly}
                               {...field}
                             />
                           </Pecha.FormControl>
@@ -323,7 +379,7 @@ const CreateSeries = () => {
               })}
             </div>
 
-            {availableLanguages.length > 0 ? (
+            {!formReadOnly && availableLanguages.length > 0 ? (
               <Pecha.Select
                 key={addedLanguages.join(",")}
                 onValueChange={(v) => addLanguage(v as LanguageCode)}
@@ -506,7 +562,7 @@ const CreateSeries = () => {
               })}
             </div>
 
-            {activePlansLanguage != null && (
+            {!formReadOnly && activePlansLanguage != null && (
               <PlanSearchSelector
                 value={plans[activePlansLanguage] ?? []}
                 onChange={(next) => {
@@ -518,6 +574,7 @@ const CreateSeries = () => {
                   );
                 }}
                 searchLanguage={activePlansLanguage}
+                groupId={seriesGroupId}
               />
             )}
           </>

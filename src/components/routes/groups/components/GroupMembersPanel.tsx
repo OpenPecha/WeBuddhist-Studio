@@ -6,6 +6,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { isReviewer, shouldShowCmsActionsColumn } from "@/lib/platformAccess";
 import { ROUTES } from "@/routes/paths";
 import {
   removeGroupMember,
@@ -40,16 +41,20 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
     ? {
         id: userInfo.id,
         email: userInfo.email,
-        is_admin: userInfo.is_admin,
+        platform_role: userInfo.platform_role,
       }
     : undefined;
   const myRole = getEffectiveGroupRole(members, actor);
+  const platformReadOnly = isReviewer(userInfo?.platform_role);
+  const showActionsColumn = shouldShowCmsActionsColumn(userInfo?.platform_role);
   const [removeTarget, setRemoveTarget] = useState<AuthorGroupMemberDTO | null>(
     null,
   );
   const [transferOpen, setTransferOpen] = useState(false);
 
-  const showTransferOwnership = canTransferOwnership(members, actor);
+  const showTransferOwnership =
+    !platformReadOnly && canTransferOwnership(members, actor);
+  const showInvitesSection = !platformReadOnly && canManageGroupInvites(myRole);
   const transferCandidates = transferOwnershipCandidates(members, actor);
 
   const leavingSelf =
@@ -117,9 +122,11 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
                 <Pecha.TableHead>Name</Pecha.TableHead>
                 <Pecha.TableHead>Email</Pecha.TableHead>
                 <Pecha.TableHead>Role</Pecha.TableHead>
-                <Pecha.TableHead className="text-right">
-                  Actions
-                </Pecha.TableHead>
+                {showActionsColumn ? (
+                  <Pecha.TableHead className="text-right">
+                    Actions
+                  </Pecha.TableHead>
+                ) : null}
               </Pecha.TableRow>
             </Pecha.TableHeader>
             <Pecha.TableBody>
@@ -147,7 +154,7 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
                       {member.email}
                     </Pecha.TableCell>
                     <Pecha.TableCell>
-                      {assignableRoles ? (
+                      {assignableRoles && !platformReadOnly ? (
                         <Pecha.Select
                           value={displayRole}
                           onValueChange={(role) =>
@@ -173,19 +180,21 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
                         <span className="text-sm">{displayRole}</span>
                       )}
                     </Pecha.TableCell>
-                    <Pecha.TableCell className="text-right">
-                      {showRemoval && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => setRemoveTarget(member)}
-                        >
-                          {isSelf ? "Leave" : "Remove"}
-                        </Button>
-                      )}
-                    </Pecha.TableCell>
+                    {showActionsColumn ? (
+                      <Pecha.TableCell className="text-right">
+                        {showRemoval && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => setRemoveTarget(member)}
+                          >
+                            {isSelf ? "Leave" : "Remove"}
+                          </Button>
+                        )}
+                      </Pecha.TableCell>
+                    ) : null}
                   </Pecha.TableRow>
                 );
               })}
@@ -194,9 +203,9 @@ const GroupMembersPanel = ({ groupId, members }: GroupMembersPanelProps) => {
         </div>
       </div>
 
-      {canManageGroupInvites(myRole) && (
+      {showInvitesSection ? (
         <GroupInvitesAdminSection groupId={groupId} myRole={myRole} />
-      )}
+      ) : null}
 
       {showTransferOwnership && (
         <GroupTransferOwnershipDialog
