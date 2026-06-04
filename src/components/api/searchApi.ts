@@ -85,10 +85,12 @@ export const fetchTextDetails = async ({
   size = 20,
 }: SearchTextDetails) => {
   const { data } = await axiosInstance.get(`/api/v1/texts/${textId}/details`, {
-    ...(contentId && { content_id: contentId }),
-    ...(segmentId && { segment_id: segmentId }),
-    direction,
-    size,
+    params: {
+      ...(contentId && { content_id: contentId }),
+      ...(segmentId && { segment_id: segmentId }),
+      direction,
+      size,
+    },
   });
   return data;
 };
