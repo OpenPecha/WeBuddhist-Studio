@@ -82,7 +82,10 @@ const Createplan = () => {
   );
 
   const [isDateOpen, setIsDateOpen] = useState(false);
-  const { planId } = useParams<{ planId?: string }>();
+  const { planId, groupId } = useParams<{
+    planId?: string;
+    groupId?: string;
+  }>();
   const location = useLocation();
   const isCreateMode = !planId;
   const { t } = useTranslate();
@@ -92,6 +95,13 @@ const Createplan = () => {
   );
   type PlanFormData = z.infer<typeof planSchema>;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isCreateMode && !groupId) {
+      navigate(ROUTES.groups, { replace: true });
+    }
+  }, [isCreateMode, groupId, navigate]);
+
   const form = useForm({
     resolver: zodResolver(planSchema),
     defaultValues: {
@@ -239,7 +249,11 @@ const Createplan = () => {
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
-      navigate(ROUTES.plan(data.id));
+      if (groupId) {
+        navigate(ROUTES.group(groupId));
+      } else {
+        navigate(ROUTES.plan(data.id));
+      }
     },
     onError: (error) => {
       toast.error("Failed to create plan", {
@@ -327,14 +341,19 @@ const Createplan = () => {
     };
     if (planId) {
       if (isSeriesError) {
-        const { series_id, ...rest } = payload;
+        const { series_id: _seriesId, ...rest } = payload;
+        void _seriesId;
         updatePlanMutation.mutate({ plan_id: planId, formdata: rest });
       } else {
         updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
       }
     } else {
       const { series_id, ...rest } = payload;
-      createPlanMutation.mutate(series_id ? { ...rest, series_id } : rest);
+      const body = {
+        ...(series_id ? { ...rest, series_id } : rest),
+        group_id: groupId!,
+      };
+      createPlanMutation.mutate(body);
     }
   };
   return (

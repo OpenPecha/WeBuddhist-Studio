@@ -1,3 +1,5 @@
+import type { PlatformRole } from "@/lib/platformAccess";
+import { isSuperAdmin } from "@/lib/platformAccess";
 import {
   isGroupInviteExpired,
   type AuthorGroupMemberDTO,
@@ -24,7 +26,7 @@ const MEMBER_MANAGEMENT_ROLES: AuthorGroupMemberRole[] = ["OWNER", "ADMIN"];
 export type GroupActor = {
   id?: string;
   email?: string;
-  is_admin?: boolean;
+  platform_role?: PlatformRole;
 };
 
 /** Legacy DB rows may still surface as ADMIN after EDITOR migration. */
@@ -44,19 +46,28 @@ function findMemberByEmail(
 
 export function getCurrentUserGroupRole(
   members: AuthorGroupMemberDTO[],
-  userEmail: string | undefined,
+  user: GroupActor | string | undefined,
 ): AuthorGroupMemberRole | undefined {
-  const member = findMemberByEmail(members, userEmail);
+  if (!user) return undefined;
+  if (typeof user === "string") {
+    const member = findMemberByEmail(members, user);
+    return member ? normalizeMemberRole(member.role) : undefined;
+  }
+  if (user.id) {
+    const byId = members.find((m) => m.author_id === user.id);
+    if (byId) return normalizeMemberRole(byId.role);
+  }
+  const member = findMemberByEmail(members, user.email);
   return member ? normalizeMemberRole(member.role) : undefined;
 }
 
-/** Platform admin is treated as OWNER for all group permission checks. */
+/** SUPER_ADMIN bypass for CMS management actions (not ownership transfer). */
 export function getEffectiveGroupRole(
   members: AuthorGroupMemberDTO[],
   user: GroupActor | undefined,
 ): AuthorGroupMemberRole | undefined {
-  if (user?.is_admin) return "OWNER";
-  return getCurrentUserGroupRole(members, user?.email);
+  if (isSuperAdmin(user?.platform_role)) return "OWNER";
+  return getCurrentUserGroupRole(members, user);
 }
 
 export function canEditGroupSettings(
@@ -98,12 +109,12 @@ export function roleChangeOptions(
   return ["AUTHOR", "VIEWER"];
 }
 
-/** True only for the actual group OWNER row (platform is_admin does not apply). */
+/** True only for the actual group OWNER row (platform SUPER_ADMIN bypass does not apply). */
 export function canTransferOwnership(
   members: AuthorGroupMemberDTO[],
   user: GroupActor | undefined,
 ): boolean {
-  return getCurrentUserGroupRole(members, user?.email) === "OWNER";
+  return getCurrentUserGroupRole(members, user) === "OWNER";
 }
 
 export function transferOwnershipCandidates(

@@ -25,6 +25,12 @@ import {
   languageChip,
   statusChip,
 } from "@/components/routes/dashboard/dashboardTableUi";
+import type { AuthorGroupMemberRole } from "@/components/routes/groups/api/groupsApi";
+import {
+  canAccessPlanRoutes,
+  shouldShowCmsActionsColumn,
+  type PlatformRole,
+} from "@/lib/platformAccess";
 import type { SeriesPlanRow } from "./seriesDetailsTypes";
 import { SeriesPlanRowActions } from "./SeriesPlanRowActions";
 
@@ -38,15 +44,27 @@ function formatPlanModified(modifiedAt: string | null): string {
 function SortablePlanRow({
   plan,
   seriesId,
+  sourceGroupId,
+  groupRole,
+  platformRole,
+  readOnly,
+  canFeature,
   onToggleFeatured,
   onRemoveFromSeries,
   canReorder,
+  showActionsColumn,
 }: {
   plan: SeriesPlanRow;
   seriesId: string;
+  sourceGroupId?: string | null;
+  groupRole?: AuthorGroupMemberRole;
+  platformRole?: PlatformRole;
+  readOnly?: boolean;
+  canFeature?: boolean;
   onToggleFeatured: (planId: string) => void;
   onRemoveFromSeries: (planId: string) => void;
   canReorder: boolean;
+  showActionsColumn: boolean;
 }) {
   const navigate = useNavigate();
   const {
@@ -56,7 +74,7 @@ function SortablePlanRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: plan.id, disabled: !canReorder });
+  } = useSortable({ id: plan.id, disabled: !canReorder || readOnly });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -66,6 +84,7 @@ function SortablePlanRow({
 
   const daysLabel = `${plan.total_days} ${plan.total_days === 1 ? "Day" : "Days"}`;
   const featuredDisabled = plan.status !== "PUBLISHED";
+  const canOpenPlan = canAccessPlanRoutes(platformRole);
 
   return (
     <Pecha.TableRow
@@ -86,30 +105,53 @@ function SortablePlanRow({
         </button>
       </Pecha.TableCell>
       <Pecha.TableCell>
-        <button
-          type="button"
-          className="flex w-full items-center gap-3 text-left"
-          onClick={() => navigate(ROUTES.plan(plan.id))}
-        >
-          <img
-            src={plan.image_url || defaultCover}
-            onError={(e) => {
-              e.currentTarget.src = defaultCover;
-            }}
-            alt=""
-            className="h-12 w-28 shrink-0 rounded border object-cover"
-          />
-          <div className="min-w-0">
-            <div className="text-sm font-semibold">{plan.title}</div>
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {languageChip(plan.language)}
-              {statusChip(plan.status)}
-              <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
-                {daysLabel}
-              </span>
+        {canOpenPlan ? (
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 text-left"
+            onClick={() => navigate(ROUTES.plan(plan.id))}
+          >
+            <img
+              src={plan.image_url || defaultCover}
+              onError={(e) => {
+                e.currentTarget.src = defaultCover;
+              }}
+              alt=""
+              className="h-12 w-28 shrink-0 rounded border object-cover"
+            />
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">{plan.title}</div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {languageChip(plan.language)}
+                {statusChip(plan.status)}
+                <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
+                  {daysLabel}
+                </span>
+              </div>
+            </div>
+          </button>
+        ) : (
+          <div className="flex w-full items-center gap-3 text-left">
+            <img
+              src={plan.image_url || defaultCover}
+              onError={(e) => {
+                e.currentTarget.src = defaultCover;
+              }}
+              alt=""
+              className="h-12 w-28 shrink-0 rounded border object-cover"
+            />
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">{plan.title}</div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {languageChip(plan.language)}
+                {statusChip(plan.status)}
+                <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
+                  {daysLabel}
+                </span>
+              </div>
             </div>
           </div>
-        </button>
+        )}
       </Pecha.TableCell>
       <Pecha.TableCell className="text-center text-sm">
         {plan.enrolled}
@@ -118,26 +160,45 @@ function SortablePlanRow({
         {formatPlanModified(plan.modifiedAt)}
       </Pecha.TableCell>
       <Pecha.TableCell className="text-center">
-        <Pecha.Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className={`${DASHBOARD_TABLE_ICON_BTN} disabled:bg-[#F3F4F6] disabled:hover:bg-[#F3F4F6] dark:disabled:bg-[#2a2a2a] dark:disabled:hover:bg-[#2a2a2a]`}
-          disabled={featuredDisabled}
-          aria-label={plan.featured ? "Featured" : "Not featured"}
-          onClick={() => onToggleFeatured(plan.id)}
-        >
-          <FeaturedStar featured={plan.featured} disabled={featuredDisabled} />
-        </Pecha.Button>
+        {canFeature && !readOnly ? (
+          <Pecha.Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className={`${DASHBOARD_TABLE_ICON_BTN} disabled:bg-[#F3F4F6] disabled:hover:bg-[#F3F4F6] dark:disabled:bg-[#2a2a2a] dark:disabled:hover:bg-[#2a2a2a]`}
+            disabled={featuredDisabled}
+            aria-label={plan.featured ? "Featured" : "Not featured"}
+            onClick={() => onToggleFeatured(plan.id)}
+          >
+            <FeaturedStar
+              featured={plan.featured}
+              disabled={featuredDisabled}
+            />
+          </Pecha.Button>
+        ) : (
+          <span
+            className={`${DASHBOARD_TABLE_ICON_BTN} inline-flex items-center justify-center`}
+            aria-hidden
+          >
+            <FeaturedStar featured={plan.featured} disabled />
+          </span>
+        )}
       </Pecha.TableCell>
-      <Pecha.TableCell className="text-center">
-        <SeriesPlanRowActions
-          planId={plan.id}
-          status={plan.status}
-          seriesId={seriesId}
-          onRemoveFromSeries={() => onRemoveFromSeries(plan.id)}
-        />
-      </Pecha.TableCell>
+      {showActionsColumn ? (
+        <Pecha.TableCell className="text-center">
+          <SeriesPlanRowActions
+            planId={plan.id}
+            planTitle={plan.title}
+            status={plan.status}
+            seriesId={seriesId}
+            sourceGroupId={sourceGroupId}
+            groupRole={groupRole}
+            platformRole={platformRole}
+            readOnly={readOnly}
+            onRemoveFromSeries={() => onRemoveFromSeries(plan.id)}
+          />
+        </Pecha.TableCell>
+      ) : null}
     </Pecha.TableRow>
   );
 }
@@ -145,6 +206,11 @@ function SortablePlanRow({
 type SeriesPlansTableProps = {
   plans: SeriesPlanRow[];
   seriesId: string;
+  sourceGroupId?: string | null;
+  groupRole?: AuthorGroupMemberRole;
+  platformRole?: PlatformRole;
+  readOnly?: boolean;
+  canFeature?: boolean;
   onReorder: (activeId: string, overId: string) => void;
   onToggleFeatured: (planId: string) => void;
   onRemoveFromSeries: (planId: string) => void;
@@ -153,6 +219,11 @@ type SeriesPlansTableProps = {
 export function SeriesPlansTable({
   plans,
   seriesId,
+  sourceGroupId,
+  groupRole,
+  platformRole,
+  readOnly = false,
+  canFeature = false,
   onReorder,
   onToggleFeatured,
   onRemoveFromSeries,
@@ -160,7 +231,9 @@ export function SeriesPlansTable({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
-  const canReorder = plans.length > 1;
+  const canReorder = !readOnly && plans.length > 1;
+  const showActionsColumn =
+    !readOnly && shouldShowCmsActionsColumn(platformRole);
   const ids = plans.map((p) => p.id);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -192,9 +265,11 @@ export function SeriesPlansTable({
             <Pecha.TableHead className="w-[72px] text-center font-bold">
               Featured
             </Pecha.TableHead>
-            <Pecha.TableHead className="w-[100px] text-center font-bold">
-              Actions
-            </Pecha.TableHead>
+            {showActionsColumn ? (
+              <Pecha.TableHead className="w-[100px] text-center font-bold">
+                Actions
+              </Pecha.TableHead>
+            ) : null}
           </Pecha.TableRow>
         </Pecha.TableHeader>
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -204,9 +279,15 @@ export function SeriesPlansTable({
                 key={plan.id}
                 plan={plan}
                 seriesId={seriesId}
+                sourceGroupId={sourceGroupId}
+                groupRole={groupRole}
+                platformRole={platformRole}
+                readOnly={readOnly}
+                canFeature={canFeature}
                 onToggleFeatured={onToggleFeatured}
                 onRemoveFromSeries={onRemoveFromSeries}
                 canReorder={canReorder}
+                showActionsColumn={showActionsColumn}
               />
             ))}
           </Pecha.TableBody>

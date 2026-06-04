@@ -1,5 +1,10 @@
 import axiosInstance from "@/config/axios-config";
 import type { LanguageCode } from "@/schema/SeriesSchema";
+import {
+  isReviewer,
+  isSuperAdmin,
+  type PlatformRole,
+} from "@/lib/platformAccess";
 
 export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
@@ -201,7 +206,11 @@ export interface FetchGroupsParams {
   search?: string;
   language?: string;
   tag_id?: string;
+  /** When true, lists all groups eligible as transfer targets (not only membership). */
+  for_transfer?: boolean;
 }
+
+export const TRANSFER_GROUPS_PAGE_LIMIT = 100;
 
 const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
@@ -213,23 +222,89 @@ export const fetchGroups = async ({
   search,
   language,
   tag_id,
+  for_transfer,
 }: FetchGroupsParams): Promise<AuthorGroupListResponse> => {
-  const skip = (page - 1) * limit;
+  const requestLimit = for_transfer
+    ? Math.min(Math.max(limit, 1), TRANSFER_GROUPS_PAGE_LIMIT)
+    : limit;
+  const skip = (page - 1) * requestLimit;
   const { data } = await axiosInstance.get<AuthorGroupListResponse>(
     `/api/v1/cms/author/groups`,
     {
       headers: getAuthHeaders(),
       params: {
         skip,
-        limit,
+        limit: requestLimit,
         ...(search?.trim() && { search: search.trim() }),
         ...(language && { language }),
         ...(tag_id && { tag_id }),
+        ...(for_transfer && { for_transfer: true }),
       },
     },
   );
   return data;
 };
+
+function groupIdsEqual(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+/** Loads all transfer-target groups (paginated), excluding the source group. */
+export const fetchGroupsForTransfer = async (options?: {
+  search?: string;
+  excludeGroupId?: string;
+}): Promise<AuthorGroupListItem[]> => {
+  const limit = TRANSFER_GROUPS_PAGE_LIMIT;
+  const collected: AuthorGroupListItem[] = [];
+  let page = 1;
+  let total = 0;
+
+  do {
+    const res = await fetchGroups({
+      page,
+      limit,
+      search: options?.search,
+      for_transfer: true,
+    });
+    total = res.total ?? 0;
+    const batch = res.groups ?? [];
+    collected.push(...batch);
+    if (batch.length === 0) break;
+    page += 1;
+  } while (collected.length < total);
+
+  const excludeId = options?.excludeGroupId?.trim();
+  if (!excludeId) return collected;
+  return collected.filter((g) => !groupIdsEqual(g.id, excludeId));
+};
+
+/** Groups the user may filter dashboard content by (membership vs staff-wide list). */
+export async function fetchAccessibleGroupsForDashboard(
+  platformRole?: PlatformRole | string,
+): Promise<AuthorGroupListItem[]> {
+  const staffWideList = isSuperAdmin(platformRole) || isReviewer(platformRole);
+  const limit = staffWideList ? TRANSFER_GROUPS_PAGE_LIMIT : 100;
+  const collected: AuthorGroupListItem[] = [];
+  let page = 1;
+  let total = 0;
+
+  do {
+    const res = await fetchGroups({
+      page,
+      limit,
+      for_transfer: staffWideList || undefined,
+    });
+    total = res.total ?? 0;
+    const batch = res.groups ?? [];
+    collected.push(...batch);
+    if (batch.length === 0) break;
+    page += 1;
+  } while (collected.length < total);
+
+  return collected.sort((a, b) =>
+    pickGroupTitle(a.metadata).localeCompare(pickGroupTitle(b.metadata)),
+  );
+}
 
 export const fetchGroup = async (
   groupId: string,
