@@ -25,6 +25,43 @@ export interface DashboardTableRow {
   series_id?: string | null;
 }
 
+export type DashboardImageVariants = {
+  thumbnail?: string | null;
+  medium?: string | null;
+  original?: string | null;
+};
+
+export type DashboardItemImageFields = {
+  image_url?: string | null;
+  plan_image_url?: string | null;
+  image_key?: string | null;
+  image?: string | DashboardImageVariants | null;
+};
+
+/** Resolve a display URL from dashboard/list API image fields. */
+export function resolveDashboardItemImageUrl(
+  item: DashboardItemImageFields,
+): string {
+  const direct = item.image_url?.trim() || item.plan_image_url?.trim();
+  if (direct) return direct;
+
+  const image = item.image;
+  if (image && typeof image === "object") {
+    return (
+      image.medium?.trim() ||
+      image.thumbnail?.trim() ||
+      image.original?.trim() ||
+      ""
+    );
+  }
+  if (typeof image === "string" && image.trim()) return image.trim();
+
+  const key = item.image_key?.trim();
+  if (key && /^https?:\/\//i.test(key)) return key;
+
+  return "";
+}
+
 function normalizeOneLanguageCode(v: string): DashboardLanguageCode | null {
   const u = v.trim().toUpperCase();
   if (u === "EN" || u === "ZH" || u === "BO") return u;
@@ -113,7 +150,12 @@ export function mapPlanToTableRow(
     kind: "plan",
     id: String(plan.id ?? ""),
     title: String(plan.title ?? "Untitled"),
-    image_url: String(plan.image_url ?? ""),
+    image_url: resolveDashboardItemImageUrl({
+      image_url: plan.image_url as string | null | undefined,
+      plan_image_url: plan.plan_image_url as string | null | undefined,
+      image_key: plan.image_key as string | null | undefined,
+      image: plan.image as DashboardItemImageFields["image"],
+    }),
     languages: parseDashboardLanguages(
       plan.languages ?? plan.language ?? plan.language_codes,
     ),
@@ -152,7 +194,11 @@ export function mapSeriesToTableRow(
     kind: "series",
     id: String(s.id ?? ""),
     title,
-    image_url: String(s.image_url ?? s.image ?? ""),
+    image_url: resolveDashboardItemImageUrl({
+      image_url: s.image_url as string | null | undefined,
+      image_key: s.image_key as string | null | undefined,
+      image: s.image as DashboardItemImageFields["image"],
+    }),
     languages: parseDashboardLanguages(
       s.languages ?? s.language ?? s.language_codes ?? firstLang,
     ),
