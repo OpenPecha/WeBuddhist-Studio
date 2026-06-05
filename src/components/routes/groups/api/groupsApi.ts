@@ -1,10 +1,10 @@
 import axiosInstance from "@/config/axios-config";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import {
-  isReviewer,
-  isSuperAdmin,
+  usesStaffWideDashboardGroupList,
   type PlatformRole,
 } from "@/lib/platformAccess";
+import type { UserInfo } from "@/hooks/useUserInfo";
 
 export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
@@ -208,6 +208,8 @@ export interface FetchGroupsParams {
   tag_id?: string;
   /** When true, lists all groups eligible as transfer targets (not only membership). */
   for_transfer?: boolean;
+  /** When true, lists groups the user may filter dashboard content by (staff-wide read list). */
+  for_dashboard?: boolean;
 }
 
 export const TRANSFER_GROUPS_PAGE_LIMIT = 100;
@@ -223,6 +225,7 @@ export const fetchGroups = async ({
   language,
   tag_id,
   for_transfer,
+  for_dashboard,
 }: FetchGroupsParams): Promise<AuthorGroupListResponse> => {
   const requestLimit = for_transfer
     ? Math.min(Math.max(limit, 1), TRANSFER_GROUPS_PAGE_LIMIT)
@@ -239,6 +242,7 @@ export const fetchGroups = async ({
         ...(language && { language }),
         ...(tag_id && { tag_id }),
         ...(for_transfer && { for_transfer: true }),
+        ...(for_dashboard && { for_dashboard: true }),
       },
     },
   );
@@ -278,12 +282,15 @@ export const fetchGroupsForTransfer = async (options?: {
   return collected.filter((g) => !groupIdsEqual(g.id, excludeId));
 };
 
-/** Groups the user may filter dashboard content by (membership vs staff-wide list). */
-export async function fetchAccessibleGroupsForDashboard(
-  platformRole?: PlatformRole | string,
+export type DashboardGroupFilterUser = Pick<
+  UserInfo,
+  "platform_role" | "has_group"
+>;
+
+async function fetchAllGroupPages(
+  limit: number,
+  flags?: Pick<FetchGroupsParams, "for_dashboard" | "for_transfer">,
 ): Promise<AuthorGroupListItem[]> {
-  const staffWideList = isSuperAdmin(platformRole) || isReviewer(platformRole);
-  const limit = staffWideList ? TRANSFER_GROUPS_PAGE_LIMIT : 100;
   const collected: AuthorGroupListItem[] = [];
   let page = 1;
   let total = 0;
@@ -292,7 +299,7 @@ export async function fetchAccessibleGroupsForDashboard(
     const res = await fetchGroups({
       page,
       limit,
-      for_transfer: staffWideList || undefined,
+      ...flags,
     });
     total = res.total ?? 0;
     const batch = res.groups ?? [];
@@ -300,6 +307,35 @@ export async function fetchAccessibleGroupsForDashboard(
     if (batch.length === 0) break;
     page += 1;
   } while (collected.length < total);
+
+  return collected;
+}
+
+/** Groups the user may filter dashboard content by (membership vs staff-wide list). */
+export async function fetchAccessibleGroupsForDashboard(
+  user?: DashboardGroupFilterUser | null,
+): Promise<AuthorGroupListItem[]> {
+  const platformRole = user?.platform_role;
+  if (
+    platformRole &&
+    !usesStaffWideDashboardGroupList(platformRole) &&
+    user?.has_group === false
+  ) {
+    return [];
+  }
+
+  const staffWideList = usesStaffWideDashboardGroupList(platformRole);
+  const limit = staffWideList ? TRANSFER_GROUPS_PAGE_LIMIT : 100;
+
+  let collected = await fetchAllGroupPages(
+    limit,
+    staffWideList ? { for_dashboard: true } : undefined,
+  );
+
+  // Fallback when backend has not shipped for_dashboard yet.
+  if (staffWideList && collected.length === 0) {
+    collected = await fetchAllGroupPages(limit);
+  }
 
   return collected.sort((a, b) =>
     pickGroupTitle(a.metadata).localeCompare(pickGroupTitle(b.metadata)),
