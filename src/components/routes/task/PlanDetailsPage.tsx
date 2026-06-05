@@ -17,6 +17,11 @@ import MobileView from "./components/MobileView";
 import MobilePreviewSplitDivider from "./components/MobilePreviewSplitDivider";
 
 import { fetchPlanDetails } from "./api/planApi";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { fetchGroup } from "@/components/routes/groups/api/groupsApi";
+import { getCurrentUserGroupRole } from "@/components/routes/groups/lib/groupPermissions";
+import { canEditContent } from "@/lib/contentPermissions";
+import { HiOutlineDeviceMobile } from "react-icons/hi";
 
 const PlanDetailsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -79,6 +84,8 @@ const PlanDetailsPage = () => {
     setEditingTask(null);
   }, [selectedDay]);
 
+  const { data: userInfo } = useUserInfo();
+
   const { data: planDetails } = useQuery({
     queryKey: ["planDetails", planId],
 
@@ -87,8 +94,24 @@ const PlanDetailsPage = () => {
     enabled: !!planId,
   });
 
-  const isEditable = true;
+  const groupId = planDetails?.group_id as string | undefined;
 
+  const { data: planGroup } = useQuery({
+    queryKey: ["cms-group", groupId],
+    queryFn: () => fetchGroup(groupId!),
+    enabled: Boolean(groupId),
+    refetchOnWindowFocus: false,
+  });
+
+  const groupRole = planGroup
+    ? getCurrentUserGroupRole(planGroup.members ?? [], userInfo)
+    : undefined;
+
+  const isEditable = canEditContent(
+    groupRole,
+    planDetails?.status ?? "DRAFT",
+    userInfo?.platform_role,
+  );
   const isPlanPublished = planDetails?.status === "PUBLISHED";
 
   useEffect(() => {

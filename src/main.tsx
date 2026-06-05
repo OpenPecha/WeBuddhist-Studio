@@ -23,9 +23,11 @@ import Signup from "./components/auth/signup/Signup";
 import Dashboard from "./components/routes/dashboard/Dashboard";
 import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
+import PlanNewLegacyRedirect from "./components/routes/create-plan/PlanNewLegacyRedirect";
 import CreateSeries from "./components/routes/create-series/CreateSeries";
 import SeriesDetailsPage from "./components/routes/series-details/SeriesDetailsPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import PlanRouteGuard from "./components/auth/PlanRouteGuard";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
@@ -33,6 +35,7 @@ import Tags from "./components/routes/tags/Tags.tsx";
 import Groups from "./components/routes/groups/Groups.tsx";
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import GroupDetailsPage from "./components/routes/groups/GroupDetailsPage.tsx";
+import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
@@ -99,7 +102,19 @@ const router = createBrowserRouter([
         path: ROUTES.planNew,
         element: (
           <ProtectedRoute>
-            <CreatePlan />
+            <PlanRouteGuard>
+              <PlanNewLegacyRedirect />
+            </PlanRouteGuard>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/groups/:groupId/plan/new",
+        element: (
+          <ProtectedRoute>
+            <PlanRouteGuard>
+              <CreatePlan />
+            </PlanRouteGuard>
           </ProtectedRoute>
         ),
       },
@@ -107,7 +122,9 @@ const router = createBrowserRouter([
         path: "/plan/:planId/edit",
         element: (
           <ProtectedRoute>
-            <CreatePlan />
+            <PlanRouteGuard>
+              <CreatePlan />
+            </PlanRouteGuard>
           </ProtectedRoute>
         ),
       },
@@ -115,12 +132,18 @@ const router = createBrowserRouter([
         path: "/plan/:planId",
         element: (
           <ProtectedRoute>
-            <PlanDetailsPage />
+            <PlanRouteGuard>
+              <PlanDetailsPage />
+            </PlanRouteGuard>
           </ProtectedRoute>
         ),
       },
       {
         path: ROUTES.seriesNew,
+        element: <Navigate to={ROUTES.groups} replace />,
+      },
+      {
+        path: "/groups/:groupId/series/new",
         element: (
           <ProtectedRoute>
             <CreateSeries />
@@ -196,6 +219,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <GroupDetailsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.adminAuthors,
+        element: (
+          <ProtectedRoute>
+            <AdminAuthorsPage />
           </ProtectedRoute>
         ),
       },

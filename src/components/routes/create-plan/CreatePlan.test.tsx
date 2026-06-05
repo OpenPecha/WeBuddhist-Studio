@@ -26,9 +26,9 @@ vi.mock("react-router-dom", async () => {
       proceed: vi.fn(),
       reset: vi.fn(),
     })),
-    useParams: vi.fn(() => ({})),
+    useParams: vi.fn(() => ({ groupId: "test-group-id" })),
     useLocation: vi.fn(() => ({
-      pathname: "/plan/new",
+      pathname: "/groups/test-group-id/plan/new",
       search: "",
       hash: "",
       state: null,
@@ -81,9 +81,9 @@ vi.mock(
 describe("CreatePlan Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useParams).mockReturnValue({});
+    vi.mocked(useParams).mockReturnValue({ groupId: "test-group-id" });
     vi.mocked(useLocation).mockReturnValue({
-      pathname: "/plan/new",
+      pathname: "/groups/test-group-id/plan/new",
       search: "",
       hash: "",
       state: null,
@@ -373,7 +373,7 @@ describe("CreatePlan Component", () => {
   });
 
   it("shows validation errors for required fields", async () => {
-    vi.mocked(useParams).mockReturnValue({});
+    vi.mocked(useParams).mockReturnValue({ groupId: "test-group-id" });
     renderWithProviders(<CreatePlan />);
     const submitButton = screen.getByText("studio.plan.next_button");
     fireEvent.click(submitButton);

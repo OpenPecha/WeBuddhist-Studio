@@ -139,7 +139,16 @@ describe("PlanDetailsPanel Component", () => {
     vi.clearAllMocks();
     const { default: axiosInstance } = await import("@/config/axios-config");
     const mockAxios = axiosInstance as any;
-    mockAxios.get.mockResolvedValue({ data: mockPlanData });
+    mockAxios.get.mockImplementation((url: string) => {
+      if (String(url).includes("/groups/")) {
+        return Promise.resolve({
+          data: { id: "g1", members: [], metadata: [], slug: "g" },
+        });
+      }
+      return Promise.resolve({
+        data: { ...mockPlanData, status: "DRAFT", group_id: "g1" },
+      });
+    });
     mockAxios.post.mockResolvedValue({
       data: { id: "new-day-id", day_number: 5, tasks: [] },
     });

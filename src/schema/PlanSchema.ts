@@ -10,4 +10,5 @@ export const planSchema = z.object({
   language: z.string().min(1, "Language is required"),
   start_date: z.iso.datetime().nullable().optional(),
   series_id: z.string().nullable().optional(),
+  group_id: z.string().uuid().optional(),
 });

@@ -1,5 +1,7 @@
 import axiosInstance from "@/config/axios-config";
 import type { LanguageCode } from "@/schema/SeriesSchema";
+import { usesStaffWideDashboardGroupList } from "@/lib/platformAccess";
+import type { UserInfo } from "@/hooks/useUserInfo";
 
 export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
@@ -201,7 +203,13 @@ export interface FetchGroupsParams {
   search?: string;
   language?: string;
   tag_id?: string;
+  /** When true, lists all groups eligible as transfer targets (not only membership). */
+  for_transfer?: boolean;
+  /** When true, lists groups the user may filter dashboard content by (staff-wide read list). */
+  for_dashboard?: boolean;
 }
+
+export const TRANSFER_GROUPS_PAGE_LIMIT = 100;
 
 const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
@@ -213,23 +221,123 @@ export const fetchGroups = async ({
   search,
   language,
   tag_id,
+  for_transfer,
+  for_dashboard,
 }: FetchGroupsParams): Promise<AuthorGroupListResponse> => {
-  const skip = (page - 1) * limit;
+  const requestLimit = for_transfer
+    ? Math.min(Math.max(limit, 1), TRANSFER_GROUPS_PAGE_LIMIT)
+    : limit;
+  const skip = (page - 1) * requestLimit;
   const { data } = await axiosInstance.get<AuthorGroupListResponse>(
     `/api/v1/cms/author/groups`,
     {
       headers: getAuthHeaders(),
       params: {
         skip,
-        limit,
+        limit: requestLimit,
         ...(search?.trim() && { search: search.trim() }),
         ...(language && { language }),
         ...(tag_id && { tag_id }),
+        ...(for_transfer && { for_transfer: true }),
+        ...(for_dashboard && { for_dashboard: true }),
       },
     },
   );
   return data;
 };
+
+function groupIdsEqual(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+/** Loads all transfer-target groups (paginated), excluding the source group. */
+export const fetchGroupsForTransfer = async (options?: {
+  search?: string;
+  excludeGroupId?: string;
+}): Promise<AuthorGroupListItem[]> => {
+  const limit = TRANSFER_GROUPS_PAGE_LIMIT;
+  const collected: AuthorGroupListItem[] = [];
+  let page = 1;
+  let total = 0;
+
+  do {
+    const res = await fetchGroups({
+      page,
+      limit,
+      search: options?.search,
+      for_transfer: true,
+    });
+    total = res.total ?? 0;
+    const batch = res.groups ?? [];
+    collected.push(...batch);
+    if (batch.length === 0) break;
+    page += 1;
+  } while (collected.length < total);
+
+  const excludeId = options?.excludeGroupId?.trim();
+  if (!excludeId) return collected;
+  return collected.filter((g) => !groupIdsEqual(g.id, excludeId));
+};
+
+export type DashboardGroupFilterUser = Pick<
+  UserInfo,
+  "platform_role" | "has_group"
+>;
+
+async function fetchAllGroupPages(
+  limit: number,
+  flags?: Pick<FetchGroupsParams, "for_dashboard" | "for_transfer">,
+): Promise<AuthorGroupListItem[]> {
+  const collected: AuthorGroupListItem[] = [];
+  let page = 1;
+  let total = 0;
+
+  do {
+    const res = await fetchGroups({
+      page,
+      limit,
+      ...flags,
+    });
+    total = res.total ?? 0;
+    const batch = res.groups ?? [];
+    collected.push(...batch);
+    if (batch.length === 0) break;
+    page += 1;
+  } while (collected.length < total);
+
+  return collected;
+}
+
+/** Groups the user may filter dashboard content by (membership vs staff-wide list). */
+export async function fetchAccessibleGroupsForDashboard(
+  user?: DashboardGroupFilterUser | null,
+): Promise<AuthorGroupListItem[]> {
+  const platformRole = user?.platform_role;
+  if (
+    platformRole &&
+    !usesStaffWideDashboardGroupList(platformRole) &&
+    user?.has_group === false
+  ) {
+    return [];
+  }
+
+  const staffWideList = usesStaffWideDashboardGroupList(platformRole);
+  const limit = staffWideList ? TRANSFER_GROUPS_PAGE_LIMIT : 100;
+
+  let collected = await fetchAllGroupPages(
+    limit,
+    staffWideList ? { for_dashboard: true } : undefined,
+  );
+
+  // Fallback when backend has not shipped for_dashboard yet.
+  if (staffWideList && collected.length === 0) {
+    collected = await fetchAllGroupPages(limit);
+  }
+
+  return collected.sort((a, b) =>
+    pickGroupTitle(a.metadata).localeCompare(pickGroupTitle(b.metadata)),
+  );
+}
 
 export const fetchGroup = async (
   groupId: string,
