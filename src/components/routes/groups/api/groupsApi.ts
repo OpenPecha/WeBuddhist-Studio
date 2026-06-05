@@ -1,9 +1,6 @@
 import axiosInstance from "@/config/axios-config";
 import type { LanguageCode } from "@/schema/SeriesSchema";
-import {
-  usesStaffWideDashboardGroupList,
-  type PlatformRole,
-} from "@/lib/platformAccess";
+import { usesStaffWideDashboardGroupList } from "@/lib/platformAccess";
 import type { UserInfo } from "@/hooks/useUserInfo";
 
 export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
