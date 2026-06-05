@@ -3,7 +3,11 @@ import type {
   SeriesPlanDTO,
 } from "@/components/routes/create-series/api/seriesApi";
 import type { LanguageCode } from "@/schema/SeriesSchema";
-import { normalizeStatus } from "@/components/routes/dashboard/dashboardTable";
+import {
+  normalizeStatus,
+  resolveDashboardItemImageUrl,
+  type DashboardItemImageFields,
+} from "@/components/routes/dashboard/dashboardTable";
 import type { Plan } from "@/components/routes/create-series/api/planSearchApi";
 import type { SeriesPlan } from "@/schema/SeriesSchema";
 import type { PlansByLanguage, SeriesPlanRow } from "./seriesDetailsTypes";
@@ -27,10 +31,13 @@ export function mapPlanDtoToRow(plan: SeriesPlanDTO): SeriesPlanRow | null {
   const td = plan.total_days ?? 0;
   const total_days =
     typeof td === "number" ? td : parseInt(String(td ?? "0"), 10) || 0;
+  const mappedImageUrl = resolveDashboardItemImageUrl(
+    plan as DashboardItemImageFields,
+  );
   return {
     id: String(plan.id),
     title: plan.title,
-    image_url: plan.image_url ?? "",
+    image_url: mappedImageUrl,
     language,
     status: normalizeStatus(plan.status),
     total_days,
@@ -46,7 +53,10 @@ export function mapSearchPlanToRow(plan: Plan): SeriesPlanRow | null {
   return {
     id: plan.id,
     title: plan.title,
-    image_url: plan.image_url ?? "",
+    image_url: resolveDashboardItemImageUrl({
+      image_url: plan.image_url,
+      image_key: plan.image_key,
+    }),
     language,
     status: normalizeStatus(plan.status),
     total_days: plan.total_days ?? 0,

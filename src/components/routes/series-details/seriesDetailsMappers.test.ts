@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   groupPlansByLanguage,
+  mapPlanDtoToRow,
   plansByLanguageToIdMap,
   reorderPlansInLanguage,
 } from "./seriesDetailsMappers";
@@ -27,6 +28,17 @@ const plans: SeriesPlanDTO[] = [
 ];
 
 describe("seriesDetailsMappers", () => {
+  it("resolves plan cover from nested image object", () => {
+    const row = mapPlanDtoToRow({
+      id: "p1",
+      title: "Plan 1",
+      language: "EN",
+      image_url: null,
+      image: { medium: "https://example.com/cover-medium.jpg" },
+    });
+    expect(row?.image_url).toBe("https://example.com/cover-medium.jpg");
+  });
+
   it("groups and sorts plans by display_order", () => {
     const grouped = groupPlansByLanguage(plans);
     expect(grouped.EN?.map((p) => p.id)).toEqual(["p2", "p1"]);
