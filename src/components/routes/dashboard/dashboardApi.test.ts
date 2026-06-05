@@ -45,7 +45,37 @@ describe("displayDashboardItemTitle", () => {
     expect(displayDashboardItemTitle(item)).toBe("7-Day Mindfulness");
   });
 
-  it("uses EN metadata title for series (no top-level title)", () => {
+  it("uses metadata title for the current UI locale", () => {
+    const item: DashboardApiItem = {
+      id: "s1",
+      type: "series",
+      metadata: [
+        {
+          id: "m1",
+          title: "Foundations of Meditation",
+          description: "Intro",
+          language: "EN",
+        },
+        {
+          id: "m2",
+          title: "བོད་སྐད་",
+          language: "BO",
+        },
+      ],
+      status: "DRAFT",
+      featured: true,
+      languages: ["EN", "BO"],
+      enrolled_count: 12,
+      plans_count: 3,
+      created_at: "2026-01-01T00:00:00Z",
+    };
+    expect(displayDashboardItemTitle(item, "bo-IN")).toBe("བོད་སྐད་");
+    expect(displayDashboardItemTitle(item, "en")).toBe(
+      "Foundations of Meditation",
+    );
+  });
+
+  it("uses EN metadata title for series when locale is omitted", () => {
     const item: DashboardApiItem = {
       id: "s1",
       type: "series",
@@ -70,6 +100,24 @@ describe("displayDashboardItemTitle", () => {
       created_at: "2026-01-01T00:00:00Z",
     };
     expect(displayDashboardItemTitle(item)).toBe("Foundations of Meditation");
+  });
+
+  it("falls back to the first metadata title when locale title is missing", () => {
+    const item: DashboardApiItem = {
+      id: "s1",
+      type: "series",
+      metadata: [
+        { id: "m1", title: "", language: "BO" },
+        { id: "m2", title: "Only ZH title", language: "ZH" },
+        { id: "m3", title: "English backup", language: "EN" },
+      ],
+      status: "DRAFT",
+      featured: false,
+      languages: ["BO", "ZH", "EN"],
+      enrolled_count: 0,
+      created_at: "2026-01-01T00:00:00Z",
+    };
+    expect(displayDashboardItemTitle(item, "bo-IN")).toBe("Only ZH title");
   });
 
   it("falls back when series has no metadata", () => {

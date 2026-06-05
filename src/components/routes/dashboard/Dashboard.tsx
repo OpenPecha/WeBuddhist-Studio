@@ -24,7 +24,8 @@ import {
   type ReactNode,
 } from "react";
 import { useDebounce } from "use-debounce";
-import { useTranslate } from "@tolgee/react";
+import { useTolgee, useTranslate } from "@tolgee/react";
+import { Button } from "@/components/ui/atoms/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { Link, useSearchParams } from "react-router-dom";
@@ -87,6 +88,8 @@ function DashboardListPlaceholder({
 const Dashboard = () => {
   const { t } = useTranslate();
   const { data: userInfo } = useUserInfo();
+  const tolgee = useTolgee(["language"]);
+  const localeLanguage = tolgee.getLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const urlState = useMemo(
@@ -135,8 +138,11 @@ const Dashboard = () => {
   } = useDashboardGroupFilterOptions(userInfo);
 
   const fetchParams = useMemo(
-    () => dashboardUrlStateToFetchParams(urlState),
-    [urlState],
+    () => ({
+      ...dashboardUrlStateToFetchParams(urlState),
+      localeLanguage,
+    }),
+    [urlState, localeLanguage],
   );
 
   const {
@@ -394,12 +400,13 @@ const Dashboard = () => {
       {filterBar}
 
       <div className="flex flex-1 flex-col items-center px-4 pb-6 pt-2">
-        {isError && error ? (
+        {isError && error && (
           <DashboardListPlaceholder
             title="Unable to load dashboard"
             description={String(error.message)}
           />
-        ) : showEmpty ? (
+        )}
+        {showEmpty && (
           <DashboardListPlaceholder
             title={emptyTitle}
             description={
@@ -412,7 +419,8 @@ const Dashboard = () => {
               </Pecha.Button>
             </Link>
           </DashboardListPlaceholder>
-        ) : (
+        )}
+        {!isError && !showEmpty && (
           <div className="w-full overflow-x-auto">
             <DashboardContentTable
               rows={rows}

@@ -6,23 +6,35 @@ import {
   pickSeriesTitle,
   resolveDashboardItemImageUrl,
   type DashboardImageVariants,
+  tolgeeLocaleToDashboardLanguage,
   type DashboardTableRow,
 } from "./dashboardTable";
 
 /** Series rows omit `title` in JSON; titles live in `metadata`. */
-export function displayDashboardItemTitle(item: DashboardApiItem): string {
+export function displayDashboardItemTitle(
+  item: DashboardApiItem,
+  localeLanguage?: string,
+): string {
   if (item.type === "plan") {
     return item.title?.trim() || "Untitled plan";
   }
-  const fromMeta = pickSeriesTitle(undefined, item.metadata);
+  const preferredLanguage = tolgeeLocaleToDashboardLanguage(localeLanguage);
+  const fromMeta = pickSeriesTitle(
+    undefined,
+    item.metadata,
+    preferredLanguage ?? undefined,
+  );
   return fromMeta === "Untitled" ? "Untitled series" : fromMeta;
 }
 
-function mapDashboardItemToTableRow(item: DashboardApiItem): DashboardTableRow {
+function mapDashboardItemToTableRow(
+  item: DashboardApiItem,
+  localeLanguage?: string,
+): DashboardTableRow {
   return {
     kind: item.type,
     id: String(item.id),
-    title: displayDashboardItemTitle(item),
+    title: displayDashboardItemTitle(item, localeLanguage),
     image_url: resolveDashboardItemImageUrl(item),
     languages: parseDashboardLanguages(item.languages),
     status: normalizeStatus(item.status),
@@ -91,6 +103,8 @@ export interface FetchDashboardItemsParams {
   language?: string;
   featured?: boolean;
   group_id?: string;
+  /** Tolgee UI locale used to pick localized series titles from metadata. */
+  localeLanguage?: string;
 }
 
 export interface DashboardItemsResult {
@@ -122,7 +136,6 @@ export async function fetchDashboardItems(
       },
     },
   );
-
   const items = data?.items ?? [];
   const pagination = data?.pagination ?? {
     page: params.page,
@@ -131,7 +144,11 @@ export async function fetchDashboardItems(
     total_pages: items.length > 0 ? 1 : 0,
   };
 
-  const rows = await enrichDashboardRows(items.map(mapDashboardItemToTableRow));
+  const rows = await enrichDashboardRows(
+    items.map((item) =>
+      mapDashboardItemToTableRow(item, params.localeLanguage),
+    ),
+  );
 
   return {
     rows,
