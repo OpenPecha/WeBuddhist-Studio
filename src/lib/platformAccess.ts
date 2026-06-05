@@ -100,3 +100,20 @@ export function needsGroupOnboardingRedirect(
 export function canAccessAdminAuthors(role?: PlatformRole | string): boolean {
   return isSuperAdmin(role) || isReviewer(role);
 }
+
+/** Whether dashboard group filter should load (staff-wide vs membership list). */
+export function canUseDashboardGroupFilter(
+  user?: Pick<UserInfo, "platform_role" | "has_group"> | null,
+): boolean {
+  if (!user) return false;
+  if (isSuperAdmin(user.platform_role) || isReviewer(user.platform_role)) {
+    return true;
+  }
+  return user.has_group !== false;
+}
+
+export function usesStaffWideDashboardGroupList(
+  role?: PlatformRole | string,
+): boolean {
+  return isSuperAdmin(role) || isReviewer(role);
+}

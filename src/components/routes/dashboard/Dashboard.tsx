@@ -133,7 +133,8 @@ const Dashboard = () => {
     isLoading: isGroupFilterLoading,
     showFilter: showGroupFilter,
     isStaffWideList: isStaffWideGroupList,
-  } = useDashboardGroupFilterOptions(userInfo?.platform_role);
+    allowedGroupIds,
+  } = useDashboardGroupFilterOptions(userInfo);
 
   const fetchParams = useMemo(
     () => ({
@@ -142,20 +143,6 @@ const Dashboard = () => {
     }),
     [urlState, localeLanguage],
   );
-
-  useEffect(() => {
-    if (!urlState.groupId || isGroupFilterLoading) return;
-    const allowed = new Set(groupFilterOptions.map((g) => g.id));
-    if (!allowed.has(urlState.groupId)) {
-      replaceUrlState({ groupId: null, ...resetPageFilters });
-    }
-  }, [
-    urlState.groupId,
-    groupFilterOptions,
-    isGroupFilterLoading,
-    replaceUrlState,
-    resetPageFilters,
-  ]);
 
   const {
     data: dashboardData,
@@ -206,6 +193,22 @@ const Dashboard = () => {
   };
 
   const rows = dashboardData?.rows ?? [];
+
+  useEffect(() => {
+    if (isStaffWideGroupList) return;
+    if (!urlState.groupId || isGroupFilterLoading) return;
+    if (!allowedGroupIds.has(urlState.groupId)) {
+      replaceUrlState({ groupId: null, ...resetPageFilters });
+    }
+  }, [
+    urlState.groupId,
+    allowedGroupIds,
+    isGroupFilterLoading,
+    isStaffWideGroupList,
+    replaceUrlState,
+    resetPageFilters,
+  ]);
+
   const groupRolesByGroupId = useGroupRolesMap(
     rows.map((r) => r.group_id),
     userInfo
@@ -251,7 +254,7 @@ const Dashboard = () => {
       {showGroupFilter ? (
         <div className="flex min-w-[200px] flex-col gap-1">
           <span className="text-xs font-medium text-muted-foreground">
-            {isStaffWideGroupList ? "Group (all)" : "Group (yours)"}
+            Group
           </span>
           <Pecha.Select
             value={groupFilterValue}
@@ -274,7 +277,7 @@ const Dashboard = () => {
               <Pecha.SelectItem value="all">All groups</Pecha.SelectItem>
               {groupFilterOptions.map((group) => (
                 <Pecha.SelectItem key={group.id} value={group.id}>
-                  {group.title}
+                  {group.label}
                 </Pecha.SelectItem>
               ))}
             </Pecha.SelectContent>
