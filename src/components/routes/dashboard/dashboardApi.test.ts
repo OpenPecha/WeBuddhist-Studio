@@ -6,6 +6,29 @@ import {
 import { fetchDashboardItems } from "./dashboardApi";
 import axiosInstance from "@/config/axios-config";
 import { vi } from "vitest";
+import { resolveDashboardItemImageUrl } from "./dashboardTable";
+
+describe("resolveDashboardItemImageUrl", () => {
+  it("uses medium from nested image object", () => {
+    expect(
+      resolveDashboardItemImageUrl({
+        image: {
+          medium: "https://example.com/medium.jpg",
+          original: "https://example.com/original.jpg",
+        },
+      }),
+    ).toBe("https://example.com/medium.jpg");
+  });
+
+  it("prefers image_url over nested image", () => {
+    expect(
+      resolveDashboardItemImageUrl({
+        image_url: "https://example.com/direct.jpg",
+        image: { medium: "https://example.com/medium.jpg" },
+      }),
+    ).toBe("https://example.com/direct.jpg");
+  });
+});
 
 describe("displayDashboardItemTitle", () => {
   it("uses plan title for plan rows", () => {
@@ -126,6 +149,9 @@ describe("fetchDashboardItems", () => {
                 language: "EN",
               },
             ],
+            image: {
+              medium: "https://example.com/series-cover.jpg",
+            },
             status: "PUBLISHED",
             featured: false,
             languages: ["EN"],
@@ -144,6 +170,9 @@ describe("fetchDashboardItems", () => {
     });
 
     expect(result.rows[0]?.title).toBe("Test Series");
+    expect(result.rows[0]?.image_url).toBe(
+      "https://example.com/series-cover.jpg",
+    );
     vi.restoreAllMocks();
   });
 });

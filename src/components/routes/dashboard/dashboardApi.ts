@@ -4,6 +4,8 @@ import {
   normalizeStatus,
   parseDashboardLanguages,
   pickSeriesTitle,
+  resolveDashboardItemImageUrl,
+  type DashboardImageVariants,
   tolgeeLocaleToDashboardLanguage,
   type DashboardTableRow,
 } from "./dashboardTable";
@@ -33,7 +35,7 @@ function mapDashboardItemToTableRow(
     kind: item.type,
     id: String(item.id),
     title: displayDashboardItemTitle(item, localeLanguage),
-    image_url: item.image_url ?? "",
+    image_url: resolveDashboardItemImageUrl(item),
     languages: parseDashboardLanguages(item.languages),
     status: normalizeStatus(item.status),
     total_days: item.total_days ?? 0,
@@ -63,11 +65,13 @@ export interface DashboardApiItem {
   /** Plans only; omitted from JSON for series. */
   title?: string;
   metadata?: DashboardSeriesMetadataDTO[];
-  author_id?: string;
+  author_id?: string | null;
   group_id?: string | null;
   series_id?: string | null;
   image_url?: string | null;
+  plan_image_url?: string | null;
   image_key?: string | null;
+  image?: string | DashboardImageVariants | null;
   status: string;
   featured: boolean;
   languages: string[];
