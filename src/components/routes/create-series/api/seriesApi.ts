@@ -27,7 +27,16 @@ export type SeriesPlanDTO = {
   description?: string | null;
   language: string;
   image_url?: string | null;
+  plan_image_url?: string | null;
   image_key?: string | null;
+  image?:
+    | string
+    | {
+        medium?: string | null;
+        thumbnail?: string | null;
+        original?: string | null;
+      }
+    | null;
   display_order?: number | null;
   total_days?: number | null;
   status?: string;
