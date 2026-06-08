@@ -1,4 +1,8 @@
 import axiosInstance from "@/config/axios-config";
+import {
+  resolveDashboardItemImageUrl,
+  type DashboardImageVariants,
+} from "@/components/routes/dashboard/dashboardTable";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { usesStaffWideDashboardGroupList } from "@/lib/platformAccess";
 import type { UserInfo } from "@/hooks/useUserInfo";
@@ -8,13 +12,15 @@ export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 export interface GroupMetadataDTO {
   id?: string;
   title: string;
+  sub_title?: string | null;
   description?: string | null;
   language: LanguageCode;
 }
 
 export interface GroupMetadataInput {
   title: string;
-  description?: string | null;
+  sub_title: string;
+  description: string;
   language: LanguageCode;
 }
 
@@ -43,7 +49,7 @@ export interface AuthorGroupMemberDTO {
 export interface GroupLinkedSeriesDTO {
   id: string;
   metadata: GroupMetadataDTO[];
-  image?: string | null;
+  image?: string | DashboardImageVariants | null;
   image_key?: string | null;
   author_id?: string;
   featured: boolean;
@@ -541,27 +547,29 @@ export function pickGroupTitle(
 }
 
 export function resolveGroupBannerUrl(group: {
-  banner?: string | null;
+  banner?: string | DashboardImageVariants | null;
   banner_url?: string | null;
   banner_key?: string | null;
 }): string | null {
-  const url = group.banner_url?.trim() || group.banner?.trim();
-  if (url) return url;
-  const key = group.banner_key?.trim();
-  if (key && /^https?:\/\//i.test(key)) return key;
-  return null;
+  const url = resolveDashboardItemImageUrl({
+    image_url: group.banner_url,
+    image: group.banner,
+    image_key: group.banner_key,
+  });
+  return url || null;
 }
 
 export function resolveGroupAvatarUrl(group: {
-  avatar?: string | null;
+  avatar?: string | DashboardImageVariants | null;
   avatar_url?: string | null;
   avatar_key?: string | null;
 }): string | null {
-  const url = group.avatar_url?.trim() || group.avatar?.trim();
-  if (url) return url;
-  const key = group.avatar_key?.trim();
-  if (key && /^https?:\/\//i.test(key)) return key;
-  return null;
+  const url = resolveDashboardItemImageUrl({
+    image_url: group.avatar_url,
+    image: group.avatar,
+    image_key: group.avatar_key,
+  });
+  return url || null;
 }
 
 export function pickGroupLinkedSeriesTitle(
@@ -574,11 +582,18 @@ export function pickGroupLinkedSeriesTitle(
 export function groupLinkedSeriesToFkOptions(
   series: GroupLinkedSeriesDTO[],
 ): { id: string; title: string; image_url?: string }[] {
-  return series.map((item) => ({
-    id: item.id,
-    title: pickGroupLinkedSeriesTitle(item),
-    image_url: item.image?.trim() || undefined,
-  }));
+  return series.map((item) => {
+    const image_url =
+      resolveDashboardItemImageUrl({
+        image: item.image,
+        image_key: item.image_key,
+      }) || undefined;
+    return {
+      id: item.id,
+      title: pickGroupLinkedSeriesTitle(item),
+      image_url,
+    };
+  });
 }
 
 export function pickGroupLinkedPlanTitle(
@@ -591,11 +606,18 @@ export function pickGroupLinkedPlanTitle(
 export function groupLinkedPlansToFkOptions(
   plans: GroupLinkedPlanDTO[],
 ): { id: string; title: string; image_url?: string }[] {
-  return plans.map((item) => ({
-    id: item.id,
-    title: pickGroupLinkedPlanTitle(item),
-    image_url: item.image_url?.trim() || undefined,
-  }));
+  return plans.map((item) => {
+    const image_url =
+      resolveDashboardItemImageUrl({
+        image_url: item.image_url,
+        image_key: item.image_key,
+      }) || undefined;
+    return {
+      id: item.id,
+      title: pickGroupLinkedPlanTitle(item),
+      image_url,
+    };
+  });
 }
 
 const LANGUAGE_LABELS: Record<LanguageCode, string> = {
@@ -610,18 +632,22 @@ export function languageLabelForCode(code: LanguageCode): string {
 
 export function buildGroupMetadata(
   languages: Partial<
-    Record<LanguageCode, { title: string; description: string }>
+    Record<
+      LanguageCode,
+      { title: string; sub_title: string; description: string }
+    >
   >,
 ): GroupMetadataInput[] {
   const order: LanguageCode[] = ["EN", "BO", "ZH"];
   const out: GroupMetadataInput[] = [];
   for (const code of order) {
     const block = languages[code];
-    if (!block?.title?.trim()) continue;
+    if (!block) continue;
     out.push({
       language: code,
       title: block.title.trim(),
-      description: block.description?.trim() || null,
+      sub_title: block.sub_title.trim(),
+      description: block.description.trim(),
     });
   }
   return out;
