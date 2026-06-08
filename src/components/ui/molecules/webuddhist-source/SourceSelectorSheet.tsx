@@ -13,7 +13,6 @@ import {
   searchSources,
   searchTitles,
   fetchTextDetails,
-  MIN_TITLE_SEARCH_LENGTH,
 } from "@/components/api/searchApi";
 import { flattenSegments, getLastSegmentId } from "@/lib/utils";
 import type { SourceData } from "./SourceDetail";
@@ -74,10 +73,7 @@ export const SourceSelectorSheet = ({
         offset: skip,
       }),
     refetchOnWindowFocus: false,
-    enabled:
-      isOpen &&
-      searchOnlyTitles &&
-      debouncedSearchFilter.trim().length >= MIN_TITLE_SEARCH_LENGTH,
+    enabled: isOpen && searchOnlyTitles && debouncedSearchFilter.length > 0,
   });
 
   const {
@@ -131,17 +127,9 @@ export const SourceSelectorSheet = ({
 
   const isLoading = searchOnlyTitles ? isTitleLoading : isMultilingualLoading;
 
-  const sources = useMemo(() => {
-    if (!searchOnlyTitles) return multilingualData?.sources ?? [];
-    if (debouncedSearchFilter.trim().length < MIN_TITLE_SEARCH_LENGTH)
-      return [];
-    return titleData?.texts ?? [];
-  }, [
-    searchOnlyTitles,
-    multilingualData?.sources,
-    debouncedSearchFilter,
-    titleData?.texts,
-  ]);
+  const sources = searchOnlyTitles
+    ? titleData || []
+    : multilingualData?.sources || [];
 
   const segments = searchOnlyTitles
     ? detailSegments
@@ -167,26 +155,6 @@ export const SourceSelectorSheet = ({
   };
 
   const renderSegmentList = () => {
-    if (
-      searchOnlyTitles &&
-      debouncedSearchFilter.trim().length > 0 &&
-      debouncedSearchFilter.trim().length < MIN_TITLE_SEARCH_LENGTH
-    ) {
-      return (
-        <div className="text-center min-h-[400px] flex flex-col items-center justify-center">
-          <img
-            src={pechaIcon}
-            alt="search hint"
-            className="w-15 h-15 opacity-80"
-          />
-          <p>Keep typing to search</p>
-          <span className="dark:text-[#b1b1b1] text-gray-600">
-            Enter at least {MIN_TITLE_SEARCH_LENGTH} characters to search titles
-          </span>
-        </div>
-      );
-    }
-
     if (sources.length === 0) {
       return (
         <div className="text-center min-h-[400px] flex flex-col items-center justify-center">
