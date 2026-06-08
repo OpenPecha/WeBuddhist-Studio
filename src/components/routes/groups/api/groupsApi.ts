@@ -547,27 +547,29 @@ export function pickGroupTitle(
 }
 
 export function resolveGroupBannerUrl(group: {
-  banner?: string | null;
+  banner?: string | DashboardImageVariants | null;
   banner_url?: string | null;
   banner_key?: string | null;
 }): string | null {
-  const url = group.banner_url?.trim() || group.banner?.trim();
-  if (url) return url;
-  const key = group.banner_key?.trim();
-  if (key && /^https?:\/\//i.test(key)) return key;
-  return null;
+  const url = resolveDashboardItemImageUrl({
+    image_url: group.banner_url,
+    image: group.banner,
+    image_key: group.banner_key,
+  });
+  return url || null;
 }
 
 export function resolveGroupAvatarUrl(group: {
-  avatar?: string | null;
+  avatar?: string | DashboardImageVariants | null;
   avatar_url?: string | null;
   avatar_key?: string | null;
 }): string | null {
-  const url = group.avatar_url?.trim() || group.avatar?.trim();
-  if (url) return url;
-  const key = group.avatar_key?.trim();
-  if (key && /^https?:\/\//i.test(key)) return key;
-  return null;
+  const url = resolveDashboardItemImageUrl({
+    image_url: group.avatar_url,
+    image: group.avatar,
+    image_key: group.avatar_key,
+  });
+  return url || null;
 }
 
 export function pickGroupLinkedSeriesTitle(
@@ -604,11 +606,18 @@ export function pickGroupLinkedPlanTitle(
 export function groupLinkedPlansToFkOptions(
   plans: GroupLinkedPlanDTO[],
 ): { id: string; title: string; image_url?: string }[] {
-  return plans.map((item) => ({
-    id: item.id,
-    title: pickGroupLinkedPlanTitle(item),
-    image_url: item.image_url?.trim() || undefined,
-  }));
+  return plans.map((item) => {
+    const image_url =
+      resolveDashboardItemImageUrl({
+        image_url: item.image_url,
+        image_key: item.image_key,
+      }) || undefined;
+    return {
+      id: item.id,
+      title: pickGroupLinkedPlanTitle(item),
+      image_url,
+    };
+  });
 }
 
 const LANGUAGE_LABELS: Record<LanguageCode, string> = {

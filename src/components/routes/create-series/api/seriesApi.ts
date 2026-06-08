@@ -175,7 +175,14 @@ function resolveSeriesLanguages(
 
 function resolveSeriesImageKey(dto: SeriesDetailDTO): string {
   if (dto.image_key?.trim()) return dto.image_key.trim();
-  if (dto.image && !/^https?:\/\//i.test(dto.image)) return dto.image.trim();
+  const image = dto.image;
+  if (
+    typeof image === "string" &&
+    image &&
+    !/^https?:\/\//i.test(image)
+  ) {
+    return image.trim();
+  }
   return "";
 }
 
