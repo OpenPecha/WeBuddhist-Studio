@@ -5,8 +5,9 @@ const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as ["EN", "BO", "ZH"];
 export type GroupLanguageCode = (typeof LANGUAGE_CODES)[number];
 
 export const groupLanguageBlockSchema = z.object({
-  title: z.string().trim(),
-  description: z.string().trim(),
+  title: z.string().trim().min(1, "Title is required"),
+  sub_title: z.string().trim().min(1, "Sub-title is required"),
+  description: z.string().trim().min(1, "Description is required"),
 });
 
 export const groupCoreSchema = z
@@ -33,19 +34,9 @@ export const groupCoreSchema = z
     if (present.length < 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Add at least one language with a title",
+        message: "Add at least one language",
         path: ["languages"],
       });
-    }
-    for (const code of present) {
-      const block = data.languages[code];
-      if (!block?.title?.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Title is required",
-          path: ["languages", code, "title"],
-        });
-      }
     }
   });
 

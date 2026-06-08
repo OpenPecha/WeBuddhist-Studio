@@ -1,4 +1,8 @@
 import axiosInstance from "@/config/axios-config";
+import {
+  resolveDashboardItemImageUrl,
+  type DashboardImageVariants,
+} from "@/components/routes/dashboard/dashboardTable";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { usesStaffWideDashboardGroupList } from "@/lib/platformAccess";
 import type { UserInfo } from "@/hooks/useUserInfo";
@@ -8,13 +12,15 @@ export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 export interface GroupMetadataDTO {
   id?: string;
   title: string;
+  sub_title?: string | null;
   description?: string | null;
   language: LanguageCode;
 }
 
 export interface GroupMetadataInput {
   title: string;
-  description?: string | null;
+  sub_title: string;
+  description: string;
   language: LanguageCode;
 }
 
@@ -43,7 +49,7 @@ export interface AuthorGroupMemberDTO {
 export interface GroupLinkedSeriesDTO {
   id: string;
   metadata: GroupMetadataDTO[];
-  image?: string | null;
+  image?: string | DashboardImageVariants | null;
   image_key?: string | null;
   author_id?: string;
   featured: boolean;
@@ -574,11 +580,18 @@ export function pickGroupLinkedSeriesTitle(
 export function groupLinkedSeriesToFkOptions(
   series: GroupLinkedSeriesDTO[],
 ): { id: string; title: string; image_url?: string }[] {
-  return series.map((item) => ({
-    id: item.id,
-    title: pickGroupLinkedSeriesTitle(item),
-    image_url: item.image?.trim() || undefined,
-  }));
+  return series.map((item) => {
+    const image_url =
+      resolveDashboardItemImageUrl({
+        image: item.image,
+        image_key: item.image_key,
+      }) || undefined;
+    return {
+      id: item.id,
+      title: pickGroupLinkedSeriesTitle(item),
+      image_url,
+    };
+  });
 }
 
 export function pickGroupLinkedPlanTitle(
@@ -610,18 +623,22 @@ export function languageLabelForCode(code: LanguageCode): string {
 
 export function buildGroupMetadata(
   languages: Partial<
-    Record<LanguageCode, { title: string; description: string }>
+    Record<
+      LanguageCode,
+      { title: string; sub_title: string; description: string }
+    >
   >,
 ): GroupMetadataInput[] {
   const order: LanguageCode[] = ["EN", "BO", "ZH"];
   const out: GroupMetadataInput[] = [];
   for (const code of order) {
     const block = languages[code];
-    if (!block?.title?.trim()) continue;
+    if (!block) continue;
     out.push({
       language: code,
       title: block.title.trim(),
-      description: block.description?.trim() || null,
+      sub_title: block.sub_title.trim(),
+      description: block.description.trim(),
     });
   }
   return out;
