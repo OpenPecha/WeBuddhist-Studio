@@ -21,7 +21,6 @@ import { useUserInfo } from "@/hooks/useUserInfo";
 import { fetchGroup } from "@/components/routes/groups/api/groupsApi";
 import { getCurrentUserGroupRole } from "@/components/routes/groups/lib/groupPermissions";
 import { canEditContent } from "@/lib/contentPermissions";
-import { HiOutlineDeviceMobile } from "react-icons/hi";
 
 const PlanDetailsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
