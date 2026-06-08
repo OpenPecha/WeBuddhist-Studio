@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useInView } from "react-intersection-observer";
+import { useQuery } from "@tanstack/react-query";
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import { IoMdClose } from "react-icons/io";
 import { FaMagnifyingGlass } from "react-icons/fa6";
@@ -14,7 +13,7 @@ import { NO_PROFILE_IMAGE } from "@/lib/constant";
 import { reorderArray } from "@/lib/utils";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const DEBOUNCE_MS = 600;
 
 function planToSeriesPlan(plan: Plan): SeriesPlan {
@@ -57,33 +56,20 @@ const PlanSearchSelector = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
-      queryKey: ["search-plans", debouncedQuery, searchLanguage, groupId],
-      queryFn: ({ pageParam = 0 }) =>
-        searchPlans({
-          search: debouncedQuery || undefined,
-          language: searchLanguage,
-          skip: pageParam,
-          limit: PAGE_SIZE,
-          ...(groupId ? { group_id: groupId } : {}),
-        }),
-      getNextPageParam: (lastPage) => {
-        const fetched = lastPage.skip + lastPage.plans.length;
-        return fetched < lastPage.total ? fetched : undefined;
-      },
-      initialPageParam: 0,
-      enabled: isDropdownOpen && Boolean(groupId),
-    });
+  const { data, isLoading } = useQuery({
+    queryKey: ["search-plans", debouncedQuery, searchLanguage, groupId],
+    queryFn: () =>
+      searchPlans({
+        search: debouncedQuery || undefined,
+        language: searchLanguage,
+        skip: 0,
+        limit: PAGE_SIZE,
+        ...(groupId ? { group_id: groupId } : {}),
+      }),
+    enabled: isDropdownOpen && Boolean(groupId),
+  });
 
-  const searchResults: Plan[] = data?.pages.flatMap((page) => page.plans) ?? [];
-
-  const { ref: sentinelRef, inView } = useInView({ threshold: 0 });
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const searchResults: Plan[] = data?.plans ?? [];
 
   const valueIds = new Set(value.map((p) => p.id));
 
@@ -227,15 +213,6 @@ const PlanSearchSelector = ({
                 </button>
               );
             })}
-
-            {hasNextPage && (
-              <div
-                ref={sentinelRef}
-                className="px-3 py-2 text-xs text-muted-foreground text-center"
-              >
-                {isFetchingNextPage ? "Loading more..." : ""}
-              </div>
-            )}
 
             {showNoResults && (
               <div className="px-3 py-2">
