@@ -56,23 +56,58 @@ function titleFromMetadataRow(row: Record<string, unknown>): string {
   return typeof title === "string" && title.trim() ? title.trim() : "";
 }
 
+const DEFAULT_LANG_ORDER: DashboardLanguageCode[] = ["EN", "BO", "ZH"];
+
+/** Map Tolgee UI locale (e.g. `en`, `bo-IN`) to dashboard metadata language codes. */
+export function tolgeeLocaleToDashboardLanguage(
+  locale: string | undefined | null,
+): DashboardLanguageCode | null {
+  const l = (locale ?? "").trim().toLowerCase();
+  if (!l) return null;
+  if (l.startsWith("en")) return "EN";
+  if (l.startsWith("bo")) return "BO";
+  if (l.startsWith("zh")) return "ZH";
+  return null;
+}
+
+function firstTitleFromMetadataRows(rows: Record<string, unknown>[]): string {
+  for (const row of rows) {
+    const t = titleFromMetadataRow(row);
+    if (t) return t;
+  }
+  return "";
+}
+
+function titleForMetadataLanguage(
+  rows: Record<string, unknown>[],
+  language: DashboardLanguageCode,
+): string {
+  const row = rows.find(
+    (r) => String(r.language ?? r.lang ?? "").toUpperCase() === language,
+  );
+  return row ? titleFromMetadataRow(row) : "";
+}
+
 export function pickSeriesTitle(
   nameOrTitle: unknown,
   metadata?: unknown,
+  preferredLanguage?: DashboardLanguageCode,
 ): string {
   if (Array.isArray(metadata) && metadata.length > 0) {
     const rows = metadata as Record<string, unknown>[];
-    const order = ["EN", "BO", "ZH"];
-    for (const lang of order) {
-      const row = rows.find(
-        (r) => String(r.language ?? r.lang ?? "").toUpperCase() === lang,
-      );
-      const t = row ? titleFromMetadataRow(row) : "";
-      if (t) return t;
-    }
-    for (const row of rows) {
-      const t = titleFromMetadataRow(row);
-      if (t) return t;
+
+    if (preferredLanguage) {
+      const preferredTitle = titleForMetadataLanguage(rows, preferredLanguage);
+      if (preferredTitle) return preferredTitle;
+      const fallback = firstTitleFromMetadataRows(rows);
+      if (fallback) return fallback;
+    } else {
+      for (const lang of DEFAULT_LANG_ORDER) {
+        const t = titleForMetadataLanguage(rows, lang);
+        if (t) return t;
+      }
+      const fallback = firstTitleFromMetadataRows(rows);
+      if (fallback) return fallback;
     }
   }
   if (!nameOrTitle) return "Untitled";

@@ -46,7 +46,6 @@ export function DashboardContentTable({
         row.kind === "series" ||
         (row.kind === "plan" && !isMockDashboardId(row.id));
       const featuredDisabled = row.status !== "PUBLISHED";
-
       return (
         <Pecha.TableRow
           key={`${row.kind}-${row.id}`}
