@@ -4,7 +4,6 @@ import { fetchPlanDetails } from "../api/planApi";
 
 const MobileView = () => {
   const { planId } = useParams<{ planId: string }>();
-
   const { data: planDetails, isLoading } = useQuery({
     queryKey: ["planDetails", planId],
     queryFn: () => fetchPlanDetails(planId!),
@@ -35,18 +34,42 @@ const MobileView = () => {
       </div>
     );
   }
-  const ViewURL = "https://plans.webuddhist.com" + `/plan/${planId}`;
+
+  const isPlanPublished = planDetails.status === "PUBLISHED";
+  if (!isPlanPublished) {
+    return null;
+  }
+
+  const viewerBase =
+    import.meta.env.VITE_WEBUDDHIST_PLAN_VIEWER_URL ??
+    "https://plans.webuddhist.com";
+  const viewUrl = `${viewerBase}/plan/${planId}`;
+
   return (
-    <div className="w-full h-full">
-      {/* Embedded WeBuddhist Plan Viewer */}
-      {planId && (
-        <iframe
-          src={ViewURL}
-          className="w-full h-full border-0 block"
-          title={`WeBuddhist Plan Viewer - ${planId}`}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+    <div className="flex h-full items-center justify-center bg-muted/20 p-4">
+      <div
+        className="flex h-full max-h-[min(844px,100%)] w-full max-w-[390px] flex-col rounded-[2.75rem] border-[10px] border-gray-900 bg-gray-900 shadow-2xl dark:border-gray-600"
+        aria-label="Mobile plan preview"
+      >
+        <div
+          className="mx-auto mt-2 h-1.5 w-24 shrink-0 rounded-full bg-gray-700"
+          aria-hidden
         />
-      )}
+        <div className="min-h-0 flex-1 overflow-hidden rounded-[2rem] bg-white">
+          {planId && (
+            <iframe
+              src={viewUrl}
+              className="block h-full w-full border-0"
+              title={`WeBuddhist Plan Viewer - ${planId}`}
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            />
+          )}
+        </div>
+        <div
+          className="mx-auto mb-2 mt-1 h-1 w-28 shrink-0 rounded-full bg-gray-700"
+          aria-hidden
+        />
+      </div>
     </div>
   );
 };

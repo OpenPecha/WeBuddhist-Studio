@@ -1,32 +1,49 @@
 import axiosInstance from "@/config/axios-config";
+import { enrichDashboardRows } from "./enrichDashboardRows";
 import {
   normalizeStatus,
   parseDashboardLanguages,
   pickSeriesTitle,
+  resolveDashboardItemImageUrl,
+  type DashboardImageVariants,
+  tolgeeLocaleToDashboardLanguage,
   type DashboardTableRow,
 } from "./dashboardTable";
 
 /** Series rows omit `title` in JSON; titles live in `metadata`. */
-export function displayDashboardItemTitle(item: DashboardApiItem): string {
+export function displayDashboardItemTitle(
+  item: DashboardApiItem,
+  localeLanguage?: string,
+): string {
   if (item.type === "plan") {
     return item.title?.trim() || "Untitled plan";
   }
-  const fromMeta = pickSeriesTitle(undefined, item.metadata);
+  const preferredLanguage = tolgeeLocaleToDashboardLanguage(localeLanguage);
+  const fromMeta = pickSeriesTitle(
+    undefined,
+    item.metadata,
+    preferredLanguage ?? undefined,
+  );
   return fromMeta === "Untitled" ? "Untitled series" : fromMeta;
 }
 
-function mapDashboardItemToTableRow(item: DashboardApiItem): DashboardTableRow {
+function mapDashboardItemToTableRow(
+  item: DashboardApiItem,
+  localeLanguage?: string,
+): DashboardTableRow {
   return {
     kind: item.type,
     id: String(item.id),
-    title: displayDashboardItemTitle(item),
-    image_url: item.image_url ?? "",
+    title: displayDashboardItemTitle(item, localeLanguage),
+    image_url: resolveDashboardItemImageUrl(item),
     languages: parseDashboardLanguages(item.languages),
     status: normalizeStatus(item.status),
     total_days: item.total_days ?? 0,
     enrolled: item.enrolled_count ?? 0,
     modifiedAt: item.updated_at ?? item.created_at ?? null,
     featured: !!item.featured,
+    group_id: item.group_id ?? null,
+    series_id: item.series_id ?? null,
     ...(item.type === "series" && {
       plans_count: item.plans_count ?? 0,
     }),
@@ -48,9 +65,13 @@ export interface DashboardApiItem {
   /** Plans only; omitted from JSON for series. */
   title?: string;
   metadata?: DashboardSeriesMetadataDTO[];
-  author_id?: string;
+  author_id?: string | null;
+  group_id?: string | null;
+  series_id?: string | null;
   image_url?: string | null;
+  plan_image_url?: string | null;
   image_key?: string | null;
+  image?: string | DashboardImageVariants | null;
   status: string;
   featured: boolean;
   languages: string[];
@@ -81,6 +102,9 @@ export interface FetchDashboardItemsParams {
   status?: string;
   language?: string;
   featured?: boolean;
+  group_id?: string;
+  /** Tolgee UI locale used to pick localized series titles from metadata. */
+  localeLanguage?: string;
 }
 
 export interface DashboardItemsResult {
@@ -108,10 +132,10 @@ export async function fetchDashboardItems(
         ...(params.status && { status: params.status }),
         ...(params.language && { language: params.language }),
         ...(params.featured != null && { featured: params.featured }),
+        ...(params.group_id && { group_id: params.group_id }),
       },
     },
   );
-
   const items = data?.items ?? [];
   const pagination = data?.pagination ?? {
     page: params.page,
@@ -120,8 +144,14 @@ export async function fetchDashboardItems(
     total_pages: items.length > 0 ? 1 : 0,
   };
 
+  const rows = await enrichDashboardRows(
+    items.map((item) =>
+      mapDashboardItemToTableRow(item, params.localeLanguage),
+    ),
+  );
+
   return {
-    rows: items.map(mapDashboardItemToTableRow),
+    rows,
     pagination,
   };
 }

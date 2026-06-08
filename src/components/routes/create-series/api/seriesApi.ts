@@ -16,6 +16,7 @@ export type SeriesPayload = {
   image_key?: string;
   featured: boolean;
   plans: Partial<Record<LanguageCode, string[]>>;
+  group_id?: string;
 };
 
 export type SeriesUpdatePayload = Partial<SeriesPayload>;
@@ -26,7 +27,16 @@ export type SeriesPlanDTO = {
   description?: string | null;
   language: string;
   image_url?: string | null;
+  plan_image_url?: string | null;
   image_key?: string | null;
+  image?:
+    | string
+    | {
+        medium?: string | null;
+        thumbnail?: string | null;
+        original?: string | null;
+      }
+    | null;
   display_order?: number | null;
   total_days?: number | null;
   status?: string;
@@ -51,6 +61,7 @@ export type SeriesDetailDTO = {
   image?: string | null;
   image_key?: string | null;
   author_id?: string;
+  group_id?: string | null;
   featured: boolean;
   status: string;
   plans: SeriesPlanDTO[];
@@ -239,6 +250,7 @@ export function buildSeriesPlansJson(
 export function buildSeriesWriteBody(
   data: SeriesFormData,
   featured: boolean,
+  groupId?: string,
 ): SeriesPayload {
   const metadata = buildSeriesMetadata(data.languages);
   const languageCodes = metadata.map((m) => m.language);
@@ -248,21 +260,24 @@ export function buildSeriesWriteBody(
     featured,
     plans: buildSeriesPlansJson(data, languageCodes),
     ...(imageKey ? { image_key: imageKey } : {}),
+    ...(groupId ? { group_id: groupId } : {}),
   };
 }
 
 export function buildSeriesCreateBody(
   data: SeriesFormData,
   featured = false,
+  groupId?: string,
 ): SeriesPayload {
-  return buildSeriesWriteBody(data, featured);
+  return buildSeriesWriteBody(data, featured, groupId);
 }
 
 export function buildSeriesUpdateBody(
   data: SeriesFormData,
   featured: boolean,
+  groupId?: string,
 ): SeriesPayload {
-  return buildSeriesWriteBody(data, featured);
+  return buildSeriesWriteBody(data, featured, groupId);
 }
 
 export function buildSeriesPlansPayloadFromIds(

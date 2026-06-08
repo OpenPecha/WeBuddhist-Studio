@@ -21,6 +21,7 @@ export interface DashboardUrlState {
   language: string | null;
   featured: boolean | null;
   sort: DashboardSort | null;
+  groupId: string | null;
 }
 
 export const DASHBOARD_URL_DEFAULTS: DashboardUrlState = {
@@ -32,6 +33,7 @@ export const DASHBOARD_URL_DEFAULTS: DashboardUrlState = {
   language: null,
   featured: null,
   sort: null,
+  groupId: null,
 };
 
 const VALID_TABS = new Set<DashboardTab>(["all", "series", "plans"]);
@@ -110,6 +112,7 @@ export function parseDashboardSearchParams(
     language: parseLanguage(params.get("language")),
     featured,
     sort: parseSort(params.get("sort")),
+    groupId: params.get("group_id")?.trim() || null,
   };
 }
 
@@ -127,6 +130,7 @@ export function buildDashboardSearchParams(
   if (state.language) p.set("language", state.language);
   if (state.featured !== null) p.set("featured", String(state.featured));
   if (state.sort) p.set("sort", state.sort);
+  if (state.groupId) p.set("group_id", state.groupId);
 
   return p;
 }
@@ -142,6 +146,7 @@ export function dashboardUrlStateToFetchParams(
     ...(state.status && { status: state.status }),
     ...(state.language && { language: state.language }),
     ...(state.featured != null && { featured: state.featured }),
+    ...(state.groupId && { group_id: state.groupId }),
   };
 }
 

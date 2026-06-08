@@ -25,6 +25,23 @@ vi.mock("@tolgee/react", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useUserInfo", () => ({
+  USER_INFO_QUERY_KEY: ["userInfo"],
+  fetchUserInfo: vi.fn(),
+  useUserInfo: () => ({
+    data: {
+      id: "test-user-id",
+      email: "test@example.com",
+      platform_role: "SUPER_ADMIN",
+      is_verified: true,
+      is_active: true,
+      has_group: true,
+      can_create_content: true,
+    },
+    isLoading: false,
+  }),
+}));
+
 Object.defineProperty(global, "URL", {
   value: {
     createObjectURL: vi.fn(() => "mock-blob-url"),

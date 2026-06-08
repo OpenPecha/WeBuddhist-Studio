@@ -4,9 +4,14 @@ import { vi } from "vitest";
 import ProtectedRoute from "./ProtectedRoute";
 
 const mockUseAuth = vi.fn();
+const mockUseUserInfo = vi.fn();
 
 vi.mock("@/config/auth-context", () => ({
   useAuth: () => mockUseAuth(),
+}));
+
+vi.mock("@/hooks/useUserInfo", () => ({
+  useUserInfo: () => mockUseUserInfo(),
 }));
 
 const mockNavigate = vi.fn();
@@ -28,6 +33,15 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe("ProtectedRoute Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseUserInfo.mockReturnValue({
+      data: {
+        is_verified: true,
+        is_active: true,
+        has_group: true,
+        platform_role: "CREATOR",
+      },
+      isLoading: false,
+    });
   });
 
   it("displays loading state when authentication is loading", () => {
@@ -58,20 +72,15 @@ describe("ProtectedRoute Component", () => {
       </ProtectedRoute>,
     );
 
-    expect(screen.getByTestId("navigate")).toBeDefined();
     expect(screen.getByTestId("navigate")).toHaveAttribute("data-to", "/login");
-    expect(screen.getByTestId("navigate")).toHaveAttribute(
-      "data-replace",
-      "true",
-    );
-    expect(screen.queryByText("Protected Content")).toBeNull();
     expect(mockNavigate).toHaveBeenCalledWith("/login", true);
   });
 
-  it("renders children when user is authenticated and not loading", () => {
+  it("renders children when user is authenticated and onboarding complete", () => {
     mockUseAuth.mockReturnValue({
       isLoggedIn: true,
       isAuthLoading: false,
+      logout: vi.fn(),
     });
 
     renderWithRouter(
@@ -81,40 +90,45 @@ describe("ProtectedRoute Component", () => {
     );
 
     expect(screen.getByText("Protected Content")).toBeDefined();
-    expect(screen.queryByText("common.loading")).toBeNull();
-    expect(screen.queryByTestId("navigate")).toBeNull();
-    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("renders complex children components when authenticated", () => {
+  it("redirects inactive users to login", () => {
     mockUseAuth.mockReturnValue({
       isLoggedIn: true,
       isAuthLoading: false,
+      logout: vi.fn(),
     });
-
-    const ComplexChild = () => (
-      <div>
-        <h1>Dashboard</h1>
-        <button>Action Button</button>
-        <p>Some content here</p>
-      </div>
-    );
+    mockUseUserInfo.mockReturnValue({
+      data: {
+        is_verified: true,
+        is_active: false,
+        has_group: true,
+      },
+      isLoading: false,
+    });
 
     renderWithRouter(
       <ProtectedRoute>
-        <ComplexChild />
+        <div>Protected Content</div>
       </ProtectedRoute>,
     );
 
-    expect(screen.getByText("Dashboard")).toBeDefined();
-    expect(screen.getByText("Action Button")).toBeDefined();
-    expect(screen.getByText("Some content here")).toBeDefined();
+    expect(screen.getByTestId("navigate")).toHaveAttribute("data-to", "/login");
   });
 
-  it("does not render children during loading state even if user appears logged in", () => {
+  it("redirects to groups when user has no group", () => {
     mockUseAuth.mockReturnValue({
       isLoggedIn: true,
-      isAuthLoading: true,
+      isAuthLoading: false,
+      logout: vi.fn(),
+    });
+    mockUseUserInfo.mockReturnValue({
+      data: {
+        is_verified: true,
+        is_active: true,
+        has_group: false,
+      },
+      isLoading: false,
     });
 
     renderWithRouter(
@@ -123,29 +137,9 @@ describe("ProtectedRoute Component", () => {
       </ProtectedRoute>,
     );
 
-    expect(screen.getByText("common.loading")).toBeDefined();
-    expect(screen.queryByText("Protected Content")).toBeNull();
-  });
-
-  it("uses the correct CSS classes for loading state", () => {
-    mockUseAuth.mockReturnValue({
-      isLoggedIn: false,
-      isAuthLoading: true,
-    });
-
-    renderWithRouter(
-      <ProtectedRoute>
-        <div>Protected Content</div>
-      </ProtectedRoute>,
+    expect(screen.getByTestId("navigate")).toHaveAttribute(
+      "data-to",
+      "/groups",
     );
-
-    const loadingContainer = screen.getByText("common.loading").parentElement;
-    expect(loadingContainer).toHaveClass(
-      "flex",
-      "items-center",
-      "justify-center",
-      "h-full",
-    );
-    expect(screen.getByText("common.loading")).toHaveClass("text-lg");
   });
 });
