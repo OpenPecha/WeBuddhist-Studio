@@ -17,12 +17,16 @@ import {
   type Tag,
   type TagPayload,
 } from "./api/tagsApi";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { shouldShowCmsActionsColumn } from "@/lib/platformAccess";
 import TagFormDialog from "./TagFormDialog";
 import TagsTable from "./TagsTable";
 
 const PAGE_SIZE = 10;
 
 const Tags = () => {
+  const { data: userInfo } = useUserInfo();
+  const showActionsColumn = shouldShowCmsActionsColumn(userInfo?.platform_role);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
@@ -122,13 +126,15 @@ const Tags = () => {
               }}
             />
           </div>
-          <Button
-            variant="outline"
-            className="bg-gray-100 hover:bg-gray-200"
-            onClick={handleOpenCreate}
-          >
-            <IoMdAdd /> Add Tag
-          </Button>
+          {showActionsColumn ? (
+            <Button
+              variant="outline"
+              className="bg-gray-100 hover:bg-gray-200"
+              onClick={handleOpenCreate}
+            >
+              <IoMdAdd /> Add Tag
+            </Button>
+          ) : null}
         </div>
         <AuthButton />
       </div>
@@ -143,18 +149,21 @@ const Tags = () => {
         ) : tagsData?.tags.length === 0 && !isLoading ? (
           <div className="flex flex-col h-full items-center justify-center">
             <p className="text-base text-muted-foreground">No tags found</p>
-            <Button
-              variant="outline"
-              className="mt-2"
-              onClick={handleOpenCreate}
-            >
-              <IoMdAdd /> Add Tag
-            </Button>
+            {showActionsColumn ? (
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={handleOpenCreate}
+              >
+                <IoMdAdd /> Add Tag
+              </Button>
+            ) : null}
           </div>
         ) : (
           <TagsTable
             tags={tagsData?.tags ?? []}
             isLoading={isLoading}
+            showActionsColumn={showActionsColumn}
             onEdit={handleOpenEdit}
             onDelete={setDeleteTarget}
           />

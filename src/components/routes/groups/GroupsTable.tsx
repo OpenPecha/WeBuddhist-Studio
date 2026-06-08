@@ -1,7 +1,11 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/routes/paths";
-import { pickGroupTitle, type AuthorGroupListItem } from "./api/groupsApi";
+import {
+  pickGroupTitle,
+  resolveGroupAvatarUrl,
+  type AuthorGroupListItem,
+} from "./api/groupsApi";
 import GroupTitleWithAvatar from "./components/GroupTitleWithAvatar";
 
 interface GroupsTableProps {
@@ -43,6 +47,7 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
               <Pecha.TableCell className="font-medium max-w-xs">
                 <GroupTitleWithAvatar
                   title={pickGroupTitle(group.metadata)}
+                  avatarUrl={resolveGroupAvatarUrl(group)}
                   size="sm"
                 />
               </Pecha.TableCell>

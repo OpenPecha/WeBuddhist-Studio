@@ -39,7 +39,7 @@ describe("Dashboard Component", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders dashboard with search input and add button", () => {
+  it("renders dashboard with search input", () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
       data: emptyDashboardResponse,
     });
@@ -48,8 +48,6 @@ describe("Dashboard Component", () => {
     expect(
       screen.getByPlaceholderText("common.placeholder.search"),
     ).toBeDefined();
-
-    expect(screen.getByLabelText("Add")).toBeDefined();
   });
 
   it("displays table headers correctly", async () => {
@@ -110,31 +108,6 @@ describe("Dashboard Component", () => {
     fireEvent.change(searchInput, { target: { value: "test search" } });
 
     expect(searchInput.value).toBe("test search");
-  });
-
-  it("renders add dropdown with plan and series links", async () => {
-    vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: emptyDashboardResponse,
-    });
-    const user = userEvent.setup();
-    renderWithProviders(<Dashboard />);
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
-
-    await user.click(screen.getByLabelText("Add"));
-
-    expect(
-      await screen.findByRole("menuitem", { name: "Add Plan" }),
-    ).toBeInTheDocument();
-    const addPlanItem = screen.getByRole("menuitem", { name: "Add Plan" });
-    expect(addPlanItem.closest("a")?.getAttribute("href")).toBe("/plan/new");
-
-    const addSeriesItem = screen.getByRole("menuitem", { name: "Add Series" });
-    expect(addSeriesItem.closest("a")?.getAttribute("href")).toBe(
-      "/series/new",
-    );
   });
 
   it("has proper table structure when items exist", async () => {

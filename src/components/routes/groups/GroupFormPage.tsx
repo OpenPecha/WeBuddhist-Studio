@@ -22,12 +22,8 @@ import {
   languageLabelForCode,
   patchGroup,
   pickGroupTitle,
-  replaceGroupPlans,
-  replaceGroupSeries,
   replaceGroupSocialLinks,
   replaceGroupTags,
-  groupLinkedPlansToFkOptions,
-  groupLinkedSeriesToFkOptions,
   resolveGroupAvatarUrl,
   resolveGroupBannerUrl,
   type GroupSocialLinkDTO,
@@ -37,7 +33,6 @@ import GroupFormAssociationsPanel from "./components/GroupFormAssociationsPanel"
 import GroupImageField from "./components/GroupImageField";
 import { GroupPageShell } from "./components/GroupPageShell";
 import GroupMembersPanel from "./components/GroupMembersPanel";
-import type { FkOption } from "./components/FkMultiSearchSelector";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import {
   canEditGroupSettings,
@@ -47,8 +42,6 @@ import { sameSocialLinks, sameSortedIds } from "./lib/groupFormSectionDirty";
 
 type AssociationBaselines = {
   tagIds: string[];
-  planIds: string[];
-  seriesIds: string[];
   socialLinks: GroupSocialLinkDTO[];
   avatarKey: string | null;
   bannerKey: string | null;
@@ -56,8 +49,6 @@ type AssociationBaselines = {
 
 const emptyAssociationBaselines = (): AssociationBaselines => ({
   tagIds: [],
-  planIds: [],
-  seriesIds: [],
   socialLinks: [],
   avatarKey: null,
   bannerKey: null,
@@ -82,8 +73,6 @@ const GroupFormPage = () => {
   const [bannerUploading, setBannerUploading] = useState(false);
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [initialTags, setInitialTags] = useState<TagSummaryDTO[]>([]);
-  const [selectedPlans, setSelectedPlans] = useState<FkOption[]>([]);
-  const [selectedSeries, setSelectedSeries] = useState<FkOption[]>([]);
   const [socialLinks, setSocialLinks] = useState<GroupSocialLinkDTO[]>([]);
   const [savedBaselines, setSavedBaselines] = useState<AssociationBaselines>(
     emptyAssociationBaselines,
@@ -144,12 +133,8 @@ const GroupFormPage = () => {
     setInitialTags(groupData.tags);
     setSocialLinks(groupData.social_links ?? []);
 
-    setSelectedPlans(groupLinkedPlansToFkOptions(groupData.plans ?? []));
-    setSelectedSeries(groupLinkedSeriesToFkOptions(groupData.series ?? []));
     setSavedBaselines({
       tagIds: groupData.tags.map((t) => t.id),
-      planIds: (groupData.plans ?? []).map((p) => p.id),
-      seriesIds: (groupData.series ?? []).map((s) => s.id),
       socialLinks: groupData.social_links ?? [],
       avatarKey: groupData.avatar_key ?? null,
       bannerKey: groupData.banner_key ?? null,
@@ -226,38 +211,6 @@ const GroupFormPage = () => {
     onError: toastOnError,
   });
 
-  const plansMutation = useMutation({
-    mutationFn: () =>
-      replaceGroupPlans(groupId!, {
-        plan_ids: selectedPlans.map((p) => p.id),
-      }),
-    onSuccess: () => {
-      toast.success("Plans saved");
-      invalidateGroup();
-      setSavedBaselines((prev) => ({
-        ...prev,
-        planIds: selectedPlans.map((p) => p.id),
-      }));
-    },
-    onError: toastOnError,
-  });
-
-  const seriesMutation = useMutation({
-    mutationFn: () =>
-      replaceGroupSeries(groupId!, {
-        series_ids: selectedSeries.map((s) => s.id),
-      }),
-    onSuccess: () => {
-      toast.success("Series saved");
-      invalidateGroup();
-      setSavedBaselines((prev) => ({
-        ...prev,
-        seriesIds: selectedSeries.map((s) => s.id),
-      }));
-    },
-    onError: toastOnError,
-  });
-
   const socialMutation = useMutation({
     mutationFn: () =>
       replaceGroupSocialLinks(groupId!, { social_links: socialLinks }),
@@ -320,14 +273,6 @@ const GroupFormPage = () => {
     bannerKey !== savedBaselines.bannerKey;
   const isCoreDirty = isFormDirty || imagesDirty;
   const tagsDirty = !sameSortedIds(tagIds, savedBaselines.tagIds);
-  const plansDirty = !sameSortedIds(
-    selectedPlans.map((p) => p.id),
-    savedBaselines.planIds,
-  );
-  const seriesDirty = !sameSortedIds(
-    selectedSeries.map((s) => s.id),
-    savedBaselines.seriesIds,
-  );
   const socialDirty = !sameSocialLinks(socialLinks, savedBaselines.socialLinks);
   const myRole = useMemo(
     () =>
@@ -556,23 +501,13 @@ const GroupFormPage = () => {
             tagIds={tagIds}
             onTagIdsChange={setTagIds}
             initialTags={initialTags}
-            selectedPlans={selectedPlans}
-            onPlansChange={setSelectedPlans}
-            selectedSeries={selectedSeries}
-            onSeriesChange={setSelectedSeries}
             socialLinks={socialLinks}
             onSocialLinksChange={setSocialLinks}
             onSaveTags={() => tagsMutation.mutate()}
-            onSavePlans={() => plansMutation.mutate()}
-            onSaveSeries={() => seriesMutation.mutate()}
             onSaveSocial={() => socialMutation.mutate()}
             tagsSaving={tagsMutation.isPending}
-            plansSaving={plansMutation.isPending}
-            seriesSaving={seriesMutation.isPending}
             socialSaving={socialMutation.isPending}
             tagsSaveDisabled={!tagsDirty}
-            plansSaveDisabled={!plansDirty}
-            seriesSaveDisabled={!seriesDirty}
             socialSaveDisabled={!socialDirty}
             readOnly={!canEditSettings}
           />

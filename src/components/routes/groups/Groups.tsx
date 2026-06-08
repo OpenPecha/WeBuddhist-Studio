@@ -11,7 +11,6 @@ import { getApiErrorMessage } from "@/lib/apiErrors";
 import { PLAN_LANGUAGE } from "@/lib/constant";
 import { ROUTES } from "@/routes/paths";
 import { fetchGroups } from "./api/groupsApi";
-import { fetchTags } from "@/components/routes/tags/api/tagsApi";
 import { GroupListShell } from "./components/GroupPageShell";
 import GroupsTable from "./GroupsTable";
 import PendingGroupInvitationsBlock from "./components/PendingGroupInvitationsBlock";
@@ -21,7 +20,6 @@ const PAGE_SIZE = 10;
 const Groups = () => {
   const [search, setSearch] = useState("");
   const [language, setLanguage] = useState<string>("");
-  const [tagId, setTagId] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
 
@@ -30,23 +28,16 @@ const Groups = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["cms-groups", currentPage, debouncedSearch, language, tagId],
+    queryKey: ["cms-groups", currentPage, debouncedSearch, language],
     queryFn: () =>
       fetchGroups({
         page: currentPage,
         limit: PAGE_SIZE,
         search: debouncedSearch,
         language: language || undefined,
-        tag_id: tagId || undefined,
       }),
     refetchOnWindowFocus: false,
     retry: false,
-  });
-
-  const { data: tagsData } = useQuery({
-    queryKey: ["cms-tags-filter"],
-    queryFn: () => fetchTags(1, 100, ""),
-    refetchOnWindowFocus: false,
   });
 
   const totalPages = groupsData ? Math.ceil(groupsData.total / PAGE_SIZE) : 1;
@@ -84,26 +75,6 @@ const Groups = () => {
                 {PLAN_LANGUAGE.map((lang) => (
                   <Pecha.SelectItem key={lang.value} value={lang.value}>
                     {lang.label}
-                  </Pecha.SelectItem>
-                ))}
-              </Pecha.SelectContent>
-            </Pecha.Select>
-
-            <Pecha.Select
-              value={tagId || "all"}
-              onValueChange={(v) => {
-                setTagId(v === "all" ? "" : v);
-                setCurrentPage(1);
-              }}
-            >
-              <Pecha.SelectTrigger className="w-40 bg-white dark:bg-input/30">
-                <Pecha.SelectValue placeholder="Tag" />
-              </Pecha.SelectTrigger>
-              <Pecha.SelectContent>
-                <Pecha.SelectItem value="all">All tags</Pecha.SelectItem>
-                {(tagsData?.tags ?? []).map((tag) => (
-                  <Pecha.SelectItem key={tag.id} value={tag.id}>
-                    {tag.name}
                   </Pecha.SelectItem>
                 ))}
               </Pecha.SelectContent>

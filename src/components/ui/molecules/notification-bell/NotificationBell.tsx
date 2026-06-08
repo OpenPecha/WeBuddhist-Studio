@@ -17,7 +17,13 @@ import {
   rejectGroupInvite,
 } from "@/components/routes/groups/api/groupsApi";
 import {
+  acceptTransferRequest,
+  rejectTransferRequest,
+} from "@/components/routes/content-transfer/api/transferApi";
+import {
   fetchNotifications,
+  getTransferNotificationTargetGroupId,
+  isContentTransferNotification,
   isGroupInviteNotification,
   markNotificationRead,
   type NotificationDTO,
@@ -92,7 +98,45 @@ const NotificationBell = () => {
     inviteActionMutation.mutate({ inviteId, action });
   };
 
-  const invitePending = inviteActionMutation.isPending;
+  const transferActionMutation = useMutation({
+    mutationFn: async ({
+      requestId,
+      action,
+    }: {
+      requestId: string;
+      action: "accept" | "reject";
+    }) => {
+      if (action === "accept") {
+        return acceptTransferRequest(requestId);
+      }
+      await rejectTransferRequest(requestId);
+      return null;
+    },
+    onSuccess: (_data, { action }) => {
+      toast.success(
+        action === "accept" ? "Transfer accepted" : "Transfer rejected",
+      );
+      invalidateNotifications();
+      queryClient.invalidateQueries({ queryKey: ["transfer-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err)),
+  });
+
+  const handleTransferAction = (
+    notification: NotificationDTO,
+    action: "accept" | "reject",
+  ) => {
+    const requestId = notification.reference_id;
+    if (!requestId) {
+      toast.error("Invalid transfer notification");
+      return;
+    }
+    transferActionMutation.mutate({ requestId, action });
+  };
+
+  const invitePending =
+    inviteActionMutation.isPending || transferActionMutation.isPending;
 
   const handleMenuOpenChange = (next: boolean) => {
     setOpen(next);
@@ -191,6 +235,55 @@ const NotificationBell = () => {
                           ? "Declining…"
                           : "Reject"}
                       </Button>
+                    </div>
+                  )}
+                  {isContentTransferNotification(notification) && (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 h-7 text-xs"
+                          disabled={invitePending}
+                          onClick={() =>
+                            handleTransferAction(notification, "accept")
+                          }
+                        >
+                          Accept
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          disabled={invitePending}
+                          onClick={() =>
+                            handleTransferAction(notification, "reject")
+                          }
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                      {getTransferNotificationTargetGroupId(notification) ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="link"
+                          className="h-auto p-0 text-xs text-[#A51C21]"
+                          onClick={() => {
+                            setOpen(false);
+                            navigate(
+                              `${ROUTES.group(
+                                getTransferNotificationTargetGroupId(
+                                  notification,
+                                )!,
+                              )}?tab=transfers`,
+                            );
+                          }}
+                        >
+                          View on group page
+                        </Button>
+                      ) : null}
                     </div>
                   )}
                 </div>

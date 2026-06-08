@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import { getApiErrorMessage } from "@/lib/apiErrors";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { shouldShowCmsActionsColumn } from "@/lib/platformAccess";
 import {
   createGroupInvite,
   fetchGroupInvites,
@@ -42,6 +44,9 @@ const GroupInvitesAdminSection = ({
   groupId,
   myRole,
 }: GroupInvitesAdminSectionProps) => {
+  const { data: userInfo } = useUserInfo();
+  const showActionsColumn = shouldShowCmsActionsColumn(userInfo?.platform_role);
+  const inviteTableColSpan = showActionsColumn ? 6 : 5;
   const queryClient = useQueryClient();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [targetEmail, setTargetEmail] = useState("");
@@ -145,19 +150,29 @@ const GroupInvitesAdminSection = ({
               <Pecha.TableHead>Status</Pecha.TableHead>
               <Pecha.TableHead>Expires</Pecha.TableHead>
               <Pecha.TableHead>Invited by</Pecha.TableHead>
-              <Pecha.TableHead className="text-right">Actions</Pecha.TableHead>
+              {showActionsColumn ? (
+                <Pecha.TableHead className="text-right">
+                  Actions
+                </Pecha.TableHead>
+              ) : null}
             </Pecha.TableRow>
           </Pecha.TableHeader>
           <Pecha.TableBody>
             {isLoading ? (
               <Pecha.TableRow>
-                <Pecha.TableCell colSpan={6} className="text-muted-foreground">
+                <Pecha.TableCell
+                  colSpan={inviteTableColSpan}
+                  className="text-muted-foreground"
+                >
                   Loading invitations…
                 </Pecha.TableCell>
               </Pecha.TableRow>
             ) : invites.length === 0 ? (
               <Pecha.TableRow>
-                <Pecha.TableCell colSpan={6} className="text-muted-foreground">
+                <Pecha.TableCell
+                  colSpan={inviteTableColSpan}
+                  className="text-muted-foreground"
+                >
                   No invitations found
                 </Pecha.TableCell>
               </Pecha.TableRow>
@@ -183,21 +198,23 @@ const GroupInvitesAdminSection = ({
                         : inviter.email;
                     })()}
                   </Pecha.TableCell>
-                  <Pecha.TableCell className="text-right">
-                    {invite.status === "PENDING" &&
-                      canRevokeInvite(myRole, invite) && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          disabled={revokeMutation.isPending}
-                          onClick={() => revokeMutation.mutate(invite.id)}
-                        >
-                          Revoke
-                        </Button>
-                      )}
-                  </Pecha.TableCell>
+                  {showActionsColumn ? (
+                    <Pecha.TableCell className="text-right">
+                      {invite.status === "PENDING" &&
+                        canRevokeInvite(myRole, invite) && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            disabled={revokeMutation.isPending}
+                            onClick={() => revokeMutation.mutate(invite.id)}
+                          >
+                            Revoke
+                          </Button>
+                        )}
+                    </Pecha.TableCell>
+                  ) : null}
                 </Pecha.TableRow>
               ))
             )}

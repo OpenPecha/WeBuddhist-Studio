@@ -112,7 +112,7 @@ const ProfileEditForm = ({ userInfo, onSuccess }: ProfileEditFormProps) => {
       });
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload image");
     } finally {
       setIsImageUploading(false);

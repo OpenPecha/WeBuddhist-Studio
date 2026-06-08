@@ -15,6 +15,9 @@ import {
 } from "../../atoms/tooltip";
 import AuthAvatar from "@/components/ui/molecules/auth-avatar/AuthAvatar";
 import NotificationBell from "@/components/ui/molecules/notification-bell/NotificationBell";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { canAccessAdminAuthors } from "@/lib/platformAccess";
+import { MdAdminPanelSettings } from "react-icons/md";
 
 const navItems = [
   {
@@ -70,6 +73,22 @@ const tooltipItems = [
 
 const Navbar = () => {
   const location = useLocation();
+  const { data: userInfo } = useUserInfo();
+  const showAdminAuthors = canAccessAdminAuthors(userInfo?.platform_role);
+
+  const allNavItems = [
+    ...navItems,
+    ...(showAdminAuthors
+      ? [
+          {
+            icon: <MdAdminPanelSettings className="w-4 h-4" />,
+            label: "Authors",
+            path: ROUTES.adminAuthors,
+            tooltip: "Author administration",
+          },
+        ]
+      : []),
+  ];
 
   return (
     <TooltipProvider>
@@ -86,7 +105,7 @@ const Navbar = () => {
             />
           </Link>
           <div className="flex flex-col space-y-4 items-center w-full">
-            {navItems.map((item, index) => (
+            {allNavItems.map((item, index) => (
               <Tooltip key={index}>
                 <TooltipTrigger asChild>
                   <Link
@@ -96,7 +115,9 @@ const Navbar = () => {
                       (item.path === ROUTES.dashboard &&
                         location.pathname === "/") ||
                       (item.path === ROUTES.groups &&
-                        location.pathname.startsWith("/groups"))
+                        location.pathname.startsWith("/groups")) ||
+                      (item.path === ROUTES.adminAuthors &&
+                        location.pathname.startsWith(ROUTES.adminAuthors))
                         ? "text-zinc-900 dark:text-zinc-100"
                         : "text-zinc-400 dark:text-zinc-600"
                     }`}
