@@ -322,7 +322,7 @@ const Dashboard = () => {
           <Pecha.SelectContent>
             <Pecha.SelectItem value="all">All languages</Pecha.SelectItem>
             <Pecha.SelectItem value="EN">English</Pecha.SelectItem>
-            <Pecha.SelectItem value="ZH">中国人</Pecha.SelectItem>
+            <Pecha.SelectItem value="ZH">中文</Pecha.SelectItem>
             <Pecha.SelectItem value="BO">བོད་སྐད།</Pecha.SelectItem>
           </Pecha.SelectContent>
         </Pecha.Select>
@@ -405,6 +405,7 @@ const Dashboard = () => {
             description={String(error.message)}
           />
         )}
+      
         {showEmpty && (
           <DashboardListPlaceholder
             title={emptyTitle}
