@@ -21,6 +21,7 @@ import type { LanguageCode } from "@/schema/SeriesSchema";
 import { useSeriesForm } from "@/components/routes/create-series/hooks/useSeriesForm";
 import PlanSearchSelector from "@/components/routes/create-series/components/PlanSearchSelector";
 import {
+  buildSeriesCreateBody,
   buildSeriesUpdateBody,
   getSeries,
   mapSeriesDetailToFormData,
@@ -153,15 +154,19 @@ const CreateSeries = () => {
 
   const saveSeriesMutation = useMutation({
     mutationFn: async (input: { data: SeriesFormData; featured: boolean }) => {
-      const body = buildSeriesUpdateBody(
-        input.data,
-        input.featured,
-        isNew ? groupId : undefined,
-      );
       if (isNew) {
+        const body = buildSeriesCreateBody(
+          input.data,
+          input.featured,
+          groupId,
+        );
         const created = await postSeries(body);
         return { id: String(created.id) };
       }
+      const body = buildSeriesUpdateBody(input.data, input.featured, {
+        original: mapSeriesDetailToFormData(seriesData!),
+        originalFeatured: seriesData!.featured,
+      });
       await putUpdateSeries({
         seriesId: seriesId!,
         body,
