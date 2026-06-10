@@ -67,9 +67,12 @@ export const useSaveSeries = ({
       navigate(ROUTES.dashboard);
     },
     onError: (error: Error) => {
-      toast.error(isNew ? "Failed to create series" : "Failed to update series", {
-        description: error.message,
-      });
+      toast.error(
+        isNew ? "Failed to create series" : "Failed to update series",
+        {
+          description: error.message,
+        },
+      );
     },
   });
 };

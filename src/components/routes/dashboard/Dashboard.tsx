@@ -405,7 +405,7 @@ const Dashboard = () => {
             description={String(error.message)}
           />
         )}
-      
+
         {showEmpty && (
           <DashboardListPlaceholder
             title={emptyTitle}

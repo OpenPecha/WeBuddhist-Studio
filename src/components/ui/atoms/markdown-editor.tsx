@@ -34,7 +34,7 @@ const MarkdownEditor = ({
             activeTab === "write"
               ? "text-foreground border-b-2 border-foreground -mb-px"
               : "text-muted-foreground hover:text-foreground",
-            disabled && "opacity-50 cursor-not-allowed"
+            disabled && "opacity-50 cursor-not-allowed",
           )}
         >
           Write
@@ -48,7 +48,7 @@ const MarkdownEditor = ({
             activeTab === "preview"
               ? "text-foreground border-b-2 border-foreground -mb-px"
               : "text-muted-foreground hover:text-foreground",
-            disabled && "opacity-50 cursor-not-allowed"
+            disabled && "opacity-50 cursor-not-allowed",
           )}
         >
           Preview
@@ -63,14 +63,14 @@ const MarkdownEditor = ({
           disabled={disabled}
           className={cn(
             "min-h-[100px] w-full border-0 rounded-t-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none",
-            textareaClassName
+            textareaClassName,
           )}
         />
       ) : (
         <div
           className={cn(
             "min-h-[100px] w-full px-3 py-2 text-base",
-            "prose prose-sm dark:prose-invert max-w-none"
+            "prose prose-sm dark:prose-invert max-w-none",
           )}
         >
           {value ? (
