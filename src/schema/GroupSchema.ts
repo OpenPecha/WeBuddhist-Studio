@@ -7,7 +7,11 @@ export type GroupLanguageCode = (typeof LANGUAGE_CODES)[number];
 export const groupLanguageBlockSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   sub_title: z.string().trim().min(1, "Sub-title is required"),
-  description: z.string().trim().min(1, "Description is required"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required")
+    .max(200, "Description must be 200 characters or less"),
 });
 
 export const groupCoreSchema = z
