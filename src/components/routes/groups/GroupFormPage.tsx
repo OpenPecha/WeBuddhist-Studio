@@ -452,6 +452,7 @@ const GroupFormPage = () => {
                               <Pecha.FormControl>
                                 <Textarea
                                   className="min-h-[100px] resize-none bg-white dark:bg-[#181818]"
+                                  maxLength={200}
                                   {...field}
                                 />
                               </Pecha.FormControl>

@@ -7,6 +7,7 @@ import type {
 
 export type SeriesMetadataInput = {
   title: string;
+  sub_title: string;
   description: string;
   language: LanguageCode;
 };
@@ -51,6 +52,7 @@ export type SeriesMetadataDTO = {
   language?: string;
   lang?: string;
   title?: string;
+  sub_title?: string;
   description?: string;
 };
 
@@ -119,11 +121,12 @@ function parseNameObject(
     const raw = name[code];
     if (raw == null) continue;
     if (typeof raw === "string") {
-      languages[code] = { title: raw.trim(), description: "" };
+      languages[code] = { title: raw.trim(), sub_title: "", description: "" };
     } else if (typeof raw === "object") {
       const o = raw as Record<string, unknown>;
       languages[code] = {
         title: String(o.title ?? "").trim(),
+        sub_title: String(o.sub_title ?? "").trim(),
         description: String(o.description ?? "").trim(),
       };
     }
@@ -140,6 +143,7 @@ function parseMetadataArray(
     if (!code) continue;
     languages[code] = {
       title: String(row.title ?? "").trim(),
+      sub_title: String(row.sub_title ?? "").trim(),
       description: String(row.description ?? "").trim(),
     };
   }
@@ -156,7 +160,7 @@ function languagesFromPlans(
     const code = normalizeLang(p.language);
     if (!code || seen.has(code)) continue;
     seen.add(code);
-    languages[code] = { title: "", description: "" };
+    languages[code] = { title: "", sub_title: "", description: "" };
   }
   return languages;
 }
@@ -236,6 +240,7 @@ export function buildSeriesMetadata(
     out.push({
       language: code,
       title: block.title.trim(),
+      sub_title: block.sub_title.trim(),
       description: block.description.trim(),
     });
   }
@@ -287,6 +292,7 @@ function seriesMetadataEqual(
   for (let i = 0; i < a.length; i++) {
     if (a[i].language !== b[i].language) return false;
     if (a[i].title !== b[i].title) return false;
+    if (a[i].sub_title !== b[i].sub_title) return false;
     if (a[i].description !== b[i].description) return false;
   }
   return true;
