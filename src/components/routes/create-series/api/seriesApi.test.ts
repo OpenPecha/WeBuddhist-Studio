@@ -7,7 +7,11 @@ import type { SeriesFormData } from "@/schema/SeriesSchema";
 
 const baseForm: SeriesFormData = {
   languages: {
-    EN: { title: "Series title", description: "Original description" },
+    EN: {
+      title: "Series title",
+      sub_title: "",
+      description: "Original description",
+    },
   },
   plans: {
     EN: [
@@ -25,6 +29,7 @@ describe("buildSeriesPartialUpdateBody", () => {
       languages: {
         EN: {
           title: "Series title",
+          sub_title: "",
           description: "Updated description",
         },
       },
@@ -37,6 +42,7 @@ describe("buildSeriesPartialUpdateBody", () => {
         {
           language: "EN",
           title: "Series title",
+          sub_title: "",
           description: "Updated description",
         },
       ],
@@ -92,6 +98,7 @@ describe("buildSeriesUpdateBody", () => {
         {
           language: "EN",
           title: "Series title",
+          sub_title: "",
           description: "Original description",
         },
       ],
@@ -108,6 +115,7 @@ describe("buildSeriesUpdateBody", () => {
       languages: {
         EN: {
           title: "Series title",
+          sub_title: "",
           description: "Updated description",
         },
       },
@@ -120,6 +128,7 @@ describe("buildSeriesUpdateBody", () => {
         {
           language: "EN",
           title: "Series title",
+          sub_title: "",
           description: "Updated description",
         },
       ],
