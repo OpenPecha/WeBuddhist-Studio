@@ -20,7 +20,9 @@ const MarkdownEditor = ({
   className,
   textareaClassName,
 }: MarkdownEditorProps) => {
-  const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+  const [activeTab, setActiveTab] = useState<"write" | "preview">(
+    disabled ? "preview" : "write",
+  );
 
   return (
     <div className={cn("rounded-md border border-input", className)}>
@@ -42,13 +44,11 @@ const MarkdownEditor = ({
         <button
           type="button"
           onClick={() => setActiveTab("preview")}
-          disabled={disabled}
           className={cn(
             "px-4 py-2 text-sm font-medium transition-colors",
             activeTab === "preview"
               ? "text-foreground border-b-2 border-foreground -mb-px"
               : "text-muted-foreground hover:text-foreground",
-            disabled && "opacity-50 cursor-not-allowed",
           )}
         >
           Preview
