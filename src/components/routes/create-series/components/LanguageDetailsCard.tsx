@@ -1,7 +1,7 @@
 import type { UseFormReturn } from "react-hook-form";
 import { IoMdClose } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
-import { Textarea } from "@/components/ui/atoms/textarea";
+import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import type { LanguageCode, SeriesFormData } from "@/schema/SeriesSchema";
 import { getEnglishLanguageLabel } from "@/components/routes/create-series/utils/language";
 
@@ -82,11 +82,13 @@ const LanguageDetailsCard = ({
               {label} description
             </Pecha.FormLabel>
             <Pecha.FormControl>
-              <Textarea
-                placeholder={`Description in ${label}`}
-                className="min-h-[100px] w-full rounded-md border border-input bg-white dark:bg-[#181818] px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none resize-none"
+              <MarkdownEditor
+                value={field.value}
+                onChange={field.onChange}
+                placeholder={`Type your description here...`}
                 disabled={readOnly}
-                {...field}
+                className="bg-white dark:bg-[#181818]"
+                textareaClassName="bg-white dark:bg-[#181818]"
               />
             </Pecha.FormControl>
             <Pecha.FormMessage />

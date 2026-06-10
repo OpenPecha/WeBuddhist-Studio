@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pecha } from "@/components/ui/shadimport";
+import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import { IoMdClose } from "react-icons/io";
 import { FaMinus } from "react-icons/fa6";
 import { FiLoader } from "react-icons/fi";
@@ -127,11 +128,12 @@ const TextSubtask = ({
   index: number;
   onUpdate: (index: number, updates: Partial<SubTask>) => void;
 }) => (
-  <Pecha.Textarea
-    placeholder="Enter your text content"
-    className="w-full min-h-64 resize-none text-base bg-[#FAFAFA] dark:bg-sidebar-secondary "
+  <MarkdownEditor
     value={subTask.content}
-    onChange={(e) => onUpdate(index, { content: e.target.value })}
+    onChange={(value) => onUpdate(index, { content: value })}
+    placeholder="Enter your text content"
+    className="bg-[#FAFAFA] dark:bg-sidebar-secondary"
+    textareaClassName="min-h-64 bg-[#FAFAFA] dark:bg-sidebar-secondary"
   />
 );
 
