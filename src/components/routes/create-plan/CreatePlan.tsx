@@ -43,6 +43,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/atoms/tooltip";
+import { resolveDashboardItemImageUrl } from "@/components/routes/dashboard/dashboardTable";
 
 export const getPlan = async (plan_id: string) => {
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`);
@@ -228,7 +229,13 @@ const Createplan = () => {
         series_id: planData.series_id ?? null,
       });
       setStartDateMode(planData.start_date ? "specific" : "enroll");
-      setImagePreview(planData.image_url ? `${planData.image_url}` : null);
+      const resolvedImageUrl = resolveDashboardItemImageUrl({
+        image_url: planData.image_url,
+        plan_image_url: planData.plan_image_url,
+        image_key: planData.image_key,
+        image: planData.image,
+      });
+      setImagePreview(resolvedImageUrl || null);
     }
   }, [planId, planData]);
 

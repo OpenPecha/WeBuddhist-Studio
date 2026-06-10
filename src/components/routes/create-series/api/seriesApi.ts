@@ -61,6 +61,7 @@ export type SeriesDetailDTO = {
   name?: Record<string, unknown>;
   metadata?: SeriesMetadataDTO[];
   image?: string | null;
+  image_url?: string | null;
   image_key?: string | null;
   author_id?: string;
   group_id?: string | null;

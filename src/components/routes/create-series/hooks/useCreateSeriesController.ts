@@ -13,6 +13,7 @@ import {
   getSeries,
   mapSeriesDetailToFormData,
 } from "@/components/routes/create-series/api/seriesApi";
+import { resolveDashboardItemImageUrl } from "@/components/routes/dashboard/dashboardTable";
 
 export const useCreateSeriesController = () => {
   const { seriesId, groupId } = useParams<{
@@ -76,7 +77,12 @@ export const useCreateSeriesController = () => {
     if (seriesHydratedIdRef.current === seriesData.id) return;
     seriesHydratedIdRef.current = seriesData.id;
     form.reset(mapSeriesDetailToFormData(seriesData));
-    setImagePreview(seriesData.image || null);
+    const resolvedImageUrl = resolveDashboardItemImageUrl({
+      image_url: seriesData.image_url,
+      image_key: seriesData.image_key,
+      image: seriesData.image,
+    });
+    setImagePreview(resolvedImageUrl || null);
     setSelectedImage(null);
   }, [isNew, seriesData, form, setImagePreview, setSelectedImage]);
 
