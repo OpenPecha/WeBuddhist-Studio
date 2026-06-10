@@ -6,6 +6,7 @@ export type LanguageCode = (typeof LANGUAGE_CODES)[number];
 
 export const languageBlockSchema = z.object({
   title: z.string().trim(),
+  sub_title: z.string().trim(),
   description: z.string().trim(),
 });
 

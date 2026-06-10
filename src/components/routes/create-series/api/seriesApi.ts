@@ -7,6 +7,7 @@ import type {
 
 export type SeriesMetadataInput = {
   title: string;
+  sub_title: string;
   description: string;
   language: LanguageCode;
 };
@@ -51,6 +52,7 @@ export type SeriesMetadataDTO = {
   language?: string;
   lang?: string;
   title?: string;
+  sub_title?: string;
   description?: string;
 };
 
@@ -119,11 +121,12 @@ function parseNameObject(
     const raw = name[code];
     if (raw == null) continue;
     if (typeof raw === "string") {
-      languages[code] = { title: raw.trim(), description: "" };
+      languages[code] = { title: raw.trim(), sub_title: "", description: "" };
     } else if (typeof raw === "object") {
       const o = raw as Record<string, unknown>;
       languages[code] = {
         title: String(o.title ?? "").trim(),
+        sub_title: String(o.sub_title ?? "").trim(),
         description: String(o.description ?? "").trim(),
       };
     }
@@ -140,6 +143,7 @@ function parseMetadataArray(
     if (!code) continue;
     languages[code] = {
       title: String(row.title ?? "").trim(),
+      sub_title: String(row.sub_title ?? "").trim(),
       description: String(row.description ?? "").trim(),
     };
   }
@@ -156,7 +160,7 @@ function languagesFromPlans(
     const code = normalizeLang(p.language);
     if (!code || seen.has(code)) continue;
     seen.add(code);
-    languages[code] = { title: "", description: "" };
+    languages[code] = { title: "", sub_title: "", description: "" };
   }
   return languages;
 }
@@ -175,7 +179,14 @@ function resolveSeriesLanguages(
 
 function resolveSeriesImageKey(dto: SeriesDetailDTO): string {
   if (dto.image_key?.trim()) return dto.image_key.trim();
-  if (dto.image && !/^https?:\/\//i.test(dto.image)) return dto.image.trim();
+  const image = dto.image;
+  if (
+    typeof image === "string" &&
+    image &&
+    !/^https?:\/\//i.test(image)
+  ) {
+    return image.trim();
+  }
   return "";
 }
 
@@ -229,6 +240,7 @@ export function buildSeriesMetadata(
     out.push({
       language: code,
       title: block.title.trim(),
+      sub_title: block.sub_title.trim(),
       description: block.description.trim(),
     });
   }
@@ -272,12 +284,96 @@ export function buildSeriesCreateBody(
   return buildSeriesWriteBody(data, featured, groupId);
 }
 
+function seriesMetadataEqual(
+  a: SeriesMetadataInput[],
+  b: SeriesMetadataInput[],
+): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].language !== b[i].language) return false;
+    if (a[i].title !== b[i].title) return false;
+    if (a[i].sub_title !== b[i].sub_title) return false;
+    if (a[i].description !== b[i].description) return false;
+  }
+  return true;
+}
+
+function seriesPlansEqual(
+  a: Partial<Record<LanguageCode, string[]>>,
+  b: Partial<Record<LanguageCode, string[]>>,
+): boolean {
+  const codes = new Set<LanguageCode>([
+    ...(Object.keys(a) as LanguageCode[]),
+    ...(Object.keys(b) as LanguageCode[]),
+  ]);
+  for (const code of codes) {
+    const aIds = a[code] ?? [];
+    const bIds = b[code] ?? [];
+    if (aIds.length !== bIds.length) return false;
+    for (let i = 0; i < aIds.length; i++) {
+      if (aIds[i] !== bIds[i]) return false;
+    }
+  }
+  return true;
+}
+
+export function buildSeriesPartialUpdateBody(
+  current: SeriesFormData,
+  original: SeriesFormData,
+  featured: boolean,
+  originalFeatured: boolean,
+): SeriesUpdatePayload {
+  const body: SeriesUpdatePayload = {};
+
+  const currentMetadata = buildSeriesMetadata(current.languages);
+  const originalMetadata = buildSeriesMetadata(original.languages);
+  if (!seriesMetadataEqual(currentMetadata, originalMetadata)) {
+    body.metadata = currentMetadata;
+  }
+
+  const currentImageKey = current.image_url.trim();
+  const originalImageKey = original.image_url.trim();
+  if (currentImageKey !== originalImageKey && currentImageKey) {
+    body.image_key = currentImageKey;
+  }
+
+  if (featured !== originalFeatured) {
+    body.featured = featured;
+  }
+
+  const currentPlans = buildSeriesPlansJson(
+    current,
+    currentMetadata.map((m) => m.language),
+  );
+  const originalPlans = buildSeriesPlansJson(
+    original,
+    originalMetadata.map((m) => m.language),
+  );
+  if (!seriesPlansEqual(currentPlans, originalPlans)) {
+    body.plans = currentPlans;
+  }
+
+  return body;
+}
+
 export function buildSeriesUpdateBody(
   data: SeriesFormData,
   featured: boolean,
-  groupId?: string,
-): SeriesPayload {
-  return buildSeriesWriteBody(data, featured, groupId);
+  options?: {
+    groupId?: string;
+    original?: SeriesFormData;
+    originalFeatured?: boolean;
+  },
+): SeriesPayload | SeriesUpdatePayload {
+  if (!options?.original) {
+    return buildSeriesWriteBody(data, featured, options?.groupId);
+  }
+  return buildSeriesPartialUpdateBody(
+    data,
+    options.original,
+    featured,
+    options.originalFeatured ?? featured,
+  );
 }
 
 export function buildSeriesPlansPayloadFromIds(

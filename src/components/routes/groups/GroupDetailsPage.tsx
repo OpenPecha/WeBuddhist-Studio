@@ -142,6 +142,11 @@ const GroupDetailsPage = () => {
                       {languageLabelForCode(meta.language as LanguageCode)}
                     </p>
                     <p className="font-medium">{meta.title}</p>
+                    {meta.sub_title?.trim() ? (
+                      <p className="text-sm text-muted-foreground">
+                        {meta.sub_title}
+                      </p>
+                    ) : null}
                     {meta.description?.trim() ? (
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                         {meta.description}

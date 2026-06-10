@@ -83,7 +83,7 @@ const GroupFormPage = () => {
     defaultValues: {
       slug: "",
       is_public: true,
-      languages: { EN: { title: "", description: "" } },
+      languages: { EN: { title: "", sub_title: "", description: "" } },
       avatar_key: "",
       banner_key: "",
     },
@@ -112,6 +112,7 @@ const GroupFormPage = () => {
       langs.push(code);
       languages[code] = {
         title: meta.title ?? "",
+        sub_title: meta.sub_title ?? "",
         description: meta.description ?? "",
       };
     }
@@ -120,7 +121,9 @@ const GroupFormPage = () => {
       slug: groupData.slug,
       is_public: groupData.is_public,
       languages:
-        langs.length > 0 ? languages : { EN: { title: "", description: "" } },
+        langs.length > 0
+          ? languages
+          : { EN: { title: "", sub_title: "", description: "" } },
       avatar_key: groupData.avatar_key ?? "",
       banner_key: groupData.banner_key ?? "",
     });
@@ -150,7 +153,7 @@ const GroupFormPage = () => {
     setAddedLanguages((prev) => [...prev, code]);
     form.setValue(
       `languages.${code}`,
-      { title: "", description: "" },
+      { title: "", sub_title: "", description: "" },
       {
         shouldDirty: true,
       },
@@ -353,6 +356,7 @@ const GroupFormPage = () => {
                       <Pecha.FormItem>
                         <Pecha.FormLabel className="text-sm font-bold">
                           Slug
+                          <span className="text-destructive"> *</span>
                         </Pecha.FormLabel>
                         <Pecha.FormControl>
                           <Pecha.Input
@@ -405,6 +409,26 @@ const GroupFormPage = () => {
                             <Pecha.FormItem>
                               <Pecha.FormLabel className="text-sm font-bold">
                                 {languageLabelForCode(code)} title
+                                <span className="text-destructive"> *</span>
+                              </Pecha.FormLabel>
+                              <Pecha.FormControl>
+                                <Pecha.Input
+                                  className="h-12 bg-white dark:bg-[#181818]"
+                                  {...field}
+                                />
+                              </Pecha.FormControl>
+                              <Pecha.FormMessage />
+                            </Pecha.FormItem>
+                          )}
+                        />
+                        <Pecha.FormField
+                          control={form.control}
+                          name={`languages.${code}.sub_title`}
+                          render={({ field }) => (
+                            <Pecha.FormItem>
+                              <Pecha.FormLabel className="text-sm font-bold">
+                                {languageLabelForCode(code)} sub-title
+                                <span className="text-destructive"> *</span>
                               </Pecha.FormLabel>
                               <Pecha.FormControl>
                                 <Pecha.Input
@@ -423,13 +447,16 @@ const GroupFormPage = () => {
                             <Pecha.FormItem>
                               <Pecha.FormLabel className="text-sm font-bold">
                                 {languageLabelForCode(code)} description
+                                <span className="text-destructive"> *</span>
                               </Pecha.FormLabel>
                               <Pecha.FormControl>
                                 <Textarea
                                   className="min-h-[100px] resize-none bg-white dark:bg-[#181818]"
+                                  maxLength={200}
                                   {...field}
                                 />
                               </Pecha.FormControl>
+                              <Pecha.FormMessage />
                             </Pecha.FormItem>
                           )}
                         />

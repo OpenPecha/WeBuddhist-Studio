@@ -59,7 +59,7 @@ export const useSeriesForm = (): UseSeriesFormReturn => {
       if (current[code]) return;
       form.setValue(
         "languages",
-        { ...current, [code]: { title: "", description: "" } },
+        { ...current, [code]: { title: "", sub_title: "", description: "" } },
         { shouldDirty: true, shouldValidate: true },
       );
     },
