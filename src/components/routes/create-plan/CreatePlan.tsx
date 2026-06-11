@@ -8,7 +8,7 @@ import {
 } from "react-icons/io5";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { format } from "date-fns";
-import { Textarea } from "@/components/ui/atoms/textarea";
+import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import {
   useBlocker,
   useLocation,
@@ -399,12 +399,14 @@ const Createplan = () => {
                     {t("studio.plan.form_field.description")}
                   </Pecha.FormLabel>
                   <Pecha.FormControl>
-                    <Textarea
+                    <MarkdownEditor
+                      value={field.value}
+                      onChange={field.onChange}
                       placeholder={t(
                         "studio.plan.form.placeholder.description",
                       )}
-                      className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                      {...field}
+                      className="bg-white dark:bg-[#181818]"
+                      textareaClassName="bg-white dark:bg-[#181818]"
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />

@@ -55,7 +55,8 @@ export function DashboardContentTable({
   const showActionsColumn = shouldShowCmsActionsColumn(platformRole);
 
   const renderBody = () => {
-    if (isLoading)  return (
+    if (isLoading)
+      return (
         <Pecha.TableRow>
           <Pecha.TableCell colSpan={6} className="text-center py-6">
             Loading...
