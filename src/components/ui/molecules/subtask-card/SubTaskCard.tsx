@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import { IoMdClose } from "react-icons/io";
 import { FaMinus } from "react-icons/fa6";
-import { FiLoader } from "react-icons/fi";
-import { AiOutlineSound } from "react-icons/ai";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
@@ -17,6 +14,7 @@ import {
 import { getYouTubeDuration } from "@/lib/utils";
 import { AudioTrimmer } from "@/components/ui/molecules/audio-trimmer/AudioTrimmer";
 import { generateDayAudio } from "@/components/routes/task/api/taskApi";
+import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
 
 interface SubTaskTimestamps {
   start_ms?: number | null;
@@ -78,6 +76,7 @@ interface SubTaskCardProps {
   onRemoveImage: (index: number) => void;
   dayAudioUrl?: string | null;
   dayAudioDurationMs?: number | null;
+  planLanguage?: string;
 }
 
 const VideoSubtask = ({
@@ -200,12 +199,19 @@ const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
   <SourceReferenceContent content={subTask.content} />
 );
 
-const GenerateAudioButton = ({ subTaskId }: { subTaskId: string }) => {
-  const [audioType, setAudioType] = useState<string>("INSTRUCTION");
-
+const GenerateAudioButton = ({
+  subTaskId,
+  planLanguage = "",
+}: {
+  subTaskId: string;
+  planLanguage?: string;
+}) => {
   const mutation = useMutation({
-    mutationFn: () =>
-      generateDayAudio({ sub_task_id: subTaskId }, "eng", audioType),
+    mutationFn: (options: { type?: string; voice_name?: string }) =>
+      generateDayAudio(
+        { sub_task_id: subTaskId },
+        { language: planLanguage, ...options },
+      ),
     onSuccess: () => {
       toast.success("Audio generation started");
     },
@@ -217,30 +223,14 @@ const GenerateAudioButton = ({ subTaskId }: { subTaskId: string }) => {
   });
 
   return (
-    <div className="flex items-center gap-2 pt-2 border-t border-dashed border-gray-200 dark:border-input">
-      <Pecha.Select value={audioType} onValueChange={setAudioType}>
-        <Pecha.SelectTrigger className="w-[160px] h-9">
-          <Pecha.SelectValue />
-        </Pecha.SelectTrigger>
-        <Pecha.SelectContent>
-          <Pecha.SelectItem value="INSTRUCTION">Instruction</Pecha.SelectItem>
-          <Pecha.SelectItem value="TEXT_READING">Text Reading</Pecha.SelectItem>
-        </Pecha.SelectContent>
-      </Pecha.Select>
-      <Pecha.Button
-        type="button"
-        variant="outline"
+    <div className="pt-2 border-t border-dashed border-gray-200 dark:border-input">
+      <TtsGenerateControls
+        planLanguage={planLanguage}
+        defaultAudioType="INSTRUCTION"
         size="sm"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate()}
-      >
-        {mutation.isPending ? (
-          <FiLoader className="w-4 h-4 animate-spin" />
-        ) : (
-          <AiOutlineSound className="w-4 h-4" />
-        )}
-        {mutation.isPending ? "Generating..." : "Generate Audio"}
-      </Pecha.Button>
+        isPending={mutation.isPending}
+        onGenerate={(options) => mutation.mutate(options)}
+      />
     </div>
   );
 };
@@ -279,6 +269,7 @@ export const SubTaskCard = ({
   onRemoveImage,
   dayAudioUrl,
   dayAudioDurationMs,
+  planLanguage,
 }: SubTaskCardProps) => {
   const showTimestamps =
     dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
@@ -333,7 +324,10 @@ export const SubTaskCard = ({
       {subTask.id &&
         (subTask.content_type === "TEXT" ||
           subTask.content_type === "SOURCE_REFERENCE") && (
-          <GenerateAudioButton subTaskId={subTask.id} />
+          <GenerateAudioButton
+            subTaskId={subTask.id}
+            planLanguage={planLanguage}
+          />
         )}
       {showTimestamps && (
         <SubtaskTimestampSection

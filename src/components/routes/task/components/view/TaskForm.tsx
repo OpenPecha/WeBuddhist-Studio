@@ -412,6 +412,7 @@ const TaskForm = ({
                   onRemoveImage={handleRemoveSubTaskImage}
                   dayAudioUrl={currentDayData?.audio_url}
                   dayAudioDurationMs={currentDayData?.audio_duration_ms}
+                  planLanguage={currentPlan?.language}
                 />
               ))}
             </div>

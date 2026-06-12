@@ -1,4 +1,8 @@
 import axiosInstance from "@/config/axios-config";
+import {
+  DEFAULT_MONLAM_VOICE,
+  planLanguageToTtsApiLanguage,
+} from "@/lib/ttsConstants";
 
 const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
@@ -133,14 +137,29 @@ export const reorderTasks = async (
   return data;
 };
 
+export interface GenerateDayAudioOptions {
+  language: string;
+  type?: string;
+  voice_name?: string;
+}
+
 export const generateDayAudio = async (
   params: { day_id: string } | { sub_task_id: string },
-  language: string,
-  type: string = "TEXT_READING",
+  options: GenerateDayAudioOptions,
 ) => {
+  const language = planLanguageToTtsApiLanguage(options.language);
+  const body: Record<string, string> = { ...params, language };
+
+  if (language === "en" && options.type) {
+    body.type = options.type;
+  }
+  if (language === "bo") {
+    body.voice_name = options.voice_name ?? DEFAULT_MONLAM_VOICE;
+  }
+
   const { data } = await axiosInstance.post(
     `/api/v1/cms/plans/audio/generate`,
-    { ...params, language, type },
+    body,
     { headers: getAuthHeaders() },
   );
   return data;

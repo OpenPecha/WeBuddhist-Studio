@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { AiOutlineSound } from "react-icons/ai";
 import DayAudioSection from "@/components/ui/molecules/day-audio-section/DayAudioSection";
+import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
 import { generateDayAudio } from "@/components/routes/task/api/taskApi";
 
 interface DayAudioDialogProps {
@@ -33,7 +34,11 @@ const DayAudioDialog = ({
   const queryClient = useQueryClient();
 
   const generateAudioMutation = useMutation({
-    mutationFn: () => generateDayAudio({ day_id: dayId }, language || ""),
+    mutationFn: (options: { type?: string; voice_name?: string }) =>
+      generateDayAudio(
+        { day_id: dayId },
+        { language: language || "", ...options },
+      ),
     onSuccess: () => {
       toast.success("Generated audio successfully!");
       queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
@@ -72,16 +77,11 @@ const DayAudioDialog = ({
             isEditable={isEditable}
           />
           {isEditable && (
-            <Pecha.Button
-              type="button"
-              variant="outline"
-              disabled={generateAudioMutation.isPending}
-              onClick={() => generateAudioMutation.mutate()}
-            >
-              {generateAudioMutation.isPending
-                ? "Generating..."
-                : "Generate Audio"}
-            </Pecha.Button>
+            <TtsGenerateControls
+              planLanguage={language || ""}
+              isPending={generateAudioMutation.isPending}
+              onGenerate={(options) => generateAudioMutation.mutate(options)}
+            />
           )}
         </Pecha.DialogContent>
       </Pecha.Dialog>
