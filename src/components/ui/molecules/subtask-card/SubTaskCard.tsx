@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
+import Dropzone from "react-dropzone";
 import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import { IoMdClose } from "react-icons/io";
-import { FaMinus } from "react-icons/fa6";
-import { useMutation } from "@tanstack/react-query";
+import { FaMinus, FaTrash } from "react-icons/fa6";
+import { FiLoader } from "react-icons/fi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
 import {
@@ -11,14 +15,19 @@ import {
   ContentIcon,
   SourceReferenceContent,
 } from "../content-sub/ContentComponents";
-import { getYouTubeDuration } from "@/lib/utils";
+import { getAudioDurationMs, getYouTubeDuration } from "@/lib/utils";
 import { AudioTrimmer } from "@/components/ui/molecules/audio-trimmer/AudioTrimmer";
-import { generateDayAudio } from "@/components/routes/task/api/taskApi";
+import {
+  deleteSubTaskAudio,
+  generateDayAudio,
+  uploadSubTaskAudio,
+} from "@/components/routes/task/api/taskApi";
 import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
 
 interface SubTaskTimestamps {
   start_ms?: number | null;
   end_ms?: number | null;
+  audio_url?: string | null;
 }
 
 interface VideoSubTask extends SubTaskTimestamps {
@@ -77,6 +86,7 @@ interface SubTaskCardProps {
   dayAudioUrl?: string | null;
   dayAudioDurationMs?: number | null;
   planLanguage?: string;
+  taskId?: string;
 }
 
 const VideoSubtask = ({
@@ -199,21 +209,55 @@ const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
   <SourceReferenceContent content={subTask.content} />
 );
 
-const GenerateAudioButton = ({
+const SubtaskAudioControls = ({
   subTaskId,
+  taskId,
   planLanguage = "",
+  audioUrl,
 }: {
   subTaskId: string;
+  taskId?: string;
   planLanguage?: string;
+  audioUrl?: string | null;
 }) => {
-  const mutation = useMutation({
+  const queryClient = useQueryClient();
+  const { planId } = useParams<{ planId: string }>();
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [localAudioUrl, setLocalAudioUrl] = useState(audioUrl ?? null);
+
+  useEffect(() => {
+    setLocalAudioUrl(audioUrl ?? null);
+    setPendingFile(null);
+  }, [audioUrl, subTaskId]);
+
+  const revalidateSubtask = async (nextAudioUrl?: string | null) => {
+    if (nextAudioUrl !== undefined) {
+      setLocalAudioUrl(nextAudioUrl);
+    } else if (taskId) {
+      await queryClient.refetchQueries({ queryKey: ["taskDetails", taskId] });
+      const details = queryClient.getQueryData<{
+        subtasks?: Array<{ id: string; audio_url?: string | null }>;
+      }>(["taskDetails", taskId]);
+      const subtask = details?.subtasks?.find((item) => item.id === subTaskId);
+      setLocalAudioUrl(subtask?.audio_url ?? null);
+    }
+    if (taskId) {
+      queryClient.invalidateQueries({ queryKey: ["taskDetails", taskId] });
+    }
+    if (planId) {
+      queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
+    }
+  };
+
+  const generateMutation = useMutation({
     mutationFn: (options: { type?: string; voice_name?: string }) =>
       generateDayAudio(
         { sub_task_id: subTaskId },
         { language: planLanguage, ...options },
       ),
-    onSuccess: () => {
-      toast.success("Audio generation started");
+    onSuccess: async () => {
+      toast.success("Audio generation Done");
+      await revalidateSubtask();
     },
     onError: (error: Error) => {
       toast.error("Failed to generate audio", {
@@ -222,15 +266,139 @@ const GenerateAudioButton = ({
     },
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const duration_ms = await getAudioDurationMs(file);
+      return uploadSubTaskAudio(subTaskId, file, duration_ms);
+    },
+    onSuccess: async (data) => {
+      setPendingFile(null);
+      toast.success("Subtask audio uploaded");
+      await revalidateSubtask(data.audio_url);
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to upload subtask audio", {
+        description: error.message,
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSubTaskAudio(subTaskId),
+    onSuccess: async () => {
+      setPendingFile(null);
+      toast.success("Subtask audio removed");
+      await revalidateSubtask(null);
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to remove subtask audio", {
+        description: error.message,
+      });
+    },
+  });
+
+  const isBusy =
+    generateMutation.isPending ||
+    uploadMutation.isPending ||
+    deleteMutation.isPending;
+
   return (
-    <div className="pt-2 border-t border-dashed border-gray-200 dark:border-input">
+    <div className="space-y-3 pt-2 border-t border-dashed border-gray-200 dark:border-input">
+      <p className="text-sm font-medium">Subtask audio</p>
+
+      {localAudioUrl && (
+        <div className="flex items-center gap-2 min-w-0">
+          <audio
+            controls
+            src={localAudioUrl}
+            className="h-9 min-w-0 flex-1"
+            preload="metadata"
+          />
+          <Pecha.Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="shrink-0 h-9 w-9"
+            disabled={isBusy}
+            title="Remove audio"
+            onClick={() => deleteMutation.mutate()}
+          >
+            {deleteMutation.isPending ? (
+              <FiLoader className="w-4 h-4 animate-spin" />
+            ) : (
+              <FaTrash className="w-4 h-4" />
+            )}
+          </Pecha.Button>
+        </div>
+      )}
+
       <TtsGenerateControls
         planLanguage={planLanguage}
         defaultAudioType="INSTRUCTION"
         size="sm"
-        isPending={mutation.isPending}
-        onGenerate={(options) => mutation.mutate(options)}
+        isPending={generateMutation.isPending}
+        disabled={isBusy}
+        onGenerate={(options) => generateMutation.mutate(options)}
       />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-[#ffffff] dark:bg-[#161616] px-2 text-muted-foreground">
+            or upload
+          </span>
+        </div>
+      </div>
+
+      <Dropzone
+        accept={{ "audio/*": [".mp3", ".m4a", ".wav", ".aac", ".ogg"] }}
+        multiple={false}
+        disabled={isBusy}
+        onDrop={(files) => {
+          if (files[0]) setPendingFile(files[0]);
+        }}
+      >
+        {({ getRootProps, getInputProps }) => (
+          <div
+            {...getRootProps()}
+            className="border border-dashed rounded-lg py-2 px-3 text-center text-sm cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 bg-[#FAFAFA] dark:bg-sidebar-secondary"
+          >
+            <input {...getInputProps()} />
+            {pendingFile
+              ? `Selected: ${pendingFile.name}`
+              : localAudioUrl
+                ? "Drop or click to replace subtask audio (MP3, etc.)"
+                : "Drop or click to upload subtask audio"}
+          </div>
+        )}
+      </Dropzone>
+
+      {pendingFile && (
+        <div className="flex gap-2">
+          <Pecha.Button
+            type="button"
+            variant="default"
+            className="bg-[#A51C21] hover:bg-[#A51C21]/90 flex-1"
+            disabled={isBusy}
+            onClick={() => uploadMutation.mutate(pendingFile)}
+          >
+            {uploadMutation.isPending && (
+              <FiLoader className="w-4 h-4 animate-spin mr-1" />
+            )}
+            {uploadMutation.isPending ? "Uploading..." : "Upload audio"}
+          </Pecha.Button>
+          <Pecha.Button
+            type="button"
+            variant="outline"
+            disabled={isBusy}
+            onClick={() => setPendingFile(null)}
+          >
+            Cancel
+          </Pecha.Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -270,6 +438,7 @@ export const SubTaskCard = ({
   dayAudioUrl,
   dayAudioDurationMs,
   planLanguage,
+  taskId,
 }: SubTaskCardProps) => {
   const showTimestamps =
     dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
@@ -324,9 +493,11 @@ export const SubTaskCard = ({
       {subTask.id &&
         (subTask.content_type === "TEXT" ||
           subTask.content_type === "SOURCE_REFERENCE") && (
-          <GenerateAudioButton
+          <SubtaskAudioControls
             subTaskId={subTask.id}
+            taskId={taskId}
             planLanguage={planLanguage}
+            audioUrl={subTask.audio_url}
           />
         )}
       {showTimestamps && (

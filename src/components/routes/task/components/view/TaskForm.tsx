@@ -181,7 +181,11 @@ const TaskForm = ({
       const timestamps = (data: {
         start_ms?: number | null;
         end_ms?: number | null;
-      }) => mapApiSubtaskTimestamps(data);
+        audio_url?: string | null;
+      }) => ({
+        ...mapApiSubtaskTimestamps(data),
+        audio_url: data.audio_url ?? null,
+      });
 
       const subTasksData: SubTask[] = sorted.map((data: any) => {
         switch (data.content_type) {
@@ -413,6 +417,7 @@ const TaskForm = ({
                   dayAudioUrl={currentDayData?.audio_url}
                   dayAudioDurationMs={currentDayData?.audio_duration_ms}
                   planLanguage={currentPlan?.language}
+                  taskId={editingTask?.id}
                 />
               ))}
             </div>

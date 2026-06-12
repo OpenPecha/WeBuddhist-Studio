@@ -143,6 +143,42 @@ export interface GenerateDayAudioOptions {
   voice_name?: string;
 }
 
+export interface SubTaskAudioUploadResponse {
+  sub_task_id: string;
+  task_id: string;
+  audio_key: string;
+  audio_url: string;
+  duration_ms: number | null;
+  message: string;
+}
+
+export const uploadSubTaskAudio = async (
+  sub_task_id: string,
+  file: File,
+  duration_ms?: number,
+) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (duration_ms != null) {
+    formData.append("duration_ms", String(duration_ms));
+  }
+  const { data } = await axiosInstance.post<SubTaskAudioUploadResponse>(
+    `/api/v1/cms/media/upload/subtask-audio`,
+    formData,
+    {
+      params: { sub_task_id },
+      headers: getAuthHeaders(),
+    },
+  );
+  return data;
+};
+
+export const deleteSubTaskAudio = async (sub_task_id: string) => {
+  await axiosInstance.delete(`/api/v1/cms/sub-tasks/${sub_task_id}/audio`, {
+    headers: getAuthHeaders(),
+  });
+};
+
 export const generateDayAudio = async (
   params: { day_id: string } | { sub_task_id: string },
   options: GenerateDayAudioOptions,
