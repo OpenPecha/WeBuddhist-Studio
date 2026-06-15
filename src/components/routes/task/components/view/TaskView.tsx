@@ -83,11 +83,21 @@ const SubtaskCard = ({
         )}
       </div>
       <SubtaskContent type={subtask.content_type} content={subtask.content} />
-      {subtask.start_ms != null &&
+      {subtask.audio_url ? (
+        <div className="border-t border-dashed pt-2">
+          <audio
+            controls
+            src={subtask.audio_url}
+            className="w-full"
+            preload="metadata"
+          />
+        </div>
+      ) : (
+        subtask.start_ms != null &&
         subtask.end_ms != null &&
-        (subtask.audio_url || dayAudioUrl ? (
+        (dayAudioUrl ? (
           <AudioSegmentPlayer
-            audioUrl={subtask.audio_url ?? dayAudioUrl}
+            audioUrl={dayAudioUrl}
             startMs={subtask.start_ms}
             endMs={subtask.end_ms}
           />
@@ -95,7 +105,8 @@ const SubtaskCard = ({
           <p className="text-xs text-muted-foreground border-t border-dashed pt-2">
             Timeline: {formatMs(subtask.start_ms)} – {formatMs(subtask.end_ms)}
           </p>
-        ))}
+        ))
+      )}
     </div>
   );
 };
