@@ -15,7 +15,7 @@ import {
   ContentIcon,
   SourceReferenceContent,
 } from "../content-sub/ContentComponents";
-import { getAudioDurationMs, getYouTubeDuration } from "@/lib/utils";
+import { getAudioDurationMs, getYouTubeDuration, formatMs } from "@/lib/utils";
 import { AudioTrimmer } from "@/components/ui/molecules/audio-trimmer/AudioTrimmer";
 import {
   deleteSubTaskAudio,
@@ -415,14 +415,16 @@ const SubtaskTimestampSection = ({
   subTask: SubTask;
   index: number;
   onUpdate: (index: number, updates: Partial<SubTask>) => void;
-  dayAudioUrl: string;
-  dayAudioDurationMs: number;
+  dayAudioUrl?: string | null;
+  dayAudioDurationMs?: number | null;
   taskId?: string;
 }) => {
   const queryClient = useQueryClient();
   const { planId } = useParams<{ planId: string }>();
   const hasPersistedTimestamps =
     subTask.start_ms != null && subTask.end_ms != null;
+  const hasDayAudio =
+    !!dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteSubTaskTimestamp(subTask.id as string),
@@ -454,15 +456,39 @@ const SubtaskTimestampSection = ({
   return (
     <div className="space-y-2 pt-2 border-t border-dashed border-gray-200 dark:border-input">
       <p className="text-sm font-medium">Timeline (day audio)</p>
-      <AudioTrimmer
-        audioUrl={dayAudioUrl}
-        maxDurationMs={dayAudioDurationMs}
-        startMs={subTask.start_ms ?? null}
-        endMs={subTask.end_ms ?? null}
-        onChange={(start_ms, end_ms) => onUpdate(index, { start_ms, end_ms })}
-        onClear={handleClearTimestamps}
-        disabled={deleteMutation.isPending}
-      />
+      {hasDayAudio ? (
+        <AudioTrimmer
+          audioUrl={dayAudioUrl}
+          maxDurationMs={dayAudioDurationMs}
+          startMs={subTask.start_ms ?? null}
+          endMs={subTask.end_ms ?? null}
+          onChange={(start_ms, end_ms) => onUpdate(index, { start_ms, end_ms })}
+          onClear={handleClearTimestamps}
+          disabled={deleteMutation.isPending}
+        />
+      ) : (
+        <div className="space-y-2 rounded-md border border-dashed border-gray-300 dark:border-input bg-[#FAFAFA] dark:bg-sidebar-secondary p-3">
+          <p className="text-sm text-muted-foreground">
+            {formatMs(subTask.start_ms as number)} –{" "}
+            {formatMs(subTask.end_ms as number)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Day audio is not available. You can remove these timestamps.
+          </p>
+          <Pecha.Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={deleteMutation.isPending}
+            onClick={handleClearTimestamps}
+          >
+            {deleteMutation.isPending ? (
+              <FiLoader className="w-3 h-3 mr-1 animate-spin" />
+            ) : null}
+            Clear timestamps
+          </Pecha.Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -479,8 +505,11 @@ export const SubTaskCard = ({
   planLanguage,
   taskId,
 }: SubTaskCardProps) => {
-  const showTimestamps =
-    dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
+  const hasDayAudio =
+    !!dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
+  const hasTimestamps =
+    subTask.start_ms != null && subTask.end_ms != null;
+  const showTimestampSection = hasDayAudio || hasTimestamps;
 
   const renderContent = () => {
     switch (subTask.content_type) {
@@ -539,7 +568,7 @@ export const SubTaskCard = ({
             audioUrl={subTask.audio_url}
           />
         )}
-      {showTimestamps && (
+      {showTimestampSection && (
         <SubtaskTimestampSection
           subTask={subTask}
           index={index}
