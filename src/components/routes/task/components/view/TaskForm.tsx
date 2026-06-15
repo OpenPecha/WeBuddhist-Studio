@@ -27,6 +27,8 @@ import {
   mapApiSubtaskTimestamps,
   validateSubTaskTimestamps,
 } from "@/components/ui/molecules/subtask-card/subtaskTimestamps";
+import { EditorTabSwitcher } from "./EditorTabSwitcher";
+import { NotificationForm } from "./NotificationForm";
 
 interface TaskFormProps {
   selectedDay: number;
@@ -57,6 +59,7 @@ const TaskForm = ({
   const formValues = form.watch();
   const isEditMode = Boolean(editingTask);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"task" | "notification">("task");
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", planId]);
   const currentDayData = currentPlan?.days?.find(
@@ -375,10 +378,21 @@ const TaskForm = ({
   };
 
   return (
-    <div className="w-full my-4 h-[calc(100vh-40px)] bg-[#F5F5F5] dark:bg-[#181818] rounded-l-2xl border border-dashed xwspace-y-4 overflow-y-auto">
-      <h2 className="text-xl font-semibold p-4">
-        {isEditMode ? "Edit Task" : "Add Task"}
-      </h2>
+    <div className="w-full my-4 h-[calc(100vh-40px)] bg-[#F5F5F5] dark:bg-[#181818] rounded-l-2xl border border-dashed overflow-hidden flex flex-col">
+      <EditorTabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {activeTab === "notification" ? (
+        <NotificationForm
+          dayId={currentDayData?.id || ""}
+          planId={planId || ""}
+          planCoverImage={currentPlan?.cover_image}
+          isEditable={isEditable}
+        />
+      ) : (
+        <div className="overflow-y-auto flex-1">
+          <h2 className="text-xl font-semibold p-4">
+            {isEditMode ? "Edit Task" : "Add Task"}
+          </h2>
 
       <Pecha.Form {...form}>
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
@@ -462,6 +476,8 @@ const TaskForm = ({
           </div>
         </form>
       </Pecha.Form>
+        </div>
+      )}
     </div>
   );
 };
