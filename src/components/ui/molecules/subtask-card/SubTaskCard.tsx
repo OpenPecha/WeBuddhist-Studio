@@ -19,6 +19,7 @@ import { getAudioDurationMs, getYouTubeDuration } from "@/lib/utils";
 import { AudioTrimmer } from "@/components/ui/molecules/audio-trimmer/AudioTrimmer";
 import {
   deleteSubTaskAudio,
+  deleteSubTaskTimestamp,
   generateDayAudio,
   uploadSubTaskAudio,
 } from "@/components/routes/task/api/taskApi";
@@ -409,24 +410,62 @@ const SubtaskTimestampSection = ({
   onUpdate,
   dayAudioUrl,
   dayAudioDurationMs,
+  taskId,
 }: {
   subTask: SubTask;
   index: number;
   onUpdate: (index: number, updates: Partial<SubTask>) => void;
   dayAudioUrl: string;
   dayAudioDurationMs: number;
-}) => (
-  <div className="space-y-2 pt-2 border-t border-dashed border-gray-200 dark:border-input">
-    <p className="text-sm font-medium">Timeline (day audio)</p>
-    <AudioTrimmer
-      audioUrl={dayAudioUrl}
-      maxDurationMs={dayAudioDurationMs}
-      startMs={subTask.start_ms ?? null}
-      endMs={subTask.end_ms ?? null}
-      onChange={(start_ms, end_ms) => onUpdate(index, { start_ms, end_ms })}
-    />
-  </div>
-);
+  taskId?: string;
+}) => {
+  const queryClient = useQueryClient();
+  const { planId } = useParams<{ planId: string }>();
+  const hasPersistedTimestamps =
+    subTask.start_ms != null && subTask.end_ms != null;
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSubTaskTimestamp(subTask.id as string),
+    onSuccess: async () => {
+      toast.success("Timestamps removed");
+      onUpdate(index, { start_ms: null, end_ms: null });
+      if (taskId) {
+        queryClient.invalidateQueries({ queryKey: ["taskDetails", taskId] });
+      }
+      if (planId) {
+        queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
+      }
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to remove timestamps", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleClearTimestamps = async () => {
+    if (subTask.id && hasPersistedTimestamps) {
+      await deleteMutation.mutateAsync();
+      return;
+    }
+    onUpdate(index, { start_ms: null, end_ms: null });
+  };
+
+  return (
+    <div className="space-y-2 pt-2 border-t border-dashed border-gray-200 dark:border-input">
+      <p className="text-sm font-medium">Timeline (day audio)</p>
+      <AudioTrimmer
+        audioUrl={dayAudioUrl}
+        maxDurationMs={dayAudioDurationMs}
+        startMs={subTask.start_ms ?? null}
+        endMs={subTask.end_ms ?? null}
+        onChange={(start_ms, end_ms) => onUpdate(index, { start_ms, end_ms })}
+        onClear={handleClearTimestamps}
+        disabled={deleteMutation.isPending}
+      />
+    </div>
+  );
+};
 
 export const SubTaskCard = ({
   subTask,
@@ -507,6 +546,7 @@ export const SubTaskCard = ({
           onUpdate={onUpdate}
           dayAudioUrl={dayAudioUrl}
           dayAudioDurationMs={dayAudioDurationMs}
+          taskId={taskId}
         />
       )}
     </div>
