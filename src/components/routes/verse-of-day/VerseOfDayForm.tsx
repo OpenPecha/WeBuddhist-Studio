@@ -41,9 +41,6 @@ const VerseOfDayForm = ({
   });
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imageUrlInput, setImageUrlInput] = useState("");
-  const [verseId, setVerseId] = useState("");
-  const [refId, setRefId] = useState("");
-  const [refType, setRefType] = useState("");
   const [groupId, setGroupId] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
@@ -58,9 +55,6 @@ const VerseOfDayForm = ({
       // Don't set presigned URL as image_urls - it will be skipped during update
       // User can add new S3 keys if they want to change the image
       setImageUrls([]);
-      setVerseId("");
-      setRefId(initialData.ref_id || "");
-      setRefType(initialData.ref_type || "");
       // Use group_id directly from the response
       setGroupId(initialData.group_id || "");
       setDate(parse(initialData.date, "yyyy-MM-dd", new Date()));
@@ -69,9 +63,6 @@ const VerseOfDayForm = ({
       setVerses({ en: "", bo: "", zh: "" });
       setImageUrls([]);
       setImageUrlInput("");
-      setVerseId("");
-      setRefId("");
-      setRefType("");
       setGroupId("");
       setDate(new Date());
     }
@@ -162,14 +153,6 @@ const VerseOfDayForm = ({
         updatePayload.date = newDate;
       }
 
-      // Only include ref_id/ref_type if they have values
-      if (refId.trim()) {
-        updatePayload.ref_id = refId.trim();
-      }
-      if (refType.trim()) {
-        updatePayload.ref_type = refType.trim();
-      }
-
       // Only include image_urls if user added new ones (not presigned URLs)
       if (imageUrls.length > 0 && !imageUrls[0]?.includes("?")) {
         updatePayload.image_urls = imageUrls;
@@ -190,9 +173,6 @@ const VerseOfDayForm = ({
           zh: verses.zh.trim(),
         },
         image_urls: imageUrls.length > 0 ? imageUrls : [],
-        verse_id: verseId.trim() || "",
-        ref_id: refId.trim() || "",
-        ref_type: refType.trim() || "",
         group_id: groupId.trim() || null,
         date: format(date, "yyyy-MM-dd"),
       };
@@ -298,45 +278,14 @@ const VerseOfDayForm = ({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-bold">Verse ID (Optional)</label>
-          <Pecha.Input
-            value={verseId}
-            onChange={(e) => setVerseId(e.target.value)}
-            placeholder="Enter verse ID"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-bold">Reference ID (Optional)</label>
-          <Pecha.Input
-            value={refId}
-            onChange={(e) => setRefId(e.target.value)}
-            placeholder="Enter reference ID"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-bold">Reference Type (Optional)</label>
-          <Pecha.Input
-            value={refType}
-            onChange={(e) => setRefType(e.target.value)}
-            placeholder="Enter reference type"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-bold">Group ID</label>
-          <Pecha.Input
-            value={groupId}
-            onChange={(e) => setGroupId(e.target.value)}
-            placeholder="Enter group ID (UUID)"
-            required
-          />
-        </div>
+      <div className="space-y-2">
+        <label className="text-sm font-bold">Group ID</label>
+        <Pecha.Input
+          value={groupId}
+          onChange={(e) => setGroupId(e.target.value)}
+          placeholder="Enter group ID (UUID)"
+          required
+        />
       </div>
 
       <div className="space-y-2">
