@@ -66,4 +66,29 @@ export const fetchTextDetails = async ({
   return data;
 };
 
+type SearchSegments = {
+  content: string;
+};
+
+export type SegmentSearchResult = {
+  id: string;
+  pecha_segment_id?: string;
+  text_id: string;
+  content: string;
+  type: string;
+};
+
+export type SegmentSearchResponse = {
+  segments: SegmentSearchResult[];
+};
+
+export const searchSegments = async ({
+  content,
+}: SearchSegments): Promise<SegmentSearchResponse> => {
+  const { data } = await axiosInstance.post(`/api/v1/segments/search`, {
+    content,
+  });
+  return data;
+};
+
 export type { SearchCommon };

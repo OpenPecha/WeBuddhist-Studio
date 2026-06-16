@@ -20,13 +20,15 @@ import {
 } from "@/components/routes/groups/api/groupsApi";
 import {
   fetchTextDetails,
+  searchSegments,
   searchTitles,
+  type SegmentSearchResult,
 } from "@/components/api/searchApi";
 import { buildGroupLink, buildSegmentLink } from "@/lib/markdownLinks";
 import { flattenSegments, getLastSegmentId } from "@/lib/utils";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 
-type LinkType = "group" | "text";
+type LinkType = "group" | "text" | "segment";
 
 export type MarkdownLinkSelection = {
   label: string;
@@ -71,6 +73,8 @@ const MarkdownLinkDialog = ({
   const [selectedSegment, setSelectedSegment] = useState<SegmentItem | null>(
     null,
   );
+  const [selectedSearchSegment, setSelectedSearchSegment] =
+    useState<SegmentSearchResult | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -79,6 +83,7 @@ const MarkdownLinkDialog = ({
       setSelectedGroup(null);
       setSelectedTextItem(null);
       setSelectedSegment(null);
+      setSelectedSearchSegment(null);
     }
   }, [open]);
 
@@ -86,6 +91,7 @@ const MarkdownLinkDialog = ({
     setSelectedGroup(null);
     setSelectedTextItem(null);
     setSelectedSegment(null);
+    setSelectedSearchSegment(null);
   }, [linkType, debouncedQuery]);
 
   const { data: groupData, isLoading: isLoadingGroups } = useQuery({
@@ -112,7 +118,16 @@ const MarkdownLinkDialog = ({
     enabled: open && linkType === "text" && debouncedQuery.length > 0,
   });
 
+  const { data: segmentSearchData, isLoading: isLoadingSegmentSearch } =
+    useQuery({
+      queryKey: ["markdown-link-segment-search", debouncedQuery],
+      queryFn: () => searchSegments({ content: debouncedQuery }),
+      enabled: open && linkType === "segment" && debouncedQuery.length > 0,
+    });
+
   const textTitles: TextTitleItem[] = titleData ?? [];
+  const searchedSegments: SegmentSearchResult[] =
+    segmentSearchData?.segments ?? [];
 
   const {
     data: detailsData,
@@ -171,7 +186,9 @@ const MarkdownLinkDialog = ({
   const canConfirm =
     linkType === "group"
       ? !!selectedGroup
-      : !!selectedTextItem && !!selectedSegment;
+      : linkType === "segment"
+        ? !!selectedSearchSegment
+        : !!selectedTextItem && !!selectedSegment;
 
   const handleConfirm = () => {
     if (linkType === "group" && selectedGroup) {
@@ -191,6 +208,17 @@ const MarkdownLinkDialog = ({
         selectedSegment.pecha_segment_id || selectedSegment.segment_id;
       onConfirm({
         label,
+        url: buildSegmentLink(segmentId),
+      });
+      onOpenChange(false);
+      return;
+    }
+
+    if (linkType === "segment" && selectedSearchSegment) {
+      const segmentId =
+        selectedSearchSegment.pecha_segment_id || selectedSearchSegment.id;
+      onConfirm({
+        label: selectedText.trim() || selectedSearchSegment.content,
         url: buildSegmentLink(segmentId),
       });
       onOpenChange(false);
@@ -288,6 +316,58 @@ const MarkdownLinkDialog = ({
     );
   };
 
+  const renderDirectSegmentResults = () => {
+    if (!debouncedQuery) {
+      return (
+        <p className="px-3 py-4 text-sm text-muted-foreground">
+          Search for segment content to link directly.
+        </p>
+      );
+    }
+
+    if (isLoadingSegmentSearch) {
+      return (
+        <p className="px-3 py-4 text-sm text-muted-foreground">
+          Searching segments…
+        </p>
+      );
+    }
+
+    if (searchedSegments.length === 0) {
+      return (
+        <p className="px-3 py-4 text-sm text-muted-foreground">
+          No segments found.
+        </p>
+      );
+    }
+
+    return (
+      <ul>
+        {searchedSegments.map((segment) => {
+          const isSelected = selectedSearchSegment?.id === segment.id;
+          return (
+            <li key={segment.id}>
+              <button
+                type="button"
+                className={`w-full rounded-md border p-2 text-left text-sm hover:bg-muted/40 ${
+                  isSelected
+                    ? "border-[#801A1E] bg-muted/40"
+                    : "border-dashed border-gray-300 dark:border-[#313132]"
+                }`}
+                onClick={() => setSelectedSearchSegment(segment)}
+              >
+                <div
+                  className="line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: segment.content }}
+                />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   const renderSegmentResults = () => {
     if (!selectedTextItem) return null;
 
@@ -370,13 +450,28 @@ const MarkdownLinkDialog = ({
             >
               Text
             </button>
+            <button
+              type="button"
+              className={`flex-1 rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+                linkType === "segment"
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setLinkType("segment")}
+            >
+              Segment
+            </button>
           </div>
 
           <div className="flex items-center rounded-md border border-input px-2">
             <IoMdSearch className="size-4 shrink-0 text-muted-foreground" />
             <Pecha.Input
               placeholder={
-                linkType === "group" ? "Search groups…" : "Search text titles…"
+                linkType === "group"
+                  ? "Search groups…"
+                  : linkType === "text"
+                    ? "Search text titles…"
+                    : "Search segment content…"
               }
               className="border-0 shadow-none focus-visible:ring-0"
               value={searchQuery}
@@ -385,7 +480,11 @@ const MarkdownLinkDialog = ({
           </div>
 
           <div className="max-h-52 overflow-y-auto rounded-md border border-input">
-            {linkType === "group" ? renderGroupResults() : renderTextResults()}
+            {linkType === "group"
+              ? renderGroupResults()
+              : linkType === "text"
+                ? renderTextResults()
+                : renderDirectSegmentResults()}
           </div>
 
           {linkType === "text" && renderSegmentResults()}
