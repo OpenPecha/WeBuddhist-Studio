@@ -152,6 +152,11 @@ const GroupDetailsPage = () => {
                         {meta.description}
                       </p>
                     ) : null}
+                    {meta.description_long?.trim() ? (
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {meta.description_long}
+                      </p>
+                    ) : null}
                   </div>
                 ))}
               </div>

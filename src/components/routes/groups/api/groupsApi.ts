@@ -14,6 +14,7 @@ export interface GroupMetadataDTO {
   title: string;
   sub_title?: string | null;
   description?: string | null;
+  description_long?: string | null;
   language: LanguageCode;
 }
 
@@ -21,6 +22,7 @@ export interface GroupMetadataInput {
   title: string;
   sub_title: string;
   description: string;
+  description_long?: string | null;
   language: LanguageCode;
 }
 
@@ -634,7 +636,12 @@ export function buildGroupMetadata(
   languages: Partial<
     Record<
       LanguageCode,
-      { title: string; sub_title: string; description: string }
+      {
+        title: string;
+        sub_title: string;
+        description: string;
+        description_long?: string;
+      }
     >
   >,
 ): GroupMetadataInput[] {
@@ -643,11 +650,13 @@ export function buildGroupMetadata(
   for (const code of order) {
     const block = languages[code];
     if (!block) continue;
+    const descriptionLong = block.description_long?.trim() ?? "";
     out.push({
       language: code,
       title: block.title.trim(),
       sub_title: block.sub_title.trim(),
       description: block.description.trim(),
+      description_long: descriptionLong || null,
     });
   }
   return out;

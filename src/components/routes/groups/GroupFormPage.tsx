@@ -83,7 +83,9 @@ const GroupFormPage = () => {
     defaultValues: {
       slug: "",
       is_public: true,
-      languages: { EN: { title: "", sub_title: "", description: "" } },
+      languages: {
+        EN: { title: "", sub_title: "", description: "", description_long: "" },
+      },
       avatar_key: "",
       banner_key: "",
     },
@@ -114,6 +116,7 @@ const GroupFormPage = () => {
         title: meta.title ?? "",
         sub_title: meta.sub_title ?? "",
         description: meta.description ?? "",
+        description_long: meta.description_long ?? "",
       };
     }
     setAddedLanguages(langs.length ? langs : ["EN"]);
@@ -123,7 +126,14 @@ const GroupFormPage = () => {
       languages:
         langs.length > 0
           ? languages
-          : { EN: { title: "", sub_title: "", description: "" } },
+          : {
+              EN: {
+                title: "",
+                sub_title: "",
+                description: "",
+                description_long: "",
+              },
+            },
       avatar_key: groupData.avatar_key ?? "",
       banner_key: groupData.banner_key ?? "",
     });
@@ -153,7 +163,7 @@ const GroupFormPage = () => {
     setAddedLanguages((prev) => [...prev, code]);
     form.setValue(
       `languages.${code}`,
-      { title: "", sub_title: "", description: "" },
+      { title: "", sub_title: "", description: "", description_long: "" },
       {
         shouldDirty: true,
       },
@@ -453,6 +463,25 @@ const GroupFormPage = () => {
                                 <Textarea
                                   className="min-h-[100px] resize-none bg-white dark:bg-[#181818]"
                                   maxLength={200}
+                                  {...field}
+                                />
+                              </Pecha.FormControl>
+                              <Pecha.FormMessage />
+                            </Pecha.FormItem>
+                          )}
+                        />
+                        <Pecha.FormField
+                          control={form.control}
+                          name={`languages.${code}.description_long`}
+                          render={({ field }) => (
+                            <Pecha.FormItem>
+                              <Pecha.FormLabel className="text-sm font-bold">
+                                {languageLabelForCode(code)} long description
+                              </Pecha.FormLabel>
+                              <Pecha.FormControl>
+                                <Textarea
+                                  className="min-h-[160px] resize-y bg-white dark:bg-[#181818]"
+                                  placeholder="A longer description with more detail…"
                                   {...field}
                                 />
                               </Pecha.FormControl>

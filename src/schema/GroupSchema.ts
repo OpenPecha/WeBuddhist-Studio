@@ -12,6 +12,7 @@ export const groupLanguageBlockSchema = z.object({
     .trim()
     .min(1, "Description is required")
     .max(200, "Description must be 200 characters or less"),
+  description_long: z.string().trim().optional(),
 });
 
 export const groupCoreSchema = z
