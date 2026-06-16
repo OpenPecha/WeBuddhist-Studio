@@ -21,7 +21,6 @@ import { format, parse } from "date-fns";
 import {
   fetchGroups,
   pickGroupTitle,
-  type AuthorGroupListItem,
 } from "@/components/routes/groups/api/groupsApi";
 
 interface VerseOfDayFormProps {
