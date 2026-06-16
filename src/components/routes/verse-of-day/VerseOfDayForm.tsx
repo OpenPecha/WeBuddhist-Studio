@@ -55,11 +55,14 @@ const VerseOfDayForm = ({
         bo: initialData.verses.bo || "",
         zh: initialData.verses.zh || "",
       });
-      setImageUrls(initialData.image_url ? [initialData.image_url] : []);
+      // Don't set presigned URL as image_urls - it will be skipped during update
+      // User can add new S3 keys if they want to change the image
+      setImageUrls([]);
       setVerseId("");
       setRefId(initialData.ref_id || "");
       setRefType(initialData.ref_type || "");
-      setGroupId(initialData.group_info[0]?.id || "");
+      // Store the group_id as string (UUID format)
+      setGroupId(initialData.group_info?.[0]?.id || "");
       setDate(parse(initialData.date, "yyyy-MM-dd", new Date()));
     } else {
       setActiveLanguage("EN");
@@ -142,24 +145,58 @@ const VerseOfDayForm = ({
       return;
     }
 
-    const payload: VerseOfDayPayload = {
-      verses: {
-        en: verses.en.trim(),
-        bo: verses.bo.trim(),
-        zh: verses.zh.trim(),
-      },
-      image_urls: imageUrls,
-      verse_id: verseId.trim(),
-      ref_id: refId.trim(),
-      ref_type: refType.trim(),
-      group_id: groupId.trim(),
-      date: format(date, "yyyy-MM-dd"),
-    };
-
+    // For create, send all required fields
+    // For update, only send fields that have changed
     if (mode === "edit" && initialData) {
-      updateMutation.mutate({ id: initialData.id, payload });
+      const updatePayload: any = {
+        verses: {
+          en: verses.en.trim(),
+          bo: verses.bo.trim(),
+          zh: verses.zh.trim(),
+        },
+      };
+
+      // Only include date if it changed
+      const newDate = format(date, "yyyy-MM-dd");
+      if (newDate !== initialData.date) {
+        updatePayload.date = newDate;
+      }
+
+      // Only include ref_id/ref_type if they have values
+      if (refId.trim()) {
+        updatePayload.ref_id = refId.trim();
+      }
+      if (refType.trim()) {
+        updatePayload.ref_type = refType.trim();
+      }
+
+      // Only include image_urls if user added new ones (not presigned URLs)
+      if (imageUrls.length > 0 && !imageUrls[0]?.includes("?")) {
+        updatePayload.image_urls = imageUrls;
+      }
+
+      // Only include group_id if it's a valid UUID
+      const trimmedGroupId = String(groupId).trim();
+      if (trimmedGroupId && trimmedGroupId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        updatePayload.group_id = trimmedGroupId;
+      }
+
+      updateMutation.mutate({ id: initialData.id, payload: updatePayload });
     } else {
-      createMutation.mutate(payload);
+      const createPayload: any = {
+        verses: {
+          en: verses.en.trim(),
+          bo: verses.bo.trim(),
+          zh: verses.zh.trim(),
+        },
+        image_urls: imageUrls.length > 0 ? imageUrls : [],
+        verse_id: verseId.trim() || "",
+        ref_id: refId.trim() || "",
+        ref_type: refType.trim() || "",
+        group_id: groupId.trim() || null,
+        date: format(date, "yyyy-MM-dd"),
+      };
+      createMutation.mutate(createPayload);
     }
   };
 
