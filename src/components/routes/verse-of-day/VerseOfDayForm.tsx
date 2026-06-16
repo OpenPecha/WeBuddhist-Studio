@@ -61,8 +61,8 @@ const VerseOfDayForm = ({
       setVerseId("");
       setRefId(initialData.ref_id || "");
       setRefType(initialData.ref_type || "");
-      // Store the group_id as string (UUID format)
-      setGroupId(initialData.group_info?.[0]?.id || "");
+      // Use group_id directly from the response
+      setGroupId(initialData.group_id || "");
       setDate(parse(initialData.date, "yyyy-MM-dd", new Date()));
     } else {
       setActiveLanguage("EN");
@@ -239,11 +239,27 @@ const VerseOfDayForm = ({
 
       <div className="space-y-2">
         <label className="text-sm font-bold">Image URLs</label>
+        
+        {/* Show current image preview when editing */}
+        {mode === "edit" && initialData?.image_url && (
+          <div className="mb-2">
+            <p className="text-xs text-muted-foreground mb-1">Current Image:</p>
+            <img
+              src={initialData.image_url}
+              alt="Current verse image"
+              className="h-24 w-24 rounded object-cover border"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+        
         <div className="flex gap-2">
           <Pecha.Input
             value={imageUrlInput}
             onChange={(e) => setImageUrlInput(e.target.value)}
-            placeholder="Enter image URL"
+            placeholder={mode === "edit" ? "Enter new S3 key to replace image" : "Enter S3 key (e.g., images/verse_of_day/image.jpg)"}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();

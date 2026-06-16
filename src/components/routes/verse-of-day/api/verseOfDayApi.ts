@@ -28,10 +28,11 @@ export interface VerseOfDayItem {
   id: string;
   verses: VerseContent;
   verse: string | null;
-  image_url: string;
+  image_url: string | null;
   ref_id: string;
   ref_type: string;
   date: string;
+  group_id: string | null;
   group_info: GroupInfo[];
 }
 

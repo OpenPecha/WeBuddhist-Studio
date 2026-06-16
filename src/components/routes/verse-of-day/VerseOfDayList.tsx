@@ -79,10 +79,13 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
                     src={verse.image_url}
                     alt="Verse"
                     className="h-12 w-12 rounded object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                    }}
                   />
-                ) : (
-                  <div className="h-12 w-12 rounded bg-muted" />
-                )}
+                ) : null}
+                <div className={`h-12 w-12 rounded bg-muted ${verse.image_url ? 'hidden' : ''}`} />
               </Pecha.TableCell>
               <Pecha.TableCell className="whitespace-nowrap">
                 {format(new Date(verse.date), "MMM dd, yyyy")}
