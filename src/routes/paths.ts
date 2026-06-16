@@ -17,6 +17,7 @@ export const ROUTES = {
   analytics: "/analytics",
   profile: "/profile",
   tags: "/tags",
+  verseOfDay: "/verse-of-day",
   groups: "/groups",
   groupNew: "/groups/new",
   group: (groupId: string) => `/groups/${groupId}`,

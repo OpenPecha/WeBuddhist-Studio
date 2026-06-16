@@ -1,0 +1,187 @@
+import { useState, Activity } from "react";
+import { IoMdAdd, IoMdSearch } from "react-icons/io";
+import { useDebounce } from "use-debounce";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Pecha } from "@/components/ui/shadimport";
+import { Button } from "@/components/ui/atoms/button";
+import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
+import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
+import { getApiErrorMessage } from "@/lib/apiErrors";
+import {
+  fetchVerseOfDayList,
+  deleteVerseOfDay,
+  type VerseOfDayItem,
+} from "./api/verseOfDayApi";
+import VerseOfDayList from "./VerseOfDayList";
+import VerseOfDayFormDialog from "./VerseOfDayFormDialog";
+
+const PAGE_SIZE = 10;
+
+const VerseOfDay = () => {
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch] = useDebounce(search, 500);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<VerseOfDayItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<VerseOfDayItem | null>(null);
+
+  const queryClient = useQueryClient();
+
+  const {
+    data,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["verse-of-day-list", currentPage, debouncedSearch],
+    queryFn: fetchVerseOfDayList,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  const invalidateVerses = () => {
+    queryClient.invalidateQueries({ queryKey: ["verse-of-day-list"] });
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteVerseOfDay,
+    onSuccess: () => {
+      toast.success("Verse of Day deleted successfully!");
+      setDeleteTarget(null);
+      invalidateVerses();
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err));
+      setDeleteTarget(null);
+    },
+  });
+
+  const handleOpenCreate = () => {
+    setEditingItem(null);
+    setFormOpen(true);
+  };
+
+  const handleOpenEdit = (item: VerseOfDayItem) => {
+    setEditingItem(item);
+    setFormOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    setFormOpen(false);
+    setEditingItem(null);
+    invalidateVerses();
+  };
+
+  const sortedVerses = data?.verses
+    ? [...data.verses].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      )
+    : [];
+
+  const totalPages = sortedVerses.length > 0 ? Math.ceil(sortedVerses.length / PAGE_SIZE) : 1;
+
+  return (
+    <div className="flex flex-col border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
+      <div className="mb-4 px-4 pt-10 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <div className="border w-fit px-2 bg-white dark:bg-input/30 rounded-md border-gray-200 dark:border-[#313132] flex items-center">
+            <IoMdSearch className="w-4 h-4" />
+            <Pecha.Input
+              placeholder="Search verses..."
+              className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                if (currentPage !== 1) setCurrentPage(1);
+              }}
+            />
+          </div>
+          <Button
+            variant="outline"
+            className="bg-gray-100 hover:bg-gray-200"
+            onClick={handleOpenCreate}
+          >
+            <IoMdAdd /> Add Verse
+          </Button>
+        </div>
+        <AuthButton />
+      </div>
+
+      <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
+
+      <div className="px-4 pt-4 h-full flex flex-col items-center justify-between flex-1 min-h-0">
+        {error ? (
+          <p className="text-sm text-red-500 py-8">
+            Failed to load verses. {getApiErrorMessage(error)}
+          </p>
+        ) : sortedVerses.length === 0 && !isLoading ? (
+          <div className="flex flex-col h-full items-center justify-center">
+            <p className="text-base text-muted-foreground">No verses found</p>
+            <Button
+              variant="outline"
+              className="mt-2"
+              onClick={handleOpenCreate}
+            >
+              <IoMdAdd /> Add Verse
+            </Button>
+          </div>
+        ) : (
+          <VerseOfDayList
+            onEdit={handleOpenEdit}
+            onDelete={setDeleteTarget}
+          />
+        )}
+      </div>
+
+      <Activity mode={sortedVerses.length ? "visible" : "hidden"}>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </Activity>
+
+      <VerseOfDayFormDialog
+        open={formOpen}
+        onOpenChange={(open: boolean) => {
+          setFormOpen(open);
+          if (!open) setEditingItem(null);
+        }}
+        editingItem={editingItem}
+        onSuccess={handleFormSuccess}
+        existingVerses={sortedVerses}
+      />
+
+      <Pecha.AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <Pecha.AlertDialogContent>
+          <Pecha.AlertDialogHeader>
+            <Pecha.AlertDialogTitle>Delete Verse of Day</Pecha.AlertDialogTitle>
+            <Pecha.AlertDialogDescription>
+              Are you sure you want to delete this verse? This action cannot be
+              undone.
+            </Pecha.AlertDialogDescription>
+          </Pecha.AlertDialogHeader>
+          <Pecha.AlertDialogFooter>
+            <Pecha.AlertDialogCancel disabled={deleteMutation.isPending}>
+              Cancel
+            </Pecha.AlertDialogCancel>
+            <Pecha.AlertDialogAction
+              className="bg-[#AD1B21] dark:text-white hover:bg-[#AD1B21]/90"
+              disabled={deleteMutation.isPending}
+              onClick={() =>
+                deleteTarget && deleteMutation.mutate(deleteTarget.id)
+              }
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Pecha.AlertDialogAction>
+          </Pecha.AlertDialogFooter>
+        </Pecha.AlertDialogContent>
+      </Pecha.AlertDialog>
+    </div>
+  );
+};
+
+export default VerseOfDay;
