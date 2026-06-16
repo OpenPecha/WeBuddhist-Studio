@@ -10,7 +10,11 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { PLAN_LANGUAGE } from "@/lib/constant";
 import { ROUTES } from "@/routes/paths";
-import { fetchGroups } from "./api/groupsApi";
+import {
+  fetchGroups,
+  GROUP_TYPE_OPTIONS,
+  type AuthorGroupType,
+} from "./api/groupsApi";
 import { GroupListShell } from "./components/GroupPageShell";
 import GroupsTable from "./GroupsTable";
 import PendingGroupInvitationsBlock from "./components/PendingGroupInvitationsBlock";
@@ -20,6 +24,7 @@ const PAGE_SIZE = 10;
 const Groups = () => {
   const [search, setSearch] = useState("");
   const [language, setLanguage] = useState<string>("");
+  const [groupType, setGroupType] = useState<AuthorGroupType | "">("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
 
@@ -28,13 +33,14 @@ const Groups = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["cms-groups", currentPage, debouncedSearch, language],
+    queryKey: ["cms-groups", currentPage, debouncedSearch, language, groupType],
     queryFn: () =>
       fetchGroups({
         page: currentPage,
         limit: PAGE_SIZE,
         search: debouncedSearch,
         language: language || undefined,
+        group_type: groupType || undefined,
       }),
     refetchOnWindowFocus: false,
     retry: false,
@@ -75,6 +81,26 @@ const Groups = () => {
                 {PLAN_LANGUAGE.map((lang) => (
                   <Pecha.SelectItem key={lang.value} value={lang.value}>
                     {lang.label}
+                  </Pecha.SelectItem>
+                ))}
+              </Pecha.SelectContent>
+            </Pecha.Select>
+
+            <Pecha.Select
+              value={groupType || "all"}
+              onValueChange={(v) => {
+                setGroupType(v === "all" ? "" : (v as AuthorGroupType));
+                setCurrentPage(1);
+              }}
+            >
+              <Pecha.SelectTrigger className="w-36 bg-white dark:bg-input/30">
+                <Pecha.SelectValue placeholder="Type" />
+              </Pecha.SelectTrigger>
+              <Pecha.SelectContent>
+                <Pecha.SelectItem value="all">All types</Pecha.SelectItem>
+                {GROUP_TYPE_OPTIONS.map((option) => (
+                  <Pecha.SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </Pecha.SelectItem>
                 ))}
               </Pecha.SelectContent>

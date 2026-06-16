@@ -115,6 +115,7 @@ export interface AuthorGroupListItem {
   metadata: GroupMetadataDTO[];
   tags: TagSummaryDTO[];
   follower_count: number;
+  joiner_count?: number;
   member_count?: number;
   avatar?: string | null;
   avatar_key?: string | null;
@@ -232,6 +233,7 @@ export interface FetchGroupsParams {
   search?: string;
   language?: string;
   tag_id?: string;
+  group_type?: AuthorGroupType;
   /** When true, lists all groups eligible as transfer targets (not only membership). */
   for_transfer?: boolean;
   /** When true, lists groups the user may filter dashboard content by (staff-wide read list). */
@@ -244,12 +246,21 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
 });
 
+export function groupTypeLabel(groupType?: AuthorGroupType): string {
+  if (!groupType) return "—";
+  return (
+    GROUP_TYPE_OPTIONS.find((option) => option.value === groupType)?.label ??
+    groupType
+  );
+}
+
 export const fetchGroups = async ({
   page,
   limit,
   search,
   language,
   tag_id,
+  group_type,
   for_transfer,
   for_dashboard,
 }: FetchGroupsParams): Promise<AuthorGroupListResponse> => {
@@ -267,6 +278,7 @@ export const fetchGroups = async ({
         ...(search?.trim() && { search: search.trim() }),
         ...(language && { language }),
         ...(tag_id && { tag_id }),
+        ...(group_type && { group_type }),
         ...(for_transfer && { for_transfer: true }),
         ...(for_dashboard && { for_dashboard: true }),
       },

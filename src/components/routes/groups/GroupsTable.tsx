@@ -2,6 +2,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/routes/paths";
 import {
+  groupTypeLabel,
   pickGroupTitle,
   resolveGroupAvatarUrl,
   type AuthorGroupListItem,
@@ -30,10 +31,12 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
         <Pecha.TableHeader>
           <Pecha.TableRow>
             <Pecha.TableHead>Title</Pecha.TableHead>
+            <Pecha.TableHead>Type</Pecha.TableHead>
             <Pecha.TableHead>Slug</Pecha.TableHead>
             <Pecha.TableHead>Visibility</Pecha.TableHead>
             <Pecha.TableHead>Members</Pecha.TableHead>
             <Pecha.TableHead>Followers</Pecha.TableHead>
+            <Pecha.TableHead>Joiners</Pecha.TableHead>
             <Pecha.TableHead>Tags</Pecha.TableHead>
           </Pecha.TableRow>
         </Pecha.TableHeader>
@@ -51,6 +54,7 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
                   size="sm"
                 />
               </Pecha.TableCell>
+              <Pecha.TableCell>{groupTypeLabel(group.group_type)}</Pecha.TableCell>
               <Pecha.TableCell className="text-muted-foreground font-mono text-sm">
                 {group.slug}
               </Pecha.TableCell>
@@ -65,6 +69,7 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
               </Pecha.TableCell>
               <Pecha.TableCell>{group.member_count ?? "—"}</Pecha.TableCell>
               <Pecha.TableCell>{group.follower_count}</Pecha.TableCell>
+              <Pecha.TableCell>{group.joiner_count ?? "—"}</Pecha.TableCell>
               <Pecha.TableCell>{group.tags.length}</Pecha.TableCell>
             </Pecha.TableRow>
           ))}
