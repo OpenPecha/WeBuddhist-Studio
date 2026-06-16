@@ -42,70 +42,82 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
   }
 
   return (
-    <>
-      <div className="rounded-md border">
-        <Pecha.Table>
-          <Pecha.TableHeader>
-            <Pecha.TableRow>
-              <Pecha.TableHead>Verses</Pecha.TableHead>
-              <Pecha.TableHead>Image</Pecha.TableHead>
-              <Pecha.TableHead>Date</Pecha.TableHead>
-              <Pecha.TableHead>Group</Pecha.TableHead>
-              <Pecha.TableHead className="text-right">Actions</Pecha.TableHead>
-            </Pecha.TableRow>
-          </Pecha.TableHeader>
-          <Pecha.TableBody>
-            {sortedVerses.map((verse) => (
-              <Pecha.TableRow key={verse.id}>
-                <Pecha.TableCell className="max-w-xs">
-                  <p className="truncate text-sm">
-                    {verse.verses.en || verse.verses.bo || verse.verses.zh}
-                  </p>
-                </Pecha.TableCell>
-                <Pecha.TableCell>
-                  {verse.image_url ? (
-                    <img
-                      src={verse.image_url}
-                      alt="Verse"
-                      className="h-12 w-12 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="h-12 w-12 rounded bg-muted" />
-                  )}
-                </Pecha.TableCell>
-                <Pecha.TableCell>
-                  {format(new Date(verse.date), "MMM dd, yyyy")}
-                </Pecha.TableCell>
-                <Pecha.TableCell>
+    <div className="rounded-md border bg-white dark:bg-[#1E1E1E]">
+      <Pecha.Table>
+        <Pecha.TableHeader>
+          <Pecha.TableRow>
+            <Pecha.TableHead className="w-[250px]">English</Pecha.TableHead>
+            <Pecha.TableHead className="w-[250px]">བོད་ཡིག (Tibetan)</Pecha.TableHead>
+            <Pecha.TableHead className="w-[250px]">中文 (Chinese)</Pecha.TableHead>
+            <Pecha.TableHead className="w-[100px]">Image</Pecha.TableHead>
+            <Pecha.TableHead className="w-[120px]">Date</Pecha.TableHead>
+            <Pecha.TableHead className="w-[150px]">Group</Pecha.TableHead>
+            <Pecha.TableHead className="w-[180px] text-right">Actions</Pecha.TableHead>
+          </Pecha.TableRow>
+        </Pecha.TableHeader>
+        <Pecha.TableBody>
+          {sortedVerses.map((verse) => (
+            <Pecha.TableRow key={verse.id}>
+              <Pecha.TableCell className="max-w-[250px]">
+                <p className="text-sm line-clamp-2">
+                  {verse.verses.en || <span className="text-muted-foreground">—</span>}
+                </p>
+              </Pecha.TableCell>
+              <Pecha.TableCell className="max-w-[250px]">
+                <p className="text-sm line-clamp-2">
+                  {verse.verses.bo || <span className="text-muted-foreground">—</span>}
+                </p>
+              </Pecha.TableCell>
+              <Pecha.TableCell className="max-w-[250px]">
+                <p className="text-sm line-clamp-2">
+                  {verse.verses.zh || <span className="text-muted-foreground">—</span>}
+                </p>
+              </Pecha.TableCell>
+              <Pecha.TableCell>
+                {verse.image_url ? (
+                  <img
+                    src={verse.image_url}
+                    alt="Verse"
+                    className="h-12 w-12 rounded object-cover"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded bg-muted" />
+                )}
+              </Pecha.TableCell>
+              <Pecha.TableCell className="whitespace-nowrap">
+                {format(new Date(verse.date), "MMM dd, yyyy")}
+              </Pecha.TableCell>
+              <Pecha.TableCell>
+                <p className="truncate text-sm">
                   {verse.group_info?.[0]?.title || "—"}
-                </Pecha.TableCell>
-                <Pecha.TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(verse)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onDelete(verse)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </Pecha.TableCell>
-              </Pecha.TableRow>
-            ))}
-          </Pecha.TableBody>
-        </Pecha.Table>
-      </div>
-    </>
+                </p>
+              </Pecha.TableCell>
+              <Pecha.TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(verse)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(verse)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </Pecha.TableCell>
+            </Pecha.TableRow>
+          ))}
+        </Pecha.TableBody>
+      </Pecha.Table>
+    </div>
   );
 };
 
