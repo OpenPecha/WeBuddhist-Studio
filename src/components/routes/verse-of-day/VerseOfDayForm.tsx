@@ -13,6 +13,8 @@ import {
   type VerseOfDayPayload,
   type VerseOfDayItem,
 } from "./api/verseOfDayApi";
+import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
+import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { format, parse } from "date-fns";
 
@@ -39,8 +41,10 @@ const VerseOfDayForm = ({
     bo: "",
     zh: "",
   });
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [imageKey, setImageKey] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [groupId, setGroupId] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
@@ -52,17 +56,17 @@ const VerseOfDayForm = ({
         bo: initialData.verses.bo || "",
         zh: initialData.verses.zh || "",
       });
-      // Don't set presigned URL as image_urls - it will be skipped during update
-      // User can add new S3 keys if they want to change the image
-      setImageUrls([]);
+      // Set image preview from existing data
+      setImageKey(null);
+      setImagePreview(initialData.image_url || null);
       // Use group_id directly from the response
       setGroupId(initialData.group_id || "");
       setDate(parse(initialData.date, "yyyy-MM-dd", new Date()));
     } else {
       setActiveLanguage("EN");
       setVerses({ en: "", bo: "", zh: "" });
-      setImageUrls([]);
-      setImageUrlInput("");
+      setImageKey(null);
+      setImagePreview(null);
       setGroupId("");
       setDate(new Date());
     }
@@ -91,16 +95,30 @@ const VerseOfDayForm = ({
     },
   });
 
-  const handleAddImageUrl = () => {
-    const trimmed = imageUrlInput.trim();
-    if (trimmed && !imageUrls.includes(trimmed)) {
-      setImageUrls([...imageUrls, trimmed]);
-      setImageUrlInput("");
+  const handleImageUpload = async (file: File) => {
+    setIsImageUploading(true);
+    try {
+      const { image, key } = await uploadImageToS3(file, "");
+      setImagePreview(image.original);
+      setImageKey(key);
+      setIsImageDialogOpen(false);
+      toast.success("Image uploaded successfully!");
+    } catch (error: any) {
+      if (error?.response?.status === 413) {
+        toast.error("Failed to upload image", {
+          description: "File exceeds the maximum size of 1MB",
+        });
+      } else {
+        toast.error("Failed to upload image");
+      }
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
-  const handleRemoveImageUrl = (index: number) => {
-    setImageUrls(imageUrls.filter((_, i) => i !== index));
+  const handleRemoveImage = () => {
+    setImageKey(null);
+    setImagePreview(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -153,9 +171,9 @@ const VerseOfDayForm = ({
         updatePayload.date = newDate;
       }
 
-      // Only include image_urls if user added new ones (not presigned URLs)
-      if (imageUrls.length > 0 && !imageUrls[0]?.includes("?")) {
-        updatePayload.image_urls = imageUrls;
+      // Only include image_urls if user uploaded a new image
+      if (imageKey) {
+        updatePayload.image_urls = [imageKey];
       }
 
       // Only include group_id if it's a valid UUID
@@ -172,7 +190,7 @@ const VerseOfDayForm = ({
           bo: verses.bo.trim(),
           zh: verses.zh.trim(),
         },
-        image_urls: imageUrls.length > 0 ? imageUrls : [],
+        image_urls: imageKey ? [imageKey] : [],
         group_id: groupId.trim() || null,
         date: format(date, "yyyy-MM-dd"),
       };
@@ -218,64 +236,36 @@ const VerseOfDayForm = ({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold">Image URLs</label>
-        
-        {/* Show current image preview when editing */}
-        {mode === "edit" && initialData?.image_url && (
-          <div className="mb-2">
-            <p className="text-xs text-muted-foreground mb-1">Current Image:</p>
-            <img
-              src={initialData.image_url}
-              alt="Current verse image"
-              className="h-24 w-24 rounded object-cover border"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-        )}
-        
-        <div className="flex gap-2">
-          <Pecha.Input
-            value={imageUrlInput}
-            onChange={(e) => setImageUrlInput(e.target.value)}
-            placeholder={mode === "edit" ? "Enter new S3 key to replace image" : "Enter S3 key (e.g., images/verse_of_day/image.jpg)"}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddImageUrl();
-              }
-            }}
-          />
-          <Button
-            type="button"
-            onClick={handleAddImageUrl}
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-          >
-            <IoMdAdd className="h-4 w-4" />
-          </Button>
-        </div>
-        {imageUrls.length > 0 && (
-          <div className="space-y-2">
-            {imageUrls.map((url, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 rounded border p-2"
+        <label className="text-sm font-bold">Image</label>
+        <div className="flex gap-4 items-start">
+          {!imagePreview && (
+            <button
+              type="button"
+              onClick={() => setIsImageDialogOpen(true)}
+              className="border w-32 h-24 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
+              aria-label="Upload verse image"
+            >
+              <IoMdAdd className="h-8 w-8 text-gray-400" />
+            </button>
+          )}
+          {imagePreview && (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Verse preview"
+                className="w-32 h-24 object-cover rounded-lg border"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1"
+                aria-label="Remove image"
               >
-                <span className="flex-1 truncate text-sm">{url}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImageUrl(index)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <IoMdClose className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                <IoMdClose className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -337,8 +327,25 @@ const VerseOfDayForm = ({
               : "Create"}
         </Button>
       </div>
+
+      <Pecha.Dialog
+        open={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+      >
+        <Pecha.DialogContent showCloseButton>
+          <Pecha.DialogHeader>
+            <Pecha.DialogTitle>Upload & Crop Image</Pecha.DialogTitle>
+          </Pecha.DialogHeader>
+          <ImageContentData
+            onUpload={handleImageUpload}
+            isLoading={isImageUploading}
+          />
+        </Pecha.DialogContent>
+      </Pecha.Dialog>
     </form>
   );
 };
 
 export default VerseOfDayForm;
+
+export { VerseOfDayForm };
