@@ -19,6 +19,7 @@ import {
   buildGroupMetadata,
   createGroup,
   fetchGroup,
+  GROUP_TYPE_OPTIONS,
   languageLabelForCode,
   patchGroup,
   pickGroupTitle,
@@ -26,6 +27,7 @@ import {
   replaceGroupTags,
   resolveGroupAvatarUrl,
   resolveGroupBannerUrl,
+  type AuthorGroupType,
   type GroupSocialLinkDTO,
   type TagSummaryDTO,
 } from "./api/groupsApi";
@@ -82,6 +84,7 @@ const GroupFormPage = () => {
     resolver: zodResolver(groupCoreSchema),
     defaultValues: {
       slug: "",
+      group_type: "PAGE" as AuthorGroupType,
       is_public: true,
       languages: {
         EN: { title: "", sub_title: "", description: "", description_long: "" },
@@ -122,6 +125,7 @@ const GroupFormPage = () => {
     setAddedLanguages(langs.length ? langs : ["EN"]);
     form.reset({
       slug: groupData.slug,
+      group_type: groupData.group_type ?? "PAGE",
       is_public: groupData.is_public,
       languages:
         langs.length > 0
@@ -273,7 +277,10 @@ const GroupFormPage = () => {
       banner_key: bannerKey,
     };
     if (isNew) {
-      createMutation.mutate(payload);
+      createMutation.mutate({
+        ...payload,
+        group_type: data.group_type,
+      });
       return;
     }
     patchMutation.mutate(payload);
@@ -379,6 +386,48 @@ const GroupFormPage = () => {
                       </Pecha.FormItem>
                     )}
                   />
+                  {isNew && (
+                    <Pecha.FormField
+                      control={form.control}
+                      name="group_type"
+                      render={({ field }) => (
+                        <Pecha.FormItem>
+                          <Pecha.FormLabel className="text-sm font-bold">
+                            Group type
+                            <span className="text-destructive"> *</span>
+                          </Pecha.FormLabel>
+                          <Pecha.Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <Pecha.FormControl>
+                              <Pecha.SelectTrigger className="h-12 bg-white dark:bg-[#262626]">
+                                <Pecha.SelectValue placeholder="Select group type" />
+                              </Pecha.SelectTrigger>
+                            </Pecha.FormControl>
+                            <Pecha.SelectContent>
+                              {GROUP_TYPE_OPTIONS.map((option) => (
+                                <Pecha.SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </Pecha.SelectItem>
+                              ))}
+                            </Pecha.SelectContent>
+                          </Pecha.Select>
+                          <p className="text-sm text-muted-foreground">
+                            {
+                              GROUP_TYPE_OPTIONS.find(
+                                (option) => option.value === field.value,
+                              )?.description
+                            }
+                          </p>
+                          <Pecha.FormMessage />
+                        </Pecha.FormItem>
+                      )}
+                    />
+                  )}
                   <Pecha.FormField
                     control={form.control}
                     name="is_public"

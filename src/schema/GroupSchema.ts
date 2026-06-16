@@ -15,6 +15,10 @@ export const groupLanguageBlockSchema = z.object({
   description_long: z.string().trim().optional(),
 });
 
+export const authorGroupTypeSchema = z.enum(["PAGE", "COMMUNITY"]);
+
+export type AuthorGroupType = z.infer<typeof authorGroupTypeSchema>;
+
 export const groupCoreSchema = z
   .object({
     slug: z
@@ -25,6 +29,7 @@ export const groupCoreSchema = z
         /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
         "Use lowercase letters, numbers, and hyphens only",
       ),
+    group_type: authorGroupTypeSchema,
     is_public: z.boolean(),
     languages: z.object({
       EN: groupLanguageBlockSchema.optional(),

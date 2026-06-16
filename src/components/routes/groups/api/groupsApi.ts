@@ -9,6 +9,25 @@ import type { UserInfo } from "@/hooks/useUserInfo";
 
 export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
+export type AuthorGroupType = "PAGE" | "COMMUNITY";
+
+export const GROUP_TYPE_OPTIONS: {
+  value: AuthorGroupType;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "PAGE",
+    label: "Page",
+    description: "Users follow this group to stay updated.",
+  },
+  {
+    value: "COMMUNITY",
+    label: "Community",
+    description: "Users join this group as members.",
+  },
+];
+
 export interface GroupMetadataDTO {
   id?: string;
   title: string;
@@ -91,6 +110,7 @@ export interface GroupLinkedPlanDTO {
 export interface AuthorGroupListItem {
   id: string;
   slug: string;
+  group_type?: AuthorGroupType;
   is_public: boolean;
   metadata: GroupMetadataDTO[];
   tags: TagSummaryDTO[];
@@ -121,6 +141,7 @@ export interface AuthorGroupListResponse {
 
 export interface CreateAuthorGroupRequest {
   slug: string;
+  group_type?: AuthorGroupType;
   is_public?: boolean;
   avatar_key?: string | null;
   banner_key?: string | null;
