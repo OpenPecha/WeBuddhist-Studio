@@ -31,7 +31,7 @@ interface VerseOfDayFormProps {
   existingVerses: VerseOfDayItem[];
 }
 
-type LanguageCode = "EN" | "BO" | "ZH";
+type LanguageCode = "EN" | "BO" | "ZH" | "HI" | "NE" | "MN";
 
 const VerseOfDayForm = ({
   mode,
@@ -45,6 +45,9 @@ const VerseOfDayForm = ({
     en: "",
     bo: "",
     zh: "",
+    hi: "",
+    ne: "",
+    mn: "",
   });
   const [imageKey, setImageKey] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -60,6 +63,9 @@ const VerseOfDayForm = ({
         en: initialData.verses.en || "",
         bo: initialData.verses.bo || "",
         zh: initialData.verses.zh || "",
+        hi: initialData.verses.hi || "",
+        ne: initialData.verses.ne || "",
+        mn: initialData.verses.mn || "",
       });
       // Set image preview from existing data
       setImageKey(null);
@@ -69,7 +75,7 @@ const VerseOfDayForm = ({
       setDate(parse(initialData.date, "yyyy-MM-dd", new Date()));
     } else {
       setActiveLanguage("EN");
-      setVerses({ en: "", bo: "", zh: "" });
+      setVerses({ en: "", bo: "", zh: "", hi: "", ne: "", mn: "" });
       setImageKey(null);
       setImagePreview(null);
       setGroupId("");
@@ -129,7 +135,7 @@ const VerseOfDayForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!verses.en.trim() && !verses.bo.trim() && !verses.zh.trim()) {
+    if (!verses.en.trim() && !verses.bo.trim() && !verses.zh.trim() && !verses.hi.trim() && !verses.ne.trim() && !verses.mn.trim()) {
       toast.error("At least one verse content is required");
       return;
     }
@@ -167,6 +173,9 @@ const VerseOfDayForm = ({
           en: verses.en.trim(),
           bo: verses.bo.trim(),
           zh: verses.zh.trim(),
+          hi: verses.hi.trim(),
+          ne: verses.ne.trim(),
+          mn: verses.mn.trim(),
         },
       };
 
@@ -194,6 +203,9 @@ const VerseOfDayForm = ({
           en: verses.en.trim(),
           bo: verses.bo.trim(),
           zh: verses.zh.trim(),
+          hi: verses.hi.trim(),
+          ne: verses.ne.trim(),
+          mn: verses.mn.trim(),
         },
         image_urls: imageKey ? [imageKey] : [],
         group_id: groupId.trim() || null,

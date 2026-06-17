@@ -4,6 +4,9 @@ export interface VerseContent {
   en: string;
   bo: string;
   zh: string;
+  hi: string;
+  ne: string;
+  mn: string;
 }
 
 export interface VerseOfDayPayload {

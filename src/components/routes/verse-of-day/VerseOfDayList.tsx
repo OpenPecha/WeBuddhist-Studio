@@ -46,9 +46,7 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
       <Pecha.Table>
         <Pecha.TableHeader>
           <Pecha.TableRow>
-            <Pecha.TableHead className="w-[250px]">English</Pecha.TableHead>
-            <Pecha.TableHead className="w-[250px]">བོད་ཡིག (Tibetan)</Pecha.TableHead>
-            <Pecha.TableHead className="w-[250px]">中文 (Chinese)</Pecha.TableHead>
+            <Pecha.TableHead className="w-[400px]">English</Pecha.TableHead>
             <Pecha.TableHead className="w-[100px]">Image</Pecha.TableHead>
             <Pecha.TableHead className="w-[120px]">Date</Pecha.TableHead>
             <Pecha.TableHead className="w-[150px]">Group</Pecha.TableHead>
@@ -58,19 +56,9 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
         <Pecha.TableBody>
           {sortedVerses.map((verse) => (
             <Pecha.TableRow key={verse.id}>
-              <Pecha.TableCell className="max-w-[250px]">
+              <Pecha.TableCell className="max-w-[400px]">
                 <p className="text-sm line-clamp-2">
                   {verse.verses.en || <span className="text-muted-foreground">—</span>}
-                </p>
-              </Pecha.TableCell>
-              <Pecha.TableCell className="max-w-[250px]">
-                <p className="text-sm line-clamp-2">
-                  {verse.verses.bo || <span className="text-muted-foreground">—</span>}
-                </p>
-              </Pecha.TableCell>
-              <Pecha.TableCell className="max-w-[250px]">
-                <p className="text-sm line-clamp-2">
-                  {verse.verses.zh || <span className="text-muted-foreground">—</span>}
                 </p>
               </Pecha.TableCell>
               <Pecha.TableCell>

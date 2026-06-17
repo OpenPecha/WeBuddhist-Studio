@@ -25,7 +25,7 @@ const VerseOfDayFormDialog = ({
 
   return (
     <Pecha.Dialog open={open} onOpenChange={onOpenChange}>
-      <Pecha.DialogContent className="flex max-h-[min(90dvh,90vh)] w-[calc(100%-2rem)] max-w-4xl flex-col gap-0 overflow-hidden p-0 sm:w-full">
+      <Pecha.DialogContent className="flex max-h-[min(90dvh,90vh)] w-[calc(100%-2rem)] max-w-[1100px] flex-col gap-0 overflow-hidden p-0 sm:w-full">
         <Pecha.DialogHeader className="shrink-0 border-b px-6 py-4">
           <Pecha.DialogTitle>
             {mode === "edit" ? "Edit Verse of Day" : "Create Verse of Day"}
