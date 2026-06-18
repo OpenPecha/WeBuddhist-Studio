@@ -5,7 +5,7 @@ import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import { IoMdClose } from "react-icons/io";
 import { FaMinus, FaTrash } from "react-icons/fa6";
 import { FiLoader } from "react-icons/fi";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
@@ -24,6 +24,7 @@ import {
   uploadSubTaskAudio,
 } from "@/components/routes/task/api/taskApi";
 import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
+import { getPreset } from "@/components/routes/task/api/presetApi";
 
 interface SubTaskTimestamps {
   start_ms?: number | null;
@@ -206,9 +207,24 @@ const ImageSubtask = ({
   </>
 );
 
-const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
-  <SourceReferenceContent content={subTask.content} />
-);
+const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => {
+  const { data: preset } = useQuery({
+    queryKey: ["preset", subTask.id],
+    queryFn: () => getPreset(subTask.id!),
+    enabled: !!subTask.id,
+  });
+
+  return (
+    <div className="space-y-2">
+      <SourceReferenceContent content={subTask.content} />
+      {preset && (
+        <div className="text-sm text-gray-600 dark:text-gray-400 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          <span className="font-medium">Version:</span> {preset.language} (ID: {preset.version_id.substring(0, 8)}...)
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SubtaskAudioControls = ({
   subTaskId,
