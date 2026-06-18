@@ -12,8 +12,8 @@ interface VersionSelectorModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   textId: string;
-  subtaskId: string;
-  onSuccess?: () => void;
+  subtaskId?: string;
+  onSuccess?: (versionId: string, language: string) => void;
 }
 
 export const VersionSelectorModal = ({
@@ -47,14 +47,16 @@ export const VersionSelectorModal = ({
 
     setIsSaving(true);
     try {
-      await createOrUpdatePreset(subtaskId, {
-        version_id: selectedVersion,
-        language: selectedLanguage,
-      });
-      toast.success("Version preset saved successfully");
+      if (subtaskId) {
+        await createOrUpdatePreset(subtaskId, {
+          version_id: selectedVersion,
+          language: selectedLanguage,
+        });
+        toast.success("Version preset saved successfully");
+      }
       onOpenChange(false);
       if (onSuccess) {
-        onSuccess();
+        onSuccess(selectedVersion, selectedLanguage);
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || "Failed to save preset");

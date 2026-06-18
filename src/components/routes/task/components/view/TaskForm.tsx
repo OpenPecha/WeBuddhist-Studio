@@ -16,6 +16,7 @@ import {
   fetchTaskDetails,
   updateTaskTitle,
 } from "../../api/taskApi";
+import { createOrUpdatePreset } from "../../api/presetApi";
 import { ContentTypeSelector } from "@/components/ui/molecules/content-sub/ContentTypeSelector";
 import {
   SubTaskCard,
@@ -63,6 +64,8 @@ const TaskForm = ({
     index: number;
     textId: string;
     subtaskId: string | null;
+    versionId?: string;
+    language?: string;
   } | null>(null);
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", planId]);
@@ -104,12 +107,12 @@ const TaskForm = ({
         
         if (pendingSourceReference && createdSubTasks?.sub_tasks) {
           const createdSubTask = createdSubTasks.sub_tasks[pendingSourceReference.index];
-          if (createdSubTask) {
-            setPendingSourceReference({
-              ...pendingSourceReference,
-              subtaskId: createdSubTask.id,
+          if (createdSubTask && pendingSourceReference.versionId && pendingSourceReference.language) {
+            await createOrUpdatePreset(createdSubTask.id, {
+              version_id: pendingSourceReference.versionId,
+              language: pendingSourceReference.language,
             });
-            setVersionSelectorOpen(true);
+            toast.success("Version preset saved!");
           }
         }
       }
@@ -318,7 +321,7 @@ const TaskForm = ({
     const newIndex = subTasks.length;
     setSubTasks([...subTasks, newSubTask!]);
 
-    if (content_type === "SOURCE_REFERENCE" && sourceData?.text_id && !isEditMode) {
+    if (content_type === "SOURCE_REFERENCE" && sourceData?.text_id) {
       setPendingSourceReference({
         index: newIndex,
         textId: sourceData.text_id,
@@ -498,16 +501,19 @@ const TaskForm = ({
           isOpen={versionSelectorOpen}
           onOpenChange={(open) => {
             setVersionSelectorOpen(open);
-            if (!open) {
+            if (!open && !pendingSourceReference.versionId) {
               setPendingSourceReference(null);
-              clearFormData();
             }
           }}
           textId={pendingSourceReference.textId}
-          subtaskId={pendingSourceReference.subtaskId || ""}
-          onSuccess={() => {
-            setPendingSourceReference(null);
-            clearFormData();
+          subtaskId={pendingSourceReference.subtaskId || undefined}
+          onSuccess={(versionId, language) => {
+            setPendingSourceReference({
+              ...pendingSourceReference,
+              versionId,
+              language,
+            });
+            setVersionSelectorOpen(false);
           }}
         />
       )}
