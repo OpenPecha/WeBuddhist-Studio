@@ -73,14 +73,14 @@ export const VersionSelectorModal = ({
   const availableVersions = versionsData?.available_versions || [];
 
   return (
-    <Pecha.Dialog open={isOpen} onOpenChange={handleClose}>
-      <Pecha.DialogContent className="sm:max-w-md">
-        <Pecha.DialogHeader>
-          <Pecha.DialogTitle>Select Text Version</Pecha.DialogTitle>
-          <Pecha.DialogDescription>
+    <Pecha.Sheet open={isOpen} onOpenChange={handleClose}>
+      <Pecha.SheetContent className="sm:max-w-md">
+        <Pecha.SheetHeader>
+          <Pecha.SheetTitle>Select Text Version</Pecha.SheetTitle>
+          <Pecha.SheetDescription>
             Choose a language and version for this text reference
-          </Pecha.DialogDescription>
-        </Pecha.DialogHeader>
+          </Pecha.SheetDescription>
+        </Pecha.SheetHeader>
 
         <div className="space-y-4 py-4">
           {/* Language Selection */}
@@ -145,12 +145,13 @@ export const VersionSelectorModal = ({
           )}
         </div>
 
-        <Pecha.DialogFooter>
+        <div className="flex gap-3 mt-6">
           <Pecha.Button
             type="button"
             variant="outline"
             onClick={handleClose}
             disabled={isSaving}
+            className="flex-1"
           >
             Cancel
           </Pecha.Button>
@@ -158,11 +159,12 @@ export const VersionSelectorModal = ({
             type="button"
             onClick={handleSave}
             disabled={!selectedVersion || isSaving}
+            className="flex-1"
           >
             {isSaving ? "Saving..." : "Save"}
           </Pecha.Button>
-        </Pecha.DialogFooter>
-      </Pecha.DialogContent>
-    </Pecha.Dialog>
+        </div>
+      </Pecha.SheetContent>
+    </Pecha.Sheet>
   );
 };
