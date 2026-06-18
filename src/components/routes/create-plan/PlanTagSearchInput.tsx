@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { IoMdClose } from "react-icons/io";
+import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { useDebounce } from "use-debounce";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/atoms/input";
+import { Textarea } from "@/components/ui/atoms/textarea";
+import { Button } from "@/components/ui/atoms/button";
+import { Pecha } from "@/components/ui/shadimport";
+import { PLAN_LANGUAGE } from "@/lib/constant";
+import type { LanguageCode } from "@/schema/SeriesSchema";
 import {
   createTag,
   fetchTags,
   type PlanTagSummary,
   type Tag,
+  type TagMetadataInput,
 } from "@/components/routes/tags/api/tagsApi";
 
 interface PlanTagSearchInputProps {
@@ -23,6 +29,11 @@ const SUGGESTIONS_LIMIT = 10;
 const SEARCH_DEBOUNCE_MS = 400;
 
 const normalizeName = (name: string) => name.trim().toLowerCase();
+
+interface LanguageData {
+  name: string;
+  description: string;
+}
 
 const PlanTagSearchInput = ({
   value = [],
@@ -39,6 +50,13 @@ const PlanTagSearchInput = ({
   const [tagLabels, setTagLabels] = useState<Record<string, string>>(() =>
     Object.fromEntries(initialTags.map((tag) => [tag.id, tag.name])),
   );
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [activeLanguages, setActiveLanguages] = useState<LanguageCode[]>(["EN"]);
+  const [languageData, setLanguageData] = useState<Record<LanguageCode, LanguageData>>({
+    EN: { name: "", description: "" },
+    BO: { name: "", description: "" },
+    ZH: { name: "", description: "" },
+  });
 
   useEffect(() => {
     if (!initialTags.length) return;
@@ -56,10 +74,9 @@ const PlanTagSearchInput = ({
   });
 
   const createTagMutation = useMutation({
-    mutationFn: (name: string) =>
+    mutationFn: (metadata: TagMetadataInput[]) =>
       createTag({
-        name: name.trim(),
-        description: null,
+        metadata,
         image_key: null,
         plan_ids: planId ? [planId] : [],
       }),
@@ -69,6 +86,8 @@ const PlanTagSearchInput = ({
       addTag(tag);
       setInputValue("");
       setShowSuggestions(false);
+      setShowCreateDialog(false);
+      resetCreateForm();
       toast.success(`Tag "${tag.name}" created`);
     },
     onError: () => {
@@ -106,9 +125,63 @@ const PlanTagSearchInput = ({
     setShowSuggestions(false);
   };
 
+  const resetCreateForm = () => {
+    setActiveLanguages(["EN"]);
+    setLanguageData({
+      EN: { name: "", description: "" },
+      BO: { name: "", description: "" },
+      ZH: { name: "", description: "" },
+    });
+  };
+
+  const openCreateDialog = () => {
+    resetCreateForm();
+    setLanguageData((prev) => ({
+      ...prev,
+      EN: { name: trimmedInput, description: "" },
+    }));
+    setShowCreateDialog(true);
+    setShowSuggestions(false);
+  };
+
   const handleCreateTag = () => {
-    if (!trimmedInput || createTagMutation.isPending) return;
-    createTagMutation.mutate(trimmedInput);
+    const metadata: TagMetadataInput[] = [];
+    for (const lang of activeLanguages) {
+      const data = languageData[lang];
+      if (!data.name.trim()) {
+        toast.error(`Name is required for ${PLAN_LANGUAGE.find(l => l.value === lang)?.label}`);
+        return;
+      }
+      metadata.push({
+        language: lang,
+        name: data.name.trim(),
+        description: data.description.trim() || null,
+      });
+    }
+    createTagMutation.mutate(metadata);
+  };
+
+  const addLanguage = (langCode: LanguageCode) => {
+    setActiveLanguages([...activeLanguages, langCode]);
+  };
+
+  const removeLanguage = (langCode: LanguageCode) => {
+    if (activeLanguages.length === 1) {
+      toast.error("At least one language is required");
+      return;
+    }
+    setActiveLanguages(activeLanguages.filter((l) => l !== langCode));
+  };
+
+  const updateLanguageField = (
+    lang: LanguageCode,
+    field: keyof LanguageData,
+    value: string
+  ) => {
+    setLanguageData((prev) => ({
+      ...prev,
+      [lang]: { ...prev[lang], [field]: value },
+    }));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -124,7 +197,7 @@ const PlanTagSearchInput = ({
         return;
       }
       if (showCreateOption) {
-        handleCreateTag();
+        openCreateDialog();
       }
     } else if (e.key === "Escape") {
       setShowSuggestions(false);
@@ -207,7 +280,7 @@ const PlanTagSearchInput = ({
                   type="button"
                   className="w-full px-3 py-2 text-left text-sm text-[#A51C21] hover:bg-muted/50 cursor-pointer font-medium border-b"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={handleCreateTag}
+                  onClick={openCreateDialog}
                   disabled={createTagMutation.isPending}
                 >
                   {createTagMutation.isPending
@@ -241,6 +314,102 @@ const PlanTagSearchInput = ({
           </ul>
         )}
       </div>
+
+      {/* Multi-language Create Tag Dialog */}
+      <Pecha.Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <Pecha.DialogContent className="flex max-h-[min(90dvh,90vh)] w-[calc(100%-2rem)] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:w-full">
+          <Pecha.DialogHeader className="shrink-0 border-b px-6 py-4">
+            <Pecha.DialogTitle>Create New Tag</Pecha.DialogTitle>
+          </Pecha.DialogHeader>
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold">Languages</label>
+                {PLAN_LANGUAGE.filter((lang) => !activeLanguages.includes(lang.value as LanguageCode)).length > 0 && (
+                  <Pecha.DropdownMenu>
+                    <Pecha.DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                      >
+                        <IoMdAdd className="h-3 w-3 mr-1" />
+                        Add Language
+                      </Button>
+                    </Pecha.DropdownMenuTrigger>
+                    <Pecha.DropdownMenuContent>
+                      {PLAN_LANGUAGE.filter((lang) => !activeLanguages.includes(lang.value as LanguageCode)).map((lang) => (
+                        <Pecha.DropdownMenuItem
+                          key={lang.value}
+                          onClick={() => addLanguage(lang.value as LanguageCode)}
+                        >
+                          {lang.label}
+                        </Pecha.DropdownMenuItem>
+                      ))}
+                    </Pecha.DropdownMenuContent>
+                  </Pecha.DropdownMenu>
+                )}
+              </div>
+              {activeLanguages.map((lang) => {
+                const langLabel = PLAN_LANGUAGE.find((l) => l.value === lang)?.label || lang;
+                return (
+                  <div key={lang} className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3">
+                    {activeLanguages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLanguage(lang)}
+                        className="absolute top-2 right-2 text-muted-foreground hover:text-foreground p-1 rounded"
+                        aria-label={`Remove ${langLabel}`}
+                      >
+                        <IoMdClose className="h-4 w-4" />
+                      </button>
+                    )}
+                    <div className="text-sm font-semibold text-muted-foreground mb-2">{langLabel}</div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold">Name</label>
+                      <Input
+                        value={languageData[lang].name}
+                        onChange={(e) => updateLanguageField(lang, "name", e.target.value)}
+                        placeholder="Tag name"
+                        required
+                        className="bg-white dark:bg-[#181818]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold">Description</label>
+                      <Textarea
+                        value={languageData[lang].description}
+                        onChange={(e) => updateLanguageField(lang, "description", e.target.value)}
+                        placeholder="Optional description"
+                        className="field-sizing-fixed min-h-[80px] max-h-32 resize-none bg-white dark:bg-[#181818]"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex shrink-0 justify-end gap-2 border-t bg-background px-6 py-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowCreateDialog(false)}
+              disabled={createTagMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
+              onClick={handleCreateTag}
+              disabled={createTagMutation.isPending}
+            >
+              {createTagMutation.isPending ? "Creating..." : "Create Tag"}
+            </Button>
+          </div>
+        </Pecha.DialogContent>
+      </Pecha.Dialog>
     </div>
   );
 };
