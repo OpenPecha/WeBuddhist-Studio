@@ -57,10 +57,10 @@ export const VersionSelectorModal = ({
         version_id: selectedVersion,
         language: selectedLanguage,
       });
-      
+
       // Invalidate preset query to refresh the display
       queryClient.invalidateQueries({ queryKey: ["preset", subtaskId] });
-      
+
       toast.success("Version preset saved successfully!");
       onOpenChange(false);
       if (onSuccess) {

@@ -96,9 +96,12 @@ export const fetchTextLanguages = async (textId: string) => {
   return data;
 };
 
-export const fetchLanguageVersions = async (textId: string, language: string) => {
+export const fetchLanguageVersions = async (
+  textId: string,
+  language: string,
+) => {
   const { data } = await axiosInstance.get(
-    `/api/v1/texts/${textId}/languages/${language}/versions`
+    `/api/v1/texts/${textId}/languages/${language}/versions`,
   );
   return data;
 };

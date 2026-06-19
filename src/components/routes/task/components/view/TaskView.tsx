@@ -69,12 +69,13 @@ const SourceReferenceWithVersion = ({ subtask }: { subtask: any }) => {
 
   const { data: versionsData } = useQuery({
     queryKey: ["languageVersions", subtask.source_text_id, preset?.language],
-    queryFn: () => fetchLanguageVersions(subtask.source_text_id, preset!.language),
+    queryFn: () =>
+      fetchLanguageVersions(subtask.source_text_id, preset!.language),
     enabled: !!preset && !!subtask.source_text_id && !!preset.language,
   });
 
   const versionTitle = versionsData?.available_versions?.find(
-    (v: any) => v.id === preset?.version_id
+    (v: any) => v.id === preset?.version_id,
   )?.title;
 
   return (
@@ -85,14 +86,17 @@ const SourceReferenceWithVersion = ({ subtask }: { subtask: any }) => {
           {/* Connecting line */}
           <div className="absolute -top-2 left-0 w-px h-2 bg-blue-400 dark:bg-blue-500" />
           <div className="absolute top-0 left-0 w-3 h-px bg-blue-400 dark:bg-blue-500" />
-          
+
           {/* Version info box */}
           <div className="ml-4 flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
             <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
               {preset.language}
             </span>
             <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
-            <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[300px]" title={versionTitle || preset.version_id}>
+            <span
+              className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[300px]"
+              title={versionTitle || preset.version_id}
+            >
               {versionTitle || preset.version_id.substring(0, 8) + "..."}
             </span>
           </div>
@@ -115,7 +119,7 @@ const SubtaskCard = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
-  
+
   const { data: preset } = useQuery({
     queryKey: ["preset", subtask.id],
     queryFn: () => getPreset(subtask.id),
@@ -132,16 +136,18 @@ const SubtaskCard = ({
             <div className="flex items-center border w-fit bg-[#F7F7F7] dark:bg-sidebar-secondary px-2 py-1 text-sm rounded-md border-dashed gap-2">
               <ContentIcon type={subtask.content_type} /> {subtask.content_type}
             </div>
-            {subtask.content_type === "SOURCE_REFERENCE" && !preset && subtask.source_text_id && (
-              <Pecha.Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsModalOpen(true)}
-                className="text-xs"
-              >
-                Add Version
-              </Pecha.Button>
-            )}
+            {subtask.content_type === "SOURCE_REFERENCE" &&
+              !preset &&
+              subtask.source_text_id && (
+                <Pecha.Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsModalOpen(true)}
+                  className="text-xs"
+                >
+                  Add Version
+                </Pecha.Button>
+              )}
           </div>
           {listeners && isEditable && (
             <PiDotsSixVertical
@@ -153,7 +159,10 @@ const SubtaskCard = ({
         {subtask.content_type === "SOURCE_REFERENCE" ? (
           <SourceReferenceWithVersion subtask={subtask} />
         ) : (
-          <SubtaskContent type={subtask.content_type} content={subtask.content} />
+          <SubtaskContent
+            type={subtask.content_type}
+            content={subtask.content}
+          />
         )}
         {subtask.audio_url ? (
           <div className="border-t border-dashed pt-2">
@@ -175,24 +184,28 @@ const SubtaskCard = ({
             />
           ) : (
             <p className="text-xs text-muted-foreground border-t border-dashed pt-2">
-              Timeline: {formatMs(subtask.start_ms)} – {formatMs(subtask.end_ms)}
+              Timeline: {formatMs(subtask.start_ms)} –{" "}
+              {formatMs(subtask.end_ms)}
             </p>
           ))
         )}
       </div>
-      
-      {subtask.content_type === "SOURCE_REFERENCE" && subtask.source_text_id && (
-        <VersionSelectorModal
-          isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          textId={subtask.source_text_id}
-          subtaskId={subtask.id}
-          onSuccess={() => {
-            setIsModalOpen(false);
-            queryClient.invalidateQueries({ queryKey: ["preset", subtask.id] });
-          }}
-        />
-      )}
+
+      {subtask.content_type === "SOURCE_REFERENCE" &&
+        subtask.source_text_id && (
+          <VersionSelectorModal
+            isOpen={isModalOpen}
+            onOpenChange={setIsModalOpen}
+            textId={subtask.source_text_id}
+            subtaskId={subtask.id}
+            onSuccess={() => {
+              setIsModalOpen(false);
+              queryClient.invalidateQueries({
+                queryKey: ["preset", subtask.id],
+              });
+            }}
+          />
+        )}
     </>
   );
 };

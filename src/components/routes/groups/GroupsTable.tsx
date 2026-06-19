@@ -54,7 +54,9 @@ const GroupsTable = ({ groups, isLoading }: GroupsTableProps) => {
                   size="sm"
                 />
               </Pecha.TableCell>
-              <Pecha.TableCell>{groupTypeLabel(group.group_type)}</Pecha.TableCell>
+              <Pecha.TableCell>
+                {groupTypeLabel(group.group_type)}
+              </Pecha.TableCell>
               <Pecha.TableCell className="text-muted-foreground font-mono text-sm">
                 {group.slug}
               </Pecha.TableCell>

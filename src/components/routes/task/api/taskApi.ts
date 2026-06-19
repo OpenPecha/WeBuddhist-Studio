@@ -180,12 +180,9 @@ export const deleteSubTaskAudio = async (sub_task_id: string) => {
 };
 
 export const deleteSubTaskTimestamp = async (sub_task_id: string) => {
-  await axiosInstance.delete(
-    `/api/v1/cms/sub-tasks/${sub_task_id}/timestamp`,
-    {
-      headers: getAuthHeaders(),
-    },
-  );
+  await axiosInstance.delete(`/api/v1/cms/sub-tasks/${sub_task_id}/timestamp`, {
+    headers: getAuthHeaders(),
+  });
 };
 
 export const generateDayAudio = async (

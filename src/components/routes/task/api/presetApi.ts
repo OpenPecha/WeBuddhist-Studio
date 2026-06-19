@@ -22,27 +22,27 @@ export interface PresetResponse {
 
 export const createOrUpdatePreset = async (
   subtaskId: string,
-  preset: PresetRequest
+  preset: PresetRequest,
 ): Promise<PresetResponse> => {
   const { data } = await axiosInstance.post(
     `/api/v1/cms/sub-tasks/${subtaskId}/preset`,
     preset,
     {
       headers: getAuthHeaders(),
-    }
+    },
   );
   return data;
 };
 
 export const getPreset = async (
-  subtaskId: string
+  subtaskId: string,
 ): Promise<PresetResponse | null> => {
   try {
     const { data } = await axiosInstance.get(
       `/api/v1/cms/sub-tasks/${subtaskId}/preset`,
       {
         headers: getAuthHeaders(),
-      }
+      },
     );
     return data;
   } catch (error: any) {
