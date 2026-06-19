@@ -215,11 +215,24 @@ const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => {
   });
 
   return (
-    <div className="space-y-2">
+    <div className="relative">
       <SourceReferenceContent content={subTask.content} />
       {preset && (
-        <div className="text-sm text-gray-600 dark:text-gray-400 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-          <span className="font-medium">Version:</span> {preset.language} (ID: {preset.version_id.substring(0, 8)}...)
+        <div className="relative mt-2 ml-4">
+          {/* Connecting line */}
+          <div className="absolute -top-2 left-0 w-px h-2 bg-blue-400 dark:bg-blue-500" />
+          <div className="absolute top-0 left-0 w-3 h-px bg-blue-400 dark:bg-blue-500" />
+          
+          {/* Version info box */}
+          <div className="ml-4 flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+              {preset.language}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[200px]" title={preset.version_id}>
+              {preset.version_id.substring(0, 8)}...
+            </span>
+          </div>
         </div>
       )}
     </div>

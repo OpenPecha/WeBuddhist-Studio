@@ -1,6 +1,6 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchTextLanguages,
   fetchLanguageVersions,
@@ -23,6 +23,7 @@ export const VersionSelectorModal = ({
   subtaskId,
   onSuccess,
 }: VersionSelectorModalProps) => {
+  const queryClient = useQueryClient();
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [selectedVersion, setSelectedVersion] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -56,6 +57,10 @@ export const VersionSelectorModal = ({
         version_id: selectedVersion,
         language: selectedLanguage,
       });
+      
+      // Invalidate preset query to refresh the display
+      queryClient.invalidateQueries({ queryKey: ["preset", subtaskId] });
+      
       toast.success("Version preset saved successfully!");
       onOpenChange(false);
       if (onSuccess) {
