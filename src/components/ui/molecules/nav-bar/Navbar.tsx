@@ -15,6 +15,7 @@ import {
 } from "../../atoms/tooltip";
 import AuthAvatar from "@/components/ui/molecules/auth-avatar/AuthAvatar";
 import NotificationBell from "@/components/ui/molecules/notification-bell/NotificationBell";
+import VerseOfDayButton from "@/components/routes/verse-of-day/VerseOfDayButton";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { canAccessAdminAuthors } from "@/lib/platformAccess";
 import { MdAdminPanelSettings } from "react-icons/md";
@@ -131,6 +132,7 @@ const Navbar = () => {
               </Tooltip>
             ))}
             <NotificationBell />
+            <VerseOfDayButton />
           </div>
         </div>
         <div className="flex flex-col items-center h-44 space-y-2 pb-2">
