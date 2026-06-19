@@ -84,18 +84,18 @@ export const VersionSelectorModal = ({
 
   return (
     <Pecha.Sheet open={isOpen} onOpenChange={handleClose}>
-      <Pecha.SheetContent className="sm:max-w-md">
-        <Pecha.SheetHeader>
+      <Pecha.SheetContent className="sm:max-w-md p-6">
+        <Pecha.SheetHeader className="mb-6">
           <Pecha.SheetTitle>Select Text Version</Pecha.SheetTitle>
           <Pecha.SheetDescription>
             Choose a language and version for this text reference
           </Pecha.SheetDescription>
         </Pecha.SheetHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-6">
           {/* Language Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Language</label>
+          <div className="space-y-4">
+            <label className="text-sm font-medium block">Language</label>
             {isLoadingLanguages ? (
               <div className="text-sm text-gray-500">Loading languages...</div>
             ) : availableLanguages.length === 0 ? (
@@ -130,8 +130,8 @@ export const VersionSelectorModal = ({
 
           {/* Version Selection */}
           {selectedLanguage && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Version</label>
+            <div className="space-y-4">
+              <label className="text-sm font-medium block">Version</label>
               {isLoadingVersions ? (
                 <div className="text-sm text-gray-500">Loading versions...</div>
               ) : (
@@ -155,7 +155,7 @@ export const VersionSelectorModal = ({
           )}
         </div>
 
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-3 pt-6 mt-8 border-t">
           <Pecha.Button
             type="button"
             variant="outline"
