@@ -200,3 +200,54 @@ export const deleteDayAudio = async (day_id: string) => {
     headers: getAuthHeaders(),
   });
 };
+
+export interface DayVideo {
+  id: string;
+  day_id: string;
+  url: string;
+  video_id: string | null;
+  title: string | null;
+  display_order: number;
+  created_at: string;
+}
+
+export type DayVideoSummary = Pick<
+  DayVideo,
+  "id" | "url" | "video_id" | "title" | "display_order"
+>;
+
+export interface AddDayVideoPayload {
+  url: string;
+  title?: string | null;
+}
+
+export const addDayVideo = async (
+  day_id: string,
+  payload: AddDayVideoPayload,
+) => {
+  const { data } = await axiosInstance.post<DayVideo>(
+    `/api/v1/cms/plans/days/${day_id}/videos`,
+    payload,
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
+export const deleteDayVideo = async (day_id: string, video_id: string) => {
+  await axiosInstance.delete(
+    `/api/v1/cms/plans/days/${day_id}/videos/${video_id}`,
+    { headers: getAuthHeaders() },
+  );
+};
+
+export const reorderDayVideos = async (
+  day_id: string,
+  videos: Array<{ id: string; display_order: number }>,
+) => {
+  const { data } = await axiosInstance.put<{ videos: DayVideo[] }>(
+    `/api/v1/cms/plans/days/${day_id}/videos/order`,
+    { videos },
+    { headers: getAuthHeaders() },
+  );
+  return data.videos;
+};
