@@ -16,7 +16,6 @@ import {
   fetchTaskDetails,
   updateTaskTitle,
 } from "../../api/taskApi";
-import { createOrUpdatePreset } from "../../api/presetApi";
 import { ContentTypeSelector } from "@/components/ui/molecules/content-sub/ContentTypeSelector";
 import {
   SubTaskCard,
@@ -64,8 +63,6 @@ const TaskForm = ({
     index: number;
     textId: string;
     subtaskId: string | null;
-    versionId?: string;
-    language?: string;
   } | null>(null);
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", planId]);
@@ -107,22 +104,23 @@ const TaskForm = ({
         
         if (pendingSourceReference && createdSubTasks?.sub_tasks) {
           const createdSubTask = createdSubTasks.sub_tasks[pendingSourceReference.index];
-          if (createdSubTask && pendingSourceReference.versionId && pendingSourceReference.language) {
-            await createOrUpdatePreset(createdSubTask.id, {
-              version_id: pendingSourceReference.versionId,
-              language: pendingSourceReference.language,
+          
+          if (createdSubTask?.id) {
+            setPendingSourceReference({
+              ...pendingSourceReference,
+              subtaskId: createdSubTask.id,
             });
-            toast.success("Version preset saved!");
+            setVersionSelectorOpen(true);
           }
         }
       }
       return taskResponse;
     },
     onSuccess: (taskResponse) => {
-      toast.success("Task created successfully!", {
-        description: "Your task has been added to the day.",
-      });
       if (!pendingSourceReference) {
+        toast.success("Task created successfully!", {
+          description: "Your task has been added to the day.",
+        });
         clearFormData(taskResponse.id);
       }
       queryClient.refetchQueries({ queryKey: ["planDetails", planId] });
@@ -327,7 +325,6 @@ const TaskForm = ({
         textId: sourceData.text_id,
         subtaskId: null,
       });
-      setVersionSelectorOpen(true);
     }
   };
 
@@ -501,19 +498,22 @@ const TaskForm = ({
           isOpen={versionSelectorOpen}
           onOpenChange={(open) => {
             setVersionSelectorOpen(open);
-            if (!open && !pendingSourceReference.versionId) {
+            if (!open) {
+              toast.success("Task created successfully!", {
+                description: "Your task has been added to the day.",
+              });
               setPendingSourceReference(null);
+              clearFormData();
             }
           }}
           textId={pendingSourceReference.textId}
           subtaskId={pendingSourceReference.subtaskId || undefined}
-          onSuccess={(versionId, language) => {
-            setPendingSourceReference({
-              ...pendingSourceReference,
-              versionId,
-              language,
+          onSuccess={() => {
+            toast.success("Task created successfully!", {
+              description: "Your task has been added to the day.",
             });
-            setVersionSelectorOpen(false);
+            setPendingSourceReference(null);
+            clearFormData();
           }}
         />
       )}

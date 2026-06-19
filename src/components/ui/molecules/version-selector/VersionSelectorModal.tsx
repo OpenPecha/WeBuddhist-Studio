@@ -13,7 +13,7 @@ interface VersionSelectorModalProps {
   onOpenChange: (open: boolean) => void;
   textId: string;
   subtaskId?: string;
-  onSuccess?: (versionId: string, language: string) => void;
+  onSuccess?: () => void;
 }
 
 export const VersionSelectorModal = ({
@@ -45,18 +45,21 @@ export const VersionSelectorModal = ({
       return;
     }
 
+    if (!subtaskId || subtaskId.trim() === "") {
+      toast.error("Cannot save preset without subtask ID");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      if (subtaskId) {
-        await createOrUpdatePreset(subtaskId, {
-          version_id: selectedVersion,
-          language: selectedLanguage,
-        });
-        toast.success("Version preset saved successfully");
-      }
+      await createOrUpdatePreset(subtaskId, {
+        version_id: selectedVersion,
+        language: selectedLanguage,
+      });
+      toast.success("Version preset saved successfully!");
       onOpenChange(false);
       if (onSuccess) {
-        onSuccess(selectedVersion, selectedLanguage);
+        onSuccess();
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || "Failed to save preset");
