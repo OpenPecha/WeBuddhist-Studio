@@ -86,9 +86,7 @@ const MarkdownEditor = ({
       const prefix = "## ";
       const insertText = `${prefix}${currentValue.slice(start, end)}`;
       const nextValue =
-        currentValue.slice(0, lineStart) +
-        insertText +
-        currentValue.slice(end);
+        currentValue.slice(0, lineStart) + insertText + currentValue.slice(end);
       const cursorStart = lineStart + prefix.length;
       const cursorEnd = cursorStart + (end - start);
       return { nextValue, cursorStart, cursorEnd };
@@ -124,14 +122,11 @@ const MarkdownEditor = ({
     setIsLinkDialogOpen(true);
   };
 
-  const handleInsertLink = ({
-    label,
-    url,
-  }: {
-    label: string;
-    url: string;
-  }) => {
-    const selection = savedSelection.current ?? { start: value.length, end: value.length };
+  const handleInsertLink = ({ label, url }: { label: string; url: string }) => {
+    const selection = savedSelection.current ?? {
+      start: value.length,
+      end: value.length,
+    };
     const markdown = buildMarkdownLink(label, url);
     const result = insertAtSelection(
       value,
