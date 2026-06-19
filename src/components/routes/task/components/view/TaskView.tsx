@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPreset } from "../../api/presetApi";
+import { fetchLanguageVersions } from "@/components/api/searchApi";
 import { Pecha } from "@/components/ui/shadimport";
 import { useState } from "react";
 import { VersionSelectorModal } from "@/components/ui/molecules/version-selector/VersionSelectorModal";
@@ -66,6 +67,16 @@ const SourceReferenceWithVersion = ({ subtask }: { subtask: any }) => {
     enabled: !!subtask.id,
   });
 
+  const { data: versionsData } = useQuery({
+    queryKey: ["languageVersions", subtask.source_text_id, preset?.language],
+    queryFn: () => fetchLanguageVersions(subtask.source_text_id, preset!.language),
+    enabled: !!preset && !!subtask.source_text_id && !!preset.language,
+  });
+
+  const versionTitle = versionsData?.available_versions?.find(
+    (v: any) => v.id === preset?.version_id
+  )?.title;
+
   return (
     <div className="relative">
       <SourceReferenceContent content={subtask.content} />
@@ -81,8 +92,8 @@ const SourceReferenceWithVersion = ({ subtask }: { subtask: any }) => {
               {preset.language}
             </span>
             <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
-            <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[200px]" title={preset.version_id}>
-              {preset.version_id.substring(0, 8)}...
+            <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[300px]" title={versionTitle || preset.version_id}>
+              {versionTitle || preset.version_id.substring(0, 8) + "..."}
             </span>
           </div>
         </div>
