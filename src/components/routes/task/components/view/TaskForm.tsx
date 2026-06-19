@@ -22,7 +22,6 @@ import {
   type SubTask,
 } from "@/components/ui/molecules/subtask-card/SubTaskCard";
 import DaySelector from "@/components/ui/molecules/day-selector/DaySelector";
-import { VersionSelectorModal } from "@/components/ui/molecules/version-selector/VersionSelectorModal";
 import {
   buildSubTaskTimestampFields,
   mapApiSubtaskTimestamps,
@@ -58,12 +57,6 @@ const TaskForm = ({
   const formValues = form.watch();
   const isEditMode = Boolean(editingTask);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
-  const [versionSelectorOpen, setVersionSelectorOpen] = useState(false);
-  const [pendingSourceReference, setPendingSourceReference] = useState<{
-    index: number;
-    textId: string;
-    subtaskId: string | null;
-  } | null>(null);
 
   const currentPlan = queryClient.getQueryData<any>(["planDetails", planId]);
   const currentDayData = currentPlan?.days?.find(
@@ -100,29 +93,15 @@ const TaskForm = ({
           }),
           ...buildSubTaskTimestampFields(subTask, false),
         }));
-        const createdSubTasks = await createSubTasks(taskResponse.id, subTasksPayload);
-        
-        if (pendingSourceReference && createdSubTasks?.sub_tasks) {
-          const createdSubTask = createdSubTasks.sub_tasks[pendingSourceReference.index];
-          
-          if (createdSubTask?.id) {
-            setPendingSourceReference({
-              ...pendingSourceReference,
-              subtaskId: createdSubTask.id,
-            });
-            setVersionSelectorOpen(true);
-          }
-        }
+        await createSubTasks(taskResponse.id, subTasksPayload);
       }
       return taskResponse;
     },
     onSuccess: (taskResponse) => {
-      if (!pendingSourceReference) {
-        toast.success("Task created successfully!", {
-          description: "Your task has been added to the day.",
-        });
-        clearFormData(taskResponse.id);
-      }
+      toast.success("Task created successfully!", {
+        description: "Your task has been added to the day.",
+      });
+      clearFormData(taskResponse.id);
       queryClient.refetchQueries({ queryKey: ["planDetails", planId] });
     },
     onError: (error: Error) => {
@@ -316,16 +295,7 @@ const TaskForm = ({
         break;
     }
 
-    const newIndex = subTasks.length;
     setSubTasks([...subTasks, newSubTask!]);
-
-    if (content_type === "SOURCE_REFERENCE" && sourceData?.text_id) {
-      setPendingSourceReference({
-        index: newIndex,
-        textId: sourceData.text_id,
-        subtaskId: null,
-      });
-    }
   };
 
   const updateSubTask = (index: number, updates: any) => {
@@ -492,31 +462,6 @@ const TaskForm = ({
           </div>
         </form>
       </Pecha.Form>
-
-      {pendingSourceReference && (
-        <VersionSelectorModal
-          isOpen={versionSelectorOpen}
-          onOpenChange={(open) => {
-            setVersionSelectorOpen(open);
-            if (!open) {
-              toast.success("Task created successfully!", {
-                description: "Your task has been added to the day.",
-              });
-              setPendingSourceReference(null);
-              clearFormData();
-            }
-          }}
-          textId={pendingSourceReference.textId}
-          subtaskId={pendingSourceReference.subtaskId || undefined}
-          onSuccess={() => {
-            toast.success("Task created successfully!", {
-              description: "Your task has been added to the day.",
-            });
-            setPendingSourceReference(null);
-            clearFormData();
-          }}
-        />
-      )}
     </div>
   );
 };
