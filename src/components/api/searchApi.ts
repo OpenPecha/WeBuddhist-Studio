@@ -91,4 +91,19 @@ export const searchSegments = async ({
   return data;
 };
 
+export const fetchTextLanguages = async (textId: string) => {
+  const { data } = await axiosInstance.get(`/api/v1/texts/${textId}/languages`);
+  return data;
+};
+
+export const fetchLanguageVersions = async (
+  textId: string,
+  language: string,
+) => {
+  const { data } = await axiosInstance.get(
+    `/api/v1/texts/${textId}/languages/${language}/versions`,
+  );
+  return data;
+};
+
 export type { SearchCommon };

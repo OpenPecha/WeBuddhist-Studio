@@ -170,9 +170,7 @@ describe("TaskView Component", () => {
       expect(screen.getByText("Segment: 1:00 – 2:30")).toBeInTheDocument();
     });
     expect(
-      document.querySelector(
-        'audio[src="https://example.com/day-audio.mp3"]',
-      ),
+      document.querySelector('audio[src="https://example.com/day-audio.mp3"]'),
     ).toBeInTheDocument();
   });
 
@@ -197,9 +195,7 @@ describe("TaskView Component", () => {
       <TaskView onEditTask={mockOnEditTask} taskId="task-123" />,
     );
     await waitFor(() => {
-      expect(
-        screen.getByText("Timeline: 0:30 – 1:30"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Timeline: 0:30 – 1:30")).toBeInTheDocument();
     });
     expect(document.querySelector("audio")).not.toBeInTheDocument();
   });
@@ -230,7 +226,9 @@ describe("TaskView Component", () => {
       />,
     );
     await waitFor(() => {
-      expect(screen.getByText("Task With Both Audio Sources")).toBeInTheDocument();
+      expect(
+        screen.getByText("Task With Both Audio Sources"),
+      ).toBeInTheDocument();
     });
     expect(
       container.querySelector(

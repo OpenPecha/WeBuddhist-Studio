@@ -5,7 +5,7 @@ import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import { IoMdClose } from "react-icons/io";
 import { FaMinus, FaTrash } from "react-icons/fa6";
 import { FiLoader } from "react-icons/fi";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import InlineImageUpload from "@/components/ui/molecules/form-upload/InlineImageUpload";
@@ -24,6 +24,7 @@ import {
   uploadSubTaskAudio,
 } from "@/components/routes/task/api/taskApi";
 import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
+import { getPreset } from "@/components/routes/task/api/presetApi";
 
 interface SubTaskTimestamps {
   start_ms?: number | null;
@@ -206,9 +207,40 @@ const ImageSubtask = ({
   </>
 );
 
-const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => (
-  <SourceReferenceContent content={subTask.content} />
-);
+const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => {
+  const { data: preset } = useQuery({
+    queryKey: ["preset", subTask.id],
+    queryFn: () => getPreset(subTask.id!),
+    enabled: !!subTask.id,
+  });
+
+  return (
+    <div className="relative">
+      <SourceReferenceContent content={subTask.content} />
+      {preset && (
+        <div className="relative mt-2 ml-4">
+          {/* Connecting line */}
+          <div className="absolute -top-2 left-0 w-px h-2 bg-blue-400 dark:bg-blue-500" />
+          <div className="absolute top-0 left-0 w-3 h-px bg-blue-400 dark:bg-blue-500" />
+
+          {/* Version info box */}
+          <div className="ml-4 flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+              {preset.language}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+            <span
+              className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[200px]"
+              title={preset.version_id}
+            >
+              {preset.version_id.substring(0, 8)}...
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SubtaskAudioControls = ({
   subTaskId,
@@ -507,8 +539,7 @@ export const SubTaskCard = ({
 }: SubTaskCardProps) => {
   const hasDayAudio =
     !!dayAudioUrl && dayAudioDurationMs != null && dayAudioDurationMs > 0;
-  const hasTimestamps =
-    subTask.start_ms != null && subTask.end_ms != null;
+  const hasTimestamps = subTask.start_ms != null && subTask.end_ms != null;
   const showTimestampSection = hasDayAudio || hasTimestamps;
 
   const renderContent = () => {

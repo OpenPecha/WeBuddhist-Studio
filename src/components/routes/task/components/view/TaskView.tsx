@@ -1,5 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getPreset } from "../../api/presetApi";
+import { fetchLanguageVersions } from "@/components/api/searchApi";
 import { Pecha } from "@/components/ui/shadimport";
+import { useState } from "react";
+import { VersionSelectorModal } from "@/components/ui/molecules/version-selector/VersionSelectorModal";
 import axiosInstance from "@/config/axios-config";
 import {
   ContentIcon,
@@ -56,6 +60,52 @@ const SubtaskContent = ({
   }
 };
 
+const SourceReferenceWithVersion = ({ subtask }: { subtask: any }) => {
+  const { data: preset } = useQuery({
+    queryKey: ["preset", subtask.id],
+    queryFn: () => getPreset(subtask.id),
+    enabled: !!subtask.id,
+  });
+
+  const { data: versionsData } = useQuery({
+    queryKey: ["languageVersions", subtask.source_text_id, preset?.language],
+    queryFn: () =>
+      fetchLanguageVersions(subtask.source_text_id, preset!.language),
+    enabled: !!preset && !!subtask.source_text_id && !!preset.language,
+  });
+
+  const versionTitle = versionsData?.available_versions?.find(
+    (v: any) => v.id === preset?.version_id,
+  )?.title;
+
+  return (
+    <div className="relative">
+      <SourceReferenceContent content={subtask.content} />
+      {preset && (
+        <div className="relative mt-2 ml-4">
+          {/* Connecting line */}
+          <div className="absolute -top-2 left-0 w-px h-2 bg-blue-400 dark:bg-blue-500" />
+          <div className="absolute top-0 left-0 w-3 h-px bg-blue-400 dark:bg-blue-500" />
+
+          {/* Version info box */}
+          <div className="ml-4 flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+              {preset.language}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+            <span
+              className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[300px]"
+              title={versionTitle || preset.version_id}
+            >
+              {versionTitle || preset.version_id.substring(0, 8) + "..."}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const SubtaskCard = ({
   subtask,
   listeners,
@@ -67,47 +117,96 @@ const SubtaskCard = ({
   isEditable?: boolean;
   dayAudioUrl?: string | null;
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: preset } = useQuery({
+    queryKey: ["preset", subtask.id],
+    queryFn: () => getPreset(subtask.id),
+    enabled: !!subtask.id && subtask.content_type === "SOURCE_REFERENCE",
+  });
+
   return (
-    <div
-      className={`border rounded-xl bg-[#ffffff] dark:bg-[#161616] border-gray-300 dark:border-input p-2 space-y-2`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center border w-fit bg-[#F7F7F7] dark:bg-sidebar-secondary px-2 py-1 text-sm rounded-md border-dashed gap-2">
-          <ContentIcon type={subtask.content_type} /> {subtask.content_type}
+    <>
+      <div
+        className={`border rounded-xl bg-[#ffffff] dark:bg-[#161616] border-gray-300 dark:border-input p-2 space-y-2`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border w-fit bg-[#F7F7F7] dark:bg-sidebar-secondary px-2 py-1 text-sm rounded-md border-dashed gap-2">
+              <ContentIcon type={subtask.content_type} /> {subtask.content_type}
+            </div>
+            {subtask.content_type === "SOURCE_REFERENCE" &&
+              !preset &&
+              subtask.source_text_id && (
+                <Pecha.Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsModalOpen(true)}
+                  className="text-xs"
+                >
+                  Add Version
+                </Pecha.Button>
+              )}
+          </div>
+          {listeners && isEditable && (
+            <PiDotsSixVertical
+              className="w-5 h-5 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
+              {...listeners}
+            />
+          )}
         </div>
-        {listeners && isEditable && (
-          <PiDotsSixVertical
-            className="w-5 h-5 text-gray-400 dark:text-muted-foreground cursor-grab active:cursor-grabbing"
-            {...listeners}
+        {subtask.content_type === "SOURCE_REFERENCE" ? (
+          <SourceReferenceWithVersion subtask={subtask} />
+        ) : (
+          <SubtaskContent
+            type={subtask.content_type}
+            content={subtask.content}
           />
         )}
-      </div>
-      <SubtaskContent type={subtask.content_type} content={subtask.content} />
-      {subtask.audio_url ? (
-        <div className="border-t border-dashed pt-2">
-          <audio
-            controls
-            src={subtask.audio_url}
-            className="w-full"
-            preload="metadata"
-          />
-        </div>
-      ) : (
-        subtask.start_ms != null &&
-        subtask.end_ms != null &&
-        (dayAudioUrl ? (
-          <AudioSegmentPlayer
-            audioUrl={dayAudioUrl}
-            startMs={subtask.start_ms}
-            endMs={subtask.end_ms}
-          />
+        {subtask.audio_url ? (
+          <div className="border-t border-dashed pt-2">
+            <audio
+              controls
+              src={subtask.audio_url}
+              className="w-full"
+              preload="metadata"
+            />
+          </div>
         ) : (
-          <p className="text-xs text-muted-foreground border-t border-dashed pt-2">
-            Timeline: {formatMs(subtask.start_ms)} – {formatMs(subtask.end_ms)}
-          </p>
-        ))
-      )}
-    </div>
+          subtask.start_ms != null &&
+          subtask.end_ms != null &&
+          (dayAudioUrl ? (
+            <AudioSegmentPlayer
+              audioUrl={dayAudioUrl}
+              startMs={subtask.start_ms}
+              endMs={subtask.end_ms}
+            />
+          ) : (
+            <p className="text-xs text-muted-foreground border-t border-dashed pt-2">
+              Timeline: {formatMs(subtask.start_ms)} –{" "}
+              {formatMs(subtask.end_ms)}
+            </p>
+          ))
+        )}
+      </div>
+
+      {subtask.content_type === "SOURCE_REFERENCE" &&
+        subtask.source_text_id && (
+          <VersionSelectorModal
+            isOpen={isModalOpen}
+            onOpenChange={setIsModalOpen}
+            textId={subtask.source_text_id}
+            subtaskId={subtask.id}
+            onSuccess={() => {
+              setIsModalOpen(false);
+              queryClient.invalidateQueries({
+                queryKey: ["preset", subtask.id],
+              });
+            }}
+          />
+        )}
+    </>
   );
 };
 

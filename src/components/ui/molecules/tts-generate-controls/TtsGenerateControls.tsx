@@ -42,7 +42,8 @@ const TtsGenerateControls = ({
   const showEnglishOptions = isEnglishTtsLanguage(planLanguage);
   const showTibetanOptions = isTibetanTtsLanguage(planLanguage);
   const isDisabled = disabled || isPending || !isSupported;
-  const triggerClassName = size === "sm" ? "w-[160px] h-9" : "w-full sm:w-[200px]";
+  const triggerClassName =
+    size === "sm" ? "w-[160px] h-9" : "w-full sm:w-[200px]";
 
   const handleGenerate = () => {
     onGenerate({

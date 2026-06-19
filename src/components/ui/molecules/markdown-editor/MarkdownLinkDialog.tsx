@@ -64,12 +64,10 @@ const MarkdownLinkDialog = ({
   const [linkType, setLinkType] = useState<LinkType>("group");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery] = useDebounce(searchQuery.trim(), DEBOUNCE_MS);
-  const [selectedGroup, setSelectedGroup] = useState<AuthorGroupListItem | null>(
-    null,
-  );
-  const [selectedTextItem, setSelectedTextItem] = useState<TextTitleItem | null>(
-    null,
-  );
+  const [selectedGroup, setSelectedGroup] =
+    useState<AuthorGroupListItem | null>(null);
+  const [selectedTextItem, setSelectedTextItem] =
+    useState<TextTitleItem | null>(null);
   const [selectedSegment, setSelectedSegment] = useState<SegmentItem | null>(
     null,
   );
@@ -386,7 +384,8 @@ const MarkdownLinkDialog = ({
         </p>
         <div className="max-h-48 space-y-2 overflow-y-auto">
           {segments.map((segment, index) => {
-            const isSelected = selectedSegment?.segment_id === segment.segment_id;
+            const isSelected =
+              selectedSegment?.segment_id === segment.segment_id;
             return (
               <button
                 key={segment.segment_id || index}
