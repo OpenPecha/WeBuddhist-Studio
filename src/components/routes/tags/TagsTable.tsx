@@ -52,8 +52,22 @@ const TagsTable = ({
                   className="w-12 h-12 object-cover rounded-md border"
                 />
               </Pecha.TableCell>
-              <Pecha.TableCell className="font-medium">
-                {tag.name}
+              <Pecha.TableCell>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">{tag.name}</span>
+                  {tag.metadata && tag.metadata.length > 0 && (
+                    <div className="flex gap-1">
+                      {tag.metadata.map((meta) => (
+                        <span
+                          key={meta.id}
+                          className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                        >
+                          {meta.language}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </Pecha.TableCell>
               <Pecha.TableCell className="text-muted-foreground max-w-xs truncate">
                 {tag.description || "—"}

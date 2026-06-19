@@ -52,6 +52,7 @@ export function mapGroupTagsToPlanTagSummaries(
     image: tag.image ?? null,
     image_key: tag.image_key ?? null,
     description: tag.description ?? null,
+    metadata: [],
   }));
 }
 
