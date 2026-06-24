@@ -15,7 +15,7 @@ vi.mock(
 
 const seriesFixture = {
   id: "series-1",
-  group_id: "group-1",
+  group: { id: "group-1" },
   metadata: [{ id: "m1", title: "Abhidhamma in a year", language: "EN" }],
   featured: false,
   status: "DRAFT",
@@ -35,6 +35,8 @@ const seriesFixture = {
       status: "PUBLISHED",
       total_days: 5,
       featured: true,
+      display_order: 0,
+      start_date: "2026-04-30T00:00:00Z",
     },
   ],
 };
@@ -110,7 +112,11 @@ describe("SeriesDetailsPage", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("plan-new-location-state")).toHaveTextContent(
-        JSON.stringify({ seriesId: "series-1", language: "ZH" }),
+        JSON.stringify({
+          seriesId: "series-1",
+          language: "ZH",
+          start_date: "2026-04-30T00:00:00Z",
+        }),
       );
       expect(screen.getByTestId("plan-new-pathname")).toHaveTextContent(
         "/groups/group-1/plan/new",

@@ -14,6 +14,31 @@ describe("parsePlanNewFromSeriesState", () => {
     ).toEqual({ seriesId: "series-1", language: "BO" });
   });
 
+  it("includes inherited start_date when provided", () => {
+    expect(
+      parsePlanNewFromSeriesState({
+        seriesId: "series-1",
+        language: "BO",
+        start_date: "2026-04-30T00:00:00Z",
+      }),
+    ).toEqual({
+      seriesId: "series-1",
+      language: "BO",
+      start_date: "2026-04-30T00:00:00Z",
+    });
+    expect(
+      parsePlanNewFromSeriesState({
+        seriesId: "series-1",
+        language: "BO",
+        start_date: null,
+      }),
+    ).toEqual({
+      seriesId: "series-1",
+      language: "BO",
+      start_date: null,
+    });
+  });
+
   it("rejects invalid language codes", () => {
     expect(
       parsePlanNewFromSeriesState({ seriesId: "series-1", language: "FR" }),

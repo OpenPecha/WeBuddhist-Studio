@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getSeries } from "@/components/routes/create-series/api/seriesApi";
+import { getSeries, resolveSeriesGroupId } from "@/components/routes/create-series/api/seriesApi";
 import { parsePlanNewFromSeriesState } from "./planNewFromSeriesState";
 import { ROUTES } from "@/routes/paths";
 
@@ -20,8 +20,9 @@ const PlanNewLegacyRedirect = () => {
     void getSeries(fromSeries.seriesId)
       .then((series) => {
         if (cancelled) return;
-        if (series.group_id) {
-          navigate(ROUTES.groupPlanNew(series.group_id), {
+        const groupId = resolveSeriesGroupId(series);
+        if (groupId) {
+          navigate(ROUTES.groupPlanNew(groupId), {
             replace: true,
             state: location.state,
           });

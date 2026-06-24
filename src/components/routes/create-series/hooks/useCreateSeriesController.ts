@@ -12,6 +12,7 @@ import { useSaveSeries } from "@/components/routes/create-series/hooks/useSaveSe
 import {
   getSeries,
   mapSeriesDetailToFormData,
+  resolveSeriesGroupId,
 } from "@/components/routes/create-series/api/seriesApi";
 import { resolveDashboardItemImageUrl } from "@/components/routes/dashboard/dashboardTable";
 
@@ -40,7 +41,7 @@ export const useCreateSeriesController = () => {
   });
   const seriesData = seriesQuery.data;
 
-  const seriesGroupId = groupId ?? seriesData?.group_id ?? undefined;
+  const seriesGroupId = groupId ?? resolveSeriesGroupId(seriesData);
   const seriesStatus = isNew ? "DRAFT" : (seriesData?.status ?? "DRAFT");
   const {
     userInfo,

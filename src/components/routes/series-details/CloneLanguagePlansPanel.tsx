@@ -11,6 +11,7 @@ type CloneLanguagePlansPanelProps = {
   seriesId: string;
   targetLanguage: LanguageCode;
   sourceLanguages: LanguageCode[];
+  embedded?: boolean;
 };
 
 function languageLabel(code: LanguageCode): string {
@@ -21,7 +22,8 @@ export function CloneLanguagePlansPanel({
   seriesId,
   targetLanguage,
   sourceLanguages,
-}: CloneLanguagePlansPanelProps) {
+  embedded = false,
+}: Readonly<CloneLanguagePlansPanelProps>) {
   const queryClient = useQueryClient();
   const [sourceLanguage, setSourceLanguage] = useState<LanguageCode>(
     sourceLanguages[0] ?? "EN",
@@ -59,8 +61,8 @@ export function CloneLanguagePlansPanel({
 
   if (sourceLanguages.length === 0) return null;
 
-  return (
-    <div className="mb-4 flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-gray-300 bg-white/80 px-6 py-10 dark:border-input dark:bg-[#1d1d1f]/80">
+  const content = (
+    <>
       <p className="text-center text-sm text-muted-foreground">
         No plans in {languageLabel(targetLanguage)} yet. Clone the full plan
         structure from another language.
@@ -92,6 +94,16 @@ export function CloneLanguagePlansPanel({
           {cloneMutation.isPending ? "Cloning…" : "Clone plans"}
         </Pecha.Button>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="flex w-full flex-col items-center gap-4">{content}</div>;
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-gray-300 bg-white/80 px-6 py-10 dark:border-input dark:bg-[#1d1d1f]/80">
+      {content}
     </div>
   );
 }

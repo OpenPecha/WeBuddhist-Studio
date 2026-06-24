@@ -27,6 +27,7 @@ export type SeriesPlanDTO = {
   title: string;
   description?: string | null;
   language: string;
+  group_id?: string | null;
   image_url?: string | null;
   plan_image_url?: string | null;
   image_key?: string | null;
@@ -45,6 +46,7 @@ export type SeriesPlanDTO = {
   enrolled_count?: number | null;
   subscription_count?: number | null;
   updated_at?: string | null;
+  start_date?: string | null;
 };
 
 export type SeriesMetadataDTO = {
@@ -65,17 +67,31 @@ export type SeriesDetailDTO = {
   image_key?: string | null;
   author_id?: string;
   group_id?: string | null;
+  group?: { id?: string } | null;
   featured: boolean;
   status: string;
   plans: SeriesPlanDTO[];
   total_days?: number;
 };
 
+export function resolveSeriesGroupId(
+  series: Pick<SeriesDetailDTO, "group_id" | "group" | "plans"> | null | undefined,
+): string | undefined {
+  if (!series) return undefined;
+  if (series.group_id?.trim()) return series.group_id.trim();
+  if (series.group?.id?.trim()) return series.group.id.trim();
+  const fromPlan = series.plans?.find((p) => p.group_id?.trim())?.group_id;
+  return fromPlan?.trim() || undefined;
+}
+
 export const getSeries = async (seriesId: string): Promise<SeriesDetailDTO> => {
   const { data } = await axiosInstance.get<SeriesDetailDTO>(
     `/api/v1/cms/series/${seriesId}`,
   );
-  return data;
+  return {
+    ...data,
+    group_id: resolveSeriesGroupId(data) ?? null,
+  };
 };
 
 export const postSeries = async (body: SeriesPayload) => {

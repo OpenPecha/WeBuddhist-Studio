@@ -161,6 +161,14 @@ const Createplan = () => {
     return seriesOptions.some((s) => s.id === planNewFromSeries.seriesId);
   }, [planNewFromSeries, isSeriesLoading, isSeriesError, seriesOptions]);
 
+  const lockStartDateFromSeries = useMemo(
+    () =>
+      isCreateMode &&
+      planNewFromSeries != null &&
+      planNewFromSeries.start_date !== undefined,
+    [isCreateMode, planNewFromSeries],
+  );
+
   const pageHeading = useMemo(() => {
     if (!isCreateMode) return "Plan Edit";
     if (!planNewFromSeries) return "Plan Details";
@@ -213,7 +221,19 @@ const Createplan = () => {
     isSeriesLoading,
     isSeriesError,
     seriesOptions,
+    form,
   ]);
+
+  useEffect(() => {
+    if (!isCreateMode || !planNewFromSeries) return;
+    if (planNewFromSeries.start_date === undefined) return;
+
+    const mode = planNewFromSeries.start_date ? "specific" : "enroll";
+    setStartDateMode(mode);
+    form.setValue("start_date", planNewFromSeries.start_date, {
+      shouldDirty: false,
+    });
+  }, [isCreateMode, planNewFromSeries, form]);
 
   useEffect(() => {
     if (planId && planData) {
@@ -590,6 +610,7 @@ const Createplan = () => {
                     <Pecha.RadioGroup
                       value={startDateMode}
                       onValueChange={(v) => {
+                        if (lockStartDateFromSeries) return;
                         const mode = v as "enroll" | "specific";
                         setStartDateMode(mode);
                         if (mode === "enroll") {
@@ -604,6 +625,7 @@ const Createplan = () => {
                         <Pecha.RadioGroupItem
                           value="enroll"
                           id="start-date-enroll"
+                          disabled={lockStartDateFromSeries}
                         />
                         <label
                           htmlFor="start-date-enroll"
@@ -616,6 +638,7 @@ const Createplan = () => {
                         <Pecha.RadioGroupItem
                           value="specific"
                           id="start-date-specific"
+                          disabled={lockStartDateFromSeries}
                         />
                         <label
                           htmlFor="start-date-specific"
@@ -633,7 +656,10 @@ const Createplan = () => {
                         <Pecha.Button
                           type="button"
                           variant="outline"
-                          disabled={startDateMode !== "specific"}
+                          disabled={
+                            lockStartDateFromSeries ||
+                            startDateMode !== "specific"
+                          }
                           className="h-12 w-full justify-start gap-2 px-3 font-normal rounded-md"
                         >
                           <IoCalendarClearOutline className="h-4 w-4 text-muted-foreground" />

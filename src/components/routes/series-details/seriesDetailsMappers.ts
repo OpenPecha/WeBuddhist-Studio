@@ -205,3 +205,31 @@ export function removePlanFromLanguage(
   const list = grouped[language] ?? [];
   return { ...grouped, [language]: list.filter((p) => p.id !== planId) };
 }
+
+export type SeriesStartDateSettings = {
+  start_date: string | null;
+  mode: "enroll" | "specific";
+};
+
+/** First plan in the series (by display_order) defines the shared start date settings. */
+export function getSeriesStartDateSettings(
+  plans: SeriesPlanDTO[],
+): SeriesStartDateSettings | null {
+  const sorted = [...plans].sort((a, b) => {
+    const aOrd =
+      typeof a.display_order === "number" && !Number.isNaN(a.display_order)
+        ? a.display_order
+        : 1_000_000;
+    const bOrd =
+      typeof b.display_order === "number" && !Number.isNaN(b.display_order)
+        ? b.display_order
+        : 1_000_000;
+    return aOrd - bOrd;
+  });
+  if (!sorted.length) return null;
+  const start_date = sorted[0].start_date ?? null;
+  return {
+    start_date,
+    mode: start_date ? "specific" : "enroll",
+  };
+}
