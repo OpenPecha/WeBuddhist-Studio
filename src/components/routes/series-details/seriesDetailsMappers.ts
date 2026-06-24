@@ -12,11 +12,11 @@ import type { Plan } from "@/components/routes/create-series/api/planSearchApi";
 import type { SeriesPlan } from "@/schema/SeriesSchema";
 import type { PlansByLanguage, SeriesPlanRow } from "./seriesDetailsTypes";
 
-const LANG_ORDER: LanguageCode[] = ["EN", "BO", "ZH"];
+const LANG_ORDER: LanguageCode[] = ["EN", "BO", "ZH", "HI", "NE", "MN"];
 
 function normalizeLang(raw: string): LanguageCode | null {
   const u = raw.trim().toUpperCase();
-  if (u === "EN" || u === "BO" || u === "ZH") return u;
+  if (u === "EN" || u === "BO" || u === "ZH" || u === "HI" || u === "NE" || u === "MN") return u;
   return null;
 }
 
@@ -107,6 +107,9 @@ export function getLanguageTabCounts(
     EN: grouped.EN?.length ?? 0,
     BO: grouped.BO?.length ?? 0,
     ZH: grouped.ZH?.length ?? 0,
+    HI: grouped.HI?.length ?? 0,
+    NE: grouped.NE?.length ?? 0,
+    MN: grouped.MN?.length ?? 0,
   };
 }
 
