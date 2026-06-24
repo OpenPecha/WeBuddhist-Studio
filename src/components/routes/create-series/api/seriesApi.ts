@@ -395,6 +395,22 @@ export async function putSeriesPlans(
   });
 }
 
+export type CloneSeriesPlansPayload = {
+  source_language: LanguageCode;
+  target_language: LanguageCode;
+};
+
+export async function cloneSeriesPlansFromLanguage(
+  seriesId: string,
+  payload: CloneSeriesPlansPayload,
+) {
+  const { data } = await axiosInstance.post<SeriesDetailDTO>(
+    `/api/v1/cms/series/${seriesId}/clone-plans`,
+    payload,
+  );
+  return data;
+}
+
 export type SeriesListItemDTO = {
   id: string;
   metadata?: SeriesMetadataDTO[];

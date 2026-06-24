@@ -17,6 +17,7 @@ import type { SeriesPlan } from "@/schema/SeriesSchema";
 import { SeriesPlansTable } from "./SeriesPlansTable";
 import {
   getLanguageTabCounts,
+  getLanguagesWithPlans,
   getSeriesTitleForLanguage,
   groupPlansByLanguage,
   plansByLanguageToIdMap,
@@ -28,6 +29,7 @@ import {
 import type { PlansByLanguage } from "./seriesDetailsTypes";
 import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
 import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
+import { CloneLanguagePlansPanel } from "./CloneLanguagePlansPanel";
 
 const togglePlanFeatured = async (planId: string) => {
   const { data } = await axiosInstance.patch(
@@ -79,6 +81,10 @@ const SeriesDetailsPage = () => {
     () => seriesPlanRowsToSeriesPlans(activePlans),
     [activePlans],
   );
+  const cloneSourceLanguages = useMemo(
+    () => getLanguagesWithPlans(tabCounts, activeLanguage),
+    [tabCounts, activeLanguage],
+  );
 
   const seriesStatus = seriesData?.status ?? "DRAFT";
   const {
@@ -94,6 +100,10 @@ const SeriesDetailsPage = () => {
   );
 
   const canManageSeriesPlans = canEditSeries && !platformReadOnly;
+  const showClonePlansPanel =
+    canManageSeriesPlans &&
+    activePlans.length === 0 &&
+    cloneSourceLanguages.length > 0;
 
   const persistPlansMutation = useMutation({
     mutationFn: (grouped: PlansByLanguage) =>
@@ -267,6 +277,14 @@ const SeriesDetailsPage = () => {
               onRemoveFromSeries={handleRemove}
             />
           </div>
+        ) : null}
+
+        {showClonePlansPanel ? (
+          <CloneLanguagePlansPanel
+            seriesId={seriesId}
+            targetLanguage={activeLanguage}
+            sourceLanguages={cloneSourceLanguages}
+          />
         ) : null}
 
         {canManageSeriesPlans && seriesData?.group_id ? (

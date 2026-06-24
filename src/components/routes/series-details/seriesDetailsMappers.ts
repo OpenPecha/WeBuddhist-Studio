@@ -113,6 +113,15 @@ export function getLanguageTabCounts(
   };
 }
 
+export function getLanguagesWithPlans(
+  tabCounts: Record<LanguageCode, number>,
+  exclude?: LanguageCode,
+): LanguageCode[] {
+  return LANG_ORDER.filter(
+    (code) => code !== exclude && (tabCounts[code] ?? 0) > 0,
+  );
+}
+
 export function getSeriesTitleForLanguage(
   metadata: SeriesMetadataDTO[] | undefined,
   language: LanguageCode,

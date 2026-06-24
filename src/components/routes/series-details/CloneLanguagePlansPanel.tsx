@@ -1,0 +1,97 @@
+import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { IoMdCopy } from "react-icons/io";
+import { toast } from "sonner";
+import { Pecha } from "@/components/ui/shadimport";
+import { PLAN_LANGUAGE } from "@/lib/constant";
+import type { LanguageCode } from "@/schema/SeriesSchema";
+import { cloneSeriesPlansFromLanguage } from "@/components/routes/create-series/api/seriesApi";
+
+type CloneLanguagePlansPanelProps = {
+  seriesId: string;
+  targetLanguage: LanguageCode;
+  sourceLanguages: LanguageCode[];
+};
+
+function languageLabel(code: LanguageCode): string {
+  return PLAN_LANGUAGE.find((l) => l.value === code)?.label ?? code;
+}
+
+export function CloneLanguagePlansPanel({
+  seriesId,
+  targetLanguage,
+  sourceLanguages,
+}: CloneLanguagePlansPanelProps) {
+  const queryClient = useQueryClient();
+  const [sourceLanguage, setSourceLanguage] = useState<LanguageCode>(
+    sourceLanguages[0] ?? "EN",
+  );
+
+  const effectiveSource = useMemo(() => {
+    if (sourceLanguages.includes(sourceLanguage)) return sourceLanguage;
+    return sourceLanguages[0] ?? "EN";
+  }, [sourceLanguage, sourceLanguages]);
+
+  const cloneMutation = useMutation({
+    mutationFn: () =>
+      cloneSeriesPlansFromLanguage(seriesId, {
+        source_language: effectiveSource,
+        target_language: targetLanguage,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
+      toast.success(
+        `Cloned plans from ${languageLabel(effectiveSource)} to ${languageLabel(targetLanguage)}`,
+      );
+    },
+    onError: (err: unknown) => {
+      const message =
+        (err as { response?: { data?: { detail?: string | { message?: string } } } })
+          ?.response?.data?.detail;
+      const text =
+        typeof message === "string"
+          ? message
+          : (message?.message ?? "Could not clone plans");
+      toast.error(text);
+    },
+  });
+
+  if (sourceLanguages.length === 0) return null;
+
+  return (
+    <div className="mb-4 flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-gray-300 bg-white/80 px-6 py-10 dark:border-input dark:bg-[#1d1d1f]/80">
+      <p className="text-center text-sm text-muted-foreground">
+        No plans in {languageLabel(targetLanguage)} yet. Clone the full plan
+        structure from another language.
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Pecha.Select
+          value={effectiveSource}
+          onValueChange={(value) => setSourceLanguage(value as LanguageCode)}
+        >
+          <Pecha.SelectTrigger className="w-[180px] bg-background">
+            <Pecha.SelectValue placeholder="Source language" />
+          </Pecha.SelectTrigger>
+          <Pecha.SelectContent>
+            {sourceLanguages.map((code) => (
+              <Pecha.SelectItem key={code} value={code}>
+                {languageLabel(code)}
+              </Pecha.SelectItem>
+            ))}
+          </Pecha.SelectContent>
+        </Pecha.Select>
+        <Pecha.Button
+          type="button"
+          variant="outline"
+          className="gap-2"
+          disabled={cloneMutation.isPending}
+          onClick={() => cloneMutation.mutate()}
+        >
+          <IoMdCopy className="h-4 w-4" />
+          {cloneMutation.isPending ? "Cloning…" : "Clone plans"}
+        </Pecha.Button>
+      </div>
+    </div>
+  );
+}
