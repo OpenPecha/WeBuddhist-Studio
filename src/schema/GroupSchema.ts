@@ -1,7 +1,14 @@
 import { z } from "zod";
 import { PLAN_LANGUAGE } from "@/lib/constant";
 
-const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as ["EN", "BO", "ZH"];
+const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as [
+  "EN",
+  "BO",
+  "ZH",
+  "HI",
+  "NE",
+  "MN",
+];
 export type GroupLanguageCode = (typeof LANGUAGE_CODES)[number];
 
 export const groupLanguageBlockSchema = z.object({
@@ -35,6 +42,9 @@ export const groupCoreSchema = z
       EN: groupLanguageBlockSchema.optional(),
       BO: groupLanguageBlockSchema.optional(),
       ZH: groupLanguageBlockSchema.optional(),
+      HI: groupLanguageBlockSchema.optional(),
+      NE: groupLanguageBlockSchema.optional(),
+      MN: groupLanguageBlockSchema.optional(),
     }),
     avatar_key: z.string().optional(),
     banner_key: z.string().optional(),

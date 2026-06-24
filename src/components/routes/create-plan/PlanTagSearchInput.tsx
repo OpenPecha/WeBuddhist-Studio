@@ -56,6 +56,9 @@ const PlanTagSearchInput = ({
     EN: { name: "", description: "" },
     BO: { name: "", description: "" },
     ZH: { name: "", description: "" },
+    HI: { name: "", description: "" },
+    NE: { name: "", description: "" },
+    MN: { name: "", description: "" },
   });
 
   useEffect(() => {
@@ -131,6 +134,9 @@ const PlanTagSearchInput = ({
       EN: { name: "", description: "" },
       BO: { name: "", description: "" },
       ZH: { name: "", description: "" },
+      HI: { name: "", description: "" },
+      NE: { name: "", description: "" },
+      MN: { name: "", description: "" },
     });
   };
 

@@ -659,6 +659,9 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
   EN: "English",
   BO: "Tibetan",
   ZH: "Chinese",
+  HI: "Hindi",
+  NE: "Nepali",
+  MN: "Mongolian",
 };
 
 export function languageLabelForCode(code: LanguageCode): string {
@@ -678,7 +681,7 @@ export function buildGroupMetadata(
     >
   >,
 ): GroupMetadataInput[] {
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = ["EN", "BO", "ZH", "HI", "NE", "MN"];
   const out: GroupMetadataInput[] = [];
   for (const code of order) {
     const block = languages[code];

@@ -6,7 +6,7 @@ export type DashboardRowKind = "plan" | "series";
 export const DASHBOARD_TABLE_ICON_BTN =
   "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-[#F3F4F6] shadow-none hover:bg-[#E8E8E8] disabled:cursor-not-allowed disabled:opacity-100 dark:border-[#313132] dark:bg-[#2a2a2a] dark:hover:bg-[#333]";
 
-export type DashboardLanguageCode = "EN" | "ZH" | "BO";
+export type DashboardLanguageCode = "EN" | "ZH" | "BO" | "HI" | "NE" | "MN";
 
 export interface DashboardTableRow {
   kind: DashboardRowKind;

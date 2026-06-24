@@ -5,6 +5,9 @@ const ENGLISH_LABELS: Record<LanguageCode, string> = {
   EN: "English",
   BO: "Tibetan",
   ZH: "Chinese",
+  HI: "Hindi",
+  NE: "Nepali",
+  MN: "Mongolian",
 };
 
 /** English label used for form field labels (e.g. "English title"). */

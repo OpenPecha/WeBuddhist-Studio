@@ -24,11 +24,17 @@ export const seriesSchema = z
       EN: languageBlockSchema.optional(),
       BO: languageBlockSchema.optional(),
       ZH: languageBlockSchema.optional(),
+      HI: languageBlockSchema.optional(),
+      NE: languageBlockSchema.optional(),
+      MN: languageBlockSchema.optional(),
     }),
     plans: z.object({
       EN: z.array(planItemSchema).optional(),
       BO: z.array(planItemSchema).optional(),
       ZH: z.array(planItemSchema).optional(),
+      HI: z.array(planItemSchema).optional(),
+      NE: z.array(planItemSchema).optional(),
+      MN: z.array(planItemSchema).optional(),
     }),
     image_url: z.string().trim().min(1, "Cover image is required"),
   })

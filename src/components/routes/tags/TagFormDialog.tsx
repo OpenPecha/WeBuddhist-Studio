@@ -38,6 +38,9 @@ const TagFormDialog = ({
     EN: { name: "", description: "" },
     BO: { name: "", description: "" },
     ZH: { name: "", description: "" },
+    HI: { name: "", description: "" },
+    NE: { name: "", description: "" },
+    MN: { name: "", description: "" },
   });
   const [imageKey, setImageKey] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -55,6 +58,9 @@ const TagFormDialog = ({
         EN: { name: "", description: "" },
         BO: { name: "", description: "" },
         ZH: { name: "", description: "" },
+        HI: { name: "", description: "" },
+        NE: { name: "", description: "" },
+        MN: { name: "", description: "" },
       };
       
       tag.metadata.forEach((meta) => {
@@ -76,6 +82,9 @@ const TagFormDialog = ({
         EN: { name: "", description: "" },
         BO: { name: "", description: "" },
         ZH: { name: "", description: "" },
+        HI: { name: "", description: "" },
+        NE: { name: "", description: "" },
+        MN: { name: "", description: "" },
       });
     }
     
