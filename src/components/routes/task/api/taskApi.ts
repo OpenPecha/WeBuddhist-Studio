@@ -192,7 +192,7 @@ export const generateDayAudio = async (
   const language = planLanguageToTtsApiLanguage(options.language);
   const body: Record<string, string> = { ...params, language };
 
-  if (language === "en" && options.type) {
+  if (language !== "bo" && options.type) {
     body.type = options.type;
   }
   if (language === "bo") {

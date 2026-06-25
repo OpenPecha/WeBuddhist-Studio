@@ -50,16 +50,23 @@ export function planLanguageToTtsApiLanguage(language: string): string {
   if (normalized === "EN" || normalized.startsWith("EN")) return "en";
   if (normalized === "BO" || normalized.startsWith("BO")) return "bo";
   if (normalized === "ZH" || normalized.startsWith("ZH")) return "zh";
+  if (normalized === "HI" || normalized.startsWith("HI")) return "hi";
+  if (normalized === "NE" || normalized.startsWith("NE")) return "ne";
+  if (normalized === "MN" || normalized.startsWith("MN")) return "mn";
   return language.trim().toLowerCase();
 }
 
 export function isTtsSupportedPlanLanguage(language: string): boolean {
-  const apiLanguage = planLanguageToTtsApiLanguage(language);
-  return apiLanguage === "en" || apiLanguage === "bo";
+  return Boolean(planLanguageToTtsApiLanguage(language));
+}
+
+/** Non-Tibetan plans use Gemini TTS (English, Chinese, Hindi, etc.). */
+export function isGeminiTtsLanguage(language: string): boolean {
+  return planLanguageToTtsApiLanguage(language) !== "bo";
 }
 
 export function isEnglishTtsLanguage(language: string): boolean {
-  return planLanguageToTtsApiLanguage(language) === "en";
+  return isGeminiTtsLanguage(language);
 }
 
 export function isTibetanTtsLanguage(language: string): boolean {

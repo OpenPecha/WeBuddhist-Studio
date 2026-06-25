@@ -5,7 +5,7 @@ import { AiOutlineSound } from "react-icons/ai";
 import {
   DEFAULT_MONLAM_VOICE,
   DEFAULT_TTS_AUDIO_TYPE,
-  isEnglishTtsLanguage,
+  isGeminiTtsLanguage,
   isTibetanTtsLanguage,
   isTtsSupportedPlanLanguage,
   MONLAM_VOICE_REGIONS,
@@ -39,7 +39,7 @@ const TtsGenerateControls = ({
     useState<MonlamVoiceName>(DEFAULT_MONLAM_VOICE);
 
   const isSupported = isTtsSupportedPlanLanguage(planLanguage);
-  const showEnglishOptions = isEnglishTtsLanguage(planLanguage);
+  const showGeminiOptions = isGeminiTtsLanguage(planLanguage);
   const showTibetanOptions = isTibetanTtsLanguage(planLanguage);
   const isDisabled = disabled || isPending || !isSupported;
   const triggerClassName =
@@ -47,22 +47,14 @@ const TtsGenerateControls = ({
 
   const handleGenerate = () => {
     onGenerate({
-      ...(showEnglishOptions ? { type: audioType } : {}),
+      ...(showGeminiOptions ? { type: audioType } : {}),
       ...(showTibetanOptions ? { voice_name: voiceName } : {}),
     });
   };
 
-  if (!isSupported) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        TTS generation is only available for English and Tibetan plans.
-      </p>
-    );
-  }
-
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {showEnglishOptions && (
+      {showGeminiOptions && (
         <Pecha.Select
           value={audioType}
           onValueChange={(value) => setAudioType(value as TtsAudioType)}
