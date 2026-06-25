@@ -1,3 +1,6 @@
+import {
+  LANGUAGE_CODE_ORDER,
+} from "@/lib/languageCodes";
 import { formatDistanceToNow } from "date-fns";
 
 export type DashboardRowKind = "plan" | "series";
@@ -95,7 +98,7 @@ function titleFromMetadataRow(row: Record<string, unknown>): string {
   return typeof title === "string" && title.trim() ? title.trim() : "";
 }
 
-const DEFAULT_LANG_ORDER: DashboardLanguageCode[] = ["EN", "BO", "ZH"];
+const DEFAULT_LANG_ORDER: DashboardLanguageCode[] = [...LANGUAGE_CODE_ORDER];
 
 /** Map Tolgee UI locale (e.g. `en`, `bo-IN`) to dashboard metadata language codes. */
 export function tolgeeLocaleToDashboardLanguage(
@@ -106,6 +109,9 @@ export function tolgeeLocaleToDashboardLanguage(
   if (l.startsWith("en")) return "EN";
   if (l.startsWith("bo")) return "BO";
   if (l.startsWith("zh")) return "ZH";
+  if (l.startsWith("hi")) return "HI";
+  if (l.startsWith("ne")) return "NE";
+  if (l.startsWith("mn")) return "MN";
   return null;
 }
 

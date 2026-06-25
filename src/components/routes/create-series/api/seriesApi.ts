@@ -1,4 +1,8 @@
 import axiosInstance from "@/config/axios-config";
+import {
+  LANGUAGE_CODE_ORDER,
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
 import type {
   LanguageCode,
   SeriesFormData,
@@ -124,16 +128,14 @@ export const putSeriesFeatured = async (
 };
 
 function normalizeLang(raw: string): LanguageCode | null {
-  const u = raw.trim().toUpperCase();
-  if (u === "EN" || u === "BO" || u === "ZH") return u;
-  return null;
+  return normalizeLanguageCode(raw);
 }
 
 function parseNameObject(
   name: Record<string, unknown>,
 ): SeriesFormData["languages"] {
   const languages: SeriesFormData["languages"] = {};
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   for (const code of order) {
     const raw = name[code];
     if (raw == null) continue;
@@ -227,7 +229,7 @@ export function mapSeriesDetailToFormData(
     buckets[code]!.push({ item, ord });
   }
 
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   const plans: SeriesFormData["plans"] = {};
   for (const code of order) {
     const row = buckets[code];
@@ -245,7 +247,7 @@ export function mapSeriesDetailToFormData(
 export function buildSeriesMetadata(
   languages: SeriesFormData["languages"],
 ): SeriesMetadataInput[] {
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   const out: SeriesMetadataInput[] = [];
   for (const code of order) {
     const block = languages[code];
@@ -392,7 +394,7 @@ export function buildSeriesUpdateBody(
 export function buildSeriesPlansPayloadFromIds(
   plansByLang: Partial<Record<LanguageCode, string[]>>,
 ): Partial<Record<LanguageCode, string[]>> {
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   const out: Partial<Record<LanguageCode, string[]>> = {};
   for (const code of order) {
     const ids = plansByLang[code];
@@ -450,7 +452,7 @@ export type SeriesOption = {
 
 function resolveSeriesListTitle(metadata?: SeriesMetadataDTO[]): string {
   if (!Array.isArray(metadata) || metadata.length === 0) return "Untitled";
-  const order = ["EN", "BO", "ZH"];
+  const order = [...LANGUAGE_CODE_ORDER];
   for (const lang of order) {
     const row = metadata.find(
       (r) => String(r.language ?? r.lang ?? "").toUpperCase() === lang,

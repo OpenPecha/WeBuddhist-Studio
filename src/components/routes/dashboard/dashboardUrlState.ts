@@ -1,3 +1,6 @@
+import {
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
 import type { DashboardTab } from "./dashboardApi";
 import { DASHBOARD_PAGE_SIZE } from "./dashboardApi";
 import type { FetchDashboardItemsParams } from "./dashboardApi";
@@ -46,7 +49,6 @@ const VALID_STATUS = new Set<DashboardPlanStatus>([
   "DELETED",
 ]);
 
-const VALID_LANGUAGE = new Set(["EN", "BO", "ZH"]);
 
 const VALID_SORT = new Set<DashboardSort>(["recent"]);
 
@@ -67,8 +69,7 @@ function parseStatus(raw: string | null): DashboardPlanStatus | null {
 
 function parseLanguage(raw: string | null): string | null {
   if (!raw) return null;
-  const u = raw.trim().toUpperCase();
-  return VALID_LANGUAGE.has(u) ? u : null;
+  return normalizeLanguageCode(raw);
 }
 
 function parseSort(raw: string | null): DashboardSort | null {

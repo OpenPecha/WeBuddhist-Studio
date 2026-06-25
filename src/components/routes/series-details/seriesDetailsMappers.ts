@@ -4,6 +4,10 @@ import type {
 } from "@/components/routes/create-series/api/seriesApi";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import {
+  LANGUAGE_CODE_ORDER,
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
+import {
   normalizeStatus,
   resolveDashboardItemImageUrl,
   type DashboardItemImageFields,
@@ -12,12 +16,10 @@ import type { Plan } from "@/components/routes/create-series/api/planSearchApi";
 import type { SeriesPlan } from "@/schema/SeriesSchema";
 import type { PlansByLanguage, SeriesPlanRow } from "./seriesDetailsTypes";
 
-const LANG_ORDER: LanguageCode[] = ["EN", "BO", "ZH", "HI", "NE", "MN"];
+const LANG_ORDER: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
 
 function normalizeLang(raw: string): LanguageCode | null {
-  const u = raw.trim().toUpperCase();
-  if (u === "EN" || u === "BO" || u === "ZH" || u === "HI" || u === "NE" || u === "MN") return u;
-  return null;
+  return normalizeLanguageCode(raw);
 }
 
 export function mapPlanDtoToRow(plan: SeriesPlanDTO): SeriesPlanRow | null {

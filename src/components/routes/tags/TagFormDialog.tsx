@@ -7,6 +7,7 @@ import ImageContentData from "@/components/ui/molecules/modals/image-upload/Imag
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { toast } from "sonner";
 import { PLAN_LANGUAGE } from "@/lib/constant";
+import { normalizeLanguageCode } from "@/lib/languageCodes";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import type { PlanOption, Tag, TagPayload, TagMetadataInput } from "./api/tagsApi";
 
@@ -64,14 +65,13 @@ const TagFormDialog = ({
       };
       
       tag.metadata.forEach((meta) => {
-        const lang = meta.language as LanguageCode;
-        if (["EN", "BO", "ZH"].includes(lang)) {
-          langs.push(lang);
-          data[lang] = {
-            name: meta.name,
-            description: meta.description || "",
-          };
-        }
+        const lang = normalizeLanguageCode(String(meta.language ?? ""));
+        if (!lang) return;
+        langs.push(lang);
+        data[lang] = {
+          name: meta.name,
+          description: meta.description || "",
+        };
       });
       
       setActiveLanguages(langs.length > 0 ? langs : ["EN"]);
