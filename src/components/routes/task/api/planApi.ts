@@ -201,6 +201,44 @@ export const deleteDayAudio = async (day_id: string) => {
   });
 };
 
+export type DayShareableImageType = "thumbnail" | "shareable_image";
+
+export interface PlanDayShareableImageUploadResponse {
+  plan_item_id: string;
+  image_type: DayShareableImageType;
+  image_key: string;
+  image_url: string;
+  message: string;
+}
+
+export const uploadDayShareableImage = async (
+  day_id: string,
+  image_type: DayShareableImageType,
+  file: File,
+) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await axiosInstance.post<PlanDayShareableImageUploadResponse>(
+    `/api/v1/cms/media/upload/day-shareable-image`,
+    formData,
+    {
+      params: { day_id, image_type },
+      headers: getAuthHeaders(),
+    },
+  );
+  return data;
+};
+
+export const deleteDayShareableImage = async (
+  day_id: string,
+  image_type: DayShareableImageType,
+) => {
+  await axiosInstance.delete(
+    `/api/v1/cms/plans/days/${day_id}/shareable-images/${image_type}`,
+    { headers: getAuthHeaders() },
+  );
+};
+
 export interface DayVideo {
   id: string;
   day_id: string;

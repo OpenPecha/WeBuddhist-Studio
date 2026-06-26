@@ -8,6 +8,7 @@ import TaskDeleteDialog from "@/components/ui/molecules/modals/task-delete/TaskD
 import DayDeleteDialog from "@/components/ui/molecules/modals/day-delete/DayDeleteDialog";
 import DayAudioDialog from "@/components/ui/molecules/modals/day-audio/DayAudioDialog";
 import DayVideosDialog from "@/components/ui/molecules/modals/day-videos/DayVideosDialog";
+import DayShareableImagesDialog from "@/components/ui/molecules/modals/day-shareable-images/DayShareableImagesDialog";
 import DayCreateDialog from "@/components/ui/molecules/modals/day-create/DayCreateDialog";
 import { useParams } from "react-router-dom";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
@@ -303,6 +304,19 @@ const SideBar = ({
                                         dayId={day.id}
                                         dayNumber={day.day_number}
                                         videos={day.videos}
+                                        isEditable={isEditable}
+                                      />
+                                    </Pecha.DropdownMenuItem>
+                                    <Pecha.DropdownMenuItem
+                                      className="gap-2 cursor-pointer"
+                                      onSelect={(e) => e.preventDefault()}
+                                    >
+                                      <DayShareableImagesDialog
+                                        planId={planId!}
+                                        dayId={day.id}
+                                        dayNumber={day.day_number}
+                                        thumbnailUrl={day.thumbnail_url}
+                                        shareableImageUrl={day.shareable_image_url}
                                         isEditable={isEditable}
                                       />
                                     </Pecha.DropdownMenuItem>
