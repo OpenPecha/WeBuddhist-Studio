@@ -289,3 +289,62 @@ export const reorderDayVideos = async (
   );
   return data.videos;
 };
+
+export interface PlanVideoDTO {
+  id: string;
+  plan_id: string;
+  url: string;
+  video_id: string | null;
+  title: string | null;
+  display_order: number;
+  created_at: string | null;
+}
+
+export type PlanVideoSummary = Pick<
+  PlanVideoDTO,
+  "id" | "url" | "video_id" | "title" | "display_order"
+>;
+
+export interface AddPlanVideoPayload {
+  url: string;
+  title?: string | null;
+}
+
+export const fetchPlanVideos = async (plan_id: string) => {
+  const { data } = await axiosInstance.get<{ videos: PlanVideoDTO[] }>(
+    `/api/v1/cms/plans/${plan_id}/videos`,
+    { headers: getAuthHeaders() },
+  );
+  return data.videos;
+};
+
+export const addPlanVideo = async (
+  plan_id: string,
+  payload: AddPlanVideoPayload,
+) => {
+  const { data } = await axiosInstance.post<PlanVideoDTO>(
+    `/api/v1/cms/plans/${plan_id}/videos`,
+    payload,
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
+export const deletePlanVideo = async (plan_id: string, video_id: string) => {
+  await axiosInstance.delete(
+    `/api/v1/cms/plans/${plan_id}/videos/${video_id}`,
+    { headers: getAuthHeaders() },
+  );
+};
+
+export const reorderPlanVideos = async (
+  plan_id: string,
+  videos: Array<{ id: string; display_order: number }>,
+) => {
+  const { data } = await axiosInstance.put<{ videos: PlanVideoDTO[] }>(
+    `/api/v1/cms/plans/${plan_id}/videos/order`,
+    { videos },
+    { headers: getAuthHeaders() },
+  );
+  return data.videos;
+};
