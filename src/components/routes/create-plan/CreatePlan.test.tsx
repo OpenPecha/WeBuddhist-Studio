@@ -87,9 +87,9 @@ describe("CreatePlan Component", () => {
     // that leaked dialog doesn't `aria-hidden` the form in later tests.
     vi.mocked(useBlocker).mockReturnValue({
       state: "unblocked",
-      proceed: vi.fn(),
-      reset: vi.fn(),
-      location: undefined as never,
+      proceed: undefined,
+      reset: undefined,
+      location: undefined,
     });
     vi.mocked(useParams).mockReturnValue({ groupId: "test-group-id" });
     vi.mocked(useLocation).mockReturnValue({
