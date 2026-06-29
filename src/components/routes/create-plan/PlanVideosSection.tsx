@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
@@ -10,6 +14,7 @@ import { PiDotsSixVertical } from "react-icons/pi";
 import {
   addPlanVideo,
   deletePlanVideo,
+  fetchPlanVideos,
   reorderPlanVideos,
   type PlanVideoSummary,
 } from "@/components/routes/task/api/planApi";
@@ -31,31 +36,38 @@ const isYouTubeUrl = (url: string) =>
 const sortByOrder = (videos: PlanVideoSummary[]) =>
   [...videos].sort((a, b) => a.display_order - b.display_order);
 
-const PlanVideosSection = ({ planId, videos = [] }: PlanVideosSectionProps) => {
+const PlanVideosSection = ({ planId, videos }: PlanVideosSectionProps) => {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
-  // Local copy so drag-reorder updates instantly before the server confirms.
-  const [orderedVideos, setOrderedVideos] = useState<PlanVideoSummary[]>(
-    sortByOrder(videos),
-  );
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setOrderedVideos(sortByOrder(videos));
-  }, [videos]);
+  const { data: serverVideos = [] } = useQuery<PlanVideoSummary[]>({
+    queryKey: ["plan-videos", planId],
+    queryFn: async () => (await fetchPlanVideos(planId)) ?? [],
+    initialData: videos ?? [],
+    refetchOnWindowFocus: false,
+  });
 
-  const invalidatePlan = () =>
-    queryClient.invalidateQueries({ queryKey: ["plan", planId] });
+  // Local copy so drag-reorder updates instantly before the server confirms.
+  const [orderedVideos, setOrderedVideos] = useState<PlanVideoSummary[]>(
+    sortByOrder(serverVideos),
+  );
+
+  useEffect(() => {
+    setOrderedVideos(sortByOrder(serverVideos));
+  }, [serverVideos]);
+
+  const invalidateVideos = () =>
+    queryClient.invalidateQueries({ queryKey: ["plan-videos", planId] });
 
   const addMutation = useMutation({
     mutationFn: (payload: { url: string; title?: string | null }) =>
       addPlanVideo(planId, payload),
-    onSuccess: (video) => {
+    onSuccess: () => {
       setUrl("");
       setTitle("");
-      setOrderedVideos((prev) => sortByOrder([...prev, video]));
       toast.success("Video added");
-      invalidatePlan();
+      invalidateVideos();
     },
     onError: (error: unknown) => {
       toast.error("Failed to add video", {
@@ -66,10 +78,9 @@ const PlanVideosSection = ({ planId, videos = [] }: PlanVideosSectionProps) => {
 
   const deleteMutation = useMutation({
     mutationFn: (videoId: string) => deletePlanVideo(planId, videoId),
-    onSuccess: (_data, videoId) => {
-      setOrderedVideos((prev) => prev.filter((v) => v.id !== videoId));
+    onSuccess: () => {
       toast.success("Video removed");
-      invalidatePlan();
+      invalidateVideos();
     },
     onError: (error: unknown) => {
       toast.error("Failed to remove video", {
@@ -82,11 +93,10 @@ const PlanVideosSection = ({ planId, videos = [] }: PlanVideosSectionProps) => {
     mutationFn: (payload: Array<{ id: string; display_order: number }>) =>
       reorderPlanVideos(planId, payload),
     onSuccess: (updated) => {
-      setOrderedVideos(sortByOrder(updated));
-      invalidatePlan();
+      queryClient.setQueryData(["plan-videos", planId], updated);
     },
     onError: (error: unknown) => {
-      setOrderedVideos(sortByOrder(videos)); // revert optimistic order
+      setOrderedVideos(sortByOrder(serverVideos)); // revert optimistic order
       toast.error("Failed to reorder videos", {
         description: getApiErrorMessage(error),
       });
