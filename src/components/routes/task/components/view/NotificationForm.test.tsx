@@ -296,7 +296,9 @@ describe("NotificationForm Component", () => {
       );
 
       await waitFor(() => {
-        const planRadio = screen.getByRole("radio", { name: /use plan cover/i });
+        const planRadio = screen.getByRole("radio", {
+          name: /use plan cover/i,
+        });
         fireEvent.click(planRadio);
         expect(planRadio).toBeChecked();
       });
@@ -594,9 +596,12 @@ describe("NotificationForm Component", () => {
       });
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Failed to save notification", {
-          description: "Network error",
-        });
+        expect(toast.error).toHaveBeenCalledWith(
+          "Failed to save notification",
+          {
+            description: "Network error",
+          },
+        );
       });
     });
   });
@@ -720,7 +725,9 @@ describe("NotificationForm Component", () => {
       );
 
       await waitFor(() => {
-        const planRadio = screen.getByRole("radio", { name: /use plan cover/i });
+        const planRadio = screen.getByRole("radio", {
+          name: /use plan cover/i,
+        });
         fireEvent.click(planRadio);
 
         const titleInput = screen.getByLabelText("Title");
@@ -820,7 +827,9 @@ describe("NotificationForm Component", () => {
       );
 
       await waitFor(() => {
-        const planRadio = screen.getByRole("radio", { name: /use plan cover/i });
+        const planRadio = screen.getByRole("radio", {
+          name: /use plan cover/i,
+        });
         expect(planRadio).toBeChecked();
       });
     });

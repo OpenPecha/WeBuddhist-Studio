@@ -1,7 +1,14 @@
 import { z } from "zod";
 import { PLAN_LANGUAGE } from "@/lib/constant";
 
-const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as ["EN", "BO", "ZH", "HI", "NE", "MN"];
+const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as [
+  "EN",
+  "BO",
+  "ZH",
+  "HI",
+  "NE",
+  "MN",
+];
 export type LanguageCode = (typeof LANGUAGE_CODES)[number];
 
 export const languageBlockSchema = z.object({

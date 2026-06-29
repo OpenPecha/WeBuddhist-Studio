@@ -218,14 +218,15 @@ export const uploadDayShareableImage = async (
 ) => {
   const formData = new FormData();
   formData.append("file", file);
-  const { data } = await axiosInstance.post<PlanDayShareableImageUploadResponse>(
-    `/api/v1/cms/media/upload/day-shareable-image`,
-    formData,
-    {
-      params: { day_id, image_type },
-      headers: getAuthHeaders(),
-    },
-  );
+  const { data } =
+    await axiosInstance.post<PlanDayShareableImageUploadResponse>(
+      `/api/v1/cms/media/upload/day-shareable-image`,
+      formData,
+      {
+        params: { day_id, image_type },
+        headers: getAuthHeaders(),
+      },
+    );
   return data;
 };
 

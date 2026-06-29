@@ -51,8 +51,7 @@ const DayShareableImageUpload = ({
     queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
 
   const uploadMutation = useMutation({
-    mutationFn: (file: File) =>
-      uploadDayShareableImage(dayId, imageType, file),
+    mutationFn: (file: File) => uploadDayShareableImage(dayId, imageType, file),
     onSuccess: () => {
       setPendingFile(null);
       toast.success(`${label} uploaded`);

@@ -135,7 +135,14 @@ const VerseOfDayForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!verses.en.trim() && !verses.bo.trim() && !verses.zh.trim() && !verses.hi.trim() && !verses.ne.trim() && !verses.mn.trim()) {
+    if (
+      !verses.en.trim() &&
+      !verses.bo.trim() &&
+      !verses.zh.trim() &&
+      !verses.hi.trim() &&
+      !verses.ne.trim() &&
+      !verses.mn.trim()
+    ) {
       toast.error("At least one verse content is required");
       return;
     }
@@ -161,7 +168,9 @@ const VerseOfDayForm = ({
     });
 
     if (isDuplicateDate) {
-      toast.error(`A verse already exists for ${format(date, "PPP")}. Please choose a different date.`);
+      toast.error(
+        `A verse already exists for ${format(date, "PPP")}. Please choose a different date.`,
+      );
       return;
     }
 
@@ -192,7 +201,12 @@ const VerseOfDayForm = ({
 
       // Only include group_id if it's a valid UUID
       const trimmedGroupId = String(groupId).trim();
-      if (trimmedGroupId && trimmedGroupId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      if (
+        trimmedGroupId &&
+        trimmedGroupId.match(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+        )
+      ) {
         updatePayload.group_id = trimmedGroupId;
       }
 
@@ -396,7 +410,10 @@ const GroupSelectField = ({ groupId, setGroupId }: GroupSelectFieldProps) => {
             <FaChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </Pecha.PopoverTrigger>
-        <Pecha.PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Pecha.PopoverContent
+          className="w-[--radix-popover-trigger-width] p-0"
+          align="start"
+        >
           <Pecha.Command>
             <Pecha.CommandInput placeholder="Search groups..." />
             <Pecha.CommandList>

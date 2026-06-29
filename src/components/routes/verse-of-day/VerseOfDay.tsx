@@ -28,11 +28,7 @@ const VerseOfDay = () => {
 
   const queryClient = useQueryClient();
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["verse-of-day-list", currentPage, debouncedSearch],
     queryFn: fetchVerseOfDayList,
     refetchOnWindowFocus: false,
@@ -78,7 +74,8 @@ const VerseOfDay = () => {
       )
     : [];
 
-  const totalPages = sortedVerses.length > 0 ? Math.ceil(sortedVerses.length / PAGE_SIZE) : 1;
+  const totalPages =
+    sortedVerses.length > 0 ? Math.ceil(sortedVerses.length / PAGE_SIZE) : 1;
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#F5F5F5] dark:bg-[#181818] font-dynamic">

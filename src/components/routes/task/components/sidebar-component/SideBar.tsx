@@ -316,7 +316,9 @@ const SideBar = ({
                                         dayId={day.id}
                                         dayNumber={day.day_number}
                                         thumbnailUrl={day.thumbnail_url}
-                                        shareableImageUrl={day.shareable_image_url}
+                                        shareableImageUrl={
+                                          day.shareable_image_url
+                                        }
                                         isEditable={isEditable}
                                       />
                                     </Pecha.DropdownMenuItem>

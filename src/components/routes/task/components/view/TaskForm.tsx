@@ -394,88 +394,93 @@ const TaskForm = ({
             {isEditMode ? "Edit Task" : "Add Task"}
           </h2>
 
-      <Pecha.Form {...form}>
-        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex w-full p-4 lg:w-2/3 justify-between items-center gap-4">
-            <TaskTitleField
-              isEditMode={isEditMode}
-              isTitleEditing={isTitleEditing}
-              formValue={formValues.title}
-              control={form.control}
-              onEdit={() => isEditable && setIsTitleEditing(true)}
-              onSave={handleSaveTitle}
-              onCancel={() => setIsTitleEditing(false)}
-              disabled={!isEditable}
-            />
-            {isEditMode && (
-              <DaySelector selectedDay={selectedDay} taskId={editingTask?.id} />
-            )}
-          </div>
-
-          <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
-          <div className=" px-4 flex items-center">
-            <h2 className="text-xl font-semibold">Add Subtask</h2>
-          </div>
-
-          {subTasks.length > 0 && (
-            <div className="space-y-4 p-4 w-full lg:w-2/3">
-              {subTasks.map((subTask, index) => (
-                <SubTaskCard
-                  key={index}
-                  subTask={subTask}
-                  index={index}
-                  onUpdate={updateSubTask}
-                  onRemove={removeSubTask}
-                  onImageUpload={handleSubTaskImageUpload}
-                  onRemoveImage={handleRemoveSubTaskImage}
-                  dayAudioUrl={currentDayData?.audio_url}
-                  dayAudioDurationMs={currentDayData?.audio_duration_ms}
-                  planLanguage={currentPlan?.language}
-                  taskId={editingTask?.id}
+          <Pecha.Form {...form}>
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="flex w-full p-4 lg:w-2/3 justify-between items-center gap-4">
+                <TaskTitleField
+                  isEditMode={isEditMode}
+                  isTitleEditing={isTitleEditing}
+                  formValue={formValues.title}
+                  control={form.control}
+                  onEdit={() => isEditable && setIsTitleEditing(true)}
+                  onSave={handleSaveTitle}
+                  onCancel={() => setIsTitleEditing(false)}
+                  disabled={!isEditable}
                 />
-              ))}
-            </div>
-          )}
-          {imageUploadError && (
-            <div className="text-red-500 text-sm ml-4">{imageUploadError}</div>
-          )}
-          {isEditable && (
-            <ContentTypeSelector onSelectType={handleAddSubTask} />
-          )}
+                {isEditMode && (
+                  <DaySelector
+                    selectedDay={selectedDay}
+                    taskId={editingTask?.id}
+                  />
+                )}
+              </div>
 
-          <div className="p-4 flex gap-3">
-            <Activity mode={isEditMode ? "visible" : "hidden"}>
-              <Pecha.Button
-                variant="outline"
-                type="button"
-                onClick={() => clearFormData()}
-              >
-                Cancel
-              </Pecha.Button>
-            </Activity>
+              <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
+              <div className=" px-4 flex items-center">
+                <h2 className="text-xl font-semibold">Add Subtask</h2>
+              </div>
 
-            <Pecha.Button
-              variant="destructive"
-              className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              type="submit"
-              disabled={
-                !isEditable ||
-                createTaskMutation.isPending ||
-                updateTaskMutation.isPending ||
-                subTasks.length === 0
-              }
-            >
-              {createTaskMutation.isPending || updateTaskMutation.isPending
-                ? isEditMode
-                  ? "Updating..."
-                  : "Creating..."
-                : isEditMode
-                  ? "Update"
-                  : "Submit"}
-            </Pecha.Button>
-          </div>
-        </form>
-      </Pecha.Form>
+              {subTasks.length > 0 && (
+                <div className="space-y-4 p-4 w-full lg:w-2/3">
+                  {subTasks.map((subTask, index) => (
+                    <SubTaskCard
+                      key={index}
+                      subTask={subTask}
+                      index={index}
+                      onUpdate={updateSubTask}
+                      onRemove={removeSubTask}
+                      onImageUpload={handleSubTaskImageUpload}
+                      onRemoveImage={handleRemoveSubTaskImage}
+                      dayAudioUrl={currentDayData?.audio_url}
+                      dayAudioDurationMs={currentDayData?.audio_duration_ms}
+                      planLanguage={currentPlan?.language}
+                      taskId={editingTask?.id}
+                    />
+                  ))}
+                </div>
+              )}
+              {imageUploadError && (
+                <div className="text-red-500 text-sm ml-4">
+                  {imageUploadError}
+                </div>
+              )}
+              {isEditable && (
+                <ContentTypeSelector onSelectType={handleAddSubTask} />
+              )}
+
+              <div className="p-4 flex gap-3">
+                <Activity mode={isEditMode ? "visible" : "hidden"}>
+                  <Pecha.Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => clearFormData()}
+                  >
+                    Cancel
+                  </Pecha.Button>
+                </Activity>
+
+                <Pecha.Button
+                  variant="destructive"
+                  className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="submit"
+                  disabled={
+                    !isEditable ||
+                    createTaskMutation.isPending ||
+                    updateTaskMutation.isPending ||
+                    subTasks.length === 0
+                  }
+                >
+                  {createTaskMutation.isPending || updateTaskMutation.isPending
+                    ? isEditMode
+                      ? "Updating..."
+                      : "Creating..."
+                    : isEditMode
+                      ? "Update"
+                      : "Submit"}
+                </Pecha.Button>
+              </div>
+            </form>
+          </Pecha.Form>
         </div>
       )}
     </div>
