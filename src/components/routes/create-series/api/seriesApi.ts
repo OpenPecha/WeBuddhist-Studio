@@ -79,7 +79,10 @@ export type SeriesDetailDTO = {
 };
 
 export function resolveSeriesGroupId(
-  series: Pick<SeriesDetailDTO, "group_id" | "group" | "plans"> | null | undefined,
+  series:
+    | Pick<SeriesDetailDTO, "group_id" | "group" | "plans">
+    | null
+    | undefined,
 ): string | undefined {
   if (!series) return undefined;
   if (series.group_id?.trim()) return series.group_id.trim();

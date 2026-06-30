@@ -19,6 +19,15 @@ const mockUserInfo = {
   ],
 };
 
+vi.mock("@/hooks/useUserInfo", () => ({
+  USER_INFO_QUERY_KEY: ["userInfo"],
+  fetchUserInfo: vi.fn(),
+  useUserInfo: () => ({
+    data: mockUserInfo,
+    isLoading: false,
+  }),
+}));
+
 vi.mock("@/components/ui/molecules/user-card/UserCard", () => ({
   default: ({ userInfo }: any) => (
     <div data-testid="user-card">

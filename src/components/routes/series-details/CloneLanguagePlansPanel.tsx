@@ -48,9 +48,11 @@ export function CloneLanguagePlansPanel({
       );
     },
     onError: (err: unknown) => {
-      const message =
-        (err as { response?: { data?: { detail?: string | { message?: string } } } })
-          ?.response?.data?.detail;
+      const message = (
+        err as {
+          response?: { data?: { detail?: string | { message?: string } } };
+        }
+      )?.response?.data?.detail;
       const text =
         typeof message === "string"
           ? message
@@ -98,7 +100,9 @@ export function CloneLanguagePlansPanel({
   );
 
   if (embedded) {
-    return <div className="flex w-full flex-col items-center gap-4">{content}</div>;
+    return (
+      <div className="flex w-full flex-col items-center gap-4">{content}</div>
+    );
   }
 
   return (

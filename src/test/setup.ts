@@ -1,5 +1,10 @@
 import "@testing-library/jest-dom";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
+
+afterEach(() => {
+  document.body.removeAttribute("data-scroll-locked");
+  document.body.style.pointerEvents = "";
+});
 
 vi.mock("@/config/auth-context", () => ({
   useAuth: () => ({
@@ -22,6 +27,10 @@ vi.mock("@/config/axios-config", () => ({
 vi.mock("@tolgee/react", () => ({
   useTranslate: () => ({
     t: (key: string) => key,
+  }),
+  useTolgee: () => ({
+    getLanguage: () => "en",
+    changeLanguage: vi.fn(),
   }),
 }));
 
@@ -50,8 +59,8 @@ Object.defineProperty(global, "URL", {
   writable: true,
 });
 
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

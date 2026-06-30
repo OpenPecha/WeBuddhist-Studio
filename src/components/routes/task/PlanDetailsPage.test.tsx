@@ -190,11 +190,14 @@ describe("PlanDetailsPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText("Day 4")).toBeInTheDocument();
     });
+    // "Add New Day" now opens a dialog; submitting it triggers the request.
     fireEvent.click(screen.getByText("Add New Day"));
+    const submitButton = await screen.findByText("Add 1 Day");
+    fireEvent.click(submitButton);
     await waitFor(() => {
       expect(mockAxios.post).toHaveBeenCalledWith(
         expect.stringContaining("/api/v1/cms/plans/test-plan-id/days"),
-        {},
+        expect.objectContaining({ number_of_days: 1 }),
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: "Bearer mock-token",
@@ -217,8 +220,10 @@ describe("PlanDetailsPanel Component", () => {
       expect(screen.getByText("Day 4")).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText("Add New Day"));
+    const submitButton = await screen.findByText("Add 1 Day");
+    fireEvent.click(submitButton);
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Failed to create new day", {
+      expect(toast.error).toHaveBeenCalledWith("Failed to create days", {
         description: "Cannot create day",
       });
     });
@@ -229,7 +234,7 @@ describe("PlanDetailsPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
-    expect(screen.getByText("Add Task")).toBeInTheDocument();
+    expect(screen.getAllByText("Add Task").length).toBeGreaterThan(0);
     expect(screen.getByPlaceholderText("Task Title")).toBeInTheDocument();
   });
 
@@ -254,10 +259,10 @@ describe("PlanDetailsPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(mockPlanData.title)).toBeInTheDocument();
     });
-    expect(screen.getByText("Add Task")).toBeInTheDocument();
+    expect(screen.getAllByText("Add Task").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText("Morning Intention Setting"));
     await waitFor(() => {
-      expect(screen.queryByText("Add Task")).not.toBeInTheDocument();
+      expect(screen.queryAllByText("Add Task")).toHaveLength(0);
     });
     await waitFor(() => {
       expect(screen.getByText("Task")).toBeInTheDocument();
@@ -341,7 +346,7 @@ describe("PlanDetailsPanel Component", () => {
     await user.click(deleteTaskBtn);
 
     await waitFor(() => {
-      expect(screen.getByText("Add Task")).toBeInTheDocument();
+      expect(screen.getAllByText("Add Task").length).toBeGreaterThan(0);
     });
   });
 
@@ -398,7 +403,7 @@ describe("PlanDetailsPanel Component", () => {
     await user.click(deleteTaskBtn);
 
     await waitFor(() => {
-      expect(screen.getByText("Add Task")).toBeInTheDocument();
+      expect(screen.getAllByText("Add Task").length).toBeGreaterThan(0);
     });
   });
 });

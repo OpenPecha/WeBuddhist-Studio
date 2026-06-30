@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getSeries, resolveSeriesGroupId } from "@/components/routes/create-series/api/seriesApi";
+import {
+  getSeries,
+  resolveSeriesGroupId,
+} from "@/components/routes/create-series/api/seriesApi";
 import { parsePlanNewFromSeriesState } from "./planNewFromSeriesState";
 import { ROUTES } from "@/routes/paths";
 

@@ -51,8 +51,12 @@ const PlanTagSearchInput = ({
     Object.fromEntries(initialTags.map((tag) => [tag.id, tag.name])),
   );
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [activeLanguages, setActiveLanguages] = useState<LanguageCode[]>(["EN"]);
-  const [languageData, setLanguageData] = useState<Record<LanguageCode, LanguageData>>({
+  const [activeLanguages, setActiveLanguages] = useState<LanguageCode[]>([
+    "EN",
+  ]);
+  const [languageData, setLanguageData] = useState<
+    Record<LanguageCode, LanguageData>
+  >({
     EN: { name: "", description: "" },
     BO: { name: "", description: "" },
     ZH: { name: "", description: "" },
@@ -155,7 +159,9 @@ const PlanTagSearchInput = ({
     for (const lang of activeLanguages) {
       const data = languageData[lang];
       if (!data.name.trim()) {
-        toast.error(`Name is required for ${PLAN_LANGUAGE.find(l => l.value === lang)?.label}`);
+        toast.error(
+          `Name is required for ${PLAN_LANGUAGE.find((l) => l.value === lang)?.label}`,
+        );
         return;
       }
       metadata.push({
@@ -182,7 +188,7 @@ const PlanTagSearchInput = ({
   const updateLanguageField = (
     lang: LanguageCode,
     field: keyof LanguageData,
-    value: string
+    value: string,
   ) => {
     setLanguageData((prev) => ({
       ...prev,
@@ -331,7 +337,10 @@ const PlanTagSearchInput = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold">Languages</label>
-                {PLAN_LANGUAGE.filter((lang) => !activeLanguages.includes(lang.value as LanguageCode)).length > 0 && (
+                {PLAN_LANGUAGE.filter(
+                  (lang) =>
+                    !activeLanguages.includes(lang.value as LanguageCode),
+                ).length > 0 && (
                   <Pecha.DropdownMenu>
                     <Pecha.DropdownMenuTrigger asChild>
                       <Button
@@ -345,10 +354,15 @@ const PlanTagSearchInput = ({
                       </Button>
                     </Pecha.DropdownMenuTrigger>
                     <Pecha.DropdownMenuContent>
-                      {PLAN_LANGUAGE.filter((lang) => !activeLanguages.includes(lang.value as LanguageCode)).map((lang) => (
+                      {PLAN_LANGUAGE.filter(
+                        (lang) =>
+                          !activeLanguages.includes(lang.value as LanguageCode),
+                      ).map((lang) => (
                         <Pecha.DropdownMenuItem
                           key={lang.value}
-                          onClick={() => addLanguage(lang.value as LanguageCode)}
+                          onClick={() =>
+                            addLanguage(lang.value as LanguageCode)
+                          }
                         >
                           {lang.label}
                         </Pecha.DropdownMenuItem>
@@ -358,9 +372,13 @@ const PlanTagSearchInput = ({
                 )}
               </div>
               {activeLanguages.map((lang) => {
-                const langLabel = PLAN_LANGUAGE.find((l) => l.value === lang)?.label || lang;
+                const langLabel =
+                  PLAN_LANGUAGE.find((l) => l.value === lang)?.label || lang;
                 return (
-                  <div key={lang} className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3">
+                  <div
+                    key={lang}
+                    className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3"
+                  >
                     {activeLanguages.length > 1 && (
                       <button
                         type="button"
@@ -371,12 +389,16 @@ const PlanTagSearchInput = ({
                         <IoMdClose className="h-4 w-4" />
                       </button>
                     )}
-                    <div className="text-sm font-semibold text-muted-foreground mb-2">{langLabel}</div>
+                    <div className="text-sm font-semibold text-muted-foreground mb-2">
+                      {langLabel}
+                    </div>
                     <div className="space-y-2">
                       <label className="text-sm font-bold">Name</label>
                       <Input
                         value={languageData[lang].name}
-                        onChange={(e) => updateLanguageField(lang, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateLanguageField(lang, "name", e.target.value)
+                        }
                         placeholder="Tag name"
                         required
                         className="bg-white dark:bg-[#181818]"
@@ -386,7 +408,13 @@ const PlanTagSearchInput = ({
                       <label className="text-sm font-bold">Description</label>
                       <Textarea
                         value={languageData[lang].description}
-                        onChange={(e) => updateLanguageField(lang, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateLanguageField(
+                            lang,
+                            "description",
+                            e.target.value,
+                          )
+                        }
                         placeholder="Optional description"
                         className="field-sizing-fixed min-h-[80px] max-h-32 resize-none bg-white dark:bg-[#181818]"
                       />

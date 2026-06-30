@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
-import {
-  fetchVerseOfDayList,
-  type VerseOfDayItem,
-} from "./api/verseOfDayApi";
+import { fetchVerseOfDayList, type VerseOfDayItem } from "./api/verseOfDayApi";
 import { format } from "date-fns";
 
 interface VerseOfDayListProps {
@@ -13,7 +10,6 @@ interface VerseOfDayListProps {
 }
 
 const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
-
   const { data, isLoading } = useQuery({
     queryKey: ["verse-of-day-list"],
     queryFn: fetchVerseOfDayList,
@@ -50,7 +46,9 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
             <Pecha.TableHead className="w-[100px]">Image</Pecha.TableHead>
             <Pecha.TableHead className="w-[120px]">Date</Pecha.TableHead>
             <Pecha.TableHead className="w-[150px]">Group</Pecha.TableHead>
-            <Pecha.TableHead className="w-[180px] text-right">Actions</Pecha.TableHead>
+            <Pecha.TableHead className="w-[180px] text-right">
+              Actions
+            </Pecha.TableHead>
           </Pecha.TableRow>
         </Pecha.TableHeader>
         <Pecha.TableBody>
@@ -58,7 +56,9 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
             <Pecha.TableRow key={verse.id}>
               <Pecha.TableCell className="max-w-[400px]">
                 <p className="text-sm line-clamp-2">
-                  {verse.verses.en || <span className="text-muted-foreground">—</span>}
+                  {verse.verses.en || (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </p>
               </Pecha.TableCell>
               <Pecha.TableCell>
@@ -68,12 +68,16 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
                     alt="Verse"
                     className="h-12 w-12 rounded object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                      (e.target as HTMLImageElement).style.display = "none";
+                      (
+                        e.target as HTMLImageElement
+                      ).nextElementSibling?.classList.remove("hidden");
                     }}
                   />
                 ) : null}
-                <div className={`h-12 w-12 rounded bg-muted ${verse.image_url ? 'hidden' : ''}`} />
+                <div
+                  className={`h-12 w-12 rounded bg-muted ${verse.image_url ? "hidden" : ""}`}
+                />
               </Pecha.TableCell>
               <Pecha.TableCell className="whitespace-nowrap">
                 {format(new Date(verse.date), "MMM dd, yyyy")}

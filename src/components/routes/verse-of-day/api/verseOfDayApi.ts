@@ -61,15 +61,16 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
 });
 
-export const fetchVerseOfDayList = async (): Promise<VerseOfDayListResponse> => {
-  const { data } = await axiosInstance.get<VerseOfDayListResponse>(
-    `/api/v1/cms/verse-of-day`,
-    {
-      headers: getAuthHeaders(),
-    },
-  );
-  return data;
-};
+export const fetchVerseOfDayList =
+  async (): Promise<VerseOfDayListResponse> => {
+    const { data } = await axiosInstance.get<VerseOfDayListResponse>(
+      `/api/v1/cms/verse-of-day`,
+      {
+        headers: getAuthHeaders(),
+      },
+    );
+    return data;
+  };
 
 export const createVerseOfDay = async (
   payload: VerseOfDayPayload,

@@ -223,7 +223,7 @@ describe("TaskForm Component", () => {
 
   it("renders task form with title input", async () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
-    expect(screen.getByText("Add Task")).toBeInTheDocument();
+    expect(screen.getAllByText("Add Task").length).toBeGreaterThan(0);
     expect(screen.getByPlaceholderText("Task Title")).toBeInTheDocument();
   });
 

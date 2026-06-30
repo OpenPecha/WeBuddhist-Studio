@@ -21,6 +21,8 @@ import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
 import PlanTagSearchInput from "./PlanTagSearchInput";
+import PlanVideosSection from "./PlanVideosSection";
+import type { PlanVideoSummary } from "@/components/routes/task/api/planApi";
 import {
   planTagsToIds,
   type PlanTagSummary,
@@ -258,6 +260,11 @@ const Createplan = () => {
       setImagePreview(resolvedImageUrl || null);
     }
   }, [planId, planData]);
+
+  const planVideos = useMemo<PlanVideoSummary[]>(
+    () => (Array.isArray(planData?.videos) ? planData.videos : []),
+    [planData],
+  );
 
   const canUpdate = form.formState.isDirty;
 
@@ -933,6 +940,11 @@ const Createplan = () => {
                 </Pecha.FormItem>
               )}
             />
+
+            {planId && (
+              <PlanVideosSection planId={planId} videos={planVideos} />
+            )}
+
             <div className="pt-8 w-full flex justify-end">
               {isCreateMode ? (
                 <Pecha.Button

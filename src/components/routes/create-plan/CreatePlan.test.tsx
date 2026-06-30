@@ -81,6 +81,16 @@ vi.mock(
 describe("CreatePlan Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // `clearAllMocks` resets call history but keeps implementations set via
+    // `mockReturnValue`. The navigation tests force `useBlocker` into a
+    // "blocked" state, which opens the navigation dialog; reset it here so
+    // that leaked dialog doesn't `aria-hidden` the form in later tests.
+    vi.mocked(useBlocker).mockReturnValue({
+      state: "unblocked",
+      proceed: undefined,
+      reset: undefined,
+      location: undefined,
+    });
     vi.mocked(useParams).mockReturnValue({ groupId: "test-group-id" });
     vi.mocked(useLocation).mockReturnValue({
       pathname: "/groups/test-group-id/plan/new",
@@ -428,12 +438,34 @@ describe("CreatePlan Component", () => {
       screen.getByRole("button", { name: 'Create "Brand New Tag"' }),
     );
 
+    // Clicking the create option opens a multi-language dialog with the
+    // typed name pre-filled for the default (EN) language.
+    const createTagButton = await screen.findByRole("button", {
+      name: "Create Tag",
+    });
+    fireEvent.click(createTagButton);
+
     await waitFor(() => {
       expect(axiosInstance.post).toHaveBeenCalledWith(
         "/api/v1/cms/tags",
-        expect.objectContaining({ name: "Brand New Tag" }),
+        expect.objectContaining({
+          metadata: expect.arrayContaining([
+            expect.objectContaining({
+              language: "EN",
+              name: "Brand New Tag",
+            }),
+          ]),
+        }),
         expect.any(Object),
       );
+    });
+
+    // Successful creation closes the dialog; wait for it so the Radix
+    // scroll-lock is torn down and does not leak into later tests.
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "Create Tag" }),
+      ).not.toBeInTheDocument();
     });
   });
 

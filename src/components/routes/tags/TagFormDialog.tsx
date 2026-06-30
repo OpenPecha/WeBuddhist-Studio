@@ -9,7 +9,12 @@ import { toast } from "sonner";
 import { PLAN_LANGUAGE } from "@/lib/constant";
 import { normalizeLanguageCode } from "@/lib/languageCodes";
 import type { LanguageCode } from "@/schema/SeriesSchema";
-import type { PlanOption, Tag, TagPayload, TagMetadataInput } from "./api/tagsApi";
+import type {
+  PlanOption,
+  Tag,
+  TagPayload,
+  TagMetadataInput,
+} from "./api/tagsApi";
 
 interface TagFormDialogProps {
   open: boolean;
@@ -34,8 +39,12 @@ const TagFormDialog = ({
   onSubmit,
 }: TagFormDialogProps) => {
   const isEdit = !!tag;
-  const [activeLanguages, setActiveLanguages] = useState<LanguageCode[]>(["EN"]);
-  const [languageData, setLanguageData] = useState<Record<LanguageCode, LanguageData>>({
+  const [activeLanguages, setActiveLanguages] = useState<LanguageCode[]>([
+    "EN",
+  ]);
+  const [languageData, setLanguageData] = useState<
+    Record<LanguageCode, LanguageData>
+  >({
     EN: { name: "", description: "" },
     BO: { name: "", description: "" },
     ZH: { name: "", description: "" },
@@ -52,7 +61,7 @@ const TagFormDialog = ({
 
   useEffect(() => {
     if (!open) return;
-    
+
     if (tag?.metadata && tag.metadata.length > 0) {
       const langs: LanguageCode[] = [];
       const data: Record<LanguageCode, LanguageData> = {
@@ -63,7 +72,7 @@ const TagFormDialog = ({
         NE: { name: "", description: "" },
         MN: { name: "", description: "" },
       };
-      
+
       tag.metadata.forEach((meta) => {
         const lang = normalizeLanguageCode(String(meta.language ?? ""));
         if (!lang) return;
@@ -73,7 +82,7 @@ const TagFormDialog = ({
           description: meta.description || "",
         };
       });
-      
+
       setActiveLanguages(langs.length > 0 ? langs : ["EN"]);
       setLanguageData(data);
     } else {
@@ -87,7 +96,7 @@ const TagFormDialog = ({
         MN: { name: "", description: "" },
       });
     }
-    
+
     setImageKey(tag?.image_key ?? null);
     setImagePreview(tag?.image ?? null);
     setSelectedPlanIds(tag?.plan_ids ?? []);
@@ -95,7 +104,7 @@ const TagFormDialog = ({
   }, [open, tag]);
 
   const availableLanguages = PLAN_LANGUAGE.filter(
-    (lang) => !activeLanguages.includes(lang.value as LanguageCode)
+    (lang) => !activeLanguages.includes(lang.value as LanguageCode),
   );
 
   const addLanguage = (langCode: LanguageCode) => {
@@ -113,7 +122,7 @@ const TagFormDialog = ({
   const updateLanguageField = (
     lang: LanguageCode,
     field: keyof LanguageData,
-    value: string
+    value: string,
   ) => {
     setLanguageData((prev) => ({
       ...prev,
@@ -161,12 +170,14 @@ const TagFormDialog = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const metadata: TagMetadataInput[] = [];
     for (const lang of activeLanguages) {
       const data = languageData[lang];
       if (!data.name.trim()) {
-        toast.error(`Name is required for ${PLAN_LANGUAGE.find(l => l.value === lang)?.label}`);
+        toast.error(
+          `Name is required for ${PLAN_LANGUAGE.find((l) => l.value === lang)?.label}`,
+        );
         return;
       }
       metadata.push({
@@ -175,7 +186,7 @@ const TagFormDialog = ({
         description: data.description.trim() || null,
       });
     }
-    
+
     onSubmit({
       metadata,
       image_key: imageKey,
@@ -218,7 +229,9 @@ const TagFormDialog = ({
                         {availableLanguages.map((lang) => (
                           <Pecha.DropdownMenuItem
                             key={lang.value}
-                            onClick={() => addLanguage(lang.value as LanguageCode)}
+                            onClick={() =>
+                              addLanguage(lang.value as LanguageCode)
+                            }
                           >
                             {lang.label}
                           </Pecha.DropdownMenuItem>
@@ -228,9 +241,13 @@ const TagFormDialog = ({
                   )}
                 </div>
                 {activeLanguages.map((lang) => {
-                  const langLabel = PLAN_LANGUAGE.find((l) => l.value === lang)?.label || lang;
+                  const langLabel =
+                    PLAN_LANGUAGE.find((l) => l.value === lang)?.label || lang;
                   return (
-                    <div key={lang} className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3">
+                    <div
+                      key={lang}
+                      className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3"
+                    >
                       {activeLanguages.length > 1 && (
                         <button
                           type="button"
@@ -241,12 +258,16 @@ const TagFormDialog = ({
                           <IoMdClose className="h-4 w-4" />
                         </button>
                       )}
-                      <div className="text-sm font-semibold text-muted-foreground mb-2">{langLabel}</div>
+                      <div className="text-sm font-semibold text-muted-foreground mb-2">
+                        {langLabel}
+                      </div>
                       <div className="space-y-2">
                         <label className="text-sm font-bold">Name</label>
                         <Pecha.Input
                           value={languageData[lang].name}
-                          onChange={(e) => updateLanguageField(lang, "name", e.target.value)}
+                          onChange={(e) =>
+                            updateLanguageField(lang, "name", e.target.value)
+                          }
                           placeholder="Tag name"
                           required
                           className="bg-white dark:bg-[#181818]"
@@ -256,7 +277,13 @@ const TagFormDialog = ({
                         <label className="text-sm font-bold">Description</label>
                         <Textarea
                           value={languageData[lang].description}
-                          onChange={(e) => updateLanguageField(lang, "description", e.target.value)}
+                          onChange={(e) =>
+                            updateLanguageField(
+                              lang,
+                              "description",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Optional description"
                           className="field-sizing-fixed min-h-[80px] max-h-32 resize-none bg-white dark:bg-[#181818]"
                         />
