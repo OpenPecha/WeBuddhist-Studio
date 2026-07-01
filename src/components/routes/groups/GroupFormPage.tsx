@@ -34,6 +34,7 @@ import {
 import GroupFormAssociationsPanel from "./components/GroupFormAssociationsPanel";
 import GroupImageField from "./components/GroupImageField";
 import { GroupPageShell } from "./components/GroupPageShell";
+import GroupAccumulatorsPanel from "./components/GroupAccumulatorsPanel";
 import GroupMembersPanel from "./components/GroupMembersPanel";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import {
@@ -620,7 +621,8 @@ const GroupFormPage = () => {
       </div>
 
       {!isNew && groupData && (
-        <div className="border-t border-dashed border-gray-300 dark:border-input p-4 sm:p-8 pb-12">
+        <div className="border-t border-dashed border-gray-300 dark:border-input p-4 sm:p-8 pb-12 space-y-10">
+          <GroupAccumulatorsPanel groupId={groupData.id} groupRole={myRole} />
           <GroupMembersPanel
             groupId={groupData.id}
             members={groupData.members ?? []}
