@@ -63,8 +63,8 @@ function formStateFromAccumulator(
     end_date: accumulator.end_date,
     image_key: accumulator.image_key,
     image_preview: resolveGroupAccumulatorImageUrl(accumulator),
-    preset: accumulator.accumulator_id
-      ? { id: accumulator.accumulator_id, title: "Linked preset" }
+    preset: accumulator.preset_accumulator_id
+      ? { id: accumulator.preset_accumulator_id, title: "Linked preset" }
       : null,
   };
 }
@@ -320,6 +320,12 @@ const GroupAccumulatorsPanel = ({
                     </span>
                     <span>Start: {formatAccumulatorDate(accumulator.start_date)}</span>
                     <span>End: {formatAccumulatorDate(accumulator.end_date)}</span>
+                    <span>
+                      Joined:{" "}
+                      {accumulator.member_count != null
+                        ? accumulator.member_count.toLocaleString()
+                        : "—"}
+                    </span>
                   </div>
                 </div>
                 {canManage ? (

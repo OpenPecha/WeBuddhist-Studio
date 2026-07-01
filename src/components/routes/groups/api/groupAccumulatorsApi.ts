@@ -8,7 +8,7 @@ export interface GroupAccumulatorImage {
 
 export interface GroupAccumulatorDTO {
   id: string;
-  accumulator_id: string | null;
+  preset_accumulator_id: string | null;
   group_id: string;
   title: string | null;
   image: GroupAccumulatorImage | null;
@@ -16,6 +16,7 @@ export interface GroupAccumulatorDTO {
   target_count: number | null;
   start_date: string | null;
   end_date: string | null;
+  member_count?: number;
   created_at: string;
   updated_at: string | null;
 }
