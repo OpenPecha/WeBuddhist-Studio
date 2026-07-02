@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IoMdArrowBack } from "react-icons/io";
 import { toast } from "sonner";
@@ -32,6 +32,10 @@ import type { PlansByLanguage } from "./seriesDetailsTypes";
 import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
 import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
 import { SeriesLanguageActionsPanel } from "./SeriesLanguageActionsPanel";
+import {
+  buildSeriesLanguageParams,
+  parseSeriesLanguageParam,
+} from "./seriesDetailsUrlState";
 
 const togglePlanFeatured = async (planId: string) => {
   const { data } = await axiosInstance.patch(
@@ -43,9 +47,23 @@ const togglePlanFeatured = async (planId: string) => {
 const SeriesDetailsPage = () => {
   const { seriesId } = useParams<{ seriesId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const [activeLanguage, setActiveLanguage] = useState<LanguageCode>("EN");
   const [plansByLang, setPlansByLang] = useState<PlansByLanguage>({});
+
+  const activeLanguage = useMemo(
+    () => parseSeriesLanguageParam(searchParams),
+    [searchParams],
+  );
+
+  const setActiveLanguage = useCallback(
+    (code: LanguageCode) => {
+      setSearchParams(buildSeriesLanguageParams(searchParams, code), {
+        replace: true,
+      });
+    },
+    [searchParams, setSearchParams],
+  );
 
   const {
     data: seriesData,
@@ -68,10 +86,6 @@ const SeriesDetailsPage = () => {
     () => getLanguageTabCounts(plansByLang),
     [plansByLang],
   );
-
-  useEffect(() => {
-    setActiveLanguage("EN");
-  }, [seriesId]);
 
   const headerTitle = getSeriesTitleForLanguage(
     seriesData?.metadata,

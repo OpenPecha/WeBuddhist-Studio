@@ -41,18 +41,32 @@ const seriesFixture = {
   ],
 };
 
-function renderPage() {
+function renderPage(initialEntry = "/series/series-1") {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={["/series/series-1"]}>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
           <Route path="/series/:seriesId" element={<SeriesDetailsPage />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
+  );
+}
+
+function LocationProbe() {
+  const { search } = useLocation();
+  return <div data-testid="location-search">{search}</div>;
+}
+
+function SeriesDetailsWithLocation() {
+  return (
+    <>
+      <LocationProbe />
+      <SeriesDetailsPage />
+    </>
   );
 }
 
@@ -140,5 +154,47 @@ describe("SeriesDetailsPage", () => {
       expect(screen.getByText("示例计划")).toBeInTheDocument();
     });
     expect(screen.queryByText("English Plan")).not.toBeInTheDocument();
+  });
+
+  it("reads the active language from URL params", async () => {
+    renderPage("/series/series-1?language=ZH");
+
+    await waitFor(() => {
+      expect(screen.getByText("示例计划")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("English Plan")).not.toBeInTheDocument();
+  });
+
+  it("updates URL params when selecting a language tab", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={["/series/series-1"]}>
+          <Routes>
+            <Route
+              path="/series/:seriesId"
+              element={<SeriesDetailsWithLocation />}
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("English Plan")).toBeInTheDocument();
+    });
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /中文/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("示例计划")).toBeInTheDocument();
+      expect(screen.getByTestId("location-search")).toHaveTextContent(
+        "?language=ZH",
+      );
+    });
   });
 });

@@ -7,6 +7,7 @@ const getAuthHeaders = () => ({
 export interface CmsPlanSummary {
   id: string;
   title: string;
+  language: string;
   total_days: number;
 }
 

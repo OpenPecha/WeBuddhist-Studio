@@ -15,6 +15,8 @@ import {
   searchCmsPlans,
   type CreateDaysRequest,
 } from "@/components/routes/task/api/planApi";
+import { getNativeLanguageLabel } from "@/components/routes/create-series/utils/language";
+import { normalizeLanguageCode } from "@/lib/languageCodes";
 
 interface DayCreateDialogProps {
   disabled?: boolean;
@@ -37,6 +39,7 @@ const DayCreateDialog = ({
 
   const [templatePlanId, setTemplatePlanId] = useState<string | undefined>();
   const [templatePlanTitle, setTemplatePlanTitle] = useState("");
+  const [templatePlanLanguage, setTemplatePlanLanguage] = useState("");
   const [sourceDayId, setSourceDayId] = useState<string | undefined>();
 
   const [planSearch, setPlanSearch] = useState("");
@@ -81,6 +84,7 @@ const DayCreateDialog = ({
     setNumberOfDays(1);
     setTemplatePlanId(undefined);
     setTemplatePlanTitle("");
+    setTemplatePlanLanguage("");
     setSourceDayId(undefined);
     setPlanSearch("");
     setShowPlanPicker(false);
@@ -102,9 +106,15 @@ const DayCreateDialog = ({
     resetForm();
   };
 
-  const selectPlan = (id: string, title: string) => {
+  const formatPlanLanguage = (language: string) => {
+    const code = normalizeLanguageCode(language);
+    return code ? getNativeLanguageLabel(code) : language;
+  };
+
+  const selectPlan = (id: string, title: string, language: string) => {
     setTemplatePlanId(id);
     setTemplatePlanTitle(title);
+    setTemplatePlanLanguage(language);
     setSourceDayId(undefined);
     setPlanSearch("");
     setShowPlanPicker(false);
@@ -113,6 +123,7 @@ const DayCreateDialog = ({
   const clearPlan = () => {
     setTemplatePlanId(undefined);
     setTemplatePlanTitle("");
+    setTemplatePlanLanguage("");
     setSourceDayId(undefined);
     setPlanSearch("");
     setShowPlanPicker(false);
@@ -136,6 +147,12 @@ const DayCreateDialog = ({
     (isPlanFetching ||
       planOptions.length > 0 ||
       debouncedPlanSearch.trim().length > 0);
+
+  const planInputValue = showPlanPicker
+    ? planSearch
+    : templatePlanLanguage
+      ? `${templatePlanTitle} (${formatPlanLanguage(templatePlanLanguage)})`
+      : templatePlanTitle;
 
   return (
     <Pecha.Dialog open={open} onOpenChange={handleOpenChange}>
@@ -219,7 +236,7 @@ const DayCreateDialog = ({
                 <Input
                   placeholder="Search plans…"
                   className="bg-background pr-8"
-                  value={showPlanPicker ? planSearch : templatePlanTitle}
+                  value={planInputValue}
                   autoComplete="off"
                   onChange={(e) => {
                     setPlanSearch(e.target.value);
@@ -252,13 +269,16 @@ const DayCreateDialog = ({
                       <li key={plan.id}>
                         <button
                           type="button"
-                          className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50 truncate"
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50"
                           onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => selectPlan(plan.id, plan.title)}
+                          onClick={() =>
+                            selectPlan(plan.id, plan.title, plan.language)
+                          }
                         >
-                          {plan.title}
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            ({plan.total_days} days)
+                          <span className="block truncate">{plan.title}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatPlanLanguage(plan.language)} · {plan.total_days}{" "}
+                            {plan.total_days === 1 ? "day" : "days"}
                           </span>
                         </button>
                       </li>
