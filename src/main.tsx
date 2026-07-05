@@ -37,6 +37,7 @@ import Groups from "./components/routes/groups/Groups.tsx";
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import GroupDetailsPage from "./components/routes/groups/GroupDetailsPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
+import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
@@ -236,6 +237,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AdminAuthorsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.adminChinaRestrictions,
+        element: (
+          <ProtectedRoute>
+            <ChinaRestrictionsPage />
           </ProtectedRoute>
         ),
       },

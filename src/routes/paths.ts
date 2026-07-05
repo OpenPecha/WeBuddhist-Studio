@@ -25,6 +25,7 @@ export const ROUTES = {
   groupPlanNew: (groupId: string) => `/groups/${groupId}/plan/new`,
   groupSeriesNew: (groupId: string) => `/groups/${groupId}/series/new`,
   adminAuthors: "/admin/authors",
+  adminChinaRestrictions: "/admin/china-restrictions",
 } as const;
 
 export const AUTH_ROUTE_PATHS: readonly string[] = [

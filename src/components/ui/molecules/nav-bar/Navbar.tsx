@@ -19,6 +19,7 @@ import VerseOfDayButton from "@/components/routes/verse-of-day/VerseOfDayButton"
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { canAccessAdminAuthors } from "@/lib/platformAccess";
 import { MdAdminPanelSettings } from "react-icons/md";
+import { MdPublicOff } from "react-icons/md";
 
 const navItems = [
   {
@@ -87,6 +88,12 @@ const Navbar = () => {
             path: ROUTES.adminAuthors,
             tooltip: "Author administration",
           },
+          {
+            icon: <MdPublicOff className="w-4 h-4" />,
+            label: "China",
+            path: ROUTES.adminChinaRestrictions,
+            tooltip: "China content restrictions",
+          },
         ]
       : []),
   ];
@@ -118,7 +125,11 @@ const Navbar = () => {
                       (item.path === ROUTES.groups &&
                         location.pathname.startsWith("/groups")) ||
                       (item.path === ROUTES.adminAuthors &&
-                        location.pathname.startsWith(ROUTES.adminAuthors))
+                        location.pathname.startsWith(ROUTES.adminAuthors)) ||
+                      (item.path === ROUTES.adminChinaRestrictions &&
+                        location.pathname.startsWith(
+                          ROUTES.adminChinaRestrictions,
+                        ))
                         ? "text-zinc-900 dark:text-zinc-100"
                         : "text-zinc-400 dark:text-zinc-600"
                     }`}
