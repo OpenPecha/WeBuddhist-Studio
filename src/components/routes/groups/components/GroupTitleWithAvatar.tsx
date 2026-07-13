@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/atoms/avatar";
 import { cn } from "@/lib/utils";
 
 type GroupTitleWithAvatarProps = {
@@ -22,16 +23,13 @@ const GroupTitleWithAvatar = ({
 }: GroupTitleWithAvatarProps) => {
   return (
     <div className={cn("flex items-center gap-3 min-w-0", className)}>
-      {avatarUrl ? (
-        <img
-          src={avatarUrl}
-          alt=""
-          className={cn(
-            sizeClasses[size],
-            "rounded-full object-cover border shrink-0",
-          )}
-        />
-      ) : null}
+    
+      <Avatar className={cn(sizeClasses[size], "shrink-0")}>
+        <AvatarImage src={avatarUrl ?? undefined} />
+        <AvatarFallback>
+          {title.charAt(0)}
+        </AvatarFallback>
+      </Avatar>
       <span className={cn("truncate", titleClassName)}>{title}</span>
     </div>
   );

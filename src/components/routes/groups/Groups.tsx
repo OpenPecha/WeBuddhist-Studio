@@ -1,14 +1,13 @@
-import { useState, Activity } from "react";
+import { useEffect, useState } from "react";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useDebounce } from "use-debounce";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
 import { Link } from "react-router-dom";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
-import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
-import { PLAN_LANGUAGE } from "@/lib/constant";
 import { ROUTES } from "@/routes/paths";
 import {
   fetchGroups,
@@ -16,37 +15,111 @@ import {
   type AuthorGroupType,
 } from "./api/groupsApi";
 import { GroupListShell } from "./components/GroupPageShell";
-import GroupsTable from "./GroupsTable";
+import GroupsList from "./GroupsList";
 import PendingGroupInvitationsBlock from "./components/PendingGroupInvitationsBlock";
 
 const PAGE_SIZE = 10;
 
+function GroupsLoadMoreStatus({
+  isFetchingNextPage,
+  hasNextPage,
+  hasGroups,
+}: Readonly<{
+  isFetchingNextPage: boolean;
+  hasNextPage: boolean;
+  hasGroups: boolean;
+}>) {
+  if (isFetchingNextPage) {
+    return <p className="text-sm text-muted-foreground">Loading more…</p>;
+  }
+  if (hasNextPage) {
+    return <span className="h-4" aria-hidden />;
+  }
+  if (hasGroups) {
+    return <p className="text-sm text-muted-foreground">All groups loaded</p>;
+  }
+  return null;
+}
+
 const Groups = () => {
   const [search, setSearch] = useState("");
-  const [language, setLanguage] = useState<string>("");
-  const [groupType, setGroupType] = useState<AuthorGroupType | "">("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [groupType, setGroupType] = useState<AuthorGroupType | "">("COMMUNITY");
   const [debouncedSearch] = useDebounce(search, 500);
 
   const {
-    data: groupsData,
+    data,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["cms-groups", currentPage, debouncedSearch, language, groupType],
-    queryFn: () =>
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["cms-groups", debouncedSearch, groupType],
+    queryFn: ({ pageParam }) =>
       fetchGroups({
-        page: currentPage,
+        page: pageParam,
         limit: PAGE_SIZE,
         search: debouncedSearch,
-        language: language || undefined,
         group_type: groupType || undefined,
       }),
+    getNextPageParam: (lastPage, allPages) => {
+      const totalFetched = allPages.reduce(
+        (sum, page) => sum + page.groups.length,
+        0,
+      );
+      return totalFetched < lastPage.total ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
     refetchOnWindowFocus: false,
     retry: false,
   });
 
-  const totalPages = groupsData ? Math.ceil(groupsData.total / PAGE_SIZE) : 1;
+  const groups = data?.pages.flatMap((page) => page.groups) ?? [];
+  const isEmpty = groups.length === 0 && !isLoading;
+
+  const { ref: sentinelRef, inView } = useInView({
+    threshold: 0,
+    rootMargin: "100px",
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  let listContent;
+  if (error) {
+    listContent = (
+      <p className="text-sm text-red-500 py-8">
+        Failed to load groups. {getApiErrorMessage(error)}
+      </p>
+    );
+  } else if (isEmpty) {
+    listContent = (
+      <div className="flex flex-col h-full items-center justify-center">
+        <p className="text-base text-muted-foreground">No groups found</p>
+        <Button variant="outline" className="mt-2" asChild>
+          <Link to={ROUTES.groupNew}>
+            <IoMdAdd /> Create group
+          </Link>
+        </Button>
+      </div>
+    );
+  } else {
+    listContent = (
+      <>
+        <GroupsList groups={groups} isLoading={isLoading} />
+        <div ref={sentinelRef} className="w-full py-4 flex justify-center">
+          <GroupsLoadMoreStatus
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={Boolean(hasNextPage)}
+            hasGroups={groups.length > 0}
+          />
+        </div>
+      </>
+    );
+  }
 
   return (
     <GroupListShell
@@ -59,39 +132,15 @@ const Groups = () => {
                 placeholder="Search groups…"
                 className="rounded-md border-none dark:bg-transparent px-4 shadow-none py-2"
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  if (currentPage !== 1) setCurrentPage(1);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
             <Pecha.Select
-              value={language || "all"}
-              onValueChange={(v) => {
-                setLanguage(v === "all" ? "" : v);
-                setCurrentPage(1);
-              }}
-            >
-              <Pecha.SelectTrigger className="w-32 bg-white dark:bg-input/30">
-                <Pecha.SelectValue placeholder="Language" />
-              </Pecha.SelectTrigger>
-              <Pecha.SelectContent>
-                <Pecha.SelectItem value="all">All languages</Pecha.SelectItem>
-                {PLAN_LANGUAGE.map((lang) => (
-                  <Pecha.SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </Pecha.SelectItem>
-                ))}
-              </Pecha.SelectContent>
-            </Pecha.Select>
-
-            <Pecha.Select
               value={groupType || "all"}
-              onValueChange={(v) => {
-                setGroupType(v === "all" ? "" : (v as AuthorGroupType));
-                setCurrentPage(1);
-              }}
+              onValueChange={(v) =>
+                setGroupType(v === "all" ? "" : (v as AuthorGroupType))
+              }
             >
               <Pecha.SelectTrigger className="w-36 bg-white dark:bg-input/30">
                 <Pecha.SelectValue placeholder="Type" />
@@ -119,36 +168,9 @@ const Groups = () => {
           <AuthButton />
         </div>
       }
-      footer={
-        <Activity mode={groupsData?.groups?.length ? "visible" : "hidden"}>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </Activity>
-      }
     >
-      <div className="px-4 pt-4 h-full flex flex-col items-center justify-between flex-1 min-h-0">
-        {error ? (
-          <p className="text-sm text-red-500 py-8">
-            Failed to load groups. {getApiErrorMessage(error)}
-          </p>
-        ) : groupsData?.groups.length === 0 && !isLoading ? (
-          <div className="flex flex-col h-full items-center justify-center">
-            <p className="text-base text-muted-foreground">No groups found</p>
-            <Button variant="outline" className="mt-2" asChild>
-              <Link to={ROUTES.groupNew}>
-                <IoMdAdd /> Create group
-              </Link>
-            </Button>
-          </div>
-        ) : (
-          <GroupsTable
-            groups={groupsData?.groups ?? []}
-            isLoading={isLoading}
-          />
-        )}
+      <div className="px-4 pt-4 pb-8 flex flex-col items-center">
+        {listContent}
       </div>
       <PendingGroupInvitationsBlock />
     </GroupListShell>

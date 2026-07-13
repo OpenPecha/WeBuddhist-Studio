@@ -33,7 +33,6 @@ const TagsTable = ({
           <Pecha.TableRow>
             <Pecha.TableHead className="w-20">Image</Pecha.TableHead>
             <Pecha.TableHead>Name</Pecha.TableHead>
-            <Pecha.TableHead>Description</Pecha.TableHead>
             <Pecha.TableHead className="w-24">Plans</Pecha.TableHead>
             {showActionsColumn ? (
               <Pecha.TableHead className="w-28 text-right">
@@ -69,9 +68,7 @@ const TagsTable = ({
                   )}
                 </div>
               </Pecha.TableCell>
-              <Pecha.TableCell className="text-muted-foreground max-w-xs truncate">
-                {tag.description || "—"}
-              </Pecha.TableCell>
+          
               <Pecha.TableCell>{tag.plan_ids.length}</Pecha.TableCell>
               {showActionsColumn ? (
                 <Pecha.TableCell>

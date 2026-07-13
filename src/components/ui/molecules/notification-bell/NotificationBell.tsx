@@ -273,11 +273,11 @@ const NotificationBell = () => {
                           onClick={() => {
                             setOpen(false);
                             navigate(
-                              `${ROUTES.group(
+                              ROUTES.groupTransfers(
                                 getTransferNotificationTargetGroupId(
                                   notification,
                                 )!,
-                              )}?tab=transfers`,
+                              ),
                             );
                           }}
                         >
