@@ -169,7 +169,7 @@ const Groups = () => {
         </div>
       }
     >
-      <div className="px-4 pt-4 h-full flex flex-col items-center flex-1 min-h-0">
+      <div className="px-4 pt-4 pb-8 flex flex-col items-center">
         {listContent}
       </div>
       <PendingGroupInvitationsBlock />

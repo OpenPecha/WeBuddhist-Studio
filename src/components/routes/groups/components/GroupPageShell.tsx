@@ -67,10 +67,10 @@ export const GroupListShell = ({
   children: ReactNode;
   footer?: ReactNode;
 }) => (
-  <div className={`${shellClassName} overflow-auto`}>
-    {toolbar}
-    <div className="border-b w-full border-dashed border-gray-300 dark:border-input" />
-    {children}
-    {footer}
+  <div className={shellClassName}>
+    <div className="shrink-0">{toolbar}</div>
+    <div className="border-b w-full border-dashed border-gray-300 dark:border-input shrink-0" />
+    <div className="flex-1 min-h-0 overflow-auto">{children}</div>
+    {footer ? <div className="shrink-0">{footer}</div> : null}
   </div>
 );
