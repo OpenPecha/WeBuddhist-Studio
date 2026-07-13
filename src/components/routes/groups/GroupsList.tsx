@@ -1,5 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/atoms/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/atoms/avatar";
 import { ROUTES } from "@/routes/paths";
 import {
   groupTypeLabel,
