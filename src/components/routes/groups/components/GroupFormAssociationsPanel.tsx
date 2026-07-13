@@ -34,7 +34,7 @@ const GroupFormAssociationsPanel = ({
   socialSaveDisabled = false,
   readOnly = false,
 }: GroupFormAssociationsPanelProps) => (
-  <div className="w-full xl:w-1/2 xl:min-w-0 p-4 sm:p-8 pb-12 space-y-10">
+  <div className="w-full xl:w-1/2 xl:min-w-0 xl:pl-8 space-y-10">
     <GroupEditableSection
       title="Tags"
       onSave={onSaveTags}

@@ -413,6 +413,12 @@ export const patchGroup = async (
   return data;
 };
 
+export const deleteGroup = async (groupId: string): Promise<void> => {
+  await axiosInstance.delete(`/api/v1/cms/author/groups/${groupId}`, {
+    headers: getAuthHeaders(),
+  });
+};
+
 export const replaceGroupTags = async (
   groupId: string,
   payload: ReplaceGroupTagsRequest,

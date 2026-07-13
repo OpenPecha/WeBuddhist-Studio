@@ -76,6 +76,13 @@ export function canEditGroupSettings(
   return role === "OWNER" || role === "ADMIN";
 }
 
+/** Owners and platform SUPER_ADMIN (via getEffectiveGroupRole) can delete a group. */
+export function canDeleteGroup(
+  role: AuthorGroupMemberRole | undefined,
+): boolean {
+  return role === "OWNER";
+}
+
 export function canManageGroupInvites(
   role: AuthorGroupMemberRole | undefined,
 ): boolean {

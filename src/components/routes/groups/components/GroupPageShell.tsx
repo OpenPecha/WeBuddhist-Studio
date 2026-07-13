@@ -13,6 +13,7 @@ type GroupPageShellProps = {
   avatarUrl?: string | null;
   subtitle?: ReactNode;
   headerActions?: ReactNode;
+  nav?: ReactNode;
   children: ReactNode;
 };
 
@@ -23,6 +24,7 @@ export const GroupPageShell = ({
   avatarUrl,
   subtitle,
   headerActions,
+  nav,
   children,
 }: GroupPageShellProps) => (
   <div className={shellClassName}>
@@ -51,6 +53,7 @@ export const GroupPageShell = ({
       </div>
     </div>
     <div className="border-b w-full border-dashed border-gray-300 dark:border-input shrink-0" />
+    {nav ? <div className="shrink-0">{nav}</div> : null}
     <div className="flex-1 min-h-0 overflow-auto">{children}</div>
   </div>
 );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IoMdAdd } from "react-icons/io";
 import { toast } from "sonner";
@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { Navigate } from "react-router-dom";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
-import { Input } from "@/components/ui/atoms/input";
 import {
   DialogDescription,
   DialogFooter,
@@ -24,30 +23,170 @@ import {
   deleteChinaRestrictedItem,
   fetchChinaRestrictedItems,
   RESTRICTED_ITEM_TYPES,
+  searchChinaRestrictionCandidates,
+  type ChinaRestrictionCandidateDTO,
   type RestrictedItemType,
 } from "./api/chinaRestrictionsApi";
 
 const PAGE_SIZE = 20;
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SEARCH_DEBOUNCE_MS = 400;
 
 const formatItemType = (type: RestrictedItemType) =>
-  type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  type.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+type RestrictionRow = {
+  id: string;
+  item_type: RestrictedItemType;
+  item_id: string;
+  title?: string | null;
+  subtitle?: string | null;
+  created_at: string;
+};
+
+const renderTableBody = ({
+  isLoading,
+  items,
+  tableColumnCount,
+  writeEnabled,
+  isDeleting,
+  onRemove,
+}: {
+  isLoading: boolean;
+  items: RestrictionRow[];
+  tableColumnCount: number;
+  writeEnabled: boolean;
+  isDeleting: boolean;
+  onRemove: (id: string) => void;
+}) => {
+  if (isLoading) {
+    return (
+      <Pecha.TableRow>
+        <Pecha.TableCell colSpan={tableColumnCount}>Loading…</Pecha.TableCell>
+      </Pecha.TableRow>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <Pecha.TableRow>
+        <Pecha.TableCell colSpan={tableColumnCount}>
+          No restricted items found.
+        </Pecha.TableCell>
+      </Pecha.TableRow>
+    );
+  }
+
+  return items.map((item) => (
+    <Pecha.TableRow key={item.id}>
+      <Pecha.TableCell>{formatItemType(item.item_type)}</Pecha.TableCell>
+      <Pecha.TableCell>
+        <div className="min-w-[16rem]">
+          <p className="font-medium">{item.title?.trim() || "Untitled item"}</p>
+          {item.subtitle?.trim() ? (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {item.subtitle}
+            </p>
+          ) : null}
+        </div>
+      </Pecha.TableCell>
+      <Pecha.TableCell>
+        {item.created_at
+          ? format(new Date(item.created_at), "MMM dd, yyyy HH:mm")
+          : "—"}
+      </Pecha.TableCell>
+      {writeEnabled ? (
+        <Pecha.TableCell>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isDeleting}
+            onClick={() => onRemove(item.id)}
+          >
+            Remove
+          </Button>
+        </Pecha.TableCell>
+      ) : null}
+    </Pecha.TableRow>
+  ));
+};
+
+const renderCandidateOptions = ({
+  isLoading,
+  candidates,
+  onSelect,
+}: {
+  isLoading: boolean;
+  candidates: ChinaRestrictionCandidateDTO[];
+  onSelect: (candidate: ChinaRestrictionCandidateDTO) => void;
+}) => {
+  if (isLoading) {
+    return (
+      <Pecha.CommandItem disabled value="__loading__">
+        Searching…
+      </Pecha.CommandItem>
+    );
+  }
+
+  if (candidates.length === 0) {
+    return (
+      <Pecha.CommandItem disabled value="__empty__">
+        No matches found.
+      </Pecha.CommandItem>
+    );
+  }
+
+  return candidates.map((candidate) => (
+    <Pecha.CommandItem
+      key={candidate.id}
+      value={candidate.id}
+      onSelect={() => onSelect(candidate)}
+    >
+      <div className="min-w-0">
+        <p className="truncate">{candidate.title}</p>
+        {candidate.subtitle?.trim() ? (
+          <p className="text-xs text-muted-foreground truncate">
+            {candidate.subtitle}
+          </p>
+        ) : null}
+      </div>
+    </Pecha.CommandItem>
+  ));
+};
 
 const ChinaRestrictionsPage = () => {
   const { data: userInfo } = useUserInfo();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
-  const [typeFilter, setTypeFilter] = useState<RestrictedItemType | "ALL">("ALL");
+  const [typeFilter, setTypeFilter] = useState<RestrictedItemType | "ALL">(
+    "ALL",
+  );
   const [addOpen, setAddOpen] = useState(false);
   const [newItemType, setNewItemType] = useState<RestrictedItemType>("PLAN");
-  const [newItemId, setNewItemId] = useState("");
+  const [selectedItem, setSelectedItem] =
+    useState<ChinaRestrictionCandidateDTO | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const canAccess = Boolean(
     userInfo && canAccessAdminAuthors(userInfo.platform_role),
   );
   const writeEnabled = isSuperAdmin(userInfo?.platform_role);
+
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setDebouncedSearch(searchQuery.trim()),
+      SEARCH_DEBOUNCE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setSelectedItem(null);
+    setSearchQuery("");
+    setDebouncedSearch("");
+  }, [newItemType]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["china-restrictions", page, typeFilter],
@@ -60,6 +199,18 @@ const ChinaRestrictionsPage = () => {
     enabled: canAccess,
   });
 
+  const { data: candidatesData, isFetching: candidatesLoading } = useQuery({
+    queryKey: ["china-restriction-candidates", newItemType, debouncedSearch],
+    queryFn: () =>
+      searchChinaRestrictionCandidates({
+        item_type: newItemType,
+        search: debouncedSearch || undefined,
+        skip: 0,
+        limit: 20,
+      }),
+    enabled: canAccess && addOpen && searchOpen,
+  });
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["china-restrictions"] });
   };
@@ -69,7 +220,8 @@ const ChinaRestrictionsPage = () => {
     onSuccess: () => {
       toast.success("Item added to China restrictions");
       setAddOpen(false);
-      setNewItemId("");
+      setSelectedItem(null);
+      setSearchQuery("");
       invalidate();
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
@@ -89,16 +241,16 @@ const ChinaRestrictionsPage = () => {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const tableColumnCount = writeEnabled ? 4 : 3;
+  const candidates = candidatesData?.items ?? [];
 
   const handleAdd = () => {
-    const trimmedId = newItemId.trim();
-    if (!UUID_PATTERN.test(trimmedId)) {
-      toast.error("Enter a valid item UUID");
+    if (!selectedItem) {
+      toast.error("Search and select an item to restrict");
       return;
     }
     createMutation.mutate({
       item_type: newItemType,
-      item_id: trimmedId,
+      item_id: selectedItem.id,
     });
   };
 
@@ -116,7 +268,14 @@ const ChinaRestrictionsPage = () => {
           </p>
         </div>
         {writeEnabled ? (
-          <Button size="sm" onClick={() => setAddOpen(true)}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setSelectedItem(null);
+              setSearchQuery("");
+              setAddOpen(true);
+            }}
+          >
             <IoMdAdd className="mr-1 h-4 w-4" />
             Add item
           </Button>
@@ -152,51 +311,20 @@ const ChinaRestrictionsPage = () => {
           <Pecha.TableHeader>
             <Pecha.TableRow>
               <Pecha.TableHead>Type</Pecha.TableHead>
-              <Pecha.TableHead>Item ID</Pecha.TableHead>
+              <Pecha.TableHead>Item</Pecha.TableHead>
               <Pecha.TableHead>Added</Pecha.TableHead>
               {writeEnabled ? <Pecha.TableHead>Actions</Pecha.TableHead> : null}
             </Pecha.TableRow>
           </Pecha.TableHeader>
           <Pecha.TableBody>
-            {isLoading ? (
-              <Pecha.TableRow>
-                <Pecha.TableCell colSpan={tableColumnCount}>
-                  Loading…
-                </Pecha.TableCell>
-              </Pecha.TableRow>
-            ) : items.length === 0 ? (
-              <Pecha.TableRow>
-                <Pecha.TableCell colSpan={tableColumnCount}>
-                  No restricted items found.
-                </Pecha.TableCell>
-              </Pecha.TableRow>
-            ) : (
-              items.map((item) => (
-                <Pecha.TableRow key={item.id}>
-                  <Pecha.TableCell>{formatItemType(item.item_type)}</Pecha.TableCell>
-                  <Pecha.TableCell className="font-mono text-sm">
-                    {item.item_id}
-                  </Pecha.TableCell>
-                  <Pecha.TableCell>
-                    {item.created_at
-                      ? format(new Date(item.created_at), "MMM dd, yyyy HH:mm")
-                      : "—"}
-                  </Pecha.TableCell>
-                  {writeEnabled ? (
-                    <Pecha.TableCell>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={deleteMutation.isPending}
-                        onClick={() => setDeleteTargetId(item.id)}
-                      >
-                        Remove
-                      </Button>
-                    </Pecha.TableCell>
-                  ) : null}
-                </Pecha.TableRow>
-              ))
-            )}
+            {renderTableBody({
+              isLoading,
+              items,
+              tableColumnCount,
+              writeEnabled,
+              isDeleting: deleteMutation.isPending,
+              onRemove: setDeleteTargetId,
+            })}
           </Pecha.TableBody>
         </Pecha.Table>
 
@@ -211,12 +339,22 @@ const ChinaRestrictionsPage = () => {
         ) : null}
       </div>
 
-      <Pecha.Dialog open={addOpen} onOpenChange={setAddOpen}>
+      <Pecha.Dialog
+        open={addOpen}
+        onOpenChange={(open) => {
+          setAddOpen(open);
+          if (!open) {
+            setSelectedItem(null);
+            setSearchQuery("");
+            setSearchOpen(false);
+          }
+        }}
+      >
         <Pecha.DialogContent>
           <Pecha.DialogHeader>
             <Pecha.DialogTitle>Add China restriction</Pecha.DialogTitle>
             <DialogDescription>
-              Choose the content type and paste the item UUID. It will be hidden
+              Choose a content type, search by name, and select the item to hide
               for users in Chinese timezones.
             </DialogDescription>
           </Pecha.DialogHeader>
@@ -238,12 +376,52 @@ const ChinaRestrictionsPage = () => {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Item ID</label>
-              <Input
-                placeholder="00000000-0000-0000-0000-000000000000"
-                value={newItemId}
-                onChange={(e) => setNewItemId(e.target.value)}
-              />
+              <label className="text-sm font-medium">Item</label>
+              <Pecha.Popover open={searchOpen} onOpenChange={setSearchOpen}>
+                <Pecha.PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 w-full justify-between font-normal"
+                  >
+                    <span
+                      className={
+                        selectedItem
+                          ? "text-foreground truncate"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {selectedItem
+                        ? selectedItem.title
+                        : `Search ${formatItemType(newItemType).toLowerCase()}s…`}
+                    </span>
+                  </Button>
+                </Pecha.PopoverTrigger>
+                <Pecha.PopoverContent
+                  className="w-[--radix-popover-trigger-width] p-0"
+                  align="start"
+                >
+                  <Pecha.Command shouldFilter={false}>
+                    <Pecha.CommandInput
+                      placeholder={`Search ${formatItemType(newItemType).toLowerCase()}s…`}
+                      value={searchQuery}
+                      onValueChange={setSearchQuery}
+                    />
+                    <Pecha.CommandList>
+                      <Pecha.CommandGroup>
+                        {renderCandidateOptions({
+                          isLoading: candidatesLoading,
+                          candidates,
+                          onSelect: (candidate) => {
+                            setSelectedItem(candidate);
+                            setSearchOpen(false);
+                          },
+                        })}
+                      </Pecha.CommandGroup>
+                    </Pecha.CommandList>
+                  </Pecha.Command>
+                </Pecha.PopoverContent>
+              </Pecha.Popover>
             </div>
           </div>
           <DialogFooter>
@@ -252,7 +430,7 @@ const ChinaRestrictionsPage = () => {
             </Button>
             <Button
               onClick={handleAdd}
-              disabled={createMutation.isPending || !newItemId.trim()}
+              disabled={createMutation.isPending || !selectedItem}
             >
               Add
             </Button>

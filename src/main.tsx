@@ -34,8 +34,13 @@ import Profile from "./components/routes/profile/Profile.tsx";
 import Tags from "./components/routes/tags/Tags.tsx";
 import VerseOfDay from "./components/routes/verse-of-day/VerseOfDay.tsx";
 import Groups from "./components/routes/groups/Groups.tsx";
+import GroupLayout from "./components/routes/groups/GroupLayout.tsx";
+import GroupAboutPage from "./components/routes/groups/GroupAboutPage.tsx";
+import GroupAboutEditPage from "./components/routes/groups/GroupAboutEditPage.tsx";
+import GroupContentPage from "./components/routes/groups/GroupContentPage.tsx";
+import GroupTransfersPage from "./components/routes/groups/GroupTransfersPage.tsx";
+import GroupMembersPage from "./components/routes/groups/GroupMembersPage.tsx";
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
-import GroupDetailsPage from "./components/routes/groups/GroupDetailsPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
@@ -217,20 +222,19 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/groups/:groupId/edit",
-        element: (
-          <ProtectedRoute>
-            <GroupFormPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: "/groups/:groupId",
         element: (
           <ProtectedRoute>
-            <GroupDetailsPage />
+            <GroupLayout />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true, element: <GroupAboutPage /> },
+          { path: "edit", element: <GroupAboutEditPage /> },
+          { path: "content", element: <GroupContentPage /> },
+          { path: "transfers", element: <GroupTransfersPage /> },
+          { path: "members", element: <GroupMembersPage /> },
+        ],
       },
       {
         path: ROUTES.adminAuthors,
