@@ -4,10 +4,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { ROUTES } from "@/routes/paths";
-import {
-  languageLabelForCode,
-  resolveGroupBannerUrl,
-} from "./api/groupsApi";
+import { languageLabelForCode, resolveGroupBannerUrl } from "./api/groupsApi";
 import { canEditGroupSettings } from "./lib/groupPermissions";
 import { GroupDetailCard } from "./components/GroupSection";
 import type { GroupOutletContext } from "./GroupLayout";

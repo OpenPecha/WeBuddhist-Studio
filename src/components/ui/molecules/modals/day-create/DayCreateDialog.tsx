@@ -277,7 +277,8 @@ const DayCreateDialog = ({
                         >
                           <span className="block truncate">{plan.title}</span>
                           <span className="text-xs text-muted-foreground">
-                            {formatPlanLanguage(plan.language)} · {plan.total_days}{" "}
+                            {formatPlanLanguage(plan.language)} ·{" "}
+                            {plan.total_days}{" "}
                             {plan.total_days === 1 ? "day" : "days"}
                           </span>
                         </button>

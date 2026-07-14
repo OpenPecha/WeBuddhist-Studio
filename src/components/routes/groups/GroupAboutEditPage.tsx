@@ -40,12 +40,8 @@ type AssociationBaselines = {
 };
 
 const GroupAboutEditPage = () => {
-  const {
-    group,
-    groupId,
-    myRole,
-    readOnlyPlatform,
-  } = useOutletContext<GroupOutletContext>();
+  const { group, groupId, myRole, readOnlyPlatform } =
+    useOutletContext<GroupOutletContext>();
   const queryClient = useQueryClient();
   const hydratedRef = useRef<string | null>(null);
 

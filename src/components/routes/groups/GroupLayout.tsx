@@ -216,7 +216,10 @@ const GroupLayout = () => {
         </div>
       </GroupPageShell>
 
-      <Pecha.AlertDialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
+      <Pecha.AlertDialog
+        open={deleteOpen}
+        onOpenChange={handleDeleteOpenChange}
+      >
         <Pecha.AlertDialogContent>
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Delete group?</Pecha.AlertDialogTitle>

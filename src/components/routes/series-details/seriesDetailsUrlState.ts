@@ -7,7 +7,8 @@ export function parseSeriesLanguageParam(
   searchParams: URLSearchParams,
 ): LanguageCode {
   return (
-    normalizeLanguageCode(searchParams.get("language") ?? "") ?? DEFAULT_LANGUAGE
+    normalizeLanguageCode(searchParams.get("language") ?? "") ??
+    DEFAULT_LANGUAGE
   );
 }
 
