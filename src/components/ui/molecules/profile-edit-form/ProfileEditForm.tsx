@@ -13,6 +13,7 @@ import { profileSchema, type ProfileFormData } from "@/schema/ProfileSchema";
 import { toast } from "sonner";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
+import { USER_INFO_QUERY_KEY } from "@/hooks/useUserInfo";
 
 const getUrlError = (account: string, url: string): string | null => {
   if (!account || !url || account === "email") return null;
@@ -89,7 +90,7 @@ const ProfileEditForm = ({ userInfo, onSuccess }: ProfileEditFormProps) => {
       profileData: ProfileFormData & { social_profiles?: SocialProfile[] },
     ) => updateUserProfile(profileData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
+      queryClient.invalidateQueries({ queryKey: USER_INFO_QUERY_KEY });
       onSuccess();
       toast.success("Profile updated successfully!");
     },
@@ -111,7 +112,7 @@ const ProfileEditForm = ({ userInfo, onSuccess }: ProfileEditFormProps) => {
       });
       setIsImageDialogOpen(false);
       toast.success("Image uploaded successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload image");
     } finally {
       setIsImageUploading(false);

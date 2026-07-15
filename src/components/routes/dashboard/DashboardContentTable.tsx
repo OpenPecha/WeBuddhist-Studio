@@ -16,6 +16,16 @@ import {
 } from "./dashboardTable";
 import { ROUTES } from "@/routes/paths";
 import { FeaturedStar, languageChip, statusChip } from "./dashboardTableUi";
+import type { PlatformRole } from "@/lib/platformAccess";
+import {
+  canAccessPlanRoutes,
+  isReviewer,
+  shouldShowCmsActionsColumn,
+} from "@/lib/platformAccess";
+import type { AuthorGroupMemberRole } from "@/components/routes/groups/api/groupsApi";
+import { canChangeContentStatus } from "@/lib/contentPermissions";
+import { resolveDashboardRowGroupRole } from "@/lib/dashboardRowPermissions";
+import type { UserInfo } from "@/hooks/useUserInfo";
 
 interface DashboardContentTableProps {
   rows: DashboardTableRow[];
@@ -26,27 +36,50 @@ interface DashboardContentTableProps {
     kind: DashboardTableRow["kind"],
     featured: boolean,
   ) => void;
+  platformRole?: PlatformRole;
+  groupRolesByGroupId?: Map<string, AuthorGroupMemberRole | undefined>;
+  userInfo?: UserInfo | null;
 }
 
 export function DashboardContentTable({
   rows,
-  // isLoading,
+  isLoading,
   t,
   handleFeatured,
+  platformRole,
+  groupRolesByGroupId,
+  userInfo,
 }: DashboardContentTableProps) {
   const navigate = useNavigate();
+  const platformReadOnly = isReviewer(platformRole);
+  const showActionsColumn = shouldShowCmsActionsColumn(platformRole);
 
   const renderBody = () => {
+    if (isLoading)
+      return (
+        <Pecha.TableRow>
+          <Pecha.TableCell colSpan={6} className="text-center py-6">
+            Loading...
+          </Pecha.TableCell>
+        </Pecha.TableRow>
+      );
     return rows.map((row) => {
+      const groupRole = resolveDashboardRowGroupRole(
+        row,
+        groupRolesByGroupId,
+        userInfo,
+      );
+      const canFeature = canChangeContentStatus(groupRole, platformRole);
       const daysLabel = `${row.total_days} ${row.total_days === 1 ? "Day" : "Days"}`;
       const titleHref =
         row.kind === "plan" ? ROUTES.plan(row.id) : ROUTES.series(row.id);
+      const canOpenTitle =
+        row.kind === "series" || canAccessPlanRoutes(platformRole);
       const modifiedDisplay = formatRowModified(row);
       const canToggleFeatured =
         row.kind === "series" ||
         (row.kind === "plan" && !isMockDashboardId(row.id));
       const featuredDisabled = row.status !== "PUBLISHED";
-
       return (
         <Pecha.TableRow
           key={`${row.kind}-${row.id}`}
@@ -74,24 +107,41 @@ export function DashboardContentTable({
             </div>
           </Pecha.TableCell>
           <Pecha.TableCell>
-            <button
-              type="button"
-              className="text-left cursor-pointer"
-              onClick={() => navigate(titleHref)}
-            >
-              <div className="text-sm font-semibold">{row.title}</div>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                {row.languages?.map((code: DashboardLanguageCode) => (
-                  <span key={`${row.id}-${code}`}>{languageChip(code)}</span>
-                ))}
-                {statusChip(row.status)}
-                {row.kind === "plan" && (
-                  <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
-                    {daysLabel}
-                  </span>
-                )}
+            {canOpenTitle ? (
+              <button
+                type="button"
+                className="text-left cursor-pointer"
+                onClick={() => navigate(titleHref)}
+              >
+                <div className="text-sm font-semibold">{row.title}</div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {row.languages?.map((code: DashboardLanguageCode) => (
+                    <span key={`${row.id}-${code}`}>{languageChip(code)}</span>
+                  ))}
+                  {statusChip(row.status)}
+                  {row.kind === "plan" && (
+                    <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
+                      {daysLabel}
+                    </span>
+                  )}
+                </div>
+              </button>
+            ) : (
+              <div className="text-left">
+                <div className="text-sm font-semibold">{row.title}</div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {row.languages?.map((code: DashboardLanguageCode) => (
+                    <span key={`${row.id}-${code}`}>{languageChip(code)}</span>
+                  ))}
+                  {statusChip(row.status)}
+                  {row.kind === "plan" && (
+                    <span className="rounded-full bg-[#DEAD2D4D] px-2.5 py-0.5 text-xs font-medium text-[#020C1D] dark:bg-[#DEAD2D4D] dark:text-white">
+                      {daysLabel}
+                    </span>
+                  )}
+                </div>
               </div>
-            </button>
+            )}
           </Pecha.TableCell>
           <Pecha.TableCell className="text-sm text-center">
             {row.enrolled}
@@ -100,7 +150,7 @@ export function DashboardContentTable({
             {modifiedDisplay}
           </Pecha.TableCell>
           <Pecha.TableCell className="text-center">
-            {canToggleFeatured ? (
+            {canToggleFeatured && canFeature && !platformReadOnly ? (
               <Pecha.Button
                 type="button"
                 variant="outline"
@@ -124,37 +174,43 @@ export function DashboardContentTable({
               </span>
             )}
           </Pecha.TableCell>
-          <Pecha.TableCell className="px-auto">
-            {row.kind === "plan" && isMockDashboardId(row.id) ? (
-              <Pecha.DropdownMenu>
-                <Pecha.DropdownMenuTrigger asChild>
-                  <Pecha.Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="Actions"
+          {showActionsColumn ? (
+            <Pecha.TableCell className="px-auto">
+              {row.kind === "plan" && isMockDashboardId(row.id) ? (
+                <Pecha.DropdownMenu>
+                  <Pecha.DropdownMenuTrigger asChild>
+                    <Pecha.Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="Actions"
+                    >
+                      <BsThreeDotsVertical />
+                    </Pecha.Button>
+                  </Pecha.DropdownMenuTrigger>
+                  <Pecha.DropdownMenuContent
+                    align="end"
+                    className="[--radius:1rem]"
                   >
-                    <BsThreeDotsVertical />
-                  </Pecha.Button>
-                </Pecha.DropdownMenuTrigger>
-                <Pecha.DropdownMenuContent
-                  align="end"
-                  className="[--radius:1rem]"
-                >
-                  <Pecha.DropdownMenuItem disabled>
-                    Preview (mock)
-                  </Pecha.DropdownMenuItem>
-                </Pecha.DropdownMenuContent>
-              </Pecha.DropdownMenu>
-            ) : (
-              <DropdownButton
-                id={row.id}
-                entityType={row.kind}
-                currentStatus={row.status}
-                triggerVariant="icon"
-                triggerClassName={DASHBOARD_TABLE_ICON_BTN}
-              />
-            )}
-          </Pecha.TableCell>
+                    <Pecha.DropdownMenuItem disabled>
+                      Preview (mock)
+                    </Pecha.DropdownMenuItem>
+                  </Pecha.DropdownMenuContent>
+                </Pecha.DropdownMenu>
+              ) : (
+                <DropdownButton
+                  id={row.id}
+                  entityType={row.kind}
+                  currentStatus={row.status}
+                  triggerVariant="icon"
+                  triggerClassName={DASHBOARD_TABLE_ICON_BTN}
+                  platformRole={platformRole}
+                  groupRole={groupRole}
+                  sourceGroupId={row.group_id}
+                  contentTitle={row.title}
+                />
+              )}
+            </Pecha.TableCell>
+          ) : null}
         </Pecha.TableRow>
       );
     });
@@ -179,9 +235,11 @@ export function DashboardContentTable({
           <Pecha.TableHead className="w-[72px] font-bold text-center">
             Featured
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[100px] font-bold text-center">
-            {t("studio.dashboard.actions")}
-          </Pecha.TableHead>
+          {showActionsColumn ? (
+            <Pecha.TableHead className="w-[100px] font-bold text-center">
+              {t("studio.dashboard.actions")}
+            </Pecha.TableHead>
+          ) : null}
         </Pecha.TableRow>
       </Pecha.TableHeader>
       <Pecha.TableBody>{renderBody()}</Pecha.TableBody>

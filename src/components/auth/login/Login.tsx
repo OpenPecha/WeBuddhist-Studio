@@ -2,25 +2,46 @@ import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
 import ContainerLayout from "@/components/ui/atoms/studio-card";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/config/auth-context";
 import { useTranslate } from "@tolgee/react";
 import { createPasswordHash } from "@/lib/utils";
+import {
+  AUTHOR_NOT_ACTIVE_DETAIL,
+  isAuthorNotActiveDetail,
+} from "@/lib/platformAccess";
+import { getApiErrorDetail } from "@/lib/apiErrors";
+import { ROUTES } from "@/routes/paths";
+
 interface LoginData {
   email: string;
   password: string;
 }
+
 const Login = () => {
   const { t } = useTranslate();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [showEmailReverify, setShowEmailReverify] = useState<boolean>(false);
+  const [inactiveOnly, setInactiveOnly] = useState(false);
   const { login } = useAuth();
+
+  useEffect(() => {
+    const state = location.state as {
+      inactive?: boolean;
+      message?: string;
+    } | null;
+    if (state?.inactive) {
+      setInactiveOnly(true);
+      setErrors(state.message ?? AUTHOR_NOT_ACTIVE_DETAIL);
+    }
+  }, [location.state]);
 
   const loginMutation = useMutation<any, Error, LoginData>({
     mutationFn: async (loginData: LoginData) => {
@@ -34,17 +55,24 @@ const Login = () => {
       const accessToken = data.auth.access_token;
       const refreshToken = data.auth.refresh_token;
       login(accessToken, refreshToken);
-      navigate("/dashboard");
+      navigate(ROUTES.dashboard);
     },
     onError: (error: any) => {
-      const errorMsg = error?.response?.data?.detail || "Login failed";
-
-      const emailVerificationErrorMessage = errorMsg
+      const detail = getApiErrorDetail(error) ?? "Login failed";
+      const emailVerificationErrorMessage = detail
         .toLowerCase()
         .includes("author not verified");
 
+      if (isAuthorNotActiveDetail(detail)) {
+        setInactiveOnly(true);
+        setShowEmailReverify(false);
+        setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
+        return;
+      }
+
+      setInactiveOnly(false);
       setShowEmailReverify(emailVerificationErrorMessage);
-      setErrors(errorMsg || "");
+      setErrors(detail);
     },
   });
 
@@ -62,8 +90,8 @@ const Login = () => {
     },
     onError: (error: any) => {
       const errorMsg =
-        error?.response?.data?.detail || "Email re-verification failed";
-      setErrors(errorMsg || "");
+        getApiErrorDetail(error) || "Email re-verification failed";
+      setErrors(errorMsg);
       setSuccessMessage("");
     },
   });
@@ -72,6 +100,7 @@ const Login = () => {
     e.preventDefault();
     setShowEmailReverify(false);
     setSuccessMessage("");
+    setInactiveOnly(false);
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
     const clientPassword = createPasswordHash(email, password);
@@ -86,6 +115,22 @@ const Login = () => {
     setSuccessMessage("");
     emailReverifyMutation.mutate({ email });
   };
+
+  if (inactiveOnly) {
+    return (
+      <ContainerLayout title={t("studio.login.title")}>
+        <div className="w-full max-w-[425px] space-y-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            {errors || AUTHOR_NOT_ACTIVE_DETAIL}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Your account must be activated by a platform administrator before
+            you can sign in.
+          </p>
+        </div>
+      </ContainerLayout>
+    );
+  }
 
   return (
     <ContainerLayout title={t("studio.login.title")}>

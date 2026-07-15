@@ -9,6 +9,7 @@ interface AudioTrimmerProps {
   startMs: number | null;
   endMs: number | null;
   onChange: (startMs: number | null, endMs: number | null) => void;
+  onClear?: () => void | Promise<void>;
   disabled?: boolean;
 }
 
@@ -20,6 +21,7 @@ export const AudioTrimmer = ({
   startMs,
   endMs,
   onChange,
+  onClear,
   disabled = false,
 }: AudioTrimmerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -105,9 +107,13 @@ export const AudioTrimmer = ({
     await playSelection();
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     stopPlayback();
-    onChange(null, null);
+    if (onClear) {
+      await onClear();
+    } else {
+      onChange(null, null);
+    }
   };
 
   const startPercent =

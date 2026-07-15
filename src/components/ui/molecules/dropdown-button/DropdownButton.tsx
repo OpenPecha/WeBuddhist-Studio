@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Pecha } from "@/components/ui/shadimport";
 import { FaPen } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -5,14 +6,24 @@ import { IoMdTrash, IoMdArchive } from "react-icons/io";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { IoEyeOffSharp } from "react-icons/io5";
 import { RiDraftLine } from "react-icons/ri";
+import { MdSwapHoriz } from "react-icons/md";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes/paths";
 import PlanDeleteDialog from "@/components/ui/molecules/modals/plan-delete/PlanDeleteDialog";
+import ContentTransferDialog from "@/components/routes/content-transfer/components/ContentTransferDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { STATUS_TRANSITIONS, ALLOWED_TRANSITIONS } from "@/lib/constant";
 import { normalizeStatus } from "@/components/routes/dashboard/dashboardTable";
+import type { AuthorGroupMemberRole } from "@/components/routes/groups/api/groupsApi";
+import type { PlatformRole } from "@/lib/platformAccess";
+import {
+  canChangeContentStatus,
+  canDeleteContent,
+  canEditContent,
+  canInitiateContentTransfer,
+} from "@/lib/contentPermissions";
 
 export type DropdownAdditionalMenuItem = {
   label: string;
@@ -36,6 +47,11 @@ export function DropdownButton({
   entityType = "plan",
   additionalMenuItems,
   invalidateSeriesId,
+  readOnly = false,
+  groupRole,
+  platformRole,
+  sourceGroupId,
+  contentTitle,
 }: {
   id: string;
   currentStatus: string;
@@ -45,8 +61,15 @@ export function DropdownButton({
   additionalMenuItems?: DropdownAdditionalMenuItem[];
   /** When plan actions run on series details, refresh that series query too. */
   invalidateSeriesId?: string;
+  readOnly?: boolean;
+  groupRole?: AuthorGroupMemberRole;
+  platformRole?: PlatformRole;
+  /** Current owning group; required to show transfer action. */
+  sourceGroupId?: string | null;
+  contentTitle?: string;
 }) {
   const queryClient = useQueryClient();
+  const [transferOpen, setTransferOpen] = useState(false);
   const isSeries = entityType === "series";
   const apiBase = isSeries ? "/api/v1/cms/series" : "/api/v1/cms/plans";
   const editHref = isSeries ? ROUTES.seriesEdit(id) : ROUTES.planEdit(id);
@@ -117,8 +140,55 @@ export function DropdownButton({
     allowedStatuses.includes(statusOption.value),
   );
 
-  const canEditDelete = status === "DRAFT" || status === "ARCHIVED";
   const extraItems = additionalMenuItems ?? [];
+  const allowEdit =
+    !readOnly && canEditContent(groupRole, status, platformRole);
+  const allowDelete =
+    !readOnly && canDeleteContent(groupRole, status, platformRole);
+  const allowStatus =
+    !readOnly && canChangeContentStatus(groupRole, platformRole);
+  const allowTransfer =
+    !readOnly &&
+    Boolean(sourceGroupId) &&
+    canInitiateContentTransfer(groupRole, platformRole);
+
+  const invalidateAfterTransfer = () => {
+    queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
+    queryClient.invalidateQueries({ queryKey: ["transfer-requests"] });
+    if (isSeries) {
+      queryClient.invalidateQueries({ queryKey: ["series", id] });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["planDetails", id] });
+      if (invalidateSeriesId) {
+        queryClient.invalidateQueries({
+          queryKey: ["series", invalidateSeriesId],
+        });
+      }
+    }
+  };
+
+  if (readOnly) {
+    return (
+      <span className="text-xs text-muted-foreground" aria-hidden>
+        —
+      </span>
+    );
+  }
+
+  const hasMenuItems =
+    allowEdit ||
+    allowDelete ||
+    allowStatus ||
+    allowTransfer ||
+    extraItems.length > 0;
+
+  if (!hasMenuItems) {
+    return (
+      <span className="text-xs text-muted-foreground" aria-hidden>
+        —
+      </span>
+    );
+  }
 
   return (
     <Pecha.ButtonGroup className="mx-auto">
@@ -140,31 +210,53 @@ export function DropdownButton({
           )}
         </Pecha.DropdownMenuTrigger>
         <Pecha.DropdownMenuContent align="end" className="[--radius:1rem]">
-          <Pecha.DropdownMenuGroup>
-            <Link to={editHref}>
-              <Pecha.DropdownMenuItem>
-                <FaPen className="h-4 w-4" />
-                {editLabel}
-              </Pecha.DropdownMenuItem>
-            </Link>
-          </Pecha.DropdownMenuGroup>
-          <Pecha.DropdownMenuSeparator />
-          <Pecha.DropdownMenuItem disabled>Status</Pecha.DropdownMenuItem>
-          <Pecha.DropdownMenuGroup>
-            {availableTransitions.map((status) => {
-              const IconComponent =
-                STATUS_ICONS[status.value as keyof typeof STATUS_ICONS];
-              return (
-                <Pecha.DropdownMenuItem
-                  key={status.value}
-                  onClick={() => handleStatusChange(status.value)}
-                >
-                  <IconComponent className="h-4 w-4" />
-                  {status.label}
+          {allowEdit ? (
+            <Pecha.DropdownMenuGroup>
+              <Link to={editHref}>
+                <Pecha.DropdownMenuItem>
+                  <FaPen className="h-4 w-4" />
+                  {editLabel}
                 </Pecha.DropdownMenuItem>
-              );
-            })}
-          </Pecha.DropdownMenuGroup>
+              </Link>
+            </Pecha.DropdownMenuGroup>
+          ) : null}
+          {allowStatus ? (
+            <>
+              <Pecha.DropdownMenuSeparator />
+              <Pecha.DropdownMenuItem disabled>Status</Pecha.DropdownMenuItem>
+              <Pecha.DropdownMenuGroup>
+                {availableTransitions.map((status) => {
+                  const IconComponent =
+                    STATUS_ICONS[status.value as keyof typeof STATUS_ICONS];
+                  return (
+                    <Pecha.DropdownMenuItem
+                      key={status.value}
+                      onClick={() => handleStatusChange(status.value)}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      {status.label}
+                    </Pecha.DropdownMenuItem>
+                  );
+                })}
+              </Pecha.DropdownMenuGroup>
+            </>
+          ) : null}
+          {allowTransfer && sourceGroupId ? (
+            <>
+              <Pecha.DropdownMenuSeparator />
+              <Pecha.DropdownMenuGroup>
+                <Pecha.DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setTransferOpen(true);
+                  }}
+                >
+                  <MdSwapHoriz className="h-4 w-4" />
+                  Transfer to group…
+                </Pecha.DropdownMenuItem>
+              </Pecha.DropdownMenuGroup>
+            </>
+          ) : null}
           {extraItems.length > 0 && (
             <>
               <Pecha.DropdownMenuSeparator />
@@ -180,7 +272,7 @@ export function DropdownButton({
               </Pecha.DropdownMenuGroup>
             </>
           )}
-          {canEditDelete && (
+          {allowDelete && (
             <>
               <Pecha.DropdownMenuSeparator />
               <Pecha.DropdownMenuGroup>
@@ -207,6 +299,17 @@ export function DropdownButton({
           )}
         </Pecha.DropdownMenuContent>
       </Pecha.DropdownMenu>
+      {allowTransfer && sourceGroupId ? (
+        <ContentTransferDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          contentType={entityType}
+          contentId={id}
+          sourceGroupId={sourceGroupId}
+          contentTitle={contentTitle}
+          onSuccess={invalidateAfterTransfer}
+        />
+      ) : null}
     </Pecha.ButtonGroup>
   );
 }

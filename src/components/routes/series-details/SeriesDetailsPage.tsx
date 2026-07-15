@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IoMdAdd, IoMdArrowBack } from "react-icons/io";
+import { IoMdArrowBack } from "react-icons/io";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import axiosInstance from "@/config/axios-config";
@@ -11,12 +16,15 @@ import { ROUTES } from "@/routes/paths";
 import {
   getSeries,
   putSeriesPlans,
+  resolveSeriesGroupId,
 } from "@/components/routes/create-series/api/seriesApi";
 import PlanSearchSelector from "@/components/routes/create-series/components/PlanSearchSelector";
 import type { SeriesPlan } from "@/schema/SeriesSchema";
 import { SeriesPlansTable } from "./SeriesPlansTable";
 import {
   getLanguageTabCounts,
+  getLanguagesWithPlans,
+  getSeriesStartDateSettings,
   getSeriesTitleForLanguage,
   groupPlansByLanguage,
   plansByLanguageToIdMap,
@@ -26,6 +34,13 @@ import {
   seriesPlansToRows,
 } from "./seriesDetailsMappers";
 import type { PlansByLanguage } from "./seriesDetailsTypes";
+import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
+import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
+import { SeriesLanguageActionsPanel } from "./SeriesLanguageActionsPanel";
+import {
+  buildSeriesLanguageParams,
+  parseSeriesLanguageParam,
+} from "./seriesDetailsUrlState";
 
 const togglePlanFeatured = async (planId: string) => {
   const { data } = await axiosInstance.patch(
@@ -37,9 +52,23 @@ const togglePlanFeatured = async (planId: string) => {
 const SeriesDetailsPage = () => {
   const { seriesId } = useParams<{ seriesId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const [activeLanguage, setActiveLanguage] = useState<LanguageCode>("EN");
   const [plansByLang, setPlansByLang] = useState<PlansByLanguage>({});
+
+  const activeLanguage = useMemo(
+    () => parseSeriesLanguageParam(searchParams),
+    [searchParams],
+  );
+
+  const setActiveLanguage = useCallback(
+    (code: LanguageCode) => {
+      setSearchParams(buildSeriesLanguageParams(searchParams, code), {
+        replace: true,
+      });
+    },
+    [searchParams, setSearchParams],
+  );
 
   const {
     data: seriesData,
@@ -63,10 +92,6 @@ const SeriesDetailsPage = () => {
     [plansByLang],
   );
 
-  useEffect(() => {
-    setActiveLanguage("EN");
-  }, [seriesId]);
-
   const headerTitle = getSeriesTitleForLanguage(
     seriesData?.metadata,
     activeLanguage,
@@ -77,6 +102,35 @@ const SeriesDetailsPage = () => {
     () => seriesPlanRowsToSeriesPlans(activePlans),
     [activePlans],
   );
+  const cloneSourceLanguages = useMemo(
+    () => getLanguagesWithPlans(tabCounts, activeLanguage),
+    [tabCounts, activeLanguage],
+  );
+  const seriesStartDate = useMemo(
+    () => getSeriesStartDateSettings(seriesData?.plans ?? []),
+    [seriesData?.plans],
+  );
+
+  const seriesGroupId = useMemo(
+    () => resolveSeriesGroupId(seriesData),
+    [seriesData],
+  );
+
+  const seriesStatus = seriesData?.status ?? "DRAFT";
+  const {
+    platformRole,
+    groupRole,
+    platformReadOnly,
+    canEdit: canEditSeries,
+    canChangeStatus: canFeaturePlans,
+    canTransfer: canTransferSeries,
+  } = useGroupContentPermissions(seriesGroupId, seriesStatus);
+
+  const canManageSeriesPlans = canEditSeries && !platformReadOnly;
+  const showClonePlansPanel =
+    canManageSeriesPlans &&
+    activePlans.length === 0 &&
+    cloneSourceLanguages.length > 0;
 
   const persistPlansMutation = useMutation({
     mutationFn: (grouped: PlansByLanguage) =>
@@ -108,15 +162,18 @@ const SeriesDetailsPage = () => {
   };
 
   const handleActivePlansChange = (next: SeriesPlan[]) => {
+    if (!canManageSeriesPlans) return;
     const nextRows = seriesPlansToRows(next, activeLanguage, activePlans);
     applyGrouped({ ...plansByLang, [activeLanguage]: nextRows });
   };
 
   const handleRemove = (planId: string) => {
+    if (!canManageSeriesPlans) return;
     applyGrouped(removePlanFromLanguage(plansByLang, activeLanguage, planId));
   };
 
   const handleReorder = (activeId: string, overId: string) => {
+    if (!canManageSeriesPlans) return;
     applyGrouped(
       reorderPlansInLanguage(plansByLang, activeLanguage, activeId, overId),
     );
@@ -168,13 +225,37 @@ const SeriesDetailsPage = () => {
           <IoMdArrowBack className="h-4 w-4" />
         </Pecha.Button>
         <h1 className="text-lg font-semibold">{headerTitle}</h1>
-        <Link
-          to={ROUTES.seriesEdit(seriesId)}
-          className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
-        >
-          Edit series
-        </Link>
+        {canEditSeries && !platformReadOnly ? (
+          <Link
+            to={ROUTES.seriesEdit(seriesId)}
+            className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+          >
+            Edit series
+          </Link>
+        ) : null}
+        {canTransferSeries && seriesGroupId && !platformReadOnly ? (
+          <DropdownButton
+            id={seriesId}
+            entityType="series"
+            currentStatus={seriesStatus}
+            triggerVariant="icon"
+            platformRole={platformRole}
+            groupRole={groupRole}
+            sourceGroupId={seriesGroupId}
+            contentTitle={headerTitle}
+          />
+        ) : null}
       </div>
+
+      {platformReadOnly ? (
+        <p className="mx-4 mt-2 text-sm text-muted-foreground">
+          You have read-only access to this series.
+        </p>
+      ) : !canEditSeries ? (
+        <p className="mx-4 mt-2 text-sm text-muted-foreground">
+          This series cannot be edited with your current role.
+        </p>
+      ) : null}
 
       <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
         <div className="flex flex-wrap gap-6">
@@ -193,15 +274,18 @@ const SeriesDetailsPage = () => {
             );
           })}
         </div>
-        <div className="w-full max-w-md min-w-[280px]">
-          <PlanSearchSelector
-            value={activeSeriesPlans}
-            onChange={handleActivePlansChange}
-            searchLanguage={activeLanguage}
-            hideSelectedList
-            searchPlaceholder="Find Plans to add to series"
-          />
-        </div>
+        {canManageSeriesPlans ? (
+          <div className="w-full max-w-md min-w-[280px]">
+            <PlanSearchSelector
+              value={activeSeriesPlans}
+              onChange={handleActivePlansChange}
+              searchLanguage={activeLanguage}
+              groupId={seriesGroupId}
+              hideSelectedList
+              searchPlaceholder="Find Plans to add to series"
+            />
+          </div>
+        ) : null}
       </div>
 
       <div className="flex-1 px-4 pb-6">
@@ -210,6 +294,11 @@ const SeriesDetailsPage = () => {
             <SeriesPlansTable
               plans={activePlans}
               seriesId={seriesId}
+              sourceGroupId={seriesGroupId}
+              groupRole={groupRole}
+              platformRole={platformRole}
+              readOnly={platformReadOnly || !canManageSeriesPlans}
+              canFeature={canFeaturePlans}
               onReorder={handleReorder}
               onToggleFeatured={(planId) => featuredMutation.mutate(planId)}
               onRemoveFromSeries={handleRemove}
@@ -217,21 +306,17 @@ const SeriesDetailsPage = () => {
           </div>
         ) : null}
 
-        <div
-          className={`mt-4 flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white/80 dark:border-input dark:bg-[#1d1d1f]/80 ${
-            activePlans.length > 0 ? "py-8" : "py-16"
-          }`}
-        >
-          <Link to={ROUTES.planNew}>
-            <Pecha.Button
-              type="button"
-              className="gap-2 bg-[#A51C21] hover:bg-[#8a171c] text-white"
-            >
-              <IoMdAdd className="h-4 w-4" />
-              Add plan
-            </Pecha.Button>
-          </Link>
-        </div>
+        {canManageSeriesPlans && seriesGroupId ? (
+          <SeriesLanguageActionsPanel
+            seriesId={seriesId}
+            groupId={seriesGroupId}
+            activeLanguage={activeLanguage}
+            hasActivePlans={activePlans.length > 0}
+            showClonePanel={showClonePlansPanel}
+            cloneSourceLanguages={cloneSourceLanguages}
+            seriesStartDate={seriesStartDate}
+          />
+        ) : null}
       </div>
     </div>
   );

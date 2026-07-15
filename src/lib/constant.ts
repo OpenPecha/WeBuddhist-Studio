@@ -16,9 +16,13 @@ export const PLAN_LANGUAGE = [
   { label: "English", value: "EN" },
   { label: "བོད་ཡིག", value: "BO" },
   { label: "中文", value: "ZH" },
+  { label: "Hindi", value: "HI" },
+  { label: "Nepali", value: "NE" },
+  { label: "Mongolian", value: "MN" },
 ];
 export const SOCIAL_PLATFORMS = [
   { value: "facebook", label: "Facebook", icon: "Facebook" },
+  { value: "SignIn", label: "SignIn", icon: "SignIn" },
   { value: "x.com", label: "X (Twitter)", icon: "Twitter" },
   { value: "linkedin", label: "LinkedIn", icon: "Linkedin" },
   { value: "youtube", label: "YouTube", icon: "Youtube" },

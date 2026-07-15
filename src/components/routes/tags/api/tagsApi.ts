@@ -1,4 +1,18 @@
 import axiosInstance from "@/config/axios-config";
+import type { LanguageCode } from "@/schema/SeriesSchema";
+
+export interface TagMetadataDTO {
+  id: string;
+  language: string;
+  name: string;
+  description: string | null;
+}
+
+export interface TagMetadataInput {
+  language: LanguageCode;
+  name: string;
+  description?: string | null;
+}
 
 export interface Tag {
   id: string;
@@ -7,6 +21,7 @@ export interface Tag {
   image_key: string | null;
   description: string | null;
   plan_ids: string[];
+  metadata: TagMetadataDTO[];
 }
 
 /** Tag shape embedded on plan list/detail API responses */
@@ -27,10 +42,12 @@ export interface TagsListResponse {
 }
 
 export interface TagPayload {
-  name: string;
+  metadata: TagMetadataInput[];
   image_key?: string | null;
-  description?: string | null;
+  featured?: boolean;
+  display_order?: number | null;
   plan_ids: string[];
+  segment_ids?: string[];
 }
 
 export interface PlanOption {

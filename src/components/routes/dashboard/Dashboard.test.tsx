@@ -39,7 +39,7 @@ describe("Dashboard Component", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders dashboard with search input and add button", () => {
+  it("renders dashboard with search input", () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
       data: emptyDashboardResponse,
     });
@@ -48,8 +48,6 @@ describe("Dashboard Component", () => {
     expect(
       screen.getByPlaceholderText("common.placeholder.search"),
     ).toBeDefined();
-
-    expect(screen.getByLabelText("Add")).toBeDefined();
   });
 
   it("displays table headers correctly", async () => {
@@ -110,31 +108,6 @@ describe("Dashboard Component", () => {
     fireEvent.change(searchInput, { target: { value: "test search" } });
 
     expect(searchInput.value).toBe("test search");
-  });
-
-  it("renders add dropdown with plan and series links", async () => {
-    vi.spyOn(axiosInstance, "get").mockResolvedValue({
-      data: emptyDashboardResponse,
-    });
-    const user = userEvent.setup();
-    renderWithProviders(<Dashboard />);
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
-
-    await user.click(screen.getByLabelText("Add"));
-
-    expect(
-      await screen.findByRole("menuitem", { name: "Add Plan" }),
-    ).toBeInTheDocument();
-    const addPlanItem = screen.getByRole("menuitem", { name: "Add Plan" });
-    expect(addPlanItem.closest("a")?.getAttribute("href")).toBe("/plan/new");
-
-    const addSeriesItem = screen.getByRole("menuitem", { name: "Add Series" });
-    expect(addSeriesItem.closest("a")?.getAttribute("href")).toBe(
-      "/series/new",
-    );
   });
 
   it("has proper table structure when items exist", async () => {
@@ -250,7 +223,7 @@ describe("Dashboard Component", () => {
     expect(screen.getByLabelText("Series, 10 plans")).toBeInTheDocument();
   });
 
-  it("shows same published actions for series as plans (Unpublish, no Edit)", async () => {
+  it("shows same published actions for series as plans (Edit + Unpublish)", async () => {
     vi.spyOn(axiosInstance, "get").mockResolvedValue({
       data: {
         items: [
@@ -295,8 +268,8 @@ describe("Dashboard Component", () => {
       await screen.findByRole("menuitem", { name: "Unpublish" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("menuitem", { name: "Edit Series" }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("menuitem", { name: "Edit Series" }),
+    ).toBeInTheDocument();
 
     await user.keyboard("{Escape}");
 
@@ -307,8 +280,8 @@ describe("Dashboard Component", () => {
       await screen.findByRole("menuitem", { name: "Unpublish" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("menuitem", { name: "Edit Plan" }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("menuitem", { name: "Edit Plan" }),
+    ).toBeInTheDocument();
   });
 
   it("handles toggle featured on a plan", async () => {

@@ -3,23 +3,36 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import {
   IoCalendarClearOutline,
+  IoChevronDown,
   IoInformationCircleOutline,
 } from "react-icons/io5";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { format } from "date-fns";
-import { Textarea } from "@/components/ui/atoms/textarea";
-import { useBlocker, useNavigate, useParams } from "react-router-dom";
+import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
+import {
+  useBlocker,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+import { parsePlanNewFromSeriesState } from "./planNewFromSeriesState";
 import { ROUTES } from "@/routes/paths";
 import { planSchema } from "@/schema/PlanSchema";
 import { z } from "zod";
 import { useTranslate } from "@tolgee/react";
 import PlanTagSearchInput from "./PlanTagSearchInput";
+import PlanVideosSection from "./PlanVideosSection";
+import type { PlanVideoSummary } from "@/components/routes/task/api/planApi";
 import {
   planTagsToIds,
   type PlanTagSummary,
 } from "@/components/routes/tags/api/tagsApi";
+import {
+  fetchSeriesList,
+  type SeriesOption,
+} from "@/components/routes/create-series/api/seriesApi";
 import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
-import { toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
+import { cn, toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -32,6 +45,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/atoms/tooltip";
+import { resolveDashboardItemImageUrl } from "@/components/routes/dashboard/dashboardTable";
 
 export const getPlan = async (plan_id: string) => {
   const { data } = await axiosInstance.get(`/api/v1/cms/plans/${plan_id}`);
@@ -57,6 +71,8 @@ export const postPlan = async (formdata: z.infer<typeof planSchema>) => {
   return data;
 };
 
+const EMPTY_SERIES_OPTIONS: SeriesOption[] = [];
+
 const Createplan = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -69,11 +85,26 @@ const Createplan = () => {
   );
 
   const [isDateOpen, setIsDateOpen] = useState(false);
-  const { planId } = useParams<{ planId?: string }>();
+  const { planId, groupId } = useParams<{
+    planId?: string;
+    groupId?: string;
+  }>();
+  const location = useLocation();
   const isCreateMode = !planId;
   const { t } = useTranslate();
+  const planNewFromSeries = useMemo(
+    () => (isCreateMode ? parsePlanNewFromSeriesState(location.state) : null),
+    [isCreateMode, location.state],
+  );
   type PlanFormData = z.infer<typeof planSchema>;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isCreateMode && !groupId) {
+      navigate(ROUTES.groups, { replace: true });
+    }
+  }, [isCreateMode, groupId, navigate]);
+
   const form = useForm({
     resolver: zodResolver(planSchema),
     defaultValues: {
@@ -85,6 +116,7 @@ const Createplan = () => {
       tags: [],
       language: "",
       start_date: null,
+      series_id: null,
     },
   });
 
@@ -94,6 +126,117 @@ const Createplan = () => {
     enabled: !!planId,
     refetchOnWindowFocus: false,
   });
+
+  const {
+    data: seriesOptionsData,
+    isLoading: isSeriesLoading,
+    isError: isSeriesError,
+  } = useQuery({
+    queryKey: ["cms-series-list"],
+    queryFn: fetchSeriesList,
+    refetchOnWindowFocus: false,
+  });
+  const seriesOptions = seriesOptionsData ?? EMPTY_SERIES_OPTIONS;
+
+  useEffect(() => {
+    if (isSeriesError) {
+      toast.error("Couldn't load series", {
+        description:
+          "The series list is unavailable. The plan's current series won't be changed.",
+      });
+    }
+  }, [isSeriesError]);
+
+  const [isSeriesOpen, setIsSeriesOpen] = useState(false);
+  const [seriesQuery, setSeriesQuery] = useState("");
+
+  const filteredSeriesOptions = useMemo(() => {
+    const q = seriesQuery.trim().toLowerCase();
+    if (!q) return seriesOptions;
+    return seriesOptions.filter((s) => s.title.toLowerCase().includes(q));
+  }, [seriesOptions, seriesQuery]);
+
+  const lockSeriesAndLanguageFields = useMemo(() => {
+    if (!planNewFromSeries) return false;
+    if (isSeriesLoading) return true;
+    if (isSeriesError) return false;
+    return seriesOptions.some((s) => s.id === planNewFromSeries.seriesId);
+  }, [planNewFromSeries, isSeriesLoading, isSeriesError, seriesOptions]);
+
+  const lockStartDateFromSeries = useMemo(
+    () =>
+      isCreateMode &&
+      planNewFromSeries != null &&
+      planNewFromSeries.start_date !== undefined,
+    [isCreateMode, planNewFromSeries],
+  );
+
+  const pageHeading = useMemo(() => {
+    if (!isCreateMode) return "Plan Edit";
+    if (!planNewFromSeries) return "Plan Details";
+    if (lockSeriesAndLanguageFields) {
+      const seriesTitle = seriesOptions.find(
+        (s) => s.id === planNewFromSeries.seriesId,
+      )?.title;
+      const languageLabel = PLAN_LANGUAGE.find(
+        (l) => l.value === planNewFromSeries.language,
+      )?.label;
+      if (seriesTitle && languageLabel) {
+        return `Add New Plan for ${seriesTitle} (${languageLabel})`;
+      }
+      if (seriesTitle) return `Add New Plan for ${seriesTitle}`;
+    }
+    if (isSeriesLoading) return "Add New Plan";
+    return "Plan Details";
+  }, [
+    isCreateMode,
+    planNewFromSeries,
+    lockSeriesAndLanguageFields,
+    seriesOptions,
+    isSeriesLoading,
+  ]);
+
+  useEffect(() => {
+    if (!isCreateMode || !planNewFromSeries) return;
+
+    if (isSeriesLoading) {
+      form.setValue("series_id", planNewFromSeries.seriesId);
+      form.setValue("language", planNewFromSeries.language);
+      return;
+    }
+
+    const seriesExists = seriesOptions.some(
+      (s) => s.id === planNewFromSeries.seriesId,
+    );
+
+    if (!isSeriesError && seriesExists) {
+      form.setValue("series_id", planNewFromSeries.seriesId);
+      form.setValue("language", planNewFromSeries.language);
+      return;
+    }
+
+    form.setValue("series_id", null);
+    form.setValue("language", "");
+  }, [
+    isCreateMode,
+    planNewFromSeries,
+    isSeriesLoading,
+    isSeriesError,
+    seriesOptions,
+    form,
+  ]);
+
+  useEffect(() => {
+    if (!isCreateMode || !planNewFromSeries) return;
+    if (planNewFromSeries.start_date === undefined) return;
+
+    const mode = planNewFromSeries.start_date ? "specific" : "enroll";
+    setStartDateMode(mode);
+    form.setValue("start_date", planNewFromSeries.start_date, {
+      shouldDirty: false,
+    });
+  }, [isCreateMode, planNewFromSeries, form]);
+
   useEffect(() => {
     if (planId && planData) {
       form.reset({
@@ -105,11 +248,23 @@ const Createplan = () => {
         tags: planTagsToIds(planData.tags),
         language: planData.language || "",
         start_date: planData.start_date || null,
+        series_id: planData.series_id ?? null,
       });
       setStartDateMode(planData.start_date ? "specific" : "enroll");
-      setImagePreview(planData.image_url ? `${planData.image_url}` : null);
+      const resolvedImageUrl = resolveDashboardItemImageUrl({
+        image_url: planData.image_url,
+        plan_image_url: planData.plan_image_url,
+        image_key: planData.image_key,
+        image: planData.image,
+      });
+      setImagePreview(resolvedImageUrl || null);
     }
   }, [planId, planData]);
+
+  const planVideos = useMemo<PlanVideoSummary[]>(
+    () => (Array.isArray(planData?.videos) ? planData.videos : []),
+    [planData],
+  );
 
   const canUpdate = form.formState.isDirty;
 
@@ -128,7 +283,11 @@ const Createplan = () => {
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
-      navigate(ROUTES.plan(data.id));
+      if (groupId) {
+        navigate(ROUTES.group(groupId));
+      } else {
+        navigate(ROUTES.plan(data.id));
+      }
     },
     onError: (error) => {
       toast.error("Failed to create plan", {
@@ -215,17 +374,26 @@ const Createplan = () => {
       start_date: startDateMode === "specific" ? data.start_date : null,
     };
     if (planId) {
-      updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
+      if (isSeriesError) {
+        const { series_id: _seriesId, ...rest } = payload;
+        void _seriesId;
+        updatePlanMutation.mutate({ plan_id: planId, formdata: rest });
+      } else {
+        updatePlanMutation.mutate({ plan_id: planId, formdata: payload });
+      }
     } else {
-      createPlanMutation.mutate(payload);
+      const { series_id, ...rest } = payload;
+      const body = {
+        ...(series_id ? { ...rest, series_id } : rest),
+        group_id: groupId!,
+      };
+      createPlanMutation.mutate(body);
     }
   };
   return (
     <div className="flex flex-col sm:flex-row border h-[calc(100vh-40px)] overflow-auto bg-[#F5F5F5] dark:bg-[#181818] my-4 rounded-l-2xl font-dynamic">
       <div className="flex-1 p-4 sm:p-10">
-        <h1 className="text-xl font-bold my-4">
-          Plan {isCreateMode ? "Details" : "Edit"}
-        </h1>
+        <h1 className="text-xl font-bold my-4">{pageHeading}</h1>
 
         <Pecha.Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -258,12 +426,14 @@ const Createplan = () => {
                     {t("studio.plan.form_field.description")}
                   </Pecha.FormLabel>
                   <Pecha.FormControl>
-                    <Textarea
+                    <MarkdownEditor
+                      value={field.value}
+                      onChange={field.onChange}
                       placeholder={t(
                         "studio.plan.form.placeholder.description",
                       )}
-                      className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base  placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                      {...field}
+                      className="bg-white dark:bg-[#181818]"
+                      textareaClassName="bg-white dark:bg-[#181818]"
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />
@@ -447,6 +617,7 @@ const Createplan = () => {
                     <Pecha.RadioGroup
                       value={startDateMode}
                       onValueChange={(v) => {
+                        if (lockStartDateFromSeries) return;
                         const mode = v as "enroll" | "specific";
                         setStartDateMode(mode);
                         if (mode === "enroll") {
@@ -461,6 +632,7 @@ const Createplan = () => {
                         <Pecha.RadioGroupItem
                           value="enroll"
                           id="start-date-enroll"
+                          disabled={lockStartDateFromSeries}
                         />
                         <label
                           htmlFor="start-date-enroll"
@@ -473,6 +645,7 @@ const Createplan = () => {
                         <Pecha.RadioGroupItem
                           value="specific"
                           id="start-date-specific"
+                          disabled={lockStartDateFromSeries}
                         />
                         <label
                           htmlFor="start-date-specific"
@@ -490,7 +663,10 @@ const Createplan = () => {
                         <Pecha.Button
                           type="button"
                           variant="outline"
-                          disabled={startDateMode !== "specific"}
+                          disabled={
+                            lockStartDateFromSeries ||
+                            startDateMode !== "specific"
+                          }
                           className="h-12 w-full justify-start gap-2 px-3 font-normal rounded-md"
                         >
                           <IoCalendarClearOutline className="h-4 w-4 text-muted-foreground" />
@@ -535,6 +711,127 @@ const Createplan = () => {
                 )}
               />
             </div>
+
+            <Pecha.FormField
+              control={form.control}
+              name="series_id"
+              render={({ field }) => {
+                const selectedSeries = seriesOptions.find(
+                  (s) => s.id === field.value,
+                );
+
+                let seriesTriggerLabel: string;
+                if (isSeriesLoading) {
+                  seriesTriggerLabel = "Loading series…";
+                } else if (isSeriesError) {
+                  seriesTriggerLabel = "Series unavailable";
+                } else {
+                  seriesTriggerLabel = selectedSeries?.title ?? "None";
+                }
+
+                const isSeriesFieldDisabled =
+                  lockSeriesAndLanguageFields ||
+                  isSeriesLoading ||
+                  isSeriesError;
+
+                return (
+                  <Pecha.FormItem className="flex flex-col">
+                    <Pecha.FormLabel className="text-sm font-bold">
+                      Series
+                    </Pecha.FormLabel>
+                    <Pecha.Popover
+                      open={isSeriesFieldDisabled ? false : isSeriesOpen}
+                      onOpenChange={(open) => {
+                        if (isSeriesFieldDisabled) return;
+                        setIsSeriesOpen(open);
+                        if (!open) setSeriesQuery("");
+                      }}
+                    >
+                      <div
+                        className={cn(
+                          isSeriesFieldDisabled && "cursor-not-allowed",
+                        )}
+                      >
+                        <Pecha.PopoverTrigger asChild>
+                          <Pecha.FormControl>
+                            <Pecha.Button
+                              type="button"
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={isSeriesOpen}
+                              disabled={isSeriesFieldDisabled}
+                              className="h-12 w-full justify-between rounded-md bg-white px-3 font-normal"
+                            >
+                              <span
+                                className={
+                                  selectedSeries
+                                    ? "text-foreground"
+                                    : "text-muted-foreground"
+                                }
+                              >
+                                {seriesTriggerLabel}
+                              </span>
+                              <IoChevronDown className="size-4 opacity-50" />
+                            </Pecha.Button>
+                          </Pecha.FormControl>
+                        </Pecha.PopoverTrigger>
+                      </div>
+                      <Pecha.PopoverContent
+                        className="w-[--radix-popover-trigger-width] p-0"
+                        align="start"
+                      >
+                        <Pecha.Command shouldFilter={false}>
+                          <Pecha.CommandInput
+                            placeholder="Search series…"
+                            value={seriesQuery}
+                            onValueChange={setSeriesQuery}
+                          />
+                          <Pecha.CommandList>
+                            <Pecha.CommandGroup>
+                              <Pecha.CommandItem
+                                value="__none__"
+                                onSelect={() => {
+                                  field.onChange(null);
+                                  setIsSeriesOpen(false);
+                                }}
+                              >
+                                None
+                              </Pecha.CommandItem>
+                              {filteredSeriesOptions.map((series) => (
+                                <Pecha.CommandItem
+                                  key={series.id}
+                                  value={series.id}
+                                  onSelect={() => {
+                                    field.onChange(series.id);
+                                    setIsSeriesOpen(false);
+                                  }}
+                                >
+                                  {series.title}
+                                </Pecha.CommandItem>
+                              ))}
+                            </Pecha.CommandGroup>
+                            {seriesQuery &&
+                              filteredSeriesOptions.length === 0 && (
+                                <Pecha.CommandEmpty>
+                                  No series found.
+                                </Pecha.CommandEmpty>
+                              )}
+                          </Pecha.CommandList>
+                        </Pecha.Command>
+                      </Pecha.PopoverContent>
+                    </Pecha.Popover>
+                    {isSeriesError && (
+                      <p className="text-sm text-destructive">
+                        Couldn't load series. This plan's current series will
+                        not be changed.
+                      </p>
+                    )}
+                    <Pecha.FormMessage />
+                  </Pecha.FormItem>
+                );
+              }}
+            />
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Pecha.FormField
                 control={form.control}
@@ -586,9 +883,13 @@ const Createplan = () => {
                     <Pecha.Select
                       onValueChange={field.onChange}
                       value={field.value}
+                      disabled={lockSeriesAndLanguageFields}
                     >
                       <Pecha.FormControl>
-                        <Pecha.SelectTrigger className="h-12 w-full bg-white">
+                        <Pecha.SelectTrigger
+                          className="h-12 w-full bg-white"
+                          disabled={lockSeriesAndLanguageFields}
+                        >
                           <Pecha.SelectValue
                             placeholder={t(
                               "studio.plan.form.placeholder.select_language",
@@ -639,6 +940,11 @@ const Createplan = () => {
                 </Pecha.FormItem>
               )}
             />
+
+            {planId && (
+              <PlanVideosSection planId={planId} videos={planVideos} />
+            )}
+
             <div className="pt-8 w-full flex justify-end">
               {isCreateMode ? (
                 <Pecha.Button

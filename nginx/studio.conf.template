@@ -2,6 +2,7 @@ server {
   listen 4173;
   server_name localhost;
   proxy_http_version 1.1;
+  client_max_body_size 50m;
 
   root /usr/share/nginx/html;
 
@@ -15,5 +16,7 @@ server {
   location /api {
       proxy_pass ${VITE_BACKEND_BASE_URL};
       proxy_ssl_server_name on;
+      proxy_read_timeout 300s;
+      proxy_send_timeout 300s;
   }
 }

@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/atoms/button";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { toast } from "sonner";
-import type { PlanOption, Tag, TagPayload } from "./api/tagsApi";
+import { PLAN_LANGUAGE } from "@/lib/constant";
+import { normalizeLanguageCode } from "@/lib/languageCodes";
+import type { LanguageCode } from "@/schema/SeriesSchema";
+import type {
+  PlanOption,
+  Tag,
+  TagPayload,
+  TagMetadataInput,
+} from "./api/tagsApi";
 
 interface TagFormDialogProps {
   open: boolean;
@@ -15,6 +23,11 @@ interface TagFormDialogProps {
   plans: PlanOption[];
   isSubmitting: boolean;
   onSubmit: (payload: TagPayload) => void;
+}
+
+interface LanguageData {
+  name: string;
+  description: string;
 }
 
 const TagFormDialog = ({
@@ -26,8 +39,19 @@ const TagFormDialog = ({
   onSubmit,
 }: TagFormDialogProps) => {
   const isEdit = !!tag;
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [activeLanguages, setActiveLanguages] = useState<LanguageCode[]>([
+    "EN",
+  ]);
+  const [languageData, setLanguageData] = useState<
+    Record<LanguageCode, LanguageData>
+  >({
+    EN: { name: "", description: "" },
+    BO: { name: "", description: "" },
+    ZH: { name: "", description: "" },
+    HI: { name: "", description: "" },
+    NE: { name: "", description: "" },
+    MN: { name: "", description: "" },
+  });
   const [imageKey, setImageKey] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
@@ -37,13 +61,74 @@ const TagFormDialog = ({
 
   useEffect(() => {
     if (!open) return;
-    setName(tag?.name ?? "");
-    setDescription(tag?.description ?? "");
+
+    if (tag?.metadata && tag.metadata.length > 0) {
+      const langs: LanguageCode[] = [];
+      const data: Record<LanguageCode, LanguageData> = {
+        EN: { name: "", description: "" },
+        BO: { name: "", description: "" },
+        ZH: { name: "", description: "" },
+        HI: { name: "", description: "" },
+        NE: { name: "", description: "" },
+        MN: { name: "", description: "" },
+      };
+
+      tag.metadata.forEach((meta) => {
+        const lang = normalizeLanguageCode(String(meta.language ?? ""));
+        if (!lang) return;
+        langs.push(lang);
+        data[lang] = {
+          name: meta.name,
+          description: meta.description || "",
+        };
+      });
+
+      setActiveLanguages(langs.length > 0 ? langs : ["EN"]);
+      setLanguageData(data);
+    } else {
+      setActiveLanguages(["EN"]);
+      setLanguageData({
+        EN: { name: "", description: "" },
+        BO: { name: "", description: "" },
+        ZH: { name: "", description: "" },
+        HI: { name: "", description: "" },
+        NE: { name: "", description: "" },
+        MN: { name: "", description: "" },
+      });
+    }
+
     setImageKey(tag?.image_key ?? null);
     setImagePreview(tag?.image ?? null);
     setSelectedPlanIds(tag?.plan_ids ?? []);
     setPlanSearch("");
   }, [open, tag]);
+
+  const availableLanguages = PLAN_LANGUAGE.filter(
+    (lang) => !activeLanguages.includes(lang.value as LanguageCode),
+  );
+
+  const addLanguage = (langCode: LanguageCode) => {
+    setActiveLanguages([...activeLanguages, langCode]);
+  };
+
+  const removeLanguage = (langCode: LanguageCode) => {
+    if (activeLanguages.length === 1) {
+      toast.error("At least one language is required");
+      return;
+    }
+    setActiveLanguages(activeLanguages.filter((l) => l !== langCode));
+  };
+
+  const updateLanguageField = (
+    lang: LanguageCode,
+    field: keyof LanguageData,
+    value: string,
+  ) => {
+    setLanguageData((prev) => ({
+      ...prev,
+      [lang]: { ...prev[lang], [field]: value },
+    }));
+  };
 
   const filteredPlans = plans.filter((plan) =>
     plan.title.toLowerCase().includes(planSearch.toLowerCase()),
@@ -85,15 +170,26 @@ const TagFormDialog = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      toast.error("Tag name is required");
-      return;
+
+    const metadata: TagMetadataInput[] = [];
+    for (const lang of activeLanguages) {
+      const data = languageData[lang];
+      if (!data.name.trim()) {
+        toast.error(
+          `Name is required for ${PLAN_LANGUAGE.find((l) => l.value === lang)?.label}`,
+        );
+        return;
+      }
+      metadata.push({
+        language: lang,
+        name: data.name.trim(),
+        description: data.description.trim() || null,
+      });
     }
+
     onSubmit({
-      name: trimmedName,
+      metadata,
       image_key: imageKey,
-      description: description.trim() || null,
       plan_ids: selectedPlanIds,
     });
   };
@@ -112,24 +208,89 @@ const TagFormDialog = ({
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold">Name</label>
-                <Pecha.Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Tag name"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold">Description</label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Optional description"
-                  className="field-sizing-fixed min-h-[80px] max-h-32 resize-none"
-                />
+              {/* Language Sections */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-bold">Languages</label>
+                  {availableLanguages.length > 0 && (
+                    <Pecha.DropdownMenu>
+                      <Pecha.DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                        >
+                          <IoMdAdd className="h-3 w-3 mr-1" />
+                          Add Language
+                        </Button>
+                      </Pecha.DropdownMenuTrigger>
+                      <Pecha.DropdownMenuContent>
+                        {availableLanguages.map((lang) => (
+                          <Pecha.DropdownMenuItem
+                            key={lang.value}
+                            onClick={() =>
+                              addLanguage(lang.value as LanguageCode)
+                            }
+                          >
+                            {lang.label}
+                          </Pecha.DropdownMenuItem>
+                        ))}
+                      </Pecha.DropdownMenuContent>
+                    </Pecha.DropdownMenu>
+                  )}
+                </div>
+                {activeLanguages.map((lang) => {
+                  const langLabel =
+                    PLAN_LANGUAGE.find((l) => l.value === lang)?.label || lang;
+                  return (
+                    <div
+                      key={lang}
+                      className="relative rounded-lg border border-input bg-[#FAFAFA] dark:bg-[#262626] p-4 space-y-3"
+                    >
+                      {activeLanguages.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeLanguage(lang)}
+                          className="absolute top-2 right-2 text-muted-foreground hover:text-foreground p-1 rounded"
+                          aria-label={`Remove ${langLabel}`}
+                        >
+                          <IoMdClose className="h-4 w-4" />
+                        </button>
+                      )}
+                      <div className="text-sm font-semibold text-muted-foreground mb-2">
+                        {langLabel}
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold">Name</label>
+                        <Pecha.Input
+                          value={languageData[lang].name}
+                          onChange={(e) =>
+                            updateLanguageField(lang, "name", e.target.value)
+                          }
+                          placeholder="Tag name"
+                          required
+                          className="bg-white dark:bg-[#181818]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold">Description</label>
+                        <Textarea
+                          value={languageData[lang].description}
+                          onChange={(e) =>
+                            updateLanguageField(
+                              lang,
+                              "description",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="Optional description"
+                          className="field-sizing-fixed min-h-[80px] max-h-32 resize-none bg-white dark:bg-[#181818]"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="space-y-2">

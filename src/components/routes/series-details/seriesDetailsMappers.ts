@@ -3,17 +3,23 @@ import type {
   SeriesPlanDTO,
 } from "@/components/routes/create-series/api/seriesApi";
 import type { LanguageCode } from "@/schema/SeriesSchema";
-import { normalizeStatus } from "@/components/routes/dashboard/dashboardTable";
+import {
+  LANGUAGE_CODE_ORDER,
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
+import {
+  normalizeStatus,
+  resolveDashboardItemImageUrl,
+  type DashboardItemImageFields,
+} from "@/components/routes/dashboard/dashboardTable";
 import type { Plan } from "@/components/routes/create-series/api/planSearchApi";
 import type { SeriesPlan } from "@/schema/SeriesSchema";
 import type { PlansByLanguage, SeriesPlanRow } from "./seriesDetailsTypes";
 
-const LANG_ORDER: LanguageCode[] = ["EN", "BO", "ZH"];
+const LANG_ORDER: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
 
 function normalizeLang(raw: string): LanguageCode | null {
-  const u = raw.trim().toUpperCase();
-  if (u === "EN" || u === "BO" || u === "ZH") return u;
-  return null;
+  return normalizeLanguageCode(raw);
 }
 
 export function mapPlanDtoToRow(plan: SeriesPlanDTO): SeriesPlanRow | null {
@@ -27,10 +33,13 @@ export function mapPlanDtoToRow(plan: SeriesPlanDTO): SeriesPlanRow | null {
   const td = plan.total_days ?? 0;
   const total_days =
     typeof td === "number" ? td : parseInt(String(td ?? "0"), 10) || 0;
+  const mappedImageUrl = resolveDashboardItemImageUrl(
+    plan as DashboardItemImageFields,
+  );
   return {
     id: String(plan.id),
     title: plan.title,
-    image_url: plan.image_url ?? "",
+    image_url: mappedImageUrl,
     language,
     status: normalizeStatus(plan.status),
     total_days,
@@ -46,7 +55,10 @@ export function mapSearchPlanToRow(plan: Plan): SeriesPlanRow | null {
   return {
     id: plan.id,
     title: plan.title,
-    image_url: plan.image_url ?? "",
+    image_url: resolveDashboardItemImageUrl({
+      image_url: plan.image_url,
+      image_key: plan.image_key,
+    }),
     language,
     status: normalizeStatus(plan.status),
     total_days: plan.total_days ?? 0,
@@ -97,7 +109,19 @@ export function getLanguageTabCounts(
     EN: grouped.EN?.length ?? 0,
     BO: grouped.BO?.length ?? 0,
     ZH: grouped.ZH?.length ?? 0,
+    HI: grouped.HI?.length ?? 0,
+    NE: grouped.NE?.length ?? 0,
+    MN: grouped.MN?.length ?? 0,
   };
+}
+
+export function getLanguagesWithPlans(
+  tabCounts: Record<LanguageCode, number>,
+  exclude?: LanguageCode,
+): LanguageCode[] {
+  return LANG_ORDER.filter(
+    (code) => code !== exclude && (tabCounts[code] ?? 0) > 0,
+  );
 }
 
 export function getSeriesTitleForLanguage(
@@ -182,4 +206,32 @@ export function removePlanFromLanguage(
 ): PlansByLanguage {
   const list = grouped[language] ?? [];
   return { ...grouped, [language]: list.filter((p) => p.id !== planId) };
+}
+
+export type SeriesStartDateSettings = {
+  start_date: string | null;
+  mode: "enroll" | "specific";
+};
+
+/** First plan in the series (by display_order) defines the shared start date settings. */
+export function getSeriesStartDateSettings(
+  plans: SeriesPlanDTO[],
+): SeriesStartDateSettings | null {
+  const sorted = [...plans].sort((a, b) => {
+    const aOrd =
+      typeof a.display_order === "number" && !Number.isNaN(a.display_order)
+        ? a.display_order
+        : 1_000_000;
+    const bOrd =
+      typeof b.display_order === "number" && !Number.isNaN(b.display_order)
+        ? b.display_order
+        : 1_000_000;
+    return aOrd - bOrd;
+  });
+  if (!sorted.length) return null;
+  const start_date = sorted[0].start_date ?? null;
+  return {
+    start_date,
+    mode: start_date ? "specific" : "enroll",
+  };
 }

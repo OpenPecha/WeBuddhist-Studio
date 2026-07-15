@@ -14,7 +14,7 @@ import {
   type DashboardSort,
   type DashboardUrlState,
 } from "@/components/routes/dashboard/dashboardUrlState";
-import { IoMdAdd, IoMdSearch } from "react-icons/io";
+import { IoMdSearch } from "react-icons/io";
 import {
   useCallback,
   useEffect,
@@ -24,8 +24,7 @@ import {
   type ReactNode,
 } from "react";
 import { useDebounce } from "use-debounce";
-import { useTranslate } from "@tolgee/react";
-import { Button } from "@/components/ui/atoms/button";
+import { useTolgee, useTranslate } from "@tolgee/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { Link, useSearchParams } from "react-router-dom";
@@ -33,6 +32,10 @@ import { ROUTES } from "@/routes/paths";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
+import { useDashboardGroupFilterOptions } from "@/hooks/useDashboardGroupFilterOptions";
+import { isReviewer } from "@/lib/platformAccess";
 
 const SEARCH_DEBOUNCE_MS = 500;
 
@@ -83,6 +86,9 @@ function DashboardListPlaceholder({
 
 const Dashboard = () => {
   const { t } = useTranslate();
+  const { data: userInfo } = useUserInfo();
+  const tolgee = useTolgee(["language"]);
+  const localeLanguage = tolgee.getLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const urlState = useMemo(
@@ -105,7 +111,7 @@ const Dashboard = () => {
     [urlState, setSearchParams],
   );
 
-  const resetPageFilters = { page: 1 as const };
+  const resetPageFilters = useMemo(() => ({ page: 1 as const }), []);
 
   useEffect(() => {
     const trimmed = debouncedSearchDraft.trim();
@@ -115,11 +121,27 @@ const Dashboard = () => {
       search: trimmed || null,
       ...resetPageFilters,
     });
-  }, [debouncedSearchDraft, urlState.search, replaceUrlState]);
+  }, [
+    debouncedSearchDraft,
+    urlState.search,
+    replaceUrlState,
+    resetPageFilters,
+  ]);
+
+  const {
+    options: groupFilterOptions,
+    isLoading: isGroupFilterLoading,
+    showFilter: showGroupFilter,
+    isStaffWideList: isStaffWideGroupList,
+    allowedGroupIds,
+  } = useDashboardGroupFilterOptions(userInfo);
 
   const fetchParams = useMemo(
-    () => dashboardUrlStateToFetchParams(urlState),
-    [urlState],
+    () => ({
+      ...dashboardUrlStateToFetchParams(urlState),
+      localeLanguage,
+    }),
+    [urlState, localeLanguage],
   );
 
   const {
@@ -171,6 +193,33 @@ const Dashboard = () => {
   };
 
   const rows = dashboardData?.rows ?? [];
+
+  useEffect(() => {
+    if (isStaffWideGroupList) return;
+    if (!urlState.groupId || isGroupFilterLoading) return;
+    if (!allowedGroupIds.has(urlState.groupId)) {
+      replaceUrlState({ groupId: null, ...resetPageFilters });
+    }
+  }, [
+    urlState.groupId,
+    allowedGroupIds,
+    isGroupFilterLoading,
+    isStaffWideGroupList,
+    replaceUrlState,
+    resetPageFilters,
+  ]);
+
+  const groupRolesByGroupId = useGroupRolesMap(
+    rows.map((r) => r.group_id),
+    userInfo
+      ? {
+          id: userInfo.id,
+          email: userInfo.email,
+          platform_role: userInfo.platform_role,
+        }
+      : undefined,
+  );
+  const platformReadOnly = isReviewer(userInfo?.platform_role);
   const hasRows = rows.length > 0;
   const isLoadingTable = status === "pending" || isFetching;
   const showEmpty = status === "success" && !hasRows;
@@ -198,8 +247,43 @@ const Dashboard = () => {
 
   const sortValue: DashboardSort = urlState.sort ?? "recent";
 
+  const groupFilterValue = urlState.groupId ?? "all";
+
   const filterBar = (
     <div className="flex w-full flex-wrap items-end gap-4 px-4 pb-2 pt-3">
+      {showGroupFilter ? (
+        <div className="flex min-w-[200px] flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">
+            Group
+          </span>
+          <Pecha.Select
+            value={groupFilterValue}
+            onValueChange={(v) => {
+              replaceUrlState({
+                groupId: v === "all" ? null : v,
+                ...resetPageFilters,
+              });
+            }}
+            disabled={isGroupFilterLoading}
+          >
+            <Pecha.SelectTrigger className="h-9 w-[220px] bg-white dark:bg-input/30">
+              <Pecha.SelectValue
+                placeholder={
+                  isGroupFilterLoading ? "Loading groups…" : "All groups"
+                }
+              />
+            </Pecha.SelectTrigger>
+            <Pecha.SelectContent>
+              <Pecha.SelectItem value="all">All groups</Pecha.SelectItem>
+              {groupFilterOptions.map((group) => (
+                <Pecha.SelectItem key={group.id} value={group.id}>
+                  {group.label}
+                </Pecha.SelectItem>
+              ))}
+            </Pecha.SelectContent>
+          </Pecha.Select>
+        </div>
+      ) : null}
       <div className="flex min-w-[180px] flex-col gap-1">
         <span className="text-xs font-medium text-muted-foreground">Sort</span>
         <Pecha.Select
@@ -238,7 +322,7 @@ const Dashboard = () => {
           <Pecha.SelectContent>
             <Pecha.SelectItem value="all">All languages</Pecha.SelectItem>
             <Pecha.SelectItem value="EN">English</Pecha.SelectItem>
-            <Pecha.SelectItem value="ZH">中国人</Pecha.SelectItem>
+            <Pecha.SelectItem value="ZH">中文</Pecha.SelectItem>
             <Pecha.SelectItem value="BO">བོད་སྐད།</Pecha.SelectItem>
           </Pecha.SelectContent>
         </Pecha.Select>
@@ -285,31 +369,6 @@ const Dashboard = () => {
             />
           </div>
 
-          <Pecha.DropdownMenu>
-            <Pecha.DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="gap-2 border-gray-200 bg-white hover:bg-gray-50 dark:border-[#313132] dark:bg-transparent dark:hover:bg-[#2a2a2a]"
-                aria-label="Add"
-              >
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#A51C21] text-white">
-                  <IoMdAdd className="h-4 w-4" aria-hidden />
-                </span>
-                Add
-              </Button>
-            </Pecha.DropdownMenuTrigger>
-            <Pecha.DropdownMenuContent align="start">
-              <Pecha.DropdownMenuGroup>
-                <Link to={ROUTES.seriesNew}>
-                  <Pecha.DropdownMenuItem>Add Series</Pecha.DropdownMenuItem>
-                </Link>
-                <Link to={ROUTES.planNew}>
-                  <Pecha.DropdownMenuItem>Add Plan</Pecha.DropdownMenuItem>
-                </Link>
-              </Pecha.DropdownMenuGroup>
-            </Pecha.DropdownMenuContent>
-          </Pecha.DropdownMenu>
-
           <div className="flex flex-wrap items-center gap-2 pl-1">
             <button
               type="button"
@@ -340,34 +399,37 @@ const Dashboard = () => {
       {filterBar}
 
       <div className="flex flex-1 flex-col items-center px-4 pb-6 pt-2">
-        {isError && error ? (
+        {isError && error && (
           <DashboardListPlaceholder
             title="Unable to load dashboard"
             description={String(error.message)}
           />
-        ) : showEmpty ? (
+        )}
+
+        {showEmpty && (
           <DashboardListPlaceholder
             title={emptyTitle}
-            description={emptyDescription}
+            description={
+              emptyDescription ?? "Create plans and series from a group page."
+            }
           >
-            <Link to={ROUTES.planNew}>
+            <Link to={ROUTES.groups}>
               <Pecha.Button variant="outline" size="sm">
-                <IoMdAdd className="h-4 w-4" /> {t("studio.dashboard.add_plan")}
-              </Pecha.Button>
-            </Link>
-            <Link to={ROUTES.seriesNew}>
-              <Pecha.Button variant="outline" size="sm">
-                <IoMdAdd className="h-4 w-4" /> Add Series
+                Go to groups
               </Pecha.Button>
             </Link>
           </DashboardListPlaceholder>
-        ) : (
+        )}
+        {!isError && !showEmpty && (
           <div className="w-full overflow-x-auto">
             <DashboardContentTable
               rows={rows}
               isLoading={isLoadingTable}
               t={t}
-              handleFeatured={handleFeatured}
+              handleFeatured={platformReadOnly ? () => {} : handleFeatured}
+              platformRole={userInfo?.platform_role}
+              groupRolesByGroupId={groupRolesByGroupId}
+              userInfo={userInfo}
             />
           </div>
         )}
