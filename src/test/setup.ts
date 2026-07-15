@@ -1,5 +1,10 @@
 import "@testing-library/jest-dom";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
+
+afterEach(() => {
+  document.body.removeAttribute("data-scroll-locked");
+  document.body.style.pointerEvents = "";
+});
 
 vi.mock("@/config/auth-context", () => ({
   useAuth: () => ({
@@ -23,6 +28,27 @@ vi.mock("@tolgee/react", () => ({
   useTranslate: () => ({
     t: (key: string) => key,
   }),
+  useTolgee: () => ({
+    getLanguage: () => "en",
+    changeLanguage: vi.fn(),
+  }),
+}));
+
+vi.mock("@/hooks/useUserInfo", () => ({
+  USER_INFO_QUERY_KEY: ["userInfo"],
+  fetchUserInfo: vi.fn(),
+  useUserInfo: () => ({
+    data: {
+      id: "test-user-id",
+      email: "test@example.com",
+      platform_role: "SUPER_ADMIN",
+      is_verified: true,
+      is_active: true,
+      has_group: true,
+      can_create_content: true,
+    },
+    isLoading: false,
+  }),
 }));
 
 Object.defineProperty(global, "URL", {
@@ -32,3 +58,9 @@ Object.defineProperty(global, "URL", {
   },
   writable: true,
 });
+
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

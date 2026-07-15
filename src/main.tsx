@@ -23,13 +23,26 @@ import Signup from "./components/auth/signup/Signup";
 import Dashboard from "./components/routes/dashboard/Dashboard";
 import Analytics from "./components/routes/analytics/Analytics";
 import CreatePlan from "./components/routes/create-plan/CreatePlan";
+import PlanNewLegacyRedirect from "./components/routes/create-plan/PlanNewLegacyRedirect";
 import CreateSeries from "./components/routes/create-series/CreateSeries";
 import SeriesDetailsPage from "./components/routes/series-details/SeriesDetailsPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import PlanRouteGuard from "./components/auth/PlanRouteGuard";
 import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
 import Tags from "./components/routes/tags/Tags.tsx";
+import VerseOfDay from "./components/routes/verse-of-day/VerseOfDay.tsx";
+import Groups from "./components/routes/groups/Groups.tsx";
+import GroupLayout from "./components/routes/groups/GroupLayout.tsx";
+import GroupAboutPage from "./components/routes/groups/GroupAboutPage.tsx";
+import GroupAboutEditPage from "./components/routes/groups/GroupAboutEditPage.tsx";
+import GroupContentPage from "./components/routes/groups/GroupContentPage.tsx";
+import GroupTransfersPage from "./components/routes/groups/GroupTransfersPage.tsx";
+import GroupMembersPage from "./components/routes/groups/GroupMembersPage.tsx";
+import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
+import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
+import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
@@ -96,7 +109,19 @@ const router = createBrowserRouter([
         path: ROUTES.planNew,
         element: (
           <ProtectedRoute>
-            <CreatePlan />
+            <PlanRouteGuard>
+              <PlanNewLegacyRedirect />
+            </PlanRouteGuard>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/groups/:groupId/plan/new",
+        element: (
+          <ProtectedRoute>
+            <PlanRouteGuard>
+              <CreatePlan />
+            </PlanRouteGuard>
           </ProtectedRoute>
         ),
       },
@@ -104,7 +129,9 @@ const router = createBrowserRouter([
         path: "/plan/:planId/edit",
         element: (
           <ProtectedRoute>
-            <CreatePlan />
+            <PlanRouteGuard>
+              <CreatePlan />
+            </PlanRouteGuard>
           </ProtectedRoute>
         ),
       },
@@ -112,12 +139,18 @@ const router = createBrowserRouter([
         path: "/plan/:planId",
         element: (
           <ProtectedRoute>
-            <PlanDetailsPage />
+            <PlanRouteGuard>
+              <PlanDetailsPage />
+            </PlanRouteGuard>
           </ProtectedRoute>
         ),
       },
       {
         path: ROUTES.seriesNew,
+        element: <Navigate to={ROUTES.groups} replace />,
+      },
+      {
+        path: "/groups/:groupId/series/new",
         element: (
           <ProtectedRoute>
             <CreateSeries />
@@ -161,6 +194,61 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Tags />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.verseOfDay,
+        element: (
+          <ProtectedRoute>
+            <VerseOfDay />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.groups,
+        element: (
+          <ProtectedRoute>
+            <Groups />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.groupNew,
+        element: (
+          <ProtectedRoute>
+            <GroupFormPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/groups/:groupId",
+        element: (
+          <ProtectedRoute>
+            <GroupLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <GroupAboutPage /> },
+          { path: "edit", element: <GroupAboutEditPage /> },
+          { path: "content", element: <GroupContentPage /> },
+          { path: "transfers", element: <GroupTransfersPage /> },
+          { path: "members", element: <GroupMembersPage /> },
+        ],
+      },
+      {
+        path: ROUTES.adminAuthors,
+        element: (
+          <ProtectedRoute>
+            <AdminAuthorsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.adminChinaRestrictions,
+        element: (
+          <ProtectedRoute>
+            <ChinaRestrictionsPage />
           </ProtectedRoute>
         ),
       },

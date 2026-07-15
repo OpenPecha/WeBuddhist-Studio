@@ -1,5 +1,13 @@
 import { FaStar } from "react-icons/fa";
+import { PLAN_LANGUAGE } from "@/lib/constant";
 import type { DashboardLanguageCode } from "./dashboardTable";
+
+const LANGUAGE_CHIP_CLASS =
+  "rounded-full bg-[#F8F9FA] px-2.5 py-0.5 text-xs font-medium text-gray-900 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-100 dark:ring-gray-700";
+
+export function languageChipLabel(code: DashboardLanguageCode): string {
+  return PLAN_LANGUAGE.find((lang) => lang.value === code)?.label ?? code;
+}
 
 export function FeaturedStar({
   featured,
@@ -62,24 +70,5 @@ export function statusChip(status: string) {
 }
 
 export function languageChip(code: DashboardLanguageCode) {
-  switch (code) {
-    case "BO":
-      return (
-        <span className="rounded-full bg-[#F8F9FA] px-2.5 py-0.5 text-xs font-medium text-gray-900 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-100 dark:ring-gray-700">
-          བོད་སྐད།
-        </span>
-      );
-    case "ZH":
-      return (
-        <span className="rounded-full bg-[#F8F9FA] px-2.5 py-0.5 text-xs font-medium text-gray-900 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-100 dark:ring-gray-700">
-          中国人
-        </span>
-      );
-    default:
-      return (
-        <span className="rounded-full bg-[#F8F9FA] px-2.5 py-0.5 text-xs font-medium text-gray-900 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-100 dark:ring-gray-700">
-          English
-        </span>
-      );
-  }
+  return <span className={LANGUAGE_CHIP_CLASS}>{languageChipLabel(code)}</span>;
 }

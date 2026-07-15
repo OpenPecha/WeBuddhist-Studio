@@ -1,22 +1,12 @@
-import axiosInstance from "@/config/axios-config";
-import { useQuery } from "@tanstack/react-query";
 import { Pecha } from "@/components/ui/shadimport";
 import { useState } from "react";
 import UserCard from "@/components/ui/molecules/user-card/UserCard";
 import ProfileEditForm from "@/components/ui/molecules/profile-edit-form/ProfileEditForm";
-
-const fetchUserInfo = async () => {
-  const { data } = await axiosInstance.get(`/api/v1/authors/info`);
-  return data;
-};
+import { useUserInfo } from "@/hooks/useUserInfo";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-
-  const { data: userInfo, isLoading } = useQuery({
-    queryKey: ["userInfo"],
-    queryFn: fetchUserInfo,
-  });
+  const { data: userInfo, isLoading } = useUserInfo();
 
   const handleEdit = () => {
     setIsEditing(true);

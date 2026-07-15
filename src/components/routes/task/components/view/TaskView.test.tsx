@@ -111,4 +111,133 @@ describe("TaskView Component", () => {
     });
     expect(screen.getByText("Valid content")).toBeInTheDocument();
   });
+
+  it("renders subtask audio when audio_url is present without timestamps", async () => {
+    const mockTaskWithSubtaskAudio = {
+      id: "task-123",
+      title: "Task With Subtask Audio",
+      subtasks: [
+        {
+          id: "subtask-audio",
+          content: "Text with generated audio",
+          content_type: "TEXT",
+          audio_url: "https://example.com/subtask-audio.mp3",
+        },
+      ],
+    };
+    vi.mocked(axiosInstance.get).mockResolvedValueOnce({
+      data: mockTaskWithSubtaskAudio,
+    });
+    const { container } = renderWithProviders(
+      <TaskView onEditTask={mockOnEditTask} taskId="task-123" />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("Task With Subtask Audio")).toBeInTheDocument();
+    });
+    const audio = container.querySelector(
+      'audio[src="https://example.com/subtask-audio.mp3"]',
+    );
+    expect(audio).toBeInTheDocument();
+    expect(screen.queryByText(/Segment:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Timeline:/)).not.toBeInTheDocument();
+  });
+
+  it("renders day audio segment player when timestamps and dayAudioUrl are present", async () => {
+    const mockTaskWithTimestamps = {
+      id: "task-123",
+      title: "Task With Timestamps",
+      subtasks: [
+        {
+          id: "subtask-timestamped",
+          content: "Timestamped text",
+          content_type: "TEXT",
+          start_ms: 60_000,
+          end_ms: 150_000,
+        },
+      ],
+    };
+    vi.mocked(axiosInstance.get).mockResolvedValueOnce({
+      data: mockTaskWithTimestamps,
+    });
+    renderWithProviders(
+      <TaskView
+        onEditTask={mockOnEditTask}
+        taskId="task-123"
+        dayAudioUrl="https://example.com/day-audio.mp3"
+      />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("Segment: 1:00 – 2:30")).toBeInTheDocument();
+    });
+    expect(
+      document.querySelector('audio[src="https://example.com/day-audio.mp3"]'),
+    ).toBeInTheDocument();
+  });
+
+  it("renders timeline text when timestamps exist without audio sources", async () => {
+    const mockTaskWithTimestamps = {
+      id: "task-123",
+      title: "Task With Timeline Only",
+      subtasks: [
+        {
+          id: "subtask-timeline",
+          content: "Timeline only text",
+          content_type: "TEXT",
+          start_ms: 30_000,
+          end_ms: 90_000,
+        },
+      ],
+    };
+    vi.mocked(axiosInstance.get).mockResolvedValueOnce({
+      data: mockTaskWithTimestamps,
+    });
+    renderWithProviders(
+      <TaskView onEditTask={mockOnEditTask} taskId="task-123" />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("Timeline: 0:30 – 1:30")).toBeInTheDocument();
+    });
+    expect(document.querySelector("audio")).not.toBeInTheDocument();
+  });
+
+  it("prefers subtask audio_url over day audio timestamps", async () => {
+    const mockTaskWithBoth = {
+      id: "task-123",
+      title: "Task With Both Audio Sources",
+      subtasks: [
+        {
+          id: "subtask-both",
+          content: "Text with both audio sources",
+          content_type: "TEXT",
+          audio_url: "https://example.com/subtask-audio.mp3",
+          start_ms: 60_000,
+          end_ms: 150_000,
+        },
+      ],
+    };
+    vi.mocked(axiosInstance.get).mockResolvedValueOnce({
+      data: mockTaskWithBoth,
+    });
+    const { container } = renderWithProviders(
+      <TaskView
+        onEditTask={mockOnEditTask}
+        taskId="task-123"
+        dayAudioUrl="https://example.com/day-audio.mp3"
+      />,
+    );
+    await waitFor(() => {
+      expect(
+        screen.getByText("Task With Both Audio Sources"),
+      ).toBeInTheDocument();
+    });
+    expect(
+      container.querySelector(
+        'audio[src="https://example.com/subtask-audio.mp3"]',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('audio[src="https://example.com/day-audio.mp3"]'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Segment:/)).not.toBeInTheDocument();
+  });
 });

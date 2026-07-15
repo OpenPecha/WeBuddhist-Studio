@@ -19,6 +19,15 @@ const mockUserInfo = {
   ],
 };
 
+vi.mock("@/hooks/useUserInfo", () => ({
+  USER_INFO_QUERY_KEY: ["userInfo"],
+  fetchUserInfo: vi.fn(),
+  useUserInfo: () => ({
+    data: mockUserInfo,
+    isLoading: false,
+  }),
+}));
+
 vi.mock("@/components/ui/molecules/user-card/UserCard", () => ({
   default: ({ userInfo }: any) => (
     <div data-testid="user-card">
@@ -67,14 +76,10 @@ describe("Profile Component", () => {
     expect(screen.getByText("Edit")).toBeInTheDocument();
   });
 
-  it("fetches current user info from authors info endpoint", async () => {
-    const { default: axiosInstance } = await import("@/config/axios-config");
-    vi.mocked(axiosInstance.get).mockResolvedValue({
-      data: mockUserInfo,
-    });
-    renderWithProviders(<Profile />);
+  it("shows user info from shared userInfo query", async () => {
+    renderWithProviders(<Profile />, mockUserInfo);
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith("/api/v1/authors/info");
+      expect(screen.getByText("Tenzin la")).toBeInTheDocument();
     });
   });
 });

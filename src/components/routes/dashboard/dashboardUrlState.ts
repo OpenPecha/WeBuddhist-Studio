@@ -1,3 +1,4 @@
+import { normalizeLanguageCode } from "@/lib/languageCodes";
 import type { DashboardTab } from "./dashboardApi";
 import { DASHBOARD_PAGE_SIZE } from "./dashboardApi";
 import type { FetchDashboardItemsParams } from "./dashboardApi";
@@ -21,6 +22,7 @@ export interface DashboardUrlState {
   language: string | null;
   featured: boolean | null;
   sort: DashboardSort | null;
+  groupId: string | null;
 }
 
 export const DASHBOARD_URL_DEFAULTS: DashboardUrlState = {
@@ -32,6 +34,7 @@ export const DASHBOARD_URL_DEFAULTS: DashboardUrlState = {
   language: null,
   featured: null,
   sort: null,
+  groupId: null,
 };
 
 const VALID_TABS = new Set<DashboardTab>(["all", "series", "plans"]);
@@ -43,8 +46,6 @@ const VALID_STATUS = new Set<DashboardPlanStatus>([
   "ARCHIVED",
   "DELETED",
 ]);
-
-const VALID_LANGUAGE = new Set(["EN", "BO", "ZH"]);
 
 const VALID_SORT = new Set<DashboardSort>(["recent"]);
 
@@ -65,8 +66,7 @@ function parseStatus(raw: string | null): DashboardPlanStatus | null {
 
 function parseLanguage(raw: string | null): string | null {
   if (!raw) return null;
-  const u = raw.trim().toUpperCase();
-  return VALID_LANGUAGE.has(u) ? u : null;
+  return normalizeLanguageCode(raw);
 }
 
 function parseSort(raw: string | null): DashboardSort | null {
@@ -110,6 +110,7 @@ export function parseDashboardSearchParams(
     language: parseLanguage(params.get("language")),
     featured,
     sort: parseSort(params.get("sort")),
+    groupId: params.get("group_id")?.trim() || null,
   };
 }
 
@@ -127,6 +128,7 @@ export function buildDashboardSearchParams(
   if (state.language) p.set("language", state.language);
   if (state.featured !== null) p.set("featured", String(state.featured));
   if (state.sort) p.set("sort", state.sort);
+  if (state.groupId) p.set("group_id", state.groupId);
 
   return p;
 }
@@ -142,6 +144,7 @@ export function dashboardUrlStateToFetchParams(
     ...(state.status && { status: state.status }),
     ...(state.language && { language: state.language }),
     ...(state.featured != null && { featured: state.featured }),
+    ...(state.groupId && { group_id: state.groupId }),
   };
 }
 

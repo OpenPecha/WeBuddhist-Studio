@@ -1,4 +1,8 @@
 import axiosInstance from "@/config/axios-config";
+import {
+  LANGUAGE_CODE_ORDER,
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
 import type {
   LanguageCode,
   SeriesFormData,
@@ -7,6 +11,7 @@ import type {
 
 export type SeriesMetadataInput = {
   title: string;
+  sub_title: string;
   description: string;
   language: LanguageCode;
 };
@@ -16,6 +21,7 @@ export type SeriesPayload = {
   image_key?: string;
   featured: boolean;
   plans: Partial<Record<LanguageCode, string[]>>;
+  group_id?: string;
 };
 
 export type SeriesUpdatePayload = Partial<SeriesPayload>;
@@ -25,8 +31,18 @@ export type SeriesPlanDTO = {
   title: string;
   description?: string | null;
   language: string;
+  group_id?: string | null;
   image_url?: string | null;
+  plan_image_url?: string | null;
   image_key?: string | null;
+  image?:
+    | string
+    | {
+        medium?: string | null;
+        thumbnail?: string | null;
+        original?: string | null;
+      }
+    | null;
   display_order?: number | null;
   total_days?: number | null;
   status?: string;
@@ -34,6 +50,7 @@ export type SeriesPlanDTO = {
   enrolled_count?: number | null;
   subscription_count?: number | null;
   updated_at?: string | null;
+  start_date?: string | null;
 };
 
 export type SeriesMetadataDTO = {
@@ -41,6 +58,7 @@ export type SeriesMetadataDTO = {
   language?: string;
   lang?: string;
   title?: string;
+  sub_title?: string;
   description?: string;
 };
 
@@ -49,19 +67,38 @@ export type SeriesDetailDTO = {
   name?: Record<string, unknown>;
   metadata?: SeriesMetadataDTO[];
   image?: string | null;
+  image_url?: string | null;
   image_key?: string | null;
   author_id?: string;
+  group_id?: string | null;
+  group?: { id?: string } | null;
   featured: boolean;
   status: string;
   plans: SeriesPlanDTO[];
   total_days?: number;
 };
 
+export function resolveSeriesGroupId(
+  series:
+    | Pick<SeriesDetailDTO, "group_id" | "group" | "plans">
+    | null
+    | undefined,
+): string | undefined {
+  if (!series) return undefined;
+  if (series.group_id?.trim()) return series.group_id.trim();
+  if (series.group?.id?.trim()) return series.group.id.trim();
+  const fromPlan = series.plans?.find((p) => p.group_id?.trim())?.group_id;
+  return fromPlan?.trim() || undefined;
+}
+
 export const getSeries = async (seriesId: string): Promise<SeriesDetailDTO> => {
   const { data } = await axiosInstance.get<SeriesDetailDTO>(
     `/api/v1/cms/series/${seriesId}`,
   );
-  return data;
+  return {
+    ...data,
+    group_id: resolveSeriesGroupId(data) ?? null,
+  };
 };
 
 export const postSeries = async (body: SeriesPayload) => {
@@ -94,25 +131,24 @@ export const putSeriesFeatured = async (
 };
 
 function normalizeLang(raw: string): LanguageCode | null {
-  const u = raw.trim().toUpperCase();
-  if (u === "EN" || u === "BO" || u === "ZH") return u;
-  return null;
+  return normalizeLanguageCode(raw);
 }
 
 function parseNameObject(
   name: Record<string, unknown>,
 ): SeriesFormData["languages"] {
   const languages: SeriesFormData["languages"] = {};
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   for (const code of order) {
     const raw = name[code];
     if (raw == null) continue;
     if (typeof raw === "string") {
-      languages[code] = { title: raw.trim(), description: "" };
+      languages[code] = { title: raw.trim(), sub_title: "", description: "" };
     } else if (typeof raw === "object") {
       const o = raw as Record<string, unknown>;
       languages[code] = {
         title: String(o.title ?? "").trim(),
+        sub_title: String(o.sub_title ?? "").trim(),
         description: String(o.description ?? "").trim(),
       };
     }
@@ -129,6 +165,7 @@ function parseMetadataArray(
     if (!code) continue;
     languages[code] = {
       title: String(row.title ?? "").trim(),
+      sub_title: String(row.sub_title ?? "").trim(),
       description: String(row.description ?? "").trim(),
     };
   }
@@ -145,7 +182,7 @@ function languagesFromPlans(
     const code = normalizeLang(p.language);
     if (!code || seen.has(code)) continue;
     seen.add(code);
-    languages[code] = { title: "", description: "" };
+    languages[code] = { title: "", sub_title: "", description: "" };
   }
   return languages;
 }
@@ -164,7 +201,10 @@ function resolveSeriesLanguages(
 
 function resolveSeriesImageKey(dto: SeriesDetailDTO): string {
   if (dto.image_key?.trim()) return dto.image_key.trim();
-  if (dto.image && !/^https?:\/\//i.test(dto.image)) return dto.image.trim();
+  const image = dto.image;
+  if (typeof image === "string" && image && !/^https?:\/\//i.test(image)) {
+    return image.trim();
+  }
   return "";
 }
 
@@ -192,7 +232,7 @@ export function mapSeriesDetailToFormData(
     buckets[code]!.push({ item, ord });
   }
 
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   const plans: SeriesFormData["plans"] = {};
   for (const code of order) {
     const row = buckets[code];
@@ -210,7 +250,7 @@ export function mapSeriesDetailToFormData(
 export function buildSeriesMetadata(
   languages: SeriesFormData["languages"],
 ): SeriesMetadataInput[] {
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   const out: SeriesMetadataInput[] = [];
   for (const code of order) {
     const block = languages[code];
@@ -218,6 +258,7 @@ export function buildSeriesMetadata(
     out.push({
       language: code,
       title: block.title.trim(),
+      sub_title: block.sub_title.trim(),
       description: block.description.trim(),
     });
   }
@@ -239,6 +280,7 @@ export function buildSeriesPlansJson(
 export function buildSeriesWriteBody(
   data: SeriesFormData,
   featured: boolean,
+  groupId?: string,
 ): SeriesPayload {
   const metadata = buildSeriesMetadata(data.languages);
   const languageCodes = metadata.map((m) => m.language);
@@ -248,27 +290,114 @@ export function buildSeriesWriteBody(
     featured,
     plans: buildSeriesPlansJson(data, languageCodes),
     ...(imageKey ? { image_key: imageKey } : {}),
+    ...(groupId ? { group_id: groupId } : {}),
   };
 }
 
 export function buildSeriesCreateBody(
   data: SeriesFormData,
   featured = false,
+  groupId?: string,
 ): SeriesPayload {
-  return buildSeriesWriteBody(data, featured);
+  return buildSeriesWriteBody(data, featured, groupId);
+}
+
+function seriesMetadataEqual(
+  a: SeriesMetadataInput[],
+  b: SeriesMetadataInput[],
+): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].language !== b[i].language) return false;
+    if (a[i].title !== b[i].title) return false;
+    if (a[i].sub_title !== b[i].sub_title) return false;
+    if (a[i].description !== b[i].description) return false;
+  }
+  return true;
+}
+
+function seriesPlansEqual(
+  a: Partial<Record<LanguageCode, string[]>>,
+  b: Partial<Record<LanguageCode, string[]>>,
+): boolean {
+  const codes = new Set<LanguageCode>([
+    ...(Object.keys(a) as LanguageCode[]),
+    ...(Object.keys(b) as LanguageCode[]),
+  ]);
+  for (const code of codes) {
+    const aIds = a[code] ?? [];
+    const bIds = b[code] ?? [];
+    if (aIds.length !== bIds.length) return false;
+    for (let i = 0; i < aIds.length; i++) {
+      if (aIds[i] !== bIds[i]) return false;
+    }
+  }
+  return true;
+}
+
+export function buildSeriesPartialUpdateBody(
+  current: SeriesFormData,
+  original: SeriesFormData,
+  featured: boolean,
+  originalFeatured: boolean,
+): SeriesUpdatePayload {
+  const body: SeriesUpdatePayload = {};
+
+  const currentMetadata = buildSeriesMetadata(current.languages);
+  const originalMetadata = buildSeriesMetadata(original.languages);
+  if (!seriesMetadataEqual(currentMetadata, originalMetadata)) {
+    body.metadata = currentMetadata;
+  }
+
+  const currentImageKey = current.image_url.trim();
+  const originalImageKey = original.image_url.trim();
+  if (currentImageKey !== originalImageKey && currentImageKey) {
+    body.image_key = currentImageKey;
+  }
+
+  if (featured !== originalFeatured) {
+    body.featured = featured;
+  }
+
+  const currentPlans = buildSeriesPlansJson(
+    current,
+    currentMetadata.map((m) => m.language),
+  );
+  const originalPlans = buildSeriesPlansJson(
+    original,
+    originalMetadata.map((m) => m.language),
+  );
+  if (!seriesPlansEqual(currentPlans, originalPlans)) {
+    body.plans = currentPlans;
+  }
+
+  return body;
 }
 
 export function buildSeriesUpdateBody(
   data: SeriesFormData,
   featured: boolean,
-): SeriesPayload {
-  return buildSeriesWriteBody(data, featured);
+  options?: {
+    groupId?: string;
+    original?: SeriesFormData;
+    originalFeatured?: boolean;
+  },
+): SeriesPayload | SeriesUpdatePayload {
+  if (!options?.original) {
+    return buildSeriesWriteBody(data, featured, options?.groupId);
+  }
+  return buildSeriesPartialUpdateBody(
+    data,
+    options.original,
+    featured,
+    options.originalFeatured ?? featured,
+  );
 }
 
 export function buildSeriesPlansPayloadFromIds(
   plansByLang: Partial<Record<LanguageCode, string[]>>,
 ): Partial<Record<LanguageCode, string[]>> {
-  const order: LanguageCode[] = ["EN", "BO", "ZH"];
+  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   const out: Partial<Record<LanguageCode, string[]>> = {};
   for (const code of order) {
     const ids = plansByLang[code];
@@ -286,3 +415,68 @@ export async function putSeriesPlans(
     body: { plans: buildSeriesPlansPayloadFromIds(plansByLang) },
   });
 }
+
+export type CloneSeriesPlansPayload = {
+  source_language: LanguageCode;
+  target_language: LanguageCode;
+};
+
+export async function cloneSeriesPlansFromLanguage(
+  seriesId: string,
+  payload: CloneSeriesPlansPayload,
+) {
+  const { data } = await axiosInstance.post<SeriesDetailDTO>(
+    `/api/v1/cms/series/${seriesId}/clone-plans`,
+    payload,
+  );
+  return data;
+}
+
+export type SeriesListItemDTO = {
+  id: string;
+  metadata?: SeriesMetadataDTO[];
+  image?: string | null;
+  image_key?: string | null;
+  author_id?: string;
+  featured?: boolean;
+  status?: string;
+  plan_count?: number;
+  total_days?: number;
+};
+
+export type SeriesListResponse = {
+  series: SeriesListItemDTO[];
+};
+
+export type SeriesOption = {
+  id: string;
+  title: string;
+};
+
+function resolveSeriesListTitle(metadata?: SeriesMetadataDTO[]): string {
+  if (!Array.isArray(metadata) || metadata.length === 0) return "Untitled";
+  const order = [...LANGUAGE_CODE_ORDER];
+  for (const lang of order) {
+    const row = metadata.find(
+      (r) => String(r.language ?? r.lang ?? "").toUpperCase() === lang,
+    );
+    const t = row?.title?.trim();
+    if (t) return t;
+  }
+  for (const row of metadata) {
+    const t = row.title?.trim();
+    if (t) return t;
+  }
+  return "Untitled";
+}
+
+export const fetchSeriesList = async (): Promise<SeriesOption[]> => {
+  const { data } = await axiosInstance.get<SeriesListResponse>(
+    `/api/v1/cms/series`,
+    { params: { limit: 100 } },
+  );
+  return (data?.series ?? []).map((s) => ({
+    id: s.id,
+    title: resolveSeriesListTitle(s.metadata),
+  }));
+};

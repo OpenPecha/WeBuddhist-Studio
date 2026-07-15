@@ -23,6 +23,7 @@ export type Plan = {
   subscription_count: number;
   author: PlanAuthor;
   start_date: string | null;
+  group_id?: string | null;
 };
 
 export type SearchPlansResponse = {
@@ -38,13 +39,33 @@ export type SearchPlansParams = {
   language?: string;
   skip?: number;
   limit?: number;
+  group_id?: string;
 };
 
 export const searchPlans = async (
   params: SearchPlansParams,
 ): Promise<SearchPlansResponse> => {
-  const { data } = await axiosInstance.get("/api/v1/search/plans", {
-    params,
+  const { group_id, ...rest } = params;
+  const { data } = await axiosInstance.get<SearchPlansResponse>(
+    "/api/v1/cms/plans",
+    {
+      params: {
+        ...rest,
+        ...(group_id ? { group_id } : {}),
+      },
+    },
+  );
+
+  if (!group_id) {
+    return data;
+  }
+
+  const plans = (data.plans ?? []).filter((plan) => {
+    if (plan.group_id != null) {
+      return plan.group_id === group_id;
+    }
+    return true;
   });
-  return data;
+
+  return { ...data, plans };
 };
