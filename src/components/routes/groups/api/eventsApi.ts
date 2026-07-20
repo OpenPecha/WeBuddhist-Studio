@@ -20,7 +20,7 @@ export interface EventMetadataDTO {
   id: string;
   name: string;
   description?: string;
-  language: string; 
+  language: string;
 }
 
 export type EventMetadataResponse =
@@ -40,7 +40,7 @@ export interface EventDTO {
   image?: ImageUrlModel;
   image_url?: string;
   created_at: string;
-  created_by: string; 
+  created_by: string;
   updated_at?: string;
 }
 
@@ -58,10 +58,10 @@ export interface EventMetadataInput {
 }
 
 export interface CreateEventRequest {
-  group_id: string; 
-  start_date: string; 
-  end_date: string; 
-  metadata: EventMetadataInput[]; 
+  group_id: string;
+  start_date: string;
+  end_date: string;
+  metadata: EventMetadataInput[];
   image_url?: string;
   plan_id?: string;
   accumulator_id?: string;
@@ -82,10 +82,10 @@ export interface EventListFilters {
   plan_id?: string;
   accumulator_id?: string;
   from_date?: string;
-  to_date?: string; 
+  to_date?: string;
   language?: string;
-  skip?: number; 
-  limit?: number; 
+  skip?: number;
+  limit?: number;
 }
 
 export const fetchCmsEvents = async (
@@ -179,7 +179,8 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     start_date: event.start_date ?? "",
     end_date: event.end_date ?? "",
     is_one_day: Boolean(event.is_one_day),
-    metadata: rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
+    metadata:
+      rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
     image_url: event.image_url?.trim() ?? "",
     plan_id: event.plan_id?.trim() ?? "",
     accumulator_id: event.accumulator_id?.trim() ?? "",
@@ -222,7 +223,12 @@ async function resolveLinkOption(
     search?: string;
     skip?: number;
     limit?: number;
-  }) => Promise<{ items: FkOption[]; skip: number; limit: number; total: number }>,
+  }) => Promise<{
+    items: FkOption[];
+    skip: number;
+    limit: number;
+    total: number;
+  }>,
 ): Promise<FkOption> {
   const PAGE = 20;
   const MAX_PAGES = 5;
@@ -234,8 +240,7 @@ async function resolveLinkOption(
       const fetched = res.skip + res.items.length;
       if (fetched >= res.total || res.items.length === 0) break;
     }
-  } catch {
-  }
+  } catch {}
   return { id, title: fallbackLabel };
 }
 
@@ -263,7 +268,8 @@ export function buildUpdateEventBody(
 ): UpdateEventRequest {
   const body: UpdateEventRequest = {};
 
-  if (data.start_date !== original.start_date) body.start_date = data.start_date;
+  if (data.start_date !== original.start_date)
+    body.start_date = data.start_date;
   if (data.end_date !== original.end_date) body.end_date = data.end_date;
 
   if (!metadataEqual(data.metadata, original.metadata)) {

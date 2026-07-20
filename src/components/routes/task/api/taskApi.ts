@@ -143,11 +143,7 @@ export interface GenerateDayAudioOptions {
   voice_name?: string;
 }
 
-export type AudioJobStatus =
-  | "pending"
-  | "processing"
-  | "completed"
-  | "failed";
+export type AudioJobStatus = "pending" | "processing" | "completed" | "failed";
 
 export interface AudioJobAcceptedResponse {
   job_id: string;

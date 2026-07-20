@@ -47,7 +47,7 @@ export const useEventForm = (): UseEventFormReturn => {
     const next = PLAN_LANGUAGE.map((l) => l.value as LanguageCode).find(
       (code) => !used.has(code),
     );
-    if (!next) return; 
+    if (!next) return;
     metadataRows.append(emptyMetadataRow(next));
   }, [form, metadataRows]);
 
