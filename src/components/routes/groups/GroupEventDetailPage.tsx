@@ -89,7 +89,8 @@ const GroupEventDetailPage = () => {
     let active = true;
     const setTitle = (key: string, title: string) =>
       active && setLinkTitles((prev) => ({ ...prev, [key]: title }));
-    if (planId) resolveLinkedPlan(planId).then((o) => setTitle("plan", o.title));
+    if (planId)
+      resolveLinkedPlan(planId).then((o) => setTitle("plan", o.title));
     if (accumulatorId) {
       resolveLinkedAccumulator(accumulatorId).then((o) =>
         setTitle("accumulator", o.title),
@@ -116,7 +117,10 @@ const GroupEventDetailPage = () => {
         <p className="text-center text-destructive">
           {getApiErrorMessage(error, "Could not load this event.")}
         </p>
-        <Pecha.Button variant="outline" onClick={() => navigate(eventsListPath)}>
+        <Pecha.Button
+          variant="outline"
+          onClick={() => navigate(eventsListPath)}
+        >
           Back to events
         </Pecha.Button>
       </div>
@@ -124,7 +128,8 @@ const GroupEventDetailPage = () => {
   }
 
   const heroImage = resolveHeroImage(data);
-  const active = rows.find((r) => r.language === activeLang) ?? pickDefault(rows);
+  const active =
+    rows.find((r) => r.language === activeLang) ?? pickDefault(rows);
   const title = active?.name?.trim() || "Untitled event";
   const description = active?.description?.trim();
 
@@ -152,7 +157,9 @@ const GroupEventDetailPage = () => {
           <Pecha.Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(ROUTES.groupEventEdit(groupId ?? "", data.id))}
+            onClick={() =>
+              navigate(ROUTES.groupEventEdit(groupId ?? "", data.id))
+            }
           >
             Edit
           </Pecha.Button>

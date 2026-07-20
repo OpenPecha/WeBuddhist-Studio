@@ -206,10 +206,7 @@ const GroupLayout = () => {
             >
               Members
             </NavLink>
-            <NavLink
-              to={ROUTES.groupEvents(group.id)}
-              className={navLinkClass}
-            >
+            <NavLink to={ROUTES.groupEvents(group.id)} className={navLinkClass}>
               Events
             </NavLink>
           </nav>

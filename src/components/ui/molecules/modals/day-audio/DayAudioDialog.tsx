@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { AiOutlineSound } from "react-icons/ai";
 import DayAudioSection from "@/components/ui/molecules/day-audio-section/DayAudioSection";
 import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
-import { generateDayAudio } from "@/components/routes/task/api/taskApi";
+import {
+  generateDayAudio,
+  waitForAudioJob,
+} from "@/components/routes/task/api/taskApi";
 
 interface DayAudioDialogProps {
   planId: string;
@@ -32,18 +35,51 @@ const DayAudioDialog = ({
 }: DayAudioDialogProps) => {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const pollAbortRef = useRef<AbortController | null>(null);
+
+  const abortPolling = () => {
+    pollAbortRef.current?.abort();
+    pollAbortRef.current = null;
+  };
+
+  useEffect(() => abortPolling, []);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      abortPolling();
+    }
+  };
 
   const generateAudioMutation = useMutation({
-    mutationFn: (options: { type?: string; voice_name?: string }) =>
-      generateDayAudio(
+    mutationFn: async (options: { type?: string; voice_name?: string }) => {
+      abortPolling();
+      const controller = new AbortController();
+      pollAbortRef.current = controller;
+
+      const accepted = await generateDayAudio(
         { day_id: dayId },
         { language: language || "", ...options },
-      ),
-    onSuccess: () => {
-      toast.success("Generated audio successfully!");
+      );
+      toast.success("Audio generation started", {
+        description: "Your audio will be ready soon.",
+      });
+      return waitForAudioJob(accepted.job_id, { signal: controller.signal });
+    },
+    onSuccess: (job) => {
+      if (job.status === "failed") {
+        toast.error("Failed to generate audio", {
+          description: job.error_message || "Something went wrong",
+        });
+        return;
+      }
+      toast.success("Audio generated successfully!");
       queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
     },
     onError: (error: any) => {
+      if (error?.name === "AbortError") {
+        return;
+      }
       toast.error("Failed to generate audio", {
         description: error?.message || "Something went wrong",
       });
@@ -61,7 +97,7 @@ const DayAudioDialog = ({
       >
         <AiOutlineSound className="w-4 h-4" /> Narration
       </span>
-      <Pecha.Dialog open={open} onOpenChange={setOpen}>
+      <Pecha.Dialog open={open} onOpenChange={handleOpenChange}>
         <Pecha.DialogContent className="sm:max-w-lg">
           <Pecha.DialogHeader>
             <Pecha.DialogTitle>Day {dayNumber} Narration</Pecha.DialogTitle>

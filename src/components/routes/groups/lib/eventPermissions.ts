@@ -1,8 +1,15 @@
-import { isReviewer, isSuperAdmin, type PlatformRole } from "@/lib/platformAccess";
+import {
+  isReviewer,
+  isSuperAdmin,
+  type PlatformRole,
+} from "@/lib/platformAccess";
 import type { AuthorGroupMemberRole } from "@/components/routes/groups/api/groupsApi";
 
-
-const WRITE_MEMBER_ROLES: AuthorGroupMemberRole[] = ["OWNER", "ADMIN", "AUTHOR"];
+const WRITE_MEMBER_ROLES: AuthorGroupMemberRole[] = [
+  "OWNER",
+  "ADMIN",
+  "AUTHOR",
+];
 
 export function canWriteEvents(
   groupRole: AuthorGroupMemberRole | undefined,

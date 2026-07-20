@@ -36,7 +36,9 @@ const DatePickerButton = ({
         >
           <IoCalendarClearOutline className="h-4 w-4 text-muted-foreground" />
           <span className={value ? "text-foreground" : "text-muted-foreground"}>
-            {value ? format(fromBackendISO(value), "MMM d, yyyy") : "Choose date"}
+            {value
+              ? format(fromBackendISO(value), "MMM d, yyyy")
+              : "Choose date"}
           </span>
         </Pecha.Button>
       </Pecha.PopoverTrigger>
@@ -104,7 +106,9 @@ const EventDateSection = ({
             onSelect={onEndChange}
           />
           {errors.end_date ? (
-            <p className="text-sm text-destructive">{errors.end_date.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.end_date.message}
+            </p>
           ) : null}
         </div>
       </div>
