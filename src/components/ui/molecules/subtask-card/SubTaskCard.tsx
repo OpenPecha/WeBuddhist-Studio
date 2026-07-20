@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Dropzone from "react-dropzone";
 import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
@@ -22,6 +22,7 @@ import {
   deleteSubTaskTimestamp,
   generateDayAudio,
   uploadSubTaskAudio,
+  waitForAudioJob,
 } from "@/components/routes/task/api/taskApi";
 import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
 import { getPreset } from "@/components/routes/task/api/presetApi";
@@ -257,11 +258,19 @@ const SubtaskAudioControls = ({
   const { planId } = useParams<{ planId: string }>();
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [localAudioUrl, setLocalAudioUrl] = useState(audioUrl ?? null);
+  const pollAbortRef = useRef<AbortController | null>(null);
+
+  const abortPolling = () => {
+    pollAbortRef.current?.abort();
+    pollAbortRef.current = null;
+  };
 
   useEffect(() => {
     setLocalAudioUrl(audioUrl ?? null);
     setPendingFile(null);
   }, [audioUrl, subTaskId]);
+
+  useEffect(() => abortPolling, []);
 
   const revalidateSubtask = async (nextAudioUrl?: string | null) => {
     if (nextAudioUrl !== undefined) {
@@ -283,16 +292,35 @@ const SubtaskAudioControls = ({
   };
 
   const generateMutation = useMutation({
-    mutationFn: (options: { type?: string; voice_name?: string }) =>
-      generateDayAudio(
+    mutationFn: async (options: { type?: string; voice_name?: string }) => {
+      abortPolling();
+      const controller = new AbortController();
+      pollAbortRef.current = controller;
+
+      const accepted = await generateDayAudio(
         { sub_task_id: subTaskId },
         { language: planLanguage, ...options },
-      ),
-    onSuccess: async () => {
-      toast.success("Audio generation Done");
+      );
+      toast.success("Audio generation started", {
+        description: "Your audio will be ready soon.",
+      });
+      return waitForAudioJob(accepted.job_id, { signal: controller.signal });
+    },
+    onSuccess: async (job) => {
+      if (job.status === "failed") {
+        toast.error("Failed to generate audio", {
+          description: job.error_message || "Something went wrong",
+        });
+        return;
+      }
+      toast.success("Audio generated successfully!");
+      // Refresh from content tables (sub_tasks.audio_url), not job log result
       await revalidateSubtask();
     },
     onError: (error: Error) => {
+      if (error.name === "AbortError") {
+        return;
+      }
       toast.error("Failed to generate audio", {
         description: error.message,
       });

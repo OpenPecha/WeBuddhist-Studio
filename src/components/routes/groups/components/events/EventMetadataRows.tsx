@@ -73,8 +73,9 @@ const EventMetadataRows = ({
                       <Pecha.SelectContent>
                         {PLAN_LANGUAGE.map((lang) => {
                           const takenByAnother =
-                            usedLanguages.includes(lang.value as LanguageCode) &&
-                            lang.value !== currentLang;
+                            usedLanguages.includes(
+                              lang.value as LanguageCode,
+                            ) && lang.value !== currentLang;
                           return (
                             <Pecha.SelectItem
                               key={lang.value}

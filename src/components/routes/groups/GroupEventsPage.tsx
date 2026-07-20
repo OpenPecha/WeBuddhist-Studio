@@ -116,50 +116,50 @@ const GroupEventsPage = () => {
     return events.map((event) => {
       const thumbnail = eventThumbnail(event);
       return (
-      <Pecha.TableRow key={event.id}>
-        <Pecha.TableCell className="font-medium">
-          <Link
-            to={ROUTES.groupEvent(groupId, event.id)}
-            className="flex items-center gap-3 hover:underline"
-          >
-            {thumbnail ? (
-              <img
-                src={thumbnail}
-                alt=""
-                className="h-12 w-12 shrink-0 rounded object-cover"
-              />
-            ) : (
-              <div className="h-12 w-12 shrink-0 rounded bg-muted" />
-            )}
-            <span className="min-w-0 truncate">{eventName(event)}</span>
-          </Link>
-        </Pecha.TableCell>
-        <Pecha.TableCell>{formatEventRange(event)}</Pecha.TableCell>
-        {canWrite ? (
-          <Pecha.TableCell className="text-right">
-            <div className="flex justify-end gap-2">
-              <Pecha.Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  navigate(ROUTES.groupEventEdit(groupId, event.id))
-                }
-              >
-                Edit
-              </Pecha.Button>
-              <Pecha.Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(event)}
-                aria-label={`Delete ${eventName(event)}`}
-              >
-                <IoMdTrash className="h-4 w-4" />
-              </Pecha.Button>
-            </div>
+        <Pecha.TableRow key={event.id}>
+          <Pecha.TableCell className="font-medium">
+            <Link
+              to={ROUTES.groupEvent(groupId, event.id)}
+              className="flex items-center gap-3 hover:underline"
+            >
+              {thumbnail ? (
+                <img
+                  src={thumbnail}
+                  alt=""
+                  className="h-12 w-12 shrink-0 rounded object-cover"
+                />
+              ) : (
+                <div className="h-12 w-12 shrink-0 rounded bg-muted" />
+              )}
+              <span className="min-w-0 truncate">{eventName(event)}</span>
+            </Link>
           </Pecha.TableCell>
-        ) : null}
-      </Pecha.TableRow>
+          <Pecha.TableCell>{formatEventRange(event)}</Pecha.TableCell>
+          {canWrite ? (
+            <Pecha.TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Pecha.Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    navigate(ROUTES.groupEventEdit(groupId, event.id))
+                  }
+                >
+                  Edit
+                </Pecha.Button>
+                <Pecha.Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setPendingDelete(event)}
+                  aria-label={`Delete ${eventName(event)}`}
+                >
+                  <IoMdTrash className="h-4 w-4" />
+                </Pecha.Button>
+              </div>
+            </Pecha.TableCell>
+          ) : null}
+        </Pecha.TableRow>
       );
     });
   }, [
@@ -194,7 +194,9 @@ const GroupEventsPage = () => {
               <Pecha.TableHead>Name</Pecha.TableHead>
               <Pecha.TableHead>Dates</Pecha.TableHead>
               {canWrite ? (
-                <Pecha.TableHead className="text-right">Actions</Pecha.TableHead>
+                <Pecha.TableHead className="text-right">
+                  Actions
+                </Pecha.TableHead>
               ) : null}
             </Pecha.TableRow>
           </Pecha.TableHeader>
@@ -221,8 +223,8 @@ const GroupEventsPage = () => {
             <Pecha.AlertDialogTitle>Delete event?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
               This will permanently remove &ldquo;
-              {pendingDelete ? eventName(pendingDelete) : ""}&rdquo;. This action
-              cannot be undone.
+              {pendingDelete ? eventName(pendingDelete) : ""}&rdquo;. This
+              action cannot be undone.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>

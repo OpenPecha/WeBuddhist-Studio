@@ -126,7 +126,10 @@ const GroupEventFormPage = () => {
         return createCmsEvent(buildCreateEventBody(data, groupId ?? ""));
       }
       const original = originalRef.current ?? mapEventToFormData(eventData!);
-      return updateCmsEvent(eventId ?? "", buildUpdateEventBody(data, original));
+      return updateCmsEvent(
+        eventId ?? "",
+        buildUpdateEventBody(data, original),
+      );
     },
     onSuccess: () => {
       toast.success(isNew ? "Event created" : "Event updated");
@@ -158,7 +161,10 @@ const GroupEventFormPage = () => {
         <p className="text-center text-destructive">
           {getApiErrorMessage(eventQuery.error, "Could not load this event.")}
         </p>
-        <Pecha.Button variant="outline" onClick={() => navigate(eventsListPath)}>
+        <Pecha.Button
+          variant="outline"
+          onClick={() => navigate(eventsListPath)}
+        >
           Back to events
         </Pecha.Button>
       </div>

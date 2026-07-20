@@ -20,7 +20,7 @@ export interface EventMetadataDTO {
   id: string;
   name: string;
   description?: string;
-  language: string; 
+  language: string;
 }
 
 export type EventMetadataResponse =
@@ -41,7 +41,7 @@ export interface EventDTO {
   image?: ImageUrlModel;
   image_url?: string;
   created_at: string;
-  created_by: string; 
+  created_by: string;
   updated_at?: string;
 }
 
@@ -85,10 +85,10 @@ export interface EventListFilters {
   plan_id?: string;
   accumulator_id?: string;
   from_date?: string;
-  to_date?: string; 
+  to_date?: string;
   language?: string;
-  skip?: number; 
-  limit?: number; 
+  skip?: number;
+  limit?: number;
 }
 
 export const fetchCmsEvents = async (
@@ -182,7 +182,8 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     start_date: event.start_date ?? "",
     end_date: event.end_date ?? "",
     is_one_day: Boolean(event.is_one_day),
-    metadata: rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
+    metadata:
+      rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
     image_url: event.image_url?.trim() ?? "",
     plan_id: event.plan_id?.trim() ?? "",
     series_id: event.series_id?.trim() ?? "",
@@ -280,7 +281,8 @@ export function buildUpdateEventBody(
 ): UpdateEventRequest {
   const body: UpdateEventRequest = {};
 
-  if (data.start_date !== original.start_date) body.start_date = data.start_date;
+  if (data.start_date !== original.start_date)
+    body.start_date = data.start_date;
   if (data.end_date !== original.end_date) body.end_date = data.end_date;
 
   if (!metadataEqual(data.metadata, original.metadata)) {
