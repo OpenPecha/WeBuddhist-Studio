@@ -11,6 +11,7 @@ import { getApiErrorMessage } from "@/lib/apiErrors";
 import {
   fetchVerseOfDayList,
   deleteVerseOfDay,
+  type SortOrder,
   type VerseOfDayItem,
 } from "./api/verseOfDayApi";
 import VerseOfDayList from "./VerseOfDayList";
@@ -21,6 +22,7 @@ const PAGE_SIZE = 10;
 const VerseOfDay = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [debouncedSearch] = useDebounce(search, 500);
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<VerseOfDayItem | null>(null);
@@ -29,8 +31,14 @@ const VerseOfDay = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["verse-of-day-list", currentPage, debouncedSearch],
-    queryFn: fetchVerseOfDayList,
+    queryKey: ["verse-of-day-list", currentPage, debouncedSearch, sortOrder],
+    queryFn: () =>
+      fetchVerseOfDayList({
+        page: currentPage,
+        limit: PAGE_SIZE,
+        search: debouncedSearch,
+        sortOrder,
+      }),
     refetchOnWindowFocus: false,
     retry: false,
   });
@@ -44,6 +52,9 @@ const VerseOfDay = () => {
     onSuccess: () => {
       toast.success("Verse of Day deleted successfully!");
       setDeleteTarget(null);
+      if (data?.verses.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
       invalidateVerses();
     },
     onError: (err) => {
@@ -68,14 +79,15 @@ const VerseOfDay = () => {
     invalidateVerses();
   };
 
-  const sortedVerses = data?.verses
-    ? [...data.verses].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      )
-    : [];
+  const handleToggleSort = () => {
+    setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
+    if (currentPage !== 1) setCurrentPage(1);
+  };
 
-  const totalPages =
-    sortedVerses.length > 0 ? Math.ceil(sortedVerses.length / PAGE_SIZE) : 1;
+  const verses = data?.verses ?? [];
+
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#F5F5F5] dark:bg-[#181818] font-dynamic">
@@ -109,7 +121,7 @@ const VerseOfDay = () => {
           <p className="text-sm text-red-500 py-8">
             Failed to load verses. {getApiErrorMessage(error)}
           </p>
-        ) : sortedVerses.length === 0 && !isLoading ? (
+        ) : verses.length === 0 && !isLoading ? (
           <div className="flex flex-col h-full items-center justify-center">
             <p className="text-base text-muted-foreground">No verses found</p>
             <Button
@@ -123,6 +135,10 @@ const VerseOfDay = () => {
         ) : (
           <div className="h-full overflow-auto">
             <VerseOfDayList
+              verses={verses}
+              isLoading={isLoading}
+              sortOrder={sortOrder}
+              onToggleSort={handleToggleSort}
               onEdit={handleOpenEdit}
               onDelete={setDeleteTarget}
             />
@@ -130,7 +146,7 @@ const VerseOfDay = () => {
         )}
       </div>
 
-      {sortedVerses.length > 0 && (
+      {verses.length > 0 && (
         <div className="border-t border-gray-200 dark:border-[#313132] px-6 py-4 bg-white dark:bg-[#1E1E1E]">
           <Pagination
             currentPage={currentPage}
@@ -148,7 +164,7 @@ const VerseOfDay = () => {
         }}
         editingItem={editingItem}
         onSuccess={handleFormSuccess}
-        existingVerses={sortedVerses}
+        existingVerses={verses}
       />
 
       <Pecha.AlertDialog

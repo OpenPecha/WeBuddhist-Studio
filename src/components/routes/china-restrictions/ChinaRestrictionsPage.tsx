@@ -6,17 +6,11 @@ import { format } from "date-fns";
 import { Navigate } from "react-router-dom";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
-import {
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/atoms/dialog";
+import { DialogDescription, DialogFooter } from "@/components/ui/atoms/dialog";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useUserInfo } from "@/hooks/useUserInfo";
-import {
-  canAccessAdminAuthors,
-  isSuperAdmin,
-} from "@/lib/platformAccess";
+import { canAccessAdminAuthors, isSuperAdmin } from "@/lib/platformAccess";
 import { ROUTES } from "@/routes/paths";
 import {
   createChinaRestrictedItem,

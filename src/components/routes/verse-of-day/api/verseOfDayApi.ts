@@ -61,16 +61,33 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
 });
 
-export const fetchVerseOfDayList =
-  async (): Promise<VerseOfDayListResponse> => {
-    const { data } = await axiosInstance.get<VerseOfDayListResponse>(
-      `/api/v1/cms/verse-of-day`,
-      {
-        headers: getAuthHeaders(),
+export type SortOrder = "asc" | "desc";
+
+export type FetchVerseOfDayParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortOrder?: SortOrder;
+};
+
+export const fetchVerseOfDayList = async (
+  params: FetchVerseOfDayParams = {},
+): Promise<VerseOfDayListResponse> => {
+  const { page = 1, limit = 10, search = "", sortOrder = "desc" } = params;
+  const { data } = await axiosInstance.get<VerseOfDayListResponse>(
+    `/api/v1/cms/verse-of-day`,
+    {
+      headers: getAuthHeaders(),
+      params: {
+        skip: (page - 1) * limit,
+        limit,
+        sort_order: sortOrder,
+        ...(search.trim() && { search: search.trim() }),
       },
-    );
-    return data;
-  };
+    },
+  );
+  return data;
+};
 
 export const createVerseOfDay = async (
   payload: VerseOfDayPayload,

@@ -70,7 +70,5 @@ export function statusChip(status: string) {
 }
 
 export function languageChip(code: DashboardLanguageCode) {
-  return (
-    <span className={LANGUAGE_CHIP_CLASS}>{languageChipLabel(code)}</span>
-  );
+  return <span className={LANGUAGE_CHIP_CLASS}>{languageChipLabel(code)}</span>;
 }

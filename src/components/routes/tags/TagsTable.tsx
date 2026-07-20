@@ -68,7 +68,7 @@ const TagsTable = ({
                   )}
                 </div>
               </Pecha.TableCell>
-          
+
               <Pecha.TableCell>{tag.plan_ids.length}</Pecha.TableCell>
               {showActionsColumn ? (
                 <Pecha.TableCell>

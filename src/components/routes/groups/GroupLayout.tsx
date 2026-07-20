@@ -206,6 +206,12 @@ const GroupLayout = () => {
             >
               Members
             </NavLink>
+            <NavLink
+              to={ROUTES.groupEvents(group.id)}
+              className={navLinkClass}
+            >
+              Events
+            </NavLink>
           </nav>
         }
       >
@@ -216,7 +222,10 @@ const GroupLayout = () => {
         </div>
       </GroupPageShell>
 
-      <Pecha.AlertDialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
+      <Pecha.AlertDialog
+        open={deleteOpen}
+        onOpenChange={handleDeleteOpenChange}
+      >
         <Pecha.AlertDialogContent>
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Delete group?</Pecha.AlertDialogTitle>

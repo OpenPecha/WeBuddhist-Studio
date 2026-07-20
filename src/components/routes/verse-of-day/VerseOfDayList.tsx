@@ -1,26 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
-import { fetchVerseOfDayList, type VerseOfDayItem } from "./api/verseOfDayApi";
+import { type SortOrder, type VerseOfDayItem } from "./api/verseOfDayApi";
 import { format } from "date-fns";
+import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
 
 interface VerseOfDayListProps {
+  verses: VerseOfDayItem[];
+  isLoading?: boolean;
+  sortOrder: SortOrder;
+  onToggleSort: () => void;
   onEdit: (item: VerseOfDayItem) => void;
   onDelete: (item: VerseOfDayItem) => void;
 }
 
-const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["verse-of-day-list"],
-    queryFn: fetchVerseOfDayList,
-  });
-
-  const sortedVerses = data?.verses
-    ? [...data.verses].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      )
-    : [];
-
+const VerseOfDayList = ({
+  verses,
+  isLoading,
+  sortOrder,
+  onToggleSort,
+  onEdit,
+  onDelete,
+}: VerseOfDayListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -29,7 +29,7 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
     );
   }
 
-  if (!sortedVerses.length) {
+  if (!verses.length) {
     return (
       <div className="flex items-center justify-center py-8">
         <p className="text-muted-foreground">No verses found</p>
@@ -44,7 +44,26 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
           <Pecha.TableRow>
             <Pecha.TableHead className="w-[400px]">English</Pecha.TableHead>
             <Pecha.TableHead className="w-[100px]">Image</Pecha.TableHead>
-            <Pecha.TableHead className="w-[120px]">Date</Pecha.TableHead>
+            <Pecha.TableHead
+              className="w-[120px]"
+              aria-sort={sortOrder === "desc" ? "descending" : "ascending"}
+            >
+              <button
+                type="button"
+                onClick={onToggleSort}
+                aria-label={`Sort by date, currently ${
+                  sortOrder === "desc" ? "newest first" : "oldest first"
+                }`}
+                className="flex items-center gap-1 hover:text-foreground"
+              >
+                Date
+                {sortOrder === "desc" ? (
+                  <FaSortAmountDown className="h-3 w-3" />
+                ) : (
+                  <FaSortAmountUp className="h-3 w-3" />
+                )}
+              </button>
+            </Pecha.TableHead>
             <Pecha.TableHead className="w-[150px]">Group</Pecha.TableHead>
             <Pecha.TableHead className="w-[180px] text-right">
               Actions
@@ -52,7 +71,7 @@ const VerseOfDayList = ({ onEdit, onDelete }: VerseOfDayListProps) => {
           </Pecha.TableRow>
         </Pecha.TableHeader>
         <Pecha.TableBody>
-          {sortedVerses.map((verse) => (
+          {verses.map((verse) => (
             <Pecha.TableRow key={verse.id}>
               <Pecha.TableCell className="max-w-[400px]">
                 <p className="text-sm line-clamp-2">

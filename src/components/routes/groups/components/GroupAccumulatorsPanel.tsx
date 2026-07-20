@@ -87,10 +87,9 @@ const GroupAccumulatorsPanel = ({
   const platformReadOnly = isReviewer(userInfo?.platform_role);
   const canCreate =
     !platformReadOnly && groupRole != null && groupRole !== "VIEWER";
-  const canManage = !platformReadOnly && canChangeContentStatus(
-    groupRole,
-    userInfo?.platform_role,
-  );
+  const canManage =
+    !platformReadOnly &&
+    canChangeContentStatus(groupRole, userInfo?.platform_role);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<GroupAccumulatorDTO | null>(null);
@@ -122,7 +121,9 @@ const GroupAccumulatorsPanel = ({
     let cancelled = false;
     searchAccumulatorPresets({ limit: 100 }).then((result) => {
       if (cancelled) return;
-      const match = result.items.find((preset) => preset.id === form.preset?.id);
+      const match = result.items.find(
+        (preset) => preset.id === form.preset?.id,
+      );
       if (match) {
         setForm((prev) => ({ ...prev, preset: match }));
       }
@@ -318,8 +319,12 @@ const GroupAccumulatorsPanel = ({
                         ? accumulator.target_count.toLocaleString()
                         : "—"}
                     </span>
-                    <span>Start: {formatAccumulatorDate(accumulator.start_date)}</span>
-                    <span>End: {formatAccumulatorDate(accumulator.end_date)}</span>
+                    <span>
+                      Start: {formatAccumulatorDate(accumulator.start_date)}
+                    </span>
+                    <span>
+                      End: {formatAccumulatorDate(accumulator.end_date)}
+                    </span>
                     <span>
                       Joined:{" "}
                       {accumulator.member_count != null
@@ -401,7 +406,10 @@ const GroupAccumulatorsPanel = ({
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <p className="text-sm font-bold">Start date</p>
-                <Pecha.Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
+                <Pecha.Popover
+                  open={startDateOpen}
+                  onOpenChange={setStartDateOpen}
+                >
                   <Pecha.PopoverTrigger asChild>
                     <Button
                       type="button"
@@ -469,7 +477,9 @@ const GroupAccumulatorsPanel = ({
                     <Pecha.Calendar
                       mode="single"
                       selected={
-                        form.end_date ? fromBackendISO(form.end_date) : undefined
+                        form.end_date
+                          ? fromBackendISO(form.end_date)
+                          : undefined
                       }
                       onSelect={(d) => {
                         setEndDateOpen(false);
@@ -501,14 +511,19 @@ const GroupAccumulatorsPanel = ({
                   >
                     <span
                       className={
-                        form.preset ? "text-foreground" : "text-muted-foreground"
+                        form.preset
+                          ? "text-foreground"
+                          : "text-muted-foreground"
                       }
                     >
                       {presetTriggerLabel}
                     </span>
                   </Button>
                 </Pecha.PopoverTrigger>
-                <Pecha.PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Pecha.PopoverContent
+                  className="w-[--radix-popover-trigger-width] p-0"
+                  align="start"
+                >
                   <Pecha.Command shouldFilter={false}>
                     <Pecha.CommandInput
                       placeholder="Search presets…"
@@ -601,8 +616,8 @@ const GroupAccumulatorsPanel = ({
             <Pecha.AlertDialogTitle>Delete accumulator?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
               This will remove &ldquo;
-              {deleteTarget?.title?.trim() || "Untitled accumulator"}&rdquo; from
-              the group. This action cannot be undone.
+              {deleteTarget?.title?.trim() || "Untitled accumulator"}&rdquo;
+              from the group. This action cannot be undone.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>

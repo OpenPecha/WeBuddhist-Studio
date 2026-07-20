@@ -167,7 +167,10 @@ describe("SeriesDetailsPage", () => {
 
   it("updates URL params when selecting a language tab", async () => {
     const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
 
     render(
