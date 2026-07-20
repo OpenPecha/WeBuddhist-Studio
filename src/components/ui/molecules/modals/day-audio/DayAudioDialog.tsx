@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
@@ -35,9 +35,28 @@ const DayAudioDialog = ({
 }: DayAudioDialogProps) => {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const pollAbortRef = useRef<AbortController | null>(null);
+
+  const abortPolling = () => {
+    pollAbortRef.current?.abort();
+    pollAbortRef.current = null;
+  };
+
+  useEffect(() => abortPolling, []);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      abortPolling();
+    }
+  };
 
   const generateAudioMutation = useMutation({
     mutationFn: async (options: { type?: string; voice_name?: string }) => {
+      abortPolling();
+      const controller = new AbortController();
+      pollAbortRef.current = controller;
+
       const accepted = await generateDayAudio(
         { day_id: dayId },
         { language: language || "", ...options },
@@ -45,7 +64,7 @@ const DayAudioDialog = ({
       toast.success("Audio generation started", {
         description: "Your audio will be ready soon.",
       });
-      return waitForAudioJob(accepted.job_id);
+      return waitForAudioJob(accepted.job_id, { signal: controller.signal });
     },
     onSuccess: (job) => {
       if (job.status === "failed") {
@@ -78,7 +97,7 @@ const DayAudioDialog = ({
       >
         <AiOutlineSound className="w-4 h-4" /> Narration
       </span>
-      <Pecha.Dialog open={open} onOpenChange={setOpen}>
+      <Pecha.Dialog open={open} onOpenChange={handleOpenChange}>
         <Pecha.DialogContent className="sm:max-w-lg">
           <Pecha.DialogHeader>
             <Pecha.DialogTitle>Day {dayNumber} Narration</Pecha.DialogTitle>

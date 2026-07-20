@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "@/config/axios-config";
 import {
   DEFAULT_MONLAM_VOICE,
@@ -232,52 +233,134 @@ export const generateDayAudio = async (
   return data;
 };
 
+const AUDIO_JOB_POLL_INTERVAL_MS = 2500;
+const AUDIO_JOB_POLL_TIMEOUT_MS = 15 * 60 * 1000;
+const AUDIO_JOB_STATUS_REQUEST_TIMEOUT_MS = 30_000;
+
 export const fetchAudioJobStatus = async (
   jobId: string,
+  options?: { signal?: AbortSignal },
 ): Promise<AudioJobStatusResponse> => {
   const { data } = await axiosInstance.get<AudioJobStatusResponse>(
     `/api/v1/cms/plans/audio/jobs/${jobId}`,
-    { headers: getAuthHeaders() },
+    {
+      headers: getAuthHeaders(),
+      signal: options?.signal,
+      timeout: AUDIO_JOB_STATUS_REQUEST_TIMEOUT_MS,
+    },
   );
   return data;
 };
 
-const AUDIO_JOB_POLL_INTERVAL_MS = 2500;
-const AUDIO_JOB_POLL_TIMEOUT_MS = 15 * 60 * 1000;
+const abortError = () =>
+  new DOMException("Audio job polling aborted", "AbortError");
+
+const pollTimeoutError = () =>
+  new Error("Audio generation is taking longer than expected");
+
+const isAbortError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+  const err = error as { name?: string; code?: string };
+  if (err.name === "AbortError" || err.name === "CanceledError") {
+    return true;
+  }
+  if (err.code === "ERR_CANCELED") {
+    return true;
+  }
+  return axios.isCancel(error);
+};
+
+const delay = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(abortError());
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+
+    const onAbort = () => {
+      window.clearTimeout(timeoutId);
+      reject(abortError());
+    };
+
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
 
 export const waitForAudioJob = async (
   jobId: string,
   options?: { signal?: AbortSignal },
 ): Promise<AudioJobStatusResponse> => {
+  if (options?.signal?.aborted) {
+    throw abortError();
+  }
+
   const startedAt = Date.now();
+  const controller = new AbortController();
+  let timedOut = false;
 
-  while (true) {
-    if (options?.signal?.aborted) {
-      throw new DOMException("Audio job polling aborted", "AbortError");
+  const onExternalAbort = () => controller.abort();
+  options?.signal?.addEventListener("abort", onExternalAbort);
+
+  const overallTimeoutId = window.setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, AUDIO_JOB_POLL_TIMEOUT_MS);
+
+  try {
+    while (true) {
+      if (controller.signal.aborted) {
+        throw timedOut ? pollTimeoutError() : abortError();
+      }
+
+      try {
+        const status = await fetchAudioJobStatus(jobId, {
+          signal: controller.signal,
+        });
+        if (status.status === "completed" || status.status === "failed") {
+          return status;
+        }
+      } catch (error) {
+        if (timedOut) {
+          throw pollTimeoutError();
+        }
+        if (isAbortError(error) || options?.signal?.aborted) {
+          throw abortError();
+        }
+        // Stalled/timed-out status request: retry until the overall poll budget ends.
+        if (
+          axios.isAxiosError(error) &&
+          error.code === "ECONNABORTED" &&
+          Date.now() - startedAt < AUDIO_JOB_POLL_TIMEOUT_MS
+        ) {
+          await delay(AUDIO_JOB_POLL_INTERVAL_MS, controller.signal);
+          continue;
+        }
+        throw error;
+      }
+
+      if (Date.now() - startedAt >= AUDIO_JOB_POLL_TIMEOUT_MS) {
+        throw pollTimeoutError();
+      }
+
+      await delay(AUDIO_JOB_POLL_INTERVAL_MS, controller.signal);
     }
-
-    const status = await fetchAudioJobStatus(jobId);
-    if (status.status === "completed" || status.status === "failed") {
-      return status;
+  } catch (error) {
+    if (timedOut) {
+      throw pollTimeoutError();
     }
-
-    if (Date.now() - startedAt >= AUDIO_JOB_POLL_TIMEOUT_MS) {
-      throw new Error("Audio generation is taking longer than expected");
+    if (isAbortError(error)) {
+      throw abortError();
     }
-
-    await new Promise<void>((resolve, reject) => {
-      const timeoutId = window.setTimeout(() => {
-        options?.signal?.removeEventListener("abort", onAbort);
-        resolve();
-      }, AUDIO_JOB_POLL_INTERVAL_MS);
-
-      const onAbort = () => {
-        window.clearTimeout(timeoutId);
-        reject(new DOMException("Audio job polling aborted", "AbortError"));
-      };
-
-      options?.signal?.addEventListener("abort", onAbort, { once: true });
-    });
+    throw error;
+  } finally {
+    window.clearTimeout(overallTimeoutId);
+    options?.signal?.removeEventListener("abort", onExternalAbort);
   }
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Dropzone from "react-dropzone";
 import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
@@ -258,11 +258,19 @@ const SubtaskAudioControls = ({
   const { planId } = useParams<{ planId: string }>();
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [localAudioUrl, setLocalAudioUrl] = useState(audioUrl ?? null);
+  const pollAbortRef = useRef<AbortController | null>(null);
+
+  const abortPolling = () => {
+    pollAbortRef.current?.abort();
+    pollAbortRef.current = null;
+  };
 
   useEffect(() => {
     setLocalAudioUrl(audioUrl ?? null);
     setPendingFile(null);
   }, [audioUrl, subTaskId]);
+
+  useEffect(() => abortPolling, []);
 
   const revalidateSubtask = async (nextAudioUrl?: string | null) => {
     if (nextAudioUrl !== undefined) {
@@ -285,6 +293,10 @@ const SubtaskAudioControls = ({
 
   const generateMutation = useMutation({
     mutationFn: async (options: { type?: string; voice_name?: string }) => {
+      abortPolling();
+      const controller = new AbortController();
+      pollAbortRef.current = controller;
+
       const accepted = await generateDayAudio(
         { sub_task_id: subTaskId },
         { language: planLanguage, ...options },
@@ -292,7 +304,7 @@ const SubtaskAudioControls = ({
       toast.success("Audio generation started", {
         description: "Your audio will be ready soon.",
       });
-      return waitForAudioJob(accepted.job_id);
+      return waitForAudioJob(accepted.job_id, { signal: controller.signal });
     },
     onSuccess: async (job) => {
       if (job.status === "failed") {
