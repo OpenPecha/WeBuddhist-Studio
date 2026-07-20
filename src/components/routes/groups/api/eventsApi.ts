@@ -1,6 +1,6 @@
 import axiosInstance from "@/config/axios-config";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
-import { searchPlansForPicker } from "@/components/routes/groups/api/groupPickerApi";
+import { makeLinkedContentSearchFn } from "@/components/routes/groups/api/groupPickerApi";
 import { searchAccumulatorPresets } from "@/components/routes/groups/api/accumulatorPresetSearchApi";
 import type { FkOption } from "@/components/routes/groups/components/FkMultiSearchSelector";
 import type {
@@ -32,6 +32,7 @@ export interface EventDTO {
   id: string;
   group_id: string;
   plan_id?: string;
+  series_id?: string;
   accumulator_id?: string;
   start_date: string;
   end_date: string;
@@ -58,12 +59,13 @@ export interface EventMetadataInput {
 }
 
 export interface CreateEventRequest {
-  group_id: string; 
-  start_date: string; 
-  end_date: string; 
-  metadata: EventMetadataInput[]; 
+  group_id: string;
+  start_date: string;
+  end_date: string;
+  metadata: EventMetadataInput[];
   image_url?: string;
   plan_id?: string;
+  series_id?: string;
   accumulator_id?: string;
 }
 
@@ -74,6 +76,7 @@ export interface UpdateEventRequest {
   metadata?: EventMetadataInput[];
   image_url?: string;
   plan_id?: string;
+  series_id?: string;
   accumulator_id?: string;
 }
 
@@ -182,6 +185,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     metadata: rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
     image_url: event.image_url?.trim() ?? "",
     plan_id: event.plan_id?.trim() ?? "",
+    series_id: event.series_id?.trim() ?? "",
     accumulator_id: event.accumulator_id?.trim() ?? "",
   };
 }
@@ -203,6 +207,7 @@ export function buildCreateEventBody(
 ): CreateEventRequest {
   const imageUrl = data.image_url.trim();
   const planId = data.plan_id.trim();
+  const seriesId = data.series_id.trim();
   const accumulatorId = data.accumulator_id.trim();
   return {
     group_id: groupId,
@@ -211,6 +216,7 @@ export function buildCreateEventBody(
     metadata: buildMetadataInput(data.metadata),
     ...(imageUrl ? { image_url: imageUrl } : {}),
     ...(planId ? { plan_id: planId } : {}),
+    ...(seriesId ? { series_id: seriesId } : {}),
     ...(accumulatorId ? { accumulator_id: accumulatorId } : {}),
   };
 }
@@ -223,6 +229,7 @@ async function resolveLinkOption(
     skip?: number;
     limit?: number;
   }) => Promise<{ items: FkOption[]; skip: number; limit: number; total: number }>,
+  fallbackKind?: "plan" | "series",
 ): Promise<FkOption> {
   const PAGE = 20;
   const MAX_PAGES = 5;
@@ -236,11 +243,21 @@ async function resolveLinkOption(
     }
   } catch {
   }
-  return { id, title: fallbackLabel };
+  return { id, title: fallbackLabel, ...(fallbackKind ? { kind: fallbackKind } : {}) };
 }
 
-export function resolveLinkedPlan(id: string): Promise<FkOption> {
-  return resolveLinkOption(id, "Linked plan", searchPlansForPicker);
+/**
+ * Hydrate the "Linked content" chip for an existing event. The stored id may be
+ * a plan or a series; searching the group's content (tab=all) returns the row
+ * with its `kind`, so we get both the title and the correct badge.
+ */
+export function resolveLinkedContent(
+  groupId: string,
+  id: string,
+  kind: "plan" | "series",
+): Promise<FkOption> {
+  const fallback = kind === "series" ? "Linked series" : "Linked plan";
+  return resolveLinkOption(id, fallback, makeLinkedContentSearchFn(groupId), kind);
 }
 
 export function resolveLinkedAccumulator(id: string): Promise<FkOption> {
@@ -272,8 +289,8 @@ export function buildUpdateEventBody(
 
   const scalarKeys: (keyof Pick<
     EventFormData,
-    "image_url" | "plan_id" | "accumulator_id"
-  >)[] = ["image_url", "plan_id", "accumulator_id"];
+    "image_url" | "plan_id" | "series_id" | "accumulator_id"
+  >)[] = ["image_url", "plan_id", "series_id", "accumulator_id"];
   for (const key of scalarKeys) {
     const next = data[key].trim();
     const prev = original[key].trim();

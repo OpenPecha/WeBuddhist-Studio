@@ -6,12 +6,14 @@ interface PresetMantraDTO {
   mantra: string;
   title?: string | null;
   pronunciation?: string | null;
+  mala_image_url?: string | null;
 }
 
 interface PublicAccumulatorDTO {
   id: string;
   target_count?: number | null;
   mantra?: PresetMantraDTO | null;
+  mala_image_url?: string | null;
   metadata?: { language: string; name: string }[];
 }
 
@@ -61,7 +63,8 @@ export async function searchAccumulatorPresets(params: {
     items: data.accumulators.map((preset) => ({
       id: preset.id,
       title: presetLabel(preset),
-      image_url: undefined,
+      image_url:
+        preset.mantra?.mala_image_url ?? preset.mala_image_url ?? undefined,
     })),
     skip: data.skip,
     limit: data.limit,

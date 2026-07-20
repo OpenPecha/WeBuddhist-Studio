@@ -1,57 +1,67 @@
+import { useMemo } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { EventFormData } from "@/schema/EventSchema";
 import type { FkOption } from "../FkMultiSearchSelector";
-import { searchPlansForPicker } from "@/components/routes/groups/api/groupPickerApi";
+import { makeLinkedContentSearchFn } from "@/components/routes/groups/api/groupPickerApi";
 import { searchAccumulatorPresets } from "@/components/routes/groups/api/accumulatorPresetSearchApi";
 import EventLinkPicker from "./EventLinkPicker";
 
 type EventLinksSectionProps = {
   form: UseFormReturn<EventFormData>;
+  groupId: string;
   readOnly: boolean;
-  planValue: FkOption | null;
+  contentValue: FkOption | null;
   accumulatorValue: FkOption | null;
-  onPlanChange: (item: FkOption | null) => void;
+  onContentChange: (item: FkOption | null) => void;
   onAccumulatorChange: (item: FkOption | null) => void;
 };
 
 const EventLinksSection = ({
   form,
+  groupId,
   readOnly,
-  planValue,
+  contentValue,
   accumulatorValue,
-  onPlanChange,
+  onContentChange,
   onAccumulatorChange,
 }: EventLinksSectionProps) => {
-  const makeSetter =
-    (
-      field: "plan_id" | "accumulator_id",
-      report: (item: FkOption | null) => void,
-    ) =>
-    (item: FkOption | null) => {
-      report(item);
-      form.setValue(field, item?.id ?? "", {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    };
+  const handleContentChange = (item: FkOption | null) => {
+    onContentChange(item);
+    const opts = { shouldDirty: true, shouldValidate: true } as const;
+    form.setValue("plan_id", item?.kind === "plan" ? item.id : "", opts);
+    form.setValue("series_id", item?.kind === "series" ? item.id : "", opts);
+  };
+
+  const handleAccumulatorChange = (item: FkOption | null) => {
+    onAccumulatorChange(item);
+    form.setValue("accumulator_id", item?.id ?? "", {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
+  const contentSearchFn = useMemo(
+    () => makeLinkedContentSearchFn(groupId),
+    [groupId],
+  );
 
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-bold">Linked content (optional)</h3>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <EventLinkPicker
-          label="Plan"
-          value={planValue}
-          onChange={makeSetter("plan_id", onPlanChange)}
-          searchFn={searchPlansForPicker}
-          queryKeyPrefix="event-plan-picker"
-          searchPlaceholder="Search plans…"
+          label="Plan or series"
+          value={contentValue}
+          onChange={handleContentChange}
+          searchFn={contentSearchFn}
+          queryKeyPrefix={`event-content-picker-${groupId}`}
+          searchPlaceholder="Search plans & series…"
           disabled={readOnly}
         />
         <EventLinkPicker
           label="Accumulator"
           value={accumulatorValue}
-          onChange={makeSetter("accumulator_id", onAccumulatorChange)}
+          onChange={handleAccumulatorChange}
           searchFn={searchAccumulatorPresets}
           queryKeyPrefix="event-accumulator-picker"
           searchPlaceholder="Search accumulators…"

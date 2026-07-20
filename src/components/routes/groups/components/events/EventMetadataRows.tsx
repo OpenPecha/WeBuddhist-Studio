@@ -1,6 +1,7 @@
 import type { UseFormReturn } from "react-hook-form";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
+import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import { PLAN_LANGUAGE } from "@/lib/constant";
 import type { EventFormData, LanguageCode } from "@/schema/EventSchema";
 
@@ -128,11 +129,11 @@ const EventMetadataRows = ({
                 <Pecha.FormItem>
                   <Pecha.FormLabel>Description (optional)</Pecha.FormLabel>
                   <Pecha.FormControl>
-                    <Pecha.Textarea
-                      {...descField}
+                    <MarkdownEditor
+                      value={descField.value ?? ""}
+                      onChange={descField.onChange}
                       placeholder="Description"
                       disabled={readOnly}
-                      rows={3}
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />

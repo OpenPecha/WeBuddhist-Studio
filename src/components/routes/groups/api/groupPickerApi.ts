@@ -2,6 +2,7 @@ import { searchPlans } from "@/components/routes/create-series/api/planSearchApi
 import type { PlanTagSummary } from "@/components/routes/tags/api/tagsApi";
 import type { TagSummaryDTO } from "./groupsApi";
 import { searchSeries } from "./seriesSearchApi";
+import { fetchDashboardItems } from "@/components/routes/dashboard/dashboardApi";
 import type { FkOption } from "../components/FkMultiSearchSelector";
 
 type PickerSearchParams = {
@@ -42,6 +43,35 @@ export const searchSeriesForPicker = async (params: PickerSearchParams) => {
     result.total,
   );
 };
+
+export const makeLinkedContentSearchFn =
+  (groupId: string) => async (params: PickerSearchParams) => {
+    const limit = params.limit ?? 20;
+    const skip = params.skip ?? 0;
+    const page = Math.floor(skip / limit) + 1;
+
+    const { rows, pagination } = await fetchDashboardItems({
+      tab: "all",
+      group_id: groupId,
+      search: params.search,
+      page,
+      pageSize: limit,
+    });
+
+    return {
+      items: rows.map(
+        (row): FkOption => ({
+          id: row.id,
+          title: row.title,
+          image_url: row.image_url ?? undefined,
+          kind: row.kind,
+        }),
+      ),
+      skip,
+      limit,
+      total: pagination.total,
+    };
+  };
 
 export function mapGroupTagsToPlanTagSummaries(
   tags: TagSummaryDTO[],

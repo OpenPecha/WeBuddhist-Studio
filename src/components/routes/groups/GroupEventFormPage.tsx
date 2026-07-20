@@ -16,7 +16,7 @@ import {
   fetchCmsEvent,
   mapEventToFormData,
   resolveLinkedAccumulator,
-  resolveLinkedPlan,
+  resolveLinkedContent,
   updateCmsEvent,
   type EventDTO,
   type ImageUrlModel,
@@ -69,7 +69,7 @@ const GroupEventFormPage = () => {
   const image = useEventImage({ setImageUrl });
   const { setImagePreview, setSelectedImage } = image;
 
-  const [planValue, setPlanValue] = useState<FkOption | null>(null);
+  const [contentValue, setContentValue] = useState<FkOption | null>(null);
   const [accumulatorValue, setAccumulatorValue] = useState<FkOption | null>(
     null,
   );
@@ -98,10 +98,16 @@ const GroupEventFormPage = () => {
     setImagePreview(resolveEventImageUrl(eventData));
     setSelectedImage(null);
 
-    if (formData.plan_id) {
-      resolveLinkedPlan(formData.plan_id).then(setPlanValue);
+    if (formData.plan_id && groupId) {
+      resolveLinkedContent(groupId, formData.plan_id, "plan").then(
+        setContentValue,
+      );
+    } else if (formData.series_id && groupId) {
+      resolveLinkedContent(groupId, formData.series_id, "series").then(
+        setContentValue,
+      );
     } else {
-      setPlanValue(null);
+      setContentValue(null);
     }
     if (formData.accumulator_id) {
       resolveLinkedAccumulator(formData.accumulator_id).then(
@@ -110,7 +116,7 @@ const GroupEventFormPage = () => {
     } else {
       setAccumulatorValue(null);
     }
-  }, [isNew, eventData, form, setImagePreview, setSelectedImage]);
+  }, [isNew, eventData, form, groupId, setImagePreview, setSelectedImage]);
 
   const eventsListPath = groupId ? ROUTES.groupEvents(groupId) : ROUTES.groups;
 
@@ -207,10 +213,11 @@ const GroupEventFormPage = () => {
 
           <EventLinksSection
             form={form}
+            groupId={groupId ?? ""}
             readOnly={readOnly}
-            planValue={planValue}
+            contentValue={contentValue}
             accumulatorValue={accumulatorValue}
-            onPlanChange={setPlanValue}
+            onContentChange={setContentValue}
             onAccumulatorChange={setAccumulatorValue}
           />
 

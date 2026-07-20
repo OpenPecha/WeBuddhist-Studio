@@ -30,6 +30,7 @@ export const eventSchema = z
     image_url: z.string().trim(),
     // Linked content — each is a single id chosen via a search picker.
     plan_id: z.string().trim(),
+    series_id: z.string().trim(),
     accumulator_id: z.string().trim(),
   })
   .superRefine((data, ctx) => {
@@ -69,5 +70,6 @@ export const defaultEventFormValues = (): EventFormData => ({
   metadata: [emptyMetadataRow("EN")],
   image_url: "",
   plan_id: "",
+  series_id: "",
   accumulator_id: "",
 });
