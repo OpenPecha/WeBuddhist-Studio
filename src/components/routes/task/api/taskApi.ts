@@ -143,6 +143,35 @@ export interface GenerateDayAudioOptions {
   voice_name?: string;
 }
 
+export type AudioJobStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";
+
+export interface AudioJobAcceptedResponse {
+  job_id: string;
+  status: AudioJobStatus;
+}
+
+export interface AudioJobStatusResponse {
+  job_id: string;
+  status: AudioJobStatus;
+  day_id?: string | null;
+  sub_task_id?: string | null;
+  language: string;
+  type: string;
+  voice_name: string;
+  audio_url?: string | null;
+  audio_duration_ms?: number | null;
+  s3_key?: string | null;
+  error_message?: string | null;
+  created_at: string;
+  updated_at: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+}
+
 export interface SubTaskAudioUploadResponse {
   sub_task_id: string;
   task_id: string;
@@ -188,7 +217,7 @@ export const deleteSubTaskTimestamp = async (sub_task_id: string) => {
 export const generateDayAudio = async (
   params: { day_id: string } | { sub_task_id: string },
   options: GenerateDayAudioOptions,
-) => {
+): Promise<AudioJobAcceptedResponse> => {
   const language = planLanguageToTtsApiLanguage(options.language);
   const body: Record<string, string> = { ...params, language };
 
@@ -199,12 +228,61 @@ export const generateDayAudio = async (
     body.voice_name = options.voice_name ?? DEFAULT_MONLAM_VOICE;
   }
 
-  const { data } = await axiosInstance.post(
+  const { data } = await axiosInstance.post<AudioJobAcceptedResponse>(
     `/api/v1/cms/plans/audio/generate`,
     body,
     { headers: getAuthHeaders() },
   );
   return data;
+};
+
+export const fetchAudioJobStatus = async (
+  jobId: string,
+): Promise<AudioJobStatusResponse> => {
+  const { data } = await axiosInstance.get<AudioJobStatusResponse>(
+    `/api/v1/cms/plans/audio/jobs/${jobId}`,
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
+const AUDIO_JOB_POLL_INTERVAL_MS = 2500;
+const AUDIO_JOB_POLL_TIMEOUT_MS = 15 * 60 * 1000;
+
+export const waitForAudioJob = async (
+  jobId: string,
+  options?: { signal?: AbortSignal },
+): Promise<AudioJobStatusResponse> => {
+  const startedAt = Date.now();
+
+  while (true) {
+    if (options?.signal?.aborted) {
+      throw new DOMException("Audio job polling aborted", "AbortError");
+    }
+
+    const status = await fetchAudioJobStatus(jobId);
+    if (status.status === "completed" || status.status === "failed") {
+      return status;
+    }
+
+    if (Date.now() - startedAt >= AUDIO_JOB_POLL_TIMEOUT_MS) {
+      throw new Error("Audio generation is taking longer than expected");
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      const timeoutId = window.setTimeout(() => {
+        options?.signal?.removeEventListener("abort", onAbort);
+        resolve();
+      }, AUDIO_JOB_POLL_INTERVAL_MS);
+
+      const onAbort = () => {
+        window.clearTimeout(timeoutId);
+        reject(new DOMException("Audio job polling aborted", "AbortError"));
+      };
+
+      options?.signal?.addEventListener("abort", onAbort, { once: true });
+    });
+  }
 };
 
 export const reorderSubtasks = async (

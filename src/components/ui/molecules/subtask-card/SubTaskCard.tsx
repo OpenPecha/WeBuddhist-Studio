@@ -22,6 +22,7 @@ import {
   deleteSubTaskTimestamp,
   generateDayAudio,
   uploadSubTaskAudio,
+  waitForAudioJob,
 } from "@/components/routes/task/api/taskApi";
 import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
 import { getPreset } from "@/components/routes/task/api/presetApi";
@@ -283,16 +284,31 @@ const SubtaskAudioControls = ({
   };
 
   const generateMutation = useMutation({
-    mutationFn: (options: { type?: string; voice_name?: string }) =>
-      generateDayAudio(
+    mutationFn: async (options: { type?: string; voice_name?: string }) => {
+      const accepted = await generateDayAudio(
         { sub_task_id: subTaskId },
         { language: planLanguage, ...options },
-      ),
-    onSuccess: async () => {
-      toast.success("Audio generation Done");
+      );
+      toast.success("Audio generation started", {
+        description: "Your audio will be ready soon.",
+      });
+      return waitForAudioJob(accepted.job_id);
+    },
+    onSuccess: async (job) => {
+      if (job.status === "failed") {
+        toast.error("Failed to generate audio", {
+          description: job.error_message || "Something went wrong",
+        });
+        return;
+      }
+      toast.success("Audio generated successfully!");
+      // Refresh from content tables (sub_tasks.audio_url), not job log result
       await revalidateSubtask();
     },
     onError: (error: Error) => {
+      if (error.name === "AbortError") {
+        return;
+      }
       toast.error("Failed to generate audio", {
         description: error.message,
       });

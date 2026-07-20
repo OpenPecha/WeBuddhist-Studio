@@ -5,7 +5,10 @@ import { Pecha } from "@/components/ui/shadimport";
 import { AiOutlineSound } from "react-icons/ai";
 import DayAudioSection from "@/components/ui/molecules/day-audio-section/DayAudioSection";
 import TtsGenerateControls from "@/components/ui/molecules/tts-generate-controls/TtsGenerateControls";
-import { generateDayAudio } from "@/components/routes/task/api/taskApi";
+import {
+  generateDayAudio,
+  waitForAudioJob,
+} from "@/components/routes/task/api/taskApi";
 
 interface DayAudioDialogProps {
   planId: string;
@@ -34,16 +37,30 @@ const DayAudioDialog = ({
   const queryClient = useQueryClient();
 
   const generateAudioMutation = useMutation({
-    mutationFn: (options: { type?: string; voice_name?: string }) =>
-      generateDayAudio(
+    mutationFn: async (options: { type?: string; voice_name?: string }) => {
+      const accepted = await generateDayAudio(
         { day_id: dayId },
         { language: language || "", ...options },
-      ),
-    onSuccess: () => {
-      toast.success("Generated audio successfully!");
+      );
+      toast.success("Audio generation started", {
+        description: "Your audio will be ready soon.",
+      });
+      return waitForAudioJob(accepted.job_id);
+    },
+    onSuccess: (job) => {
+      if (job.status === "failed") {
+        toast.error("Failed to generate audio", {
+          description: job.error_message || "Something went wrong",
+        });
+        return;
+      }
+      toast.success("Audio generated successfully!");
       queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
     },
     onError: (error: any) => {
+      if (error?.name === "AbortError") {
+        return;
+      }
       toast.error("Failed to generate audio", {
         description: error?.message || "Something went wrong",
       });
