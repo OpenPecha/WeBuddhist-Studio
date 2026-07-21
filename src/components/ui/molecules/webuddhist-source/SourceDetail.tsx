@@ -40,6 +40,7 @@ const SelectedSourceDetail = ({
   const [selectAll, setSelectAll] = useState(false);
   const [debouncedRangeInput] = useDebounce(rangeInput, 400);
   const lastNavigatedRange = useRef<string | null>(null);
+  const scrolledToRef = useRef<number | null>(null);
 
   const selectionMax = totalSegments || segments.length;
 
@@ -71,22 +72,56 @@ const SelectedSourceDetail = ({
     Boolean(isRangeLoading);
 
   useEffect(() => {
+    lastNavigatedRange.current = null;
+    scrolledToRef.current = null;
+    setRangeInput("");
+    setSelectAll(false);
+  }, [selectedSource?.id]);
+
+  useEffect(() => {
     const bounds = parseRangeBounds(debouncedRangeInput);
     if (!bounds || !onRangeNavigate) return;
 
     const key = `${bounds.start}-${bounds.end}`;
     if (lastNavigatedRange.current === key) return;
     lastNavigatedRange.current = key;
+    scrolledToRef.current = null;
     onRangeNavigate(bounds.start, bounds.end);
   }, [debouncedRangeInput, onRangeNavigate]);
 
   useEffect(() => {
-    if (scrollToSegmentNumber == null) return;
-    const el = document.querySelector(
-      `[data-segment-number="${scrollToSegmentNumber}"]`,
-    );
-    el?.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, [scrollToSegmentNumber, segments]);
+    if (scrollToSegmentNumber == null) {
+      scrolledToRef.current = null;
+      return;
+    }
+    // Only scroll once per range jump — not again when infinite-scroll appends pages.
+    if (scrolledToRef.current === scrollToSegmentNumber) return;
+    if (!loadedSegmentNumbers.has(scrollToSegmentNumber)) return;
+
+    scrolledToRef.current = scrollToSegmentNumber;
+    requestAnimationFrame(() => {
+      const el = document.querySelector(
+        `[data-segment-number="${scrollToSegmentNumber}"]`,
+      );
+      if (!el) {
+        scrolledToRef.current = null;
+        return;
+      }
+      const viewport = el.closest(
+        '[data-slot="scroll-area-viewport"]',
+      ) as HTMLElement | null;
+      if (viewport) {
+        const elRect = el.getBoundingClientRect();
+        const vpRect = viewport.getBoundingClientRect();
+        viewport.scrollTo({
+          top: viewport.scrollTop + (elRect.top - vpRect.top),
+          behavior: "smooth",
+        });
+        return;
+      }
+      el.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  }, [scrollToSegmentNumber, loadedSegmentNumbers]);
 
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
