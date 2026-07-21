@@ -8,6 +8,7 @@ export interface SourceData {
   pecha_segment_id: string;
   text_id: string;
   segment_ids: string[];
+  segment_numbers?: number[];
 }
 
 const SelectedSourceDetail = ({
@@ -160,6 +161,9 @@ const SelectedSourceDetail = ({
       pecha_segment_id: pechaSegmentId,
       text_id: textId,
       segment_ids: segmentIds,
+      segment_numbers: selected.map(
+        (seg: any, i: number) => seg.segment_number ?? i + 1,
+      ),
     });
   };
 

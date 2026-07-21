@@ -54,7 +54,8 @@ export const SourceSelectorSheet = ({
   const [scrollToSegmentNumber, setScrollToSegmentNumber] = useState<
     number | null
   >(null);
-  const [canFetchPrevious, setCanFetchPrevious] = useState(false);
+  /** After a previous-page fetch (or initial/range load), wait until top leaves view before fetching again. */
+  const [blockPreviousUntilLeave, setBlockPreviousUntilLeave] = useState(true);
   const { t } = useTranslate();
 
   const skip = useMemo(
@@ -180,23 +181,27 @@ export const SourceSelectorSheet = ({
     }
   }, [isBottomVisible, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // While previous pages are loading/prepended, the top sentinel often stays in view —
+  // block further upward fetches until the user scrolls away from the top.
   useEffect(() => {
-    if (!isTopVisible) {
-      setCanFetchPrevious(true);
+    if (isFetchingPreviousPage) {
+      setBlockPreviousUntilLeave(true);
     }
-  }, [isTopVisible]);
+  }, [isFetchingPreviousPage]);
 
   useEffect(() => {
-    if (
-      canFetchPrevious &&
-      isTopVisible &&
-      hasPreviousPage &&
-      !isFetchingPreviousPage
-    ) {
-      fetchPreviousPage();
+    if (blockPreviousUntilLeave && !isTopVisible) {
+      setBlockPreviousUntilLeave(false);
+    }
+  }, [blockPreviousUntilLeave, isTopVisible]);
+
+  useEffect(() => {
+    if (blockPreviousUntilLeave) return;
+    if (isTopVisible && hasPreviousPage && !isFetchingPreviousPage) {
+      void fetchPreviousPage();
     }
   }, [
-    canFetchPrevious,
+    blockPreviousUntilLeave,
     isTopVisible,
     hasPreviousPage,
     isFetchingPreviousPage,
@@ -218,7 +223,7 @@ export const SourceSelectorSheet = ({
   const totalSegments = detailsData?.pages?.[0]?.total_segments ?? 0;
 
   const handleRangeNavigate = useCallback((start: number, end: number) => {
-    setCanFetchPrevious(false);
+    setBlockPreviousUntilLeave(true);
     setSegmentRange({ start, end });
     setScrollToSegmentNumber(start);
   }, []);
@@ -261,7 +266,7 @@ export const SourceSelectorSheet = ({
       if (prev?.id === source.id) return null;
       setSegmentRange(null);
       setScrollToSegmentNumber(null);
-      setCanFetchPrevious(false);
+      setBlockPreviousUntilLeave(true);
       return source;
     });
   };
