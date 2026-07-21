@@ -120,6 +120,8 @@ export interface AuthorGroupListItem {
   avatar?: string | null;
   avatar_key?: string | null;
   avatar_url?: string | null;
+  /** Current user's membership role when returned by the CMS list API. */
+  my_role?: AuthorGroupMemberRole | null;
 }
 
 export interface AuthorGroupDetailDTO extends AuthorGroupListItem {

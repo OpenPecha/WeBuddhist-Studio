@@ -1,9 +1,12 @@
 import pechaIcon from "../../../../assets/icon/pecha_icon.png";
 import { Link, useLocation } from "react-router-dom";
 import { ModeToggle } from "../mode-toggle/modetoggle";
-// import { IoAnalytics } from "react-icons/io5";
-import { MdDashboard } from "react-icons/md";
-import { IoPricetags, IoPeople } from "react-icons/io5";
+import { IoAnalytics, IoPricetags, IoPeople } from "react-icons/io5";
+import {
+  MdDashboard,
+  MdAdminPanelSettings,
+  MdPublicOff,
+} from "react-icons/md";
 import { ROUTES } from "@/routes/paths";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import AuthLogout from "../auth-logout/AuthLogout";
@@ -18,8 +21,6 @@ import NotificationBell from "@/components/ui/molecules/notification-bell/Notifi
 import VerseOfDayButton from "@/components/routes/verse-of-day/VerseOfDayButton";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { canAccessAdminAuthors } from "@/lib/platformAccess";
-import { MdAdminPanelSettings } from "react-icons/md";
-import { MdPublicOff } from "react-icons/md";
 
 const navItems = [
   {
@@ -27,6 +28,12 @@ const navItems = [
     label: "studio.nav.dashboard",
     path: ROUTES.dashboard,
     tooltip: "Go to dashboard",
+  },
+  {
+    icon: <IoAnalytics className="w-4 h-4" />,
+    label: "studio.nav.analytics",
+    path: ROUTES.analytics,
+    tooltip: "View analytics",
   },
   {
     icon: <IoPricetags className="w-4 h-4" />,
@@ -40,11 +47,6 @@ const navItems = [
     path: ROUTES.groups,
     tooltip: "Manage author groups",
   },
-  // {
-  //   icon: <IoAnalytics className="w-4 h-4" />,
-  //   label: "studio.nav.analytics",
-  //   path: "/analytics",
-  // },
 ];
 const tooltipItems = [
   {

@@ -4,9 +4,9 @@ import {
   fetchAccessibleGroupsForDashboard,
   pickGroupTitle,
   type AuthorGroupListItem,
+  type AuthorGroupMemberRole,
 } from "@/components/routes/groups/api/groupsApi";
 import type { UserInfo } from "@/hooks/useUserInfo";
-import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
 import {
   canUseDashboardGroupFilter,
   usesStaffWideDashboardGroupList,
@@ -21,15 +21,24 @@ export type DashboardGroupFilterOption = {
 
 function toFilterOptions(
   groups: AuthorGroupListItem[],
-  rolesByGroupId: Map<string, string | undefined>,
   showMemberRole: boolean,
 ): DashboardGroupFilterOption[] {
   return groups.map((group) => {
     const title = pickGroupTitle(group.metadata);
-    const role = rolesByGroupId.get(group.id);
+    const role = group.my_role;
     const label = showMemberRole && role ? `${title} (${role})` : title;
     return { id: group.id, title, label };
   });
+}
+
+function rolesMapFromGroups(
+  groups: AuthorGroupListItem[],
+): Map<string, AuthorGroupMemberRole | undefined> {
+  const map = new Map<string, AuthorGroupMemberRole | undefined>();
+  for (const group of groups) {
+    if (group.my_role) map.set(group.id, group.my_role);
+  }
+  return map;
 }
 
 export function useDashboardGroupFilterOptions(userInfo?: UserInfo | null) {
@@ -45,39 +54,19 @@ export function useDashboardGroupFilterOptions(userInfo?: UserInfo | null) {
     refetchOnWindowFocus: false,
   });
 
-  const groupIds = useMemo(
-    () => (query.data ?? []).map((g) => g.id),
-    [query.data],
-  );
-
-  const userActor = userInfo
-    ? {
-        id: userInfo.id,
-        email: userInfo.email,
-        platform_role: userInfo.platform_role,
-      }
-    : undefined;
-
-  const memberRolesByGroupId = useGroupRolesMap(
-    isStaffWideList ? [] : groupIds,
-    userActor,
-  );
-
-  const roleLabels = useMemo(() => {
-    const map = new Map<string, string | undefined>();
-    memberRolesByGroupId.forEach((role, id) => {
-      if (role) map.set(id, role);
-    });
-    return map;
-  }, [memberRolesByGroupId]);
-
   const options = useMemo(
-    () => toFilterOptions(query.data ?? [], roleLabels, !isStaffWideList),
-    [query.data, roleLabels, isStaffWideList],
+    () => toFilterOptions(query.data ?? [], !isStaffWideList),
+    [query.data, isStaffWideList],
+  );
+
+  const rolesByGroupId = useMemo(
+    () => rolesMapFromGroups(query.data ?? []),
+    [query.data],
   );
 
   return {
     options,
+    rolesByGroupId,
     isLoading: query.isLoading,
     isStaffWideList,
     showFilter: canLoad && (options.length > 0 || isStaffWideList),

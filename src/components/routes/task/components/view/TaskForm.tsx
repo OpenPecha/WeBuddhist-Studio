@@ -93,6 +93,7 @@ const TaskForm = ({
             source_text_id: subTask.source_text_id || null,
             pecha_segment_id: subTask.pecha_segment_id || null,
             segment_ids: subTask.segment_ids || null,
+            segment_numbers: subTask.segment_numbers || null,
           }),
           ...buildSubTaskTimestampFields(subTask, false),
         }));
@@ -127,6 +128,7 @@ const TaskForm = ({
           source_text_id: subTask.source_text_id || null,
           pecha_segment_id: subTask.pecha_segment_id || null,
           segment_ids: subTask.segment_ids || null,
+          segment_numbers: subTask.segment_numbers || null,
         }),
         ...buildSubTaskTimestampFields(subTask, true),
       }));
@@ -230,6 +232,7 @@ const TaskForm = ({
               source_text_id: data.source_text_id || null,
               pecha_segment_id: data.pecha_segment_id || null,
               segment_ids: data.segment_ids || null,
+              segment_numbers: data.segment_numbers || null,
               ...timestamps(data),
             };
           default:
@@ -250,6 +253,7 @@ const TaskForm = ({
     pecha_segment_id: string;
     text_id: string;
     segment_ids: string[];
+    segment_numbers?: number[];
   }
 
   const handleAddSubTask = (content_type: any, sourceData?: SourceData) => {
@@ -294,6 +298,7 @@ const TaskForm = ({
           source_text_id: sourceData?.text_id || null,
           pecha_segment_id: sourceData?.pecha_segment_id || null,
           segment_ids: sourceData?.segment_ids || null,
+          segment_numbers: sourceData?.segment_numbers || null,
         };
         break;
     }

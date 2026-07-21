@@ -33,8 +33,8 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
 import { useUserInfo } from "@/hooks/useUserInfo";
-import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
 import { useDashboardGroupFilterOptions } from "@/hooks/useDashboardGroupFilterOptions";
+import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
 import { isReviewer } from "@/lib/platformAccess";
 
 const SEARCH_DEBOUNCE_MS = 500;
@@ -130,6 +130,7 @@ const Dashboard = () => {
 
   const {
     options: groupFilterOptions,
+    rolesByGroupId,
     isLoading: isGroupFilterLoading,
     showFilter: showGroupFilter,
     isStaffWideList: isStaffWideGroupList,
@@ -194,6 +195,34 @@ const Dashboard = () => {
 
   const rows = dashboardData?.rows ?? [];
 
+  const groupIdsMissingRole = useMemo(
+    () =>
+      rows
+        .map((r) => r.group_id)
+        .filter((id): id is string => Boolean(id) && !rolesByGroupId.has(id!)),
+    [rows, rolesByGroupId],
+  );
+
+  const fallbackRolesByGroupId = useGroupRolesMap(
+    groupIdsMissingRole,
+    userInfo
+      ? {
+          id: userInfo.id,
+          email: userInfo.email,
+          platform_role: userInfo.platform_role,
+        }
+      : undefined,
+  );
+
+  const mergedGroupRolesByGroupId = useMemo(() => {
+    if (fallbackRolesByGroupId.size === 0) return rolesByGroupId;
+    const merged = new Map(rolesByGroupId);
+    fallbackRolesByGroupId.forEach((role, id) => {
+      if (role && !merged.has(id)) merged.set(id, role);
+    });
+    return merged;
+  }, [rolesByGroupId, fallbackRolesByGroupId]);
+
   useEffect(() => {
     if (isStaffWideGroupList) return;
     if (!urlState.groupId || isGroupFilterLoading) return;
@@ -209,16 +238,6 @@ const Dashboard = () => {
     resetPageFilters,
   ]);
 
-  const groupRolesByGroupId = useGroupRolesMap(
-    rows.map((r) => r.group_id),
-    userInfo
-      ? {
-          id: userInfo.id,
-          email: userInfo.email,
-          platform_role: userInfo.platform_role,
-        }
-      : undefined,
-  );
   const platformReadOnly = isReviewer(userInfo?.platform_role);
   const hasRows = rows.length > 0;
   const isLoadingTable = status === "pending" || isFetching;
@@ -428,7 +447,7 @@ const Dashboard = () => {
               t={t}
               handleFeatured={platformReadOnly ? () => {} : handleFeatured}
               platformRole={userInfo?.platform_role}
-              groupRolesByGroupId={groupRolesByGroupId}
+              groupRolesByGroupId={mergedGroupRolesByGroupId}
               userInfo={userInfo}
             />
           </div>

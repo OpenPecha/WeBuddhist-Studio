@@ -11,6 +11,7 @@ interface SourceData {
   pecha_segment_id: string;
   text_id: string;
   segment_ids: string[];
+  segment_numbers?: number[];
 }
 
 interface ContentTypeSelectorProps {

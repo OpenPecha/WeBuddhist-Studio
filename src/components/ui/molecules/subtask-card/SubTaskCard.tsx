@@ -71,6 +71,7 @@ interface SourceSubTask extends SubTaskTimestamps {
   source_text_id?: string | null;
   pecha_segment_id?: string | null;
   segment_ids?: string[] | null;
+  segment_numbers?: number[] | null;
 }
 export type SubTask =
   | VideoSubTask
@@ -217,7 +218,10 @@ const SourceSubtask = ({ subTask }: { subTask: SourceSubTask }) => {
 
   return (
     <div className="relative">
-      <SourceReferenceContent content={subTask.content} />
+      <SourceReferenceContent
+        content={subTask.content}
+        segmentNumbers={subTask.segment_numbers}
+      />
       {preset && (
         <div className="relative mt-2 ml-4">
           {/* Connecting line */}

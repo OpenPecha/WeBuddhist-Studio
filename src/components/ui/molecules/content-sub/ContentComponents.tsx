@@ -97,20 +97,28 @@ export const TextContent = ({ content }: { content: string }) => (
   </div>
 );
 
-export const SourceReferenceContent = ({ content }: { content: string }) => {
+export const SourceReferenceContent = ({
+  content,
+  segmentNumbers,
+}: {
+  content: string;
+  segmentNumbers?: number[] | null;
+}) => {
   const segments = content.split("\n").filter(Boolean);
-
   return (
     <div className="space-y-3">
-      {segments.map((text, index) => (
-        <div
-          key={index}
-          className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]"
-        >
-          <span className="font-medium">{index + 1}. </span>
-          <span dangerouslySetInnerHTML={{ __html: text }} />
-        </div>
-      ))}
+      {segments.map((text, index) => {
+        const label = segmentNumbers?.[index] ?? index + 1;
+        return (
+          <div
+            key={index}
+            className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]"
+          >
+            <span className="font-medium">{label}. </span>
+            <span dangerouslySetInnerHTML={{ __html: text }} />
+          </div>
+        );
+      })}
     </div>
   );
 };
