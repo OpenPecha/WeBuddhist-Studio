@@ -104,6 +104,7 @@ export const SourceSelectorSheet = ({
     fetchPreviousPage,
     hasNextPage,
     hasPreviousPage,
+    isFetching,
     isFetchingNextPage,
     isFetchingPreviousPage,
   } = useInfiniteQuery<
@@ -222,6 +223,12 @@ export const SourceSelectorSheet = ({
     setScrollToSegmentNumber(start);
   }, []);
 
+  const isRangeLoading =
+    Boolean(segmentRange) &&
+    isFetching &&
+    !isFetchingNextPage &&
+    !isFetchingPreviousPage;
+
   const isLoading = searchOnlyTitles ? isTitleLoading : isMultilingualLoading;
 
   const sources = searchOnlyTitles
@@ -306,6 +313,7 @@ export const SourceSelectorSheet = ({
                     topRef={topSentinelRef}
                     isFetchingNextPage={isFetchingNextPage}
                     isFetchingPreviousPage={isFetchingPreviousPage}
+                    isRangeLoading={isRangeLoading}
                     totalSegments={totalSegments}
                     onRangeNavigate={handleRangeNavigate}
                     scrollToSegmentNumber={scrollToSegmentNumber}

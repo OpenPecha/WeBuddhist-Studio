@@ -34,6 +34,7 @@ import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { useDashboardGroupFilterOptions } from "@/hooks/useDashboardGroupFilterOptions";
+import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
 import { isReviewer } from "@/lib/platformAccess";
 
 const SEARCH_DEBOUNCE_MS = 500;
@@ -193,6 +194,36 @@ const Dashboard = () => {
   };
 
   const rows = dashboardData?.rows ?? [];
+
+  const groupIdsMissingRole = useMemo(
+    () =>
+      rows
+        .map((r) => r.group_id)
+        .filter(
+          (id): id is string => Boolean(id) && !rolesByGroupId.has(id!),
+        ),
+    [rows, rolesByGroupId],
+  );
+
+  const fallbackRolesByGroupId = useGroupRolesMap(
+    groupIdsMissingRole,
+    userInfo
+      ? {
+          id: userInfo.id,
+          email: userInfo.email,
+          platform_role: userInfo.platform_role,
+        }
+      : undefined,
+  );
+
+  const mergedGroupRolesByGroupId = useMemo(() => {
+    if (fallbackRolesByGroupId.size === 0) return rolesByGroupId;
+    const merged = new Map(rolesByGroupId);
+    fallbackRolesByGroupId.forEach((role, id) => {
+      if (role && !merged.has(id)) merged.set(id, role);
+    });
+    return merged;
+  }, [rolesByGroupId, fallbackRolesByGroupId]);
 
   useEffect(() => {
     if (isStaffWideGroupList) return;
@@ -419,7 +450,7 @@ const Dashboard = () => {
               t={t}
               handleFeatured={platformReadOnly ? () => {} : handleFeatured}
               platformRole={userInfo?.platform_role}
-              groupRolesByGroupId={rolesByGroupId}
+              groupRolesByGroupId={mergedGroupRolesByGroupId}
               userInfo={userInfo}
             />
           </div>

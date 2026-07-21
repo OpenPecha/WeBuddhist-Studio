@@ -18,6 +18,7 @@ const SelectedSourceDetail = ({
   topRef,
   isFetchingNextPage,
   isFetchingPreviousPage,
+  isRangeLoading,
   totalSegments = 0,
   onRangeNavigate,
   scrollToSegmentNumber,
@@ -29,6 +30,8 @@ const SelectedSourceDetail = ({
   topRef?: (node?: Element | null) => void;
   isFetchingNextPage?: boolean;
   isFetchingPreviousPage?: boolean;
+  /** True while a range jump request is in flight. */
+  isRangeLoading?: boolean;
   totalSegments?: number;
   onRangeNavigate?: (start: number, end: number) => void;
   scrollToSegmentNumber?: number | null;
@@ -45,7 +48,27 @@ const SelectedSourceDetail = ({
     return parseSelection(rangeInput, selectionMax);
   }, [rangeInput, selectionMax]);
 
-  const isAddDisabled = !selectedIndices;
+  const loadedSegmentNumbers = useMemo(() => {
+    const numbers = new Set<number>();
+    segments.forEach((seg: any, i: number) => {
+      numbers.add(seg.segment_number ?? i + 1);
+    });
+    return numbers;
+  }, [segments]);
+
+  const rangePending =
+    Boolean(parseRangeBounds(rangeInput)) &&
+    rangeInput.trim() !== debouncedRangeInput.trim();
+
+  const selectionFullyLoaded =
+    selectedIndices != null &&
+    [...selectedIndices].every((n) => loadedSegmentNumbers.has(n));
+
+  const isAddDisabled =
+    !selectedIndices ||
+    !selectionFullyLoaded ||
+    rangePending ||
+    Boolean(isRangeLoading);
 
   useEffect(() => {
     const bounds = parseRangeBounds(debouncedRangeInput);
@@ -142,7 +165,9 @@ const SelectedSourceDetail = ({
           onClick={handleAdd}
           className="h-10 px-6 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add
+          {isRangeLoading || rangePending || (selectedIndices && !selectionFullyLoaded)
+            ? "Loading…"
+            : "Add"}
         </Pecha.Button>
       </div>
 

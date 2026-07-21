@@ -3,10 +3,10 @@ import type { DashboardTableRow } from "@/components/routes/dashboard/dashboardT
 import type { UserInfo } from "@/hooks/useUserInfo";
 
 /**
- * Resolves group role for a dashboard row from the membership list (`my_role`),
- * not from per-group detail fetches.
- * When the list omits a role, CREATORs with can_create_content get AUTHOR-level
- * edit on DRAFT rows as a safe default (not delete / featured / transfer).
+ * Resolves group role for a dashboard row.
+ * Prefer `my_role` / sparse membership map. Do not invent OWNER/ADMIN.
+ * When group_id is missing, CREATORs with can_create_content get AUTHOR on
+ * DRAFT only (edit, not delete / featured / transfer).
  */
 export function resolveDashboardRowGroupRole(
   row: DashboardTableRow,
@@ -14,8 +14,7 @@ export function resolveDashboardRowGroupRole(
   userInfo?: UserInfo | null,
 ): AuthorGroupMemberRole | undefined {
   if (row.group_id) {
-    const fromMap = rolesByGroupId.get(row.group_id);
-    if (fromMap) return fromMap;
+    return rolesByGroupId.get(row.group_id);
   }
 
   if (
