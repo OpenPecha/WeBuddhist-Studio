@@ -33,7 +33,6 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
 import { useUserInfo } from "@/hooks/useUserInfo";
-import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
 import { useDashboardGroupFilterOptions } from "@/hooks/useDashboardGroupFilterOptions";
 import { isReviewer } from "@/lib/platformAccess";
 
@@ -130,6 +129,7 @@ const Dashboard = () => {
 
   const {
     options: groupFilterOptions,
+    rolesByGroupId,
     isLoading: isGroupFilterLoading,
     showFilter: showGroupFilter,
     isStaffWideList: isStaffWideGroupList,
@@ -209,16 +209,7 @@ const Dashboard = () => {
     resetPageFilters,
   ]);
 
-  const groupRolesByGroupId = useGroupRolesMap(
-    rows.map((r) => r.group_id),
-    userInfo
-      ? {
-          id: userInfo.id,
-          email: userInfo.email,
-          platform_role: userInfo.platform_role,
-        }
-      : undefined,
-  );
+ 
   const platformReadOnly = isReviewer(userInfo?.platform_role);
   const hasRows = rows.length > 0;
   const isLoadingTable = status === "pending" || isFetching;
@@ -428,7 +419,7 @@ const Dashboard = () => {
               t={t}
               handleFeatured={platformReadOnly ? () => {} : handleFeatured}
               platformRole={userInfo?.platform_role}
-              groupRolesByGroupId={groupRolesByGroupId}
+              groupRolesByGroupId={rolesByGroupId}
               userInfo={userInfo}
             />
           </div>
