@@ -177,7 +177,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/analytics",
+        path: ROUTES.analytics,
         element: (
           <ProtectedRoute>
             <Analytics />
