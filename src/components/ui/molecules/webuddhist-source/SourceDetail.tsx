@@ -165,7 +165,9 @@ const SelectedSourceDetail = ({
           onClick={handleAdd}
           className="h-10 px-6 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isRangeLoading || rangePending || (selectedIndices && !selectionFullyLoaded)
+          {isRangeLoading ||
+          rangePending ||
+          (selectedIndices && !selectionFullyLoaded)
             ? "Loading…"
             : "Add"}
         </Pecha.Button>
@@ -184,11 +186,13 @@ const SelectedSourceDetail = ({
         className="border border-[#DEDEDE] dark:border-[#313132] rounded-[10px] h-[calc(100vh-380px)]"
       >
         <div className="p-4 space-y-4">
-          {segments.length === 0 && !isFetchingNextPage && !isFetchingPreviousPage && (
-            <p className="text-center text-sm text-gray-500">
-              Loading segments...
-            </p>
-          )}
+          {segments.length === 0 &&
+            !isFetchingNextPage &&
+            !isFetchingPreviousPage && (
+              <p className="text-center text-sm text-gray-500">
+                Loading segments...
+              </p>
+            )}
           {topRef && (
             <div
               ref={topRef}

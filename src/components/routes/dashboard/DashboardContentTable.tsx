@@ -66,11 +66,7 @@ export function DashboardContentTable({
         </Pecha.TableRow>
       );
     return rows.map((row) => {
-      const groupRole = resolveDashboardRowGroupRole(
-        row,
-        rolesMap,
-        userInfo,
-      );
+      const groupRole = resolveDashboardRowGroupRole(row, rolesMap, userInfo);
       const canFeature = canChangeContentStatus(groupRole, platformRole);
       const daysLabel = `${row.total_days} ${row.total_days === 1 ? "Day" : "Days"}`;
       const titleHref =

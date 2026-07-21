@@ -199,9 +199,7 @@ const Dashboard = () => {
     () =>
       rows
         .map((r) => r.group_id)
-        .filter(
-          (id): id is string => Boolean(id) && !rolesByGroupId.has(id!),
-        ),
+        .filter((id): id is string => Boolean(id) && !rolesByGroupId.has(id!)),
     [rows, rolesByGroupId],
   );
 
@@ -240,7 +238,6 @@ const Dashboard = () => {
     resetPageFilters,
   ]);
 
- 
   const platformReadOnly = isReviewer(userInfo?.platform_role);
   const hasRows = rows.length > 0;
   const isLoadingTable = status === "pending" || isFetching;
