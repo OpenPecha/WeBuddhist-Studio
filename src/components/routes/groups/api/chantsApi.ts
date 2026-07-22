@@ -153,3 +153,50 @@ export const uploadChantImage = async (file: File): Promise<string> => {
   const { key } = await uploadImageToS3(file, "");
   return key;
 };
+
+export interface RecitationDTO {
+  title: string;
+  text_id: string;
+  image_url?: string;
+}
+
+export interface RecitationsSearchResponse {
+  recitations: RecitationDTO[];
+  skip: number;
+  limit: number;
+  total: number;
+}
+
+export const searchRecitations = async (params: {
+  search?: string;
+  skip?: number;
+  limit?: number;
+}): Promise<{
+  items: { id: string; title: string; image_url?: string }[];
+  skip: number;
+  limit: number;
+  total: number;
+}> => {
+  const { data } = await axiosInstance.get<RecitationsSearchResponse>(
+    "/api/v1/recitations",
+    {
+      params: {
+        search: params.search,
+        language: "EN",
+        skip: params.skip ?? 0,
+        limit: params.limit ?? 20,
+      },
+    },
+  );
+  
+  return {
+    items: data.recitations.map((r) => ({
+      id: r.text_id,
+      title: r.title,
+      image_url: r.image_url,
+    })),
+    skip: data.skip,
+    limit: data.limit,
+    total: data.total,
+  };
+};

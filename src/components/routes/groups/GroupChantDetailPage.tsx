@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IoMdArrowBack, IoMdCreate, IoMdTrash } from "react-icons/io";
+import { IoMdArrowBack, IoMdCreate, IoMdTrash, IoMdAdd, IoMdClose } from "react-icons/io";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
@@ -10,10 +10,14 @@ import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
 import {
+  addChantItems,
   deleteChantItem,
   fetchChantCollection,
+  searchRecitations,
   type ChantCollectionItemDTO,
 } from "./api/chantsApi";
+import FkMultiSearchSelector from "./components/FkMultiSearchSelector";
+import type { FkOption } from "./components/FkMultiSearchSelector";
 
 const GroupChantDetailPage = () => {
   const { groupId, collectionId } = useParams<{
@@ -30,6 +34,8 @@ const GroupChantDetailPage = () => {
 
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ChantCollectionItemDTO | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedRecitations, setSelectedRecitations] = useState<FkOption[]>([]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["cms-chant-collection", groupId, collectionId],
@@ -53,6 +59,36 @@ const GroupChantDetailPage = () => {
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
+
+  const addItemsMutation = useMutation({
+    mutationFn: (textIds: string[]) =>
+      addChantItems(groupId!, collectionId!, textIds),
+    onSuccess: () => {
+      toast.success("Items added successfully");
+      setSelectedRecitations([]);
+      setIsEditMode(false);
+      queryClient.invalidateQueries({
+        queryKey: ["cms-chant-collection", groupId, collectionId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["cms-chant-collections", groupId],
+      });
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err)),
+  });
+
+  const handleAddItems = () => {
+    if (selectedRecitations.length === 0) {
+      toast.error("Please select at least one recitation");
+      return;
+    }
+    addItemsMutation.mutate(selectedRecitations.map((r) => r.id));
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setSelectedRecitations([]);
+  };
 
   const chantsListPath = groupId ? ROUTES.groupChants(groupId) : ROUTES.groups;
 
@@ -88,11 +124,22 @@ const GroupChantDetailPage = () => {
           </Button>
           <h1 className="text-xl font-bold">{data.name}</h1>
         </div>
-        {canWrite ? (
-          <Button variant="outline" size="sm" asChild>
-            <Link to={ROUTES.groupChantEdit(groupId!, collectionId!)}>
-              <IoMdCreate className="w-4 h-4" /> Edit
-            </Link>
+        {canWrite && !isEditMode ? (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setIsEditMode(true)}
+            className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
+          >
+            <IoMdAdd className="w-4 h-4" /> Add Chants
+          </Button>
+        ) : canWrite && isEditMode ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCancelEdit}
+          >
+            <IoMdClose className="w-4 h-4" /> Cancel
           </Button>
         ) : null}
       </div>
@@ -109,6 +156,31 @@ const GroupChantDetailPage = () => {
         <h2 className="text-lg font-semibold">
           Items ({data.items.length})
         </h2>
+
+        {isEditMode && (
+          <div className="rounded-lg border border-blue-900 bg-blue-900/5 p-4 space-y-4">
+            <h3 className="text-sm font-bold">Add Recitations</h3>
+            <FkMultiSearchSelector
+              value={selectedRecitations}
+              onChange={setSelectedRecitations}
+              searchFn={searchRecitations}
+              queryKeyPrefix="recitation-search"
+              searchPlaceholder="Search recitations..."
+              emptyMessage="No recitations selected — use search to add."
+              hideLabel
+            />
+            <div className="flex justify-end gap-2">
+              <Pecha.Button
+                type="button"
+                onClick={handleAddItems}
+                disabled={addItemsMutation.isPending || selectedRecitations.length === 0}
+                className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
+              >
+                {addItemsMutation.isPending ? "Adding..." : `Add ${selectedRecitations.length} Chant${selectedRecitations.length === 1 ? "" : "s"}`}
+              </Pecha.Button>
+            </div>
+          </div>
+        )}
 
         {data.items.length === 0 ? (
           <p className="text-muted-foreground">No items in this collection.</p>
