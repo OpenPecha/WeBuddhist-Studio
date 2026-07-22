@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IoMdArrowBack, IoMdCreate, IoMdTrash, IoMdAdd, IoMdClose } from "react-icons/io";
+import { IoMdArrowBack, IoMdTrash, IoMdAdd, IoMdClose } from "react-icons/io";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
