@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { IoMdCopy } from "react-icons/io";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { getLanguageLabel } from "@/components/api/languagesApi";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { cloneSeriesPlansFromLanguage } from "@/components/routes/create-series/api/seriesApi";
 
@@ -15,7 +15,7 @@ type CloneLanguagePlansPanelProps = {
 };
 
 function languageLabel(code: LanguageCode): string {
-  return PLAN_LANGUAGE.find((l) => l.value === code)?.label ?? code;
+  return getLanguageLabel(code);
 }
 
 export function CloneLanguagePlansPanel({

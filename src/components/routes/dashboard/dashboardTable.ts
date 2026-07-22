@@ -1,4 +1,7 @@
-import { LANGUAGE_CODE_ORDER } from "@/lib/languageCodes";
+import {
+  LANGUAGE_CODE_ORDER,
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
 import { formatDistanceToNow } from "date-fns";
 
 export type DashboardRowKind = "plan" | "series";
@@ -7,7 +10,7 @@ export type DashboardRowKind = "plan" | "series";
 export const DASHBOARD_TABLE_ICON_BTN =
   "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-[#F3F4F6] shadow-none hover:bg-[#E8E8E8] disabled:cursor-not-allowed disabled:opacity-100 dark:border-[#313132] dark:bg-[#2a2a2a] dark:hover:bg-[#333]";
 
-export type DashboardLanguageCode = "EN" | "ZH" | "BO" | "HI" | "NE" | "MN";
+export type DashboardLanguageCode = string;
 
 export interface DashboardTableRow {
   kind: DashboardRowKind;
@@ -64,9 +67,7 @@ export function resolveDashboardItemImageUrl(
 }
 
 function normalizeOneLanguageCode(v: string): DashboardLanguageCode | null {
-  const u = v.trim().toUpperCase();
-  if (u === "EN" || u === "ZH" || u === "BO") return u;
-  return null;
+  return normalizeLanguageCode(v);
 }
 
 export function parseDashboardLanguages(raw: unknown): DashboardLanguageCode[] {
@@ -104,13 +105,8 @@ export function tolgeeLocaleToDashboardLanguage(
 ): DashboardLanguageCode | null {
   const l = (locale ?? "").trim().toLowerCase();
   if (!l) return null;
-  if (l.startsWith("en")) return "EN";
-  if (l.startsWith("bo")) return "BO";
-  if (l.startsWith("zh")) return "ZH";
-  if (l.startsWith("hi")) return "HI";
-  if (l.startsWith("ne")) return "NE";
-  if (l.startsWith("mn")) return "MN";
-  return null;
+  const primary = l.split("-")[0] ?? l;
+  return normalizeLanguageCode(primary);
 }
 
 function firstTitleFromMetadataRows(rows: Record<string, unknown>[]): string {

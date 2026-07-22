@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/atoms/button";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { getApiErrorMessage } from "@/lib/apiErrors";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { useLanguages } from "@/hooks/useLanguages";
 import { ROUTES } from "@/routes/paths";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { groupCoreSchema, type GroupCoreFormData } from "@/schema/GroupSchema";
@@ -65,6 +65,7 @@ const GroupAboutEditPage = () => {
     avatarKey: null,
     bannerKey: null,
   });
+  const { languageOptions } = useLanguages();
 
   const form = useForm<GroupCoreFormData>({
     resolver: zodResolver(groupCoreSchema),
@@ -183,8 +184,8 @@ const GroupAboutEditPage = () => {
     return <Navigate to={ROUTES.group(groupId)} replace />;
   }
 
-  const availableLanguages = PLAN_LANGUAGE.filter(
-    (l) => !addedLanguages.includes(l.value as LanguageCode),
+  const availableLanguages = languageOptions.filter(
+    (l) => !addedLanguages.includes(l.value),
   );
 
   const addLanguage = (code: LanguageCode) => {

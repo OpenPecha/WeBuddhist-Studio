@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/atoms/input";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { Button } from "@/components/ui/atoms/button";
 import { Pecha } from "@/components/ui/shadimport";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { useLanguages } from "@/hooks/useLanguages";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import {
   createTag,
@@ -44,6 +44,7 @@ const PlanTagSearchInput = ({
 }: PlanTagSearchInputProps) => {
   const queryClient = useQueryClient();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { languageOptions, getLanguageLabel } = useLanguages();
   const [inputValue, setInputValue] = useState("");
   const [debouncedSearch] = useDebounce(inputValue, SEARCH_DEBOUNCE_MS);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -55,14 +56,9 @@ const PlanTagSearchInput = ({
     "EN",
   ]);
   const [languageData, setLanguageData] = useState<
-    Record<LanguageCode, LanguageData>
+    Record<string, LanguageData>
   >({
     EN: { name: "", description: "" },
-    BO: { name: "", description: "" },
-    ZH: { name: "", description: "" },
-    HI: { name: "", description: "" },
-    NE: { name: "", description: "" },
-    MN: { name: "", description: "" },
   });
 
   useEffect(() => {
@@ -136,11 +132,6 @@ const PlanTagSearchInput = ({
     setActiveLanguages(["EN"]);
     setLanguageData({
       EN: { name: "", description: "" },
-      BO: { name: "", description: "" },
-      ZH: { name: "", description: "" },
-      HI: { name: "", description: "" },
-      NE: { name: "", description: "" },
-      MN: { name: "", description: "" },
     });
   };
 
@@ -157,11 +148,9 @@ const PlanTagSearchInput = ({
   const handleCreateTag = () => {
     const metadata: TagMetadataInput[] = [];
     for (const lang of activeLanguages) {
-      const data = languageData[lang];
+      const data = languageData[lang] ?? { name: "", description: "" };
       if (!data.name.trim()) {
-        toast.error(
-          `Name is required for ${PLAN_LANGUAGE.find((l) => l.value === lang)?.label}`,
-        );
+        toast.error(`Name is required for ${getLanguageLabel(lang)}`);
         return;
       }
       metadata.push({
@@ -175,6 +164,10 @@ const PlanTagSearchInput = ({
 
   const addLanguage = (langCode: LanguageCode) => {
     setActiveLanguages([...activeLanguages, langCode]);
+    setLanguageData((prev) => ({
+      ...prev,
+      [langCode]: prev[langCode] ?? { name: "", description: "" },
+    }));
   };
 
   const removeLanguage = (langCode: LanguageCode) => {
@@ -192,7 +185,11 @@ const PlanTagSearchInput = ({
   ) => {
     setLanguageData((prev) => ({
       ...prev,
-      [lang]: { ...prev[lang], [field]: value },
+      [lang]: {
+        name: prev[lang]?.name ?? "",
+        description: prev[lang]?.description ?? "",
+        [field]: value,
+      },
     }));
   };
 
@@ -337,9 +334,8 @@ const PlanTagSearchInput = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold">Languages</label>
-                {PLAN_LANGUAGE.filter(
-                  (lang) =>
-                    !activeLanguages.includes(lang.value as LanguageCode),
+                {languageOptions.filter(
+                  (lang) => !activeLanguages.includes(lang.value),
                 ).length > 0 && (
                   <Pecha.DropdownMenu>
                     <Pecha.DropdownMenuTrigger asChild>
@@ -354,26 +350,22 @@ const PlanTagSearchInput = ({
                       </Button>
                     </Pecha.DropdownMenuTrigger>
                     <Pecha.DropdownMenuContent>
-                      {PLAN_LANGUAGE.filter(
-                        (lang) =>
-                          !activeLanguages.includes(lang.value as LanguageCode),
-                      ).map((lang) => (
-                        <Pecha.DropdownMenuItem
-                          key={lang.value}
-                          onClick={() =>
-                            addLanguage(lang.value as LanguageCode)
-                          }
-                        >
-                          {lang.label}
-                        </Pecha.DropdownMenuItem>
-                      ))}
+                      {languageOptions
+                        .filter((lang) => !activeLanguages.includes(lang.value))
+                        .map((lang) => (
+                          <Pecha.DropdownMenuItem
+                            key={lang.value}
+                            onClick={() => addLanguage(lang.value)}
+                          >
+                            {lang.label}
+                          </Pecha.DropdownMenuItem>
+                        ))}
                     </Pecha.DropdownMenuContent>
                   </Pecha.DropdownMenu>
                 )}
               </div>
               {activeLanguages.map((lang) => {
-                const langLabel =
-                  PLAN_LANGUAGE.find((l) => l.value === lang)?.label || lang;
+                const langLabel = getLanguageLabel(lang);
                 return (
                   <div
                     key={lang}
@@ -395,7 +387,7 @@ const PlanTagSearchInput = ({
                     <div className="space-y-2">
                       <label className="text-sm font-bold">Name</label>
                       <Input
-                        value={languageData[lang].name}
+                        value={languageData[lang]?.name ?? ""}
                         onChange={(e) =>
                           updateLanguageField(lang, "name", e.target.value)
                         }
@@ -407,7 +399,7 @@ const PlanTagSearchInput = ({
                     <div className="space-y-2">
                       <label className="text-sm font-bold">Description</label>
                       <Textarea
-                        value={languageData[lang].description}
+                        value={languageData[lang]?.description ?? ""}
                         onChange={(e) =>
                           updateLanguageField(
                             lang,

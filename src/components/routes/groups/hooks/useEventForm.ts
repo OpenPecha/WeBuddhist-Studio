@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { useForm, useFieldArray, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PLAN_LANGUAGE } from "@/lib/constant";
 import {
   eventSchema,
   defaultEventFormValues,
@@ -9,12 +8,13 @@ import {
   type EventFormData,
   type LanguageCode,
 } from "@/schema/EventSchema";
+import { useLanguages, type StudioLanguageOption } from "@/hooks/useLanguages";
 
 export type UseEventFormReturn = {
   form: UseFormReturn<EventFormData>;
   metadataRows: ReturnType<typeof useFieldArray<EventFormData, "metadata">>;
   usedLanguages: LanguageCode[];
-  availableLanguages: typeof PLAN_LANGUAGE;
+  availableLanguages: StudioLanguageOption[];
   addMetadataRow: () => void;
   removeMetadataRow: (index: number) => void;
   setImageUrl: (url: string) => void;
@@ -24,6 +24,7 @@ export type UseEventFormReturn = {
 };
 
 export const useEventForm = (): UseEventFormReturn => {
+  const { languageOptions } = useLanguages();
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: defaultEventFormValues(),
@@ -37,19 +38,19 @@ export const useEventForm = (): UseEventFormReturn => {
 
   const metadata = form.watch("metadata") ?? [];
   const usedLanguages = metadata.map((m) => m.language);
-  const availableLanguages = PLAN_LANGUAGE.filter(
-    ({ value }) => !usedLanguages.includes(value as LanguageCode),
+  const availableLanguages = languageOptions.filter(
+    ({ value }) => !usedLanguages.includes(value),
   );
 
   const addMetadataRow = useCallback(() => {
     const current = form.getValues("metadata") ?? [];
     const used = new Set(current.map((m) => m.language));
-    const next = PLAN_LANGUAGE.map((l) => l.value as LanguageCode).find(
-      (code) => !used.has(code),
-    );
+    const next = languageOptions
+      .map((l) => l.value as LanguageCode)
+      .find((code) => !used.has(code));
     if (!next) return;
     metadataRows.append(emptyMetadataRow(next));
-  }, [form, metadataRows]);
+  }, [form, metadataRows, languageOptions]);
 
   const removeMetadataRow = useCallback(
     (index: number) => {

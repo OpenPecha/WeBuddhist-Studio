@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/atoms/button";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { getApiErrorMessage } from "@/lib/apiErrors";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { useLanguages } from "@/hooks/useLanguages";
 import { ROUTES } from "@/routes/paths";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { groupCoreSchema, type GroupCoreFormData } from "@/schema/GroupSchema";
@@ -39,6 +39,7 @@ const GroupFormPage = () => {
   const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [bannerUploading, setBannerUploading] = useState(false);
+  const { languageOptions } = useLanguages();
 
   const form = useForm<GroupCoreFormData>({
     resolver: zodResolver(groupCoreSchema),
@@ -54,8 +55,8 @@ const GroupFormPage = () => {
     },
   });
 
-  const availableLanguages = PLAN_LANGUAGE.filter(
-    (l) => !addedLanguages.includes(l.value as LanguageCode),
+  const availableLanguages = languageOptions.filter(
+    (l) => !addedLanguages.includes(l.value),
   );
 
   const addLanguage = (code: LanguageCode) => {
