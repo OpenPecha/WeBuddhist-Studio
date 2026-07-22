@@ -33,6 +33,7 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { useLanguages } from "@/hooks/useLanguages";
 import { useDashboardGroupFilterOptions } from "@/hooks/useDashboardGroupFilterOptions";
 import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
 import { isReviewer } from "@/lib/platformAccess";
@@ -87,6 +88,7 @@ function DashboardListPlaceholder({
 const Dashboard = () => {
   const { t } = useTranslate();
   const { data: userInfo } = useUserInfo();
+  const { languageOptions } = useLanguages();
   const tolgee = useTolgee(["language"]);
   const localeLanguage = tolgee.getLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -340,9 +342,11 @@ const Dashboard = () => {
           </Pecha.SelectTrigger>
           <Pecha.SelectContent>
             <Pecha.SelectItem value="all">All languages</Pecha.SelectItem>
-            <Pecha.SelectItem value="EN">English</Pecha.SelectItem>
-            <Pecha.SelectItem value="ZH">中文</Pecha.SelectItem>
-            <Pecha.SelectItem value="BO">བོད་སྐད།</Pecha.SelectItem>
+            {languageOptions.map((lang) => (
+              <Pecha.SelectItem key={lang.value} value={lang.value}>
+                {lang.label}
+              </Pecha.SelectItem>
+            ))}
           </Pecha.SelectContent>
         </Pecha.Select>
       </div>

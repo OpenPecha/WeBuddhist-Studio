@@ -1,15 +1,7 @@
 import { z } from "zod";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import type { LanguageCode } from "@/lib/languageCodes";
 
-const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as [
-  "EN",
-  "BO",
-  "ZH",
-  "HI",
-  "NE",
-  "MN",
-];
-export type LanguageCode = (typeof LANGUAGE_CODES)[number];
+export type { LanguageCode };
 
 export const languageBlockSchema = z.object({
   title: z.string().trim(),
@@ -27,26 +19,14 @@ export type SeriesPlan = z.infer<typeof planItemSchema>;
 
 export const seriesSchema = z
   .object({
-    languages: z.object({
-      EN: languageBlockSchema.optional(),
-      BO: languageBlockSchema.optional(),
-      ZH: languageBlockSchema.optional(),
-      HI: languageBlockSchema.optional(),
-      NE: languageBlockSchema.optional(),
-      MN: languageBlockSchema.optional(),
-    }),
-    plans: z.object({
-      EN: z.array(planItemSchema).optional(),
-      BO: z.array(planItemSchema).optional(),
-      ZH: z.array(planItemSchema).optional(),
-      HI: z.array(planItemSchema).optional(),
-      NE: z.array(planItemSchema).optional(),
-      MN: z.array(planItemSchema).optional(),
-    }),
+    languages: z.record(z.string(), languageBlockSchema),
+    plans: z.record(z.string(), z.array(planItemSchema)),
     image_url: z.string().trim().min(1, "Cover image is required"),
   })
   .superRefine((data, ctx) => {
-    const present = LANGUAGE_CODES.filter((c) => data.languages[c] != null);
+    const present = Object.keys(data.languages).filter(
+      (code) => data.languages[code] != null,
+    );
     if (present.length < 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

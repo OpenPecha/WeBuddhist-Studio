@@ -1,4 +1,4 @@
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { normalizeLanguageCode } from "@/lib/languageCodes";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 
 export type PlanNewFromSeriesState = {
@@ -8,10 +8,6 @@ export type PlanNewFromSeriesState = {
   start_date?: string | null;
 };
 
-const VALID_LANGUAGE_CODES = new Set(
-  PLAN_LANGUAGE.map((l) => l.value as LanguageCode),
-);
-
 export function parsePlanNewFromSeriesState(
   state: unknown,
 ): PlanNewFromSeriesState | null {
@@ -19,12 +15,9 @@ export function parsePlanNewFromSeriesState(
 
   const { seriesId, language } = state as Record<string, unknown>;
   if (typeof seriesId !== "string" || !seriesId.trim()) return null;
-  if (
-    typeof language !== "string" ||
-    !VALID_LANGUAGE_CODES.has(language as LanguageCode)
-  ) {
-    return null;
-  }
+  if (typeof language !== "string") return null;
+  const normalized = normalizeLanguageCode(language);
+  if (!normalized) return null;
 
   const rawStartDate = (state as Record<string, unknown>).start_date;
   const start_date =
@@ -36,7 +29,7 @@ export function parsePlanNewFromSeriesState(
 
   return {
     seriesId: seriesId.trim(),
-    language: language as LanguageCode,
+    language: normalized,
     ...(start_date !== undefined ? { start_date } : {}),
   };
 }

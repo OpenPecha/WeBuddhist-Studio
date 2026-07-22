@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ROUTES } from "@/routes/paths";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { sortLanguageCodes } from "@/lib/languageCodes";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
 import { canWriteCms } from "@/lib/platformAccess";
@@ -88,10 +88,7 @@ export const useCreateSeriesController = () => {
   }, [isNew, seriesData, form, setImagePreview, setSelectedImage]);
 
   const orderedAddedLanguages = useMemo(
-    () =>
-      PLAN_LANGUAGE.map((l) => l.value as LanguageCode).filter(
-        (code) => languages[code] != null,
-      ),
+    () => sortLanguageCodes(Object.keys(languages).filter((code) => languages[code] != null)),
     [languages],
   );
 

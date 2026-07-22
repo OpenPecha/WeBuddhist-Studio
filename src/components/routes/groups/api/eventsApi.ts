@@ -8,7 +8,10 @@ import type {
   EventMetadataRow,
   LanguageCode,
 } from "@/schema/EventSchema";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import {
+  LANGUAGE_CODE_ORDER,
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
 
 export interface ImageUrlModel {
   thumbnail: string;
@@ -156,13 +159,13 @@ export function eventName(
   );
 }
 
-const LANGUAGE_ORDER = PLAN_LANGUAGE.map((l) => l.value as LanguageCode);
+const LANGUAGE_ORDER = LANGUAGE_CODE_ORDER;
 
 export function mapEventToFormData(event: EventDTO): EventFormData {
   const rows = metadataArray(event.metadata)
     .map((m) => {
-      const language = m.language.toUpperCase() as LanguageCode;
-      if (!LANGUAGE_ORDER.includes(language)) return null;
+      const language = normalizeLanguageCode(m.language);
+      if (!language) return null;
       return {
         language,
         name: m.name?.trim() ?? "",
@@ -170,10 +173,14 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
       } satisfies EventMetadataRow;
     })
     .filter((r): r is EventMetadataRow => r != null)
-    .sort(
-      (a, b) =>
-        LANGUAGE_ORDER.indexOf(a.language) - LANGUAGE_ORDER.indexOf(b.language),
-    );
+    .sort((a, b) => {
+      const ai = LANGUAGE_ORDER.indexOf(a.language);
+      const bi = LANGUAGE_ORDER.indexOf(b.language);
+      const aRank = ai === -1 ? Number.MAX_SAFE_INTEGER : ai;
+      const bRank = bi === -1 ? Number.MAX_SAFE_INTEGER : bi;
+      if (aRank !== bRank) return aRank - bRank;
+      return a.language.localeCompare(b.language);
+    });
 
   return {
     start_date: event.start_date ?? "",

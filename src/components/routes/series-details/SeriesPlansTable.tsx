@@ -19,9 +19,7 @@ import defaultCover from "/default-image.webp";
 import { PiDotsSixVertical } from "react-icons/pi";
 import { formatDistanceToNow } from "date-fns";
 import { ROUTES } from "@/routes/paths";
-import { DASHBOARD_TABLE_ICON_BTN } from "@/components/routes/dashboard/dashboardTable";
 import {
-  FeaturedStar,
   languageChip,
   statusChip,
 } from "@/components/routes/dashboard/dashboardTableUi";
@@ -34,12 +32,6 @@ import {
 import type { SeriesPlanRow } from "./seriesDetailsTypes";
 import { SeriesPlanRowActions } from "./SeriesPlanRowActions";
 
-function formatPlanModified(modifiedAt: string | null): string {
-  if (!modifiedAt) return "—";
-  const d = new Date(modifiedAt);
-  if (Number.isNaN(d.getTime())) return "—";
-  return formatDistanceToNow(d, { addSuffix: true });
-}
 
 function SortablePlanRow({
   plan,
@@ -48,23 +40,19 @@ function SortablePlanRow({
   groupRole,
   platformRole,
   readOnly,
-  canFeature,
-  onToggleFeatured,
   onRemoveFromSeries,
   canReorder,
   showActionsColumn,
 }: {
-  plan: SeriesPlanRow;
-  seriesId: string;
-  sourceGroupId?: string | null;
-  groupRole?: AuthorGroupMemberRole;
-  platformRole?: PlatformRole;
-  readOnly?: boolean;
-  canFeature?: boolean;
-  onToggleFeatured: (planId: string) => void;
-  onRemoveFromSeries: (planId: string) => void;
-  canReorder: boolean;
-  showActionsColumn: boolean;
+  readonly plan: SeriesPlanRow;
+ readonly seriesId: string;
+ readonly sourceGroupId?: string | null;
+ readonly groupRole?: AuthorGroupMemberRole;
+ readonly platformRole?: PlatformRole;
+ readonly readOnly?: boolean;
+ readonly onRemoveFromSeries: (planId: string) => void;
+ readonly canReorder: boolean;
+ readonly showActionsColumn: boolean;
 }) {
   const navigate = useNavigate();
   const {
@@ -83,7 +71,6 @@ function SortablePlanRow({
   };
 
   const daysLabel = `${plan.total_days} ${plan.total_days === 1 ? "Day" : "Days"}`;
-  const featuredDisabled = plan.status !== "PUBLISHED";
   const canOpenPlan = canAccessPlanRoutes(platformRole);
 
   return (
@@ -153,37 +140,8 @@ function SortablePlanRow({
           </div>
         )}
       </Pecha.TableCell>
-      <Pecha.TableCell className="text-center text-sm">
-        {plan.enrolled}
-      </Pecha.TableCell>
-      <Pecha.TableCell className="text-center text-sm text-muted-foreground">
-        {formatPlanModified(plan.modifiedAt)}
-      </Pecha.TableCell>
-      <Pecha.TableCell className="text-center">
-        {canFeature && !readOnly ? (
-          <Pecha.Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className={`${DASHBOARD_TABLE_ICON_BTN} disabled:bg-[#F3F4F6] disabled:hover:bg-[#F3F4F6] dark:disabled:bg-[#2a2a2a] dark:disabled:hover:bg-[#2a2a2a]`}
-            disabled={featuredDisabled}
-            aria-label={plan.featured ? "Featured" : "Not featured"}
-            onClick={() => onToggleFeatured(plan.id)}
-          >
-            <FeaturedStar
-              featured={plan.featured}
-              disabled={featuredDisabled}
-            />
-          </Pecha.Button>
-        ) : (
-          <span
-            className={`${DASHBOARD_TABLE_ICON_BTN} inline-flex items-center justify-center`}
-            aria-hidden
-          >
-            <FeaturedStar featured={plan.featured} disabled />
-          </span>
-        )}
-      </Pecha.TableCell>
+    
+      
       {showActionsColumn ? (
         <Pecha.TableCell className="text-center">
           <SeriesPlanRowActions
@@ -204,16 +162,14 @@ function SortablePlanRow({
 }
 
 type SeriesPlansTableProps = {
-  plans: SeriesPlanRow[];
-  seriesId: string;
-  sourceGroupId?: string | null;
-  groupRole?: AuthorGroupMemberRole;
-  platformRole?: PlatformRole;
-  readOnly?: boolean;
-  canFeature?: boolean;
-  onReorder: (activeId: string, overId: string) => void;
-  onToggleFeatured: (planId: string) => void;
-  onRemoveFromSeries: (planId: string) => void;
+  readonly plans: SeriesPlanRow[];
+  readonly seriesId: string;
+  readonly sourceGroupId?: string | null;
+  readonly groupRole?: AuthorGroupMemberRole;
+  readonly platformRole?: PlatformRole;
+  readonly readOnly?: boolean;
+  readonly onReorder: (activeId: string, overId: string) => void;
+  readonly onRemoveFromSeries: (planId: string) => void;
 };
 
 export function SeriesPlansTable({
@@ -223,9 +179,7 @@ export function SeriesPlansTable({
   groupRole,
   platformRole,
   readOnly = false,
-  canFeature = false,
   onReorder,
-  onToggleFeatured,
   onRemoveFromSeries,
 }: SeriesPlansTableProps) {
   const sensors = useSensors(
@@ -256,15 +210,9 @@ export function SeriesPlansTable({
           <Pecha.TableRow className="font-dynamic">
             <Pecha.TableHead className="w-10" />
             <Pecha.TableHead className="font-bold">Title</Pecha.TableHead>
-            <Pecha.TableHead className="w-[100px] text-center font-bold">
-              Enrolled
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[130px] text-center font-bold">
-              Date Modified
-            </Pecha.TableHead>
-            <Pecha.TableHead className="w-[72px] text-center font-bold">
-              Featured
-            </Pecha.TableHead>
+            
+          
+         
             {showActionsColumn ? (
               <Pecha.TableHead className="w-[100px] text-center font-bold">
                 Actions
@@ -283,8 +231,6 @@ export function SeriesPlansTable({
                 groupRole={groupRole}
                 platformRole={platformRole}
                 readOnly={readOnly}
-                canFeature={canFeature}
-                onToggleFeatured={onToggleFeatured}
                 onRemoveFromSeries={onRemoveFromSeries}
                 canReorder={canReorder}
                 showActionsColumn={showActionsColumn}

@@ -7,7 +7,7 @@ import { LuBookOpen, LuCircleDot } from "react-icons/lu";
 import { Pecha } from "@/components/ui/shadimport";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { cn, fromBackendISO } from "@/lib/utils";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { getLanguageLabel } from "@/components/api/languagesApi";
 import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
@@ -21,8 +21,7 @@ import {
   type ImageUrlModel,
 } from "./api/eventsApi";
 
-const languageLabel = (code: string) =>
-  PLAN_LANGUAGE.find((l) => l.value === code.toUpperCase())?.label ?? code;
+const languageLabel = (code: string) => getLanguageLabel(code);
 
 const formatDate = (iso: string) => {
   if (!iso) return "—";
