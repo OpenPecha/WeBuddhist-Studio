@@ -240,7 +240,6 @@ const SeriesDetailsPage = () => {
           This series cannot be edited with your current role.
         </p>
       )}
- 
 
       <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
         <div className="flex flex-wrap gap-6">

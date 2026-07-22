@@ -31,7 +31,6 @@ import {
 import type { SeriesPlanRow } from "./seriesDetailsTypes";
 import { SeriesPlanRowActions } from "./SeriesPlanRowActions";
 
-
 function SortablePlanRow({
   plan,
   seriesId,
@@ -44,14 +43,14 @@ function SortablePlanRow({
   showActionsColumn,
 }: {
   readonly plan: SeriesPlanRow;
- readonly seriesId: string;
- readonly sourceGroupId?: string | null;
- readonly groupRole?: AuthorGroupMemberRole;
- readonly platformRole?: PlatformRole;
- readonly readOnly?: boolean;
- readonly onRemoveFromSeries: (planId: string) => void;
- readonly canReorder: boolean;
- readonly showActionsColumn: boolean;
+  readonly seriesId: string;
+  readonly sourceGroupId?: string | null;
+  readonly groupRole?: AuthorGroupMemberRole;
+  readonly platformRole?: PlatformRole;
+  readonly readOnly?: boolean;
+  readonly onRemoveFromSeries: (planId: string) => void;
+  readonly canReorder: boolean;
+  readonly showActionsColumn: boolean;
 }) {
   const navigate = useNavigate();
   const {
@@ -139,8 +138,7 @@ function SortablePlanRow({
           </div>
         )}
       </Pecha.TableCell>
-    
-      
+
       {showActionsColumn ? (
         <Pecha.TableCell className="text-center">
           <SeriesPlanRowActions
@@ -209,9 +207,7 @@ export function SeriesPlansTable({
           <Pecha.TableRow className="font-dynamic">
             <Pecha.TableHead className="w-10" />
             <Pecha.TableHead className="font-bold">Title</Pecha.TableHead>
-            
-          
-         
+
             {showActionsColumn ? (
               <Pecha.TableHead className="w-[100px] text-center font-bold">
                 Actions
