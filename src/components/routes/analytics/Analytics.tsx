@@ -1,12 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  format,
-  subDays,
-  startOfMonth,
-  endOfMonth,
-  parseISO,
-} from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import {
   Area,
@@ -183,7 +177,9 @@ function TopPlansTable({ plans }: Readonly<{ plans: AnalyticsTopPlan[] }>) {
               <Pecha.TableCell className="text-muted-foreground">
                 {index + 1}
               </Pecha.TableCell>
-              <Pecha.TableCell className="font-medium">{plan.title}</Pecha.TableCell>
+              <Pecha.TableCell className="font-medium">
+                {plan.title}
+              </Pecha.TableCell>
               <Pecha.TableCell className="text-muted-foreground">
                 {plan.series_name ?? "—"}
               </Pecha.TableCell>
@@ -372,7 +368,11 @@ const Analytics = () => {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="usersFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#171717" stopOpacity={0.22} />
+                      <stop
+                        offset="0%"
+                        stopColor="#171717"
+                        stopOpacity={0.22}
+                      />
                       <stop
                         offset="100%"
                         stopColor="#171717"

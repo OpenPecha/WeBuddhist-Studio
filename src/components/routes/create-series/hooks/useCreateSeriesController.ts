@@ -88,7 +88,10 @@ export const useCreateSeriesController = () => {
   }, [isNew, seriesData, form, setImagePreview, setSelectedImage]);
 
   const orderedAddedLanguages = useMemo(
-    () => sortLanguageCodes(Object.keys(languages).filter((code) => languages[code] != null)),
+    () =>
+      sortLanguageCodes(
+        Object.keys(languages).filter((code) => languages[code] != null),
+      ),
     [languages],
   );
 

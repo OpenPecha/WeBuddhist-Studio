@@ -1,4 +1,7 @@
-import { LANGUAGE_CODE_ORDER, normalizeLanguageCode } from "@/lib/languageCodes";
+import {
+  LANGUAGE_CODE_ORDER,
+  normalizeLanguageCode,
+} from "@/lib/languageCodes";
 import { formatDistanceToNow } from "date-fns";
 
 export type DashboardRowKind = "plan" | "series";

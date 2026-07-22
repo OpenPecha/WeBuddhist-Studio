@@ -7,10 +7,7 @@ import {
   type LanguageCode,
   type SeriesPlan,
 } from "@/schema/SeriesSchema";
-import {
-  useLanguages,
-  type StudioLanguageOption,
-} from "@/hooks/useLanguages";
+import { useLanguages, type StudioLanguageOption } from "@/hooks/useLanguages";
 
 export type UseSeriesFormReturn = {
   form: UseFormReturn<SeriesFormData>;

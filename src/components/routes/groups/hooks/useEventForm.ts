@@ -8,10 +8,7 @@ import {
   type EventFormData,
   type LanguageCode,
 } from "@/schema/EventSchema";
-import {
-  useLanguages,
-  type StudioLanguageOption,
-} from "@/hooks/useLanguages";
+import { useLanguages, type StudioLanguageOption } from "@/hooks/useLanguages";
 
 export type UseEventFormReturn = {
   form: UseFormReturn<EventFormData>;

@@ -33,9 +33,7 @@ export function getLanguageOptions(): StudioLanguageOption[] {
 
 export function getLanguageLabel(code: string): string {
   const upper = code.trim().toUpperCase();
-  return (
-    cachedLanguageOptions.find((l) => l.value === upper)?.label ?? upper
-  );
+  return cachedLanguageOptions.find((l) => l.value === upper)?.label ?? upper;
 }
 
 export function getLanguageName(code: string): string {

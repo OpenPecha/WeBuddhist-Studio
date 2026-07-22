@@ -351,9 +351,7 @@ const PlanTagSearchInput = ({
                     </Pecha.DropdownMenuTrigger>
                     <Pecha.DropdownMenuContent>
                       {languageOptions
-                        .filter(
-                          (lang) => !activeLanguages.includes(lang.value),
-                        )
+                        .filter((lang) => !activeLanguages.includes(lang.value))
                         .map((lang) => (
                           <Pecha.DropdownMenuItem
                             key={lang.value}
