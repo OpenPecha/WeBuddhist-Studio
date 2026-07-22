@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IoMdArrowBack, IoMdTrash, IoMdAdd, IoMdClose } from "react-icons/io";
 import { toast } from "sonner";
@@ -35,7 +40,9 @@ const GroupChantDetailPage = () => {
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ChantCollectionItemDTO | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedRecitations, setSelectedRecitations] = useState<FkOption[]>([]);
+  const [selectedRecitations, setSelectedRecitations] = useState<FkOption[]>(
+    [],
+  );
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["cms-chant-collection", groupId, collectionId],
@@ -82,20 +89,24 @@ const GroupChantDetailPage = () => {
       toast.error("Please select at least one recitation");
       return;
     }
-    
+
     // Check for duplicates
-    const existingTextIds = new Set(data?.items.map((item) => item.text_id) ?? []);
-    const duplicates = selectedRecitations.filter((r) => existingTextIds.has(r.id));
-    
+    const existingTextIds = new Set(
+      data?.items.map((item) => item.text_id) ?? [],
+    );
+    const duplicates = selectedRecitations.filter((r) =>
+      existingTextIds.has(r.id),
+    );
+
     if (duplicates.length > 0) {
       toast.error(
         duplicates.length === 1
           ? `"${duplicates[0].title}" is already in this collection`
-          : `${duplicates.length} chant${duplicates.length > 1 ? "s are" : " is"} already in this collection`
+          : `${duplicates.length} chant${duplicates.length > 1 ? "s are" : " is"} already in this collection`,
       );
       return;
     }
-    
+
     addItemsMutation.mutate(selectedRecitations.map((r) => r.id));
   };
 
@@ -120,7 +131,10 @@ const GroupChantDetailPage = () => {
         <p className="text-center text-destructive">
           {getApiErrorMessage(error, "Could not load this collection.")}
         </p>
-        <Pecha.Button variant="outline" onClick={() => navigate(chantsListPath)}>
+        <Pecha.Button
+          variant="outline"
+          onClick={() => navigate(chantsListPath)}
+        >
           Back to chants
         </Pecha.Button>
       </div>
@@ -148,11 +162,7 @@ const GroupChantDetailPage = () => {
             <IoMdAdd className="w-4 h-4" /> Add Chants
           </Button>
         ) : canWrite && isEditMode ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCancelEdit}
-          >
+          <Button variant="outline" size="sm" onClick={handleCancelEdit}>
             <IoMdClose className="w-4 h-4" /> Cancel
           </Button>
         ) : null}
@@ -167,9 +177,7 @@ const GroupChantDetailPage = () => {
       ) : null}
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">
-          Items ({data.items.length})
-        </h2>
+        <h2 className="text-lg font-semibold">Items ({data.items.length})</h2>
 
         {isEditMode && (
           <div className="rounded-lg border border-blue-900 bg-blue-900/5 p-4 space-y-4">
@@ -187,10 +195,14 @@ const GroupChantDetailPage = () => {
               <Pecha.Button
                 type="button"
                 onClick={handleAddItems}
-                disabled={addItemsMutation.isPending || selectedRecitations.length === 0}
+                disabled={
+                  addItemsMutation.isPending || selectedRecitations.length === 0
+                }
                 className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
               >
-                {addItemsMutation.isPending ? "Adding..." : `Add ${selectedRecitations.length} Chant${selectedRecitations.length === 1 ? "" : "s"}`}
+                {addItemsMutation.isPending
+                  ? "Adding..."
+                  : `Add ${selectedRecitations.length} Chant${selectedRecitations.length === 1 ? "" : "s"}`}
               </Pecha.Button>
             </div>
           </div>
@@ -223,12 +235,8 @@ const GroupChantDetailPage = () => {
                     <Pecha.TableCell className="font-medium">
                       {item.title}
                     </Pecha.TableCell>
-                    <Pecha.TableCell>
-                      {item.language ?? "—"}
-                    </Pecha.TableCell>
-                    <Pecha.TableCell>
-                      {item.type ?? "—"}
-                    </Pecha.TableCell>
+                    <Pecha.TableCell>{item.language ?? "—"}</Pecha.TableCell>
+                    <Pecha.TableCell>{item.type ?? "—"}</Pecha.TableCell>
                     {canWrite ? (
                       <Pecha.TableCell className="text-right">
                         <Pecha.Button

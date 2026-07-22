@@ -247,7 +247,10 @@ const router = createBrowserRouter([
           { path: "chants", element: <GroupChantsPage /> },
           { path: "chants/new", element: <GroupChantFormPage /> },
           { path: "chants/:collectionId", element: <GroupChantDetailPage /> },
-          { path: "chants/:collectionId/edit", element: <GroupChantFormPage /> },
+          {
+            path: "chants/:collectionId/edit",
+            element: <GroupChantFormPage />,
+          },
         ],
       },
       {

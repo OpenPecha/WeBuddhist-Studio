@@ -188,7 +188,7 @@ export const searchRecitations = async (params: {
       },
     },
   );
-  
+
   return {
     items: data.recitations.map((r) => ({
       id: r.text_id,

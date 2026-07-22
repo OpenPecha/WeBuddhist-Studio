@@ -141,7 +141,10 @@ const GroupChantFormPage = () => {
             "Could not load this collection.",
           )}
         </p>
-        <Pecha.Button variant="outline" onClick={() => navigate(chantsListPath)}>
+        <Pecha.Button
+          variant="outline"
+          onClick={() => navigate(chantsListPath)}
+        >
           Back to chants
         </Pecha.Button>
       </div>

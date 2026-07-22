@@ -2,11 +2,7 @@ import pechaIcon from "../../../../assets/icon/pecha_icon.png";
 import { Link, useLocation } from "react-router-dom";
 import { ModeToggle } from "../mode-toggle/modetoggle";
 import { IoAnalytics, IoPricetags, IoPeople } from "react-icons/io5";
-import {
-  MdDashboard,
-  MdAdminPanelSettings,
-  MdPublicOff,
-} from "react-icons/md";
+import { MdDashboard, MdAdminPanelSettings, MdPublicOff } from "react-icons/md";
 import { ROUTES } from "@/routes/paths";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import AuthLogout from "../auth-logout/AuthLogout";
