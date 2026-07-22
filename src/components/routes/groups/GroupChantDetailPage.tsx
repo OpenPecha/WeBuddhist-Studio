@@ -82,6 +82,20 @@ const GroupChantDetailPage = () => {
       toast.error("Please select at least one recitation");
       return;
     }
+    
+    // Check for duplicates
+    const existingTextIds = new Set(data?.items.map((item) => item.text_id) ?? []);
+    const duplicates = selectedRecitations.filter((r) => existingTextIds.has(r.id));
+    
+    if (duplicates.length > 0) {
+      toast.error(
+        duplicates.length === 1
+          ? `"${duplicates[0].title}" is already in this collection`
+          : `${duplicates.length} chant${duplicates.length > 1 ? "s are" : " is"} already in this collection`
+      );
+      return;
+    }
+    
     addItemsMutation.mutate(selectedRecitations.map((r) => r.id));
   };
 
