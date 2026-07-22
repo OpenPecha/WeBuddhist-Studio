@@ -9,7 +9,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IoMdArrowBack } from "react-icons/io";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
-import axiosInstance from "@/config/axios-config";
 import { useLanguages } from "@/hooks/useLanguages";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { ROUTES } from "@/routes/paths";
@@ -41,13 +40,6 @@ import {
   buildSeriesLanguageParams,
   parseSeriesLanguageParam,
 } from "./seriesDetailsUrlState";
-
-const togglePlanFeatured = async (planId: string) => {
-  const { data } = await axiosInstance.patch(
-    `/api/v1/cms/plans/${planId}/featured`,
-  );
-  return data;
-};
 
 const SeriesDetailsPage = () => {
   const { seriesId } = useParams<{ seriesId: string }>();
@@ -123,7 +115,6 @@ const SeriesDetailsPage = () => {
     groupRole,
     platformReadOnly,
     canEdit: canEditSeries,
-    canChangeStatus: canFeaturePlans,
     canTransfer: canTransferSeries,
   } = useGroupContentPermissions(seriesGroupId, seriesStatus);
 
@@ -146,15 +137,6 @@ const SeriesDetailsPage = () => {
           ?.response?.data?.detail?.message ?? "Could not update series plans";
       toast.error(message);
     },
-  });
-
-  const featuredMutation = useMutation({
-    mutationFn: togglePlanFeatured,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
-    },
-    onError: () => toast.error("Could not update featured"),
   });
 
   const applyGrouped = (next: PlansByLanguage) => {

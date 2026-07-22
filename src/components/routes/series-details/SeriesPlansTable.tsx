@@ -17,7 +17,6 @@ import { Pecha } from "@/components/ui/shadimport";
 import { useNavigate } from "react-router-dom";
 import defaultCover from "/default-image.webp";
 import { PiDotsSixVertical } from "react-icons/pi";
-import { formatDistanceToNow } from "date-fns";
 import { ROUTES } from "@/routes/paths";
 import {
   languageChip,
