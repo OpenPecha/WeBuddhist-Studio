@@ -12,14 +12,6 @@ export const DIFFICULTY = [
   { label: "Intermediate", value: "INTERMEDIATE" },
   { label: "Advanced", value: "ADVANCED" },
 ];
-export const PLAN_LANGUAGE = [
-  { label: "English", value: "EN" },
-  { label: "བོད་ཡིག", value: "BO" },
-  { label: "中文", value: "ZH" },
-  { label: "Hindi", value: "HI" },
-  { label: "Nepali", value: "NE" },
-  { label: "Mongolian", value: "MN" },
-];
 export const SOCIAL_PLATFORMS = [
   { value: "facebook", label: "Facebook", icon: "Facebook" },
   { value: "SignIn", label: "SignIn", icon: "SignIn" },

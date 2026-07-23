@@ -1,5 +1,5 @@
 import { Pecha } from "@/components/ui/shadimport";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { useTranslate } from "@tolgee/react";
 import { useDebounce } from "use-debounce";
@@ -14,8 +14,22 @@ import {
   searchTitles,
   fetchTextDetails,
 } from "@/components/api/searchApi";
-import { flattenSegments, getLastSegmentId } from "@/lib/utils";
+import {
+  flattenSegments,
+  getFirstSegmentId,
+  getLastSegmentId,
+} from "@/lib/utils";
 import type { SourceData } from "./SourceDetail";
+
+type TextDetailsPageParam =
+  | {
+      segmentId?: string;
+      direction?: "next" | "previous";
+      start?: number;
+      end?: number;
+      size?: number;
+    }
+  | undefined;
 
 interface SourceSelectorSheetProps {
   isOpen: boolean;
@@ -33,6 +47,15 @@ export const SourceSelectorSheet = ({
   const [pagination, setPagination] = useState({ currentPage: 1, limit: 10 });
   const [searchOnlyTitles, setSearchOnlyTitles] = useState(true);
   const [selectedSource, setSelectedSource] = useState<any>(null);
+  const [segmentRange, setSegmentRange] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+  const [scrollToSegmentNumber, setScrollToSegmentNumber] = useState<
+    number | null
+  >(null);
+  /** After a previous-page fetch (or initial/range load), wait until top leaves view before fetching again. */
+  const [blockPreviousUntilLeave, setBlockPreviousUntilLeave] = useState(true);
   const { t } = useTranslate();
 
   const skip = useMemo(
@@ -79,26 +102,64 @@ export const SourceSelectorSheet = ({
   const {
     data: detailsData,
     fetchNextPage,
+    fetchPreviousPage,
     hasNextPage,
+    hasPreviousPage,
+    isFetching,
     isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["textDetails", selectedSource?.id],
-    initialPageParam: undefined as
-      | { segmentId: string; direction: "next" | "previous" }
-      | undefined,
+    isFetchingPreviousPage,
+  } = useInfiniteQuery<
+    any,
+    Error,
+    any,
+    (string | { start: number; end: number } | null | undefined)[],
+    TextDetailsPageParam
+  >({
+    queryKey: ["textDetails", selectedSource?.id, segmentRange],
+    initialPageParam: (segmentRange
+      ? { start: segmentRange.start, end: segmentRange.end }
+      : { size: 20 }) as TextDetailsPageParam,
     queryFn: ({ pageParam }) =>
       fetchTextDetails({
         textId: selectedSource.id,
         segmentId: pageParam?.segmentId,
-        direction: pageParam?.direction as "next" | "previous" | undefined,
-        size: 20,
+        direction: pageParam?.direction,
+        size: pageParam?.size ?? 20,
+        start: pageParam?.start,
+        end: pageParam?.end,
       }),
-    getNextPageParam: (lastPage: any) => {
-      if (lastPage?.current_segment_position >= lastPage?.total_segments)
-        return undefined;
-      const lastSegmentId = getLastSegmentId(lastPage.content.sections);
-      if (!lastSegmentId) return undefined;
-      return { segmentId: lastSegmentId, direction: "next" };
+    getNextPageParam: (lastPage) => {
+      if (!lastPage?.has_more_down) return undefined;
+      const segments = flattenSegments(lastPage.content.sections);
+      const lastNumber = segments.at(-1)?.segment_number;
+      if (!lastNumber) {
+        const lastSegmentId = getLastSegmentId(lastPage.content.sections);
+        if (!lastSegmentId) return undefined;
+        return {
+          segmentId: lastSegmentId,
+          direction: "next" as const,
+          size: 20,
+        };
+      }
+      return { start: lastNumber + 1, end: lastNumber + 20 };
+    },
+    getPreviousPageParam: (firstPage) => {
+      if (!firstPage?.has_more_up) return undefined;
+      const segments = flattenSegments(firstPage.content.sections);
+      const firstNumber = segments[0]?.segment_number;
+      if (!firstNumber || firstNumber <= 1) {
+        const firstSegmentId = getFirstSegmentId(firstPage.content.sections);
+        if (!firstSegmentId) return undefined;
+        return {
+          segmentId: firstSegmentId,
+          direction: "previous" as const,
+          size: 20,
+        };
+      }
+      return {
+        start: Math.max(1, firstNumber - 20),
+        end: firstNumber - 1,
+      };
     },
     enabled: !!selectedSource?.id && searchOnlyTitles,
     refetchOnWindowFocus: false,
@@ -109,21 +170,69 @@ export const SourceSelectorSheet = ({
     rootMargin: "50px",
   });
 
+  const { ref: topSentinelRef, inView: isTopVisible } = useInView({
+    threshold: 0.1,
+    rootMargin: "50px",
+  });
+
   useEffect(() => {
     if (isBottomVisible && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [isBottomVisible, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // While previous pages are loading/prepended, the top sentinel often stays in view —
+  // block further upward fetches until the user scrolls away from the top.
+  useEffect(() => {
+    if (isFetchingPreviousPage) {
+      setBlockPreviousUntilLeave(true);
+    }
+  }, [isFetchingPreviousPage]);
+
+  useEffect(() => {
+    if (blockPreviousUntilLeave && !isTopVisible) {
+      setBlockPreviousUntilLeave(false);
+    }
+  }, [blockPreviousUntilLeave, isTopVisible]);
+
+  useEffect(() => {
+    if (blockPreviousUntilLeave) return;
+    if (isTopVisible && hasPreviousPage && !isFetchingPreviousPage) {
+      void fetchPreviousPage();
+    }
+  }, [
+    blockPreviousUntilLeave,
+    isTopVisible,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+    fetchPreviousPage,
+  ]);
+
   const detailSegments = useMemo(() => {
     if (!detailsData?.pages) return [];
-    const allSegments = detailsData.pages.flatMap((page) =>
+    const allSegments = detailsData.pages.flatMap((page: any) =>
       flattenSegments(page.content.sections),
     );
     return Array.from(
       new Map(allSegments.map((s: any) => [s.segment_id, s])).values(),
+    ).sort(
+      (a: any, b: any) => (a.segment_number ?? 0) - (b.segment_number ?? 0),
     );
   }, [detailsData?.pages]);
+
+  const totalSegments = detailsData?.pages?.[0]?.total_segments ?? 0;
+
+  const handleRangeNavigate = useCallback((start: number, end: number) => {
+    setBlockPreviousUntilLeave(true);
+    setSegmentRange({ start, end });
+    setScrollToSegmentNumber(start);
+  }, []);
+
+  const isRangeLoading =
+    Boolean(segmentRange) &&
+    isFetching &&
+    !isFetchingNextPage &&
+    !isFetchingPreviousPage;
 
   const isLoading = searchOnlyTitles ? isTitleLoading : isMultilingualLoading;
 
@@ -135,8 +244,8 @@ export const SourceSelectorSheet = ({
     ? detailSegments
     : selectedSource?.segment_matches || [];
 
-  const totalSegments = multilingualData?.total || 0;
-  const totalPages = Math.ceil(totalSegments / pagination.limit);
+  const totalSearchResults = multilingualData?.total || 0;
+  const totalPages = Math.ceil(totalSearchResults / pagination.limit);
 
   const handlePageChange = (pageNumber: number) => {
     setPagination((prev) => ({ ...prev, currentPage: pageNumber }));
@@ -147,17 +256,25 @@ export const SourceSelectorSheet = ({
       onAddSource(sourceData);
       onOpenChange(false);
       setSelectedSource(null);
+      setSegmentRange(null);
+      setScrollToSegmentNumber(null);
     }
   };
 
   const handleTitleClick = (source: any) => {
-    setSelectedSource((prev: any) => (prev?.id === source.id ? null : source));
+    setSelectedSource((prev: any) => {
+      if (prev?.id === source.id) return null;
+      setSegmentRange(null);
+      setScrollToSegmentNumber(null);
+      setBlockPreviousUntilLeave(true);
+      return source;
+    });
   };
 
   const renderSegmentList = () => {
     if (sources.length === 0) {
       return (
-        <div className="text-center min-h-[400px] flex flex-col items-center justify-center">
+        <div className="text-center min-h-[400px] flex items-center justify-center flex-col">
           <img
             src={pechaIcon}
             alt="no data found"
@@ -192,13 +309,19 @@ export const SourceSelectorSheet = ({
                   <img src={pechaIcon} alt="source icon" className="w-8 h-8" />
                 </button>
 
-                {isSelected && segments.length > 0 && (
+                {isSelected && (
                   <SelectedSourceDetail
                     segments={segments}
                     selectedSource={selectedSource}
                     onAdd={handleAddSource}
                     bottomRef={bottomSentinelRef}
+                    topRef={topSentinelRef}
                     isFetchingNextPage={isFetchingNextPage}
+                    isFetchingPreviousPage={isFetchingPreviousPage}
+                    isRangeLoading={isRangeLoading}
+                    totalSegments={totalSegments}
+                    onRangeNavigate={handleRangeNavigate}
+                    scrollToSegmentNumber={scrollToSegmentNumber}
                   />
                 )}
               </div>
@@ -226,6 +349,8 @@ export const SourceSelectorSheet = ({
           setSelectedSource(null);
           setSearchFilter("");
           setPagination({ currentPage: 1, limit: 10 });
+          setSegmentRange(null);
+          setScrollToSegmentNumber(null);
         }
         onOpenChange(open);
       }}
@@ -255,6 +380,8 @@ export const SourceSelectorSheet = ({
                 setSearchOnlyTitles(!!checked);
                 setPagination({ currentPage: 1, limit: 10 });
                 setSelectedSource(null);
+                setSegmentRange(null);
+                setScrollToSegmentNumber(null);
               }}
               className="data-[state=checked]:bg-transparent data-[state=checked]:text-primary"
             />

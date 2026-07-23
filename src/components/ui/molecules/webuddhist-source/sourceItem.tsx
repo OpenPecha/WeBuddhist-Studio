@@ -22,6 +22,7 @@ const SourceItem = ({ source, onSegment, searchQuery }: any) => {
                 pecha_segment_id: segment.pecha_segment_id,
                 text_id: source.text.text_id,
                 segment_ids: [segment.segment_id],
+                segment_numbers: [segment.segment_number ?? index + 1],
               })
             }
           >

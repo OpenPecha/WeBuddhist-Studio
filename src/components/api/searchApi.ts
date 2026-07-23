@@ -18,6 +18,8 @@ type SearchTextDetails = {
   segmentId?: string;
   direction?: "next" | "previous";
   size?: number;
+  start?: number;
+  end?: number;
 };
 export const searchSources = async ({
   query,
@@ -56,10 +58,14 @@ export const fetchTextDetails = async ({
   segmentId,
   direction = "next",
   size = 20,
+  start,
+  end,
 }: SearchTextDetails) => {
   const { data } = await axiosInstance.post(`/api/v1/texts/${textId}/details`, {
     ...(contentId && { content_id: contentId }),
     ...(segmentId && { segment_id: segmentId }),
+    ...(start != null && { start }),
+    ...(end != null && { end }),
     direction,
     size,
   });
