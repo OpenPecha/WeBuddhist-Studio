@@ -13,7 +13,6 @@ import {
   TooltipTrigger,
 } from "../../atoms/tooltip";
 import AuthAvatar from "@/components/ui/molecules/auth-avatar/AuthAvatar";
-import NotificationBell from "@/components/ui/molecules/notification-bell/NotificationBell";
 import VerseOfDayButton from "@/components/routes/verse-of-day/VerseOfDayButton";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { canAccessAdminAuthors } from "@/lib/platformAccess";
@@ -140,7 +139,6 @@ const Navbar = () => {
                 </TooltipContent>
               </Tooltip>
             ))}
-            <NotificationBell />
             <VerseOfDayButton />
           </div>
         </div>
