@@ -9,7 +9,10 @@ import {
   type GroupActor,
 } from "@/components/routes/groups/lib/groupPermissions";
 
-/** Resolves the current user's role in each group (for content permission checks). */
+/**
+ * Sparse fallback: resolve membership role via group detail only for ids
+ * that are not already known from the list API (`my_role`).
+ */
 export function useGroupRolesMap(
   groupIds: (string | null | undefined)[],
   user: GroupActor | undefined,

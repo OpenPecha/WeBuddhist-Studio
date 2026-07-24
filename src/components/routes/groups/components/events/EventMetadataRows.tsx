@@ -2,7 +2,8 @@ import type { UseFormReturn } from "react-hook-form";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { getLanguageLabel } from "@/components/api/languagesApi";
+import { useLanguages } from "@/hooks/useLanguages";
 import type { EventFormData, LanguageCode } from "@/schema/EventSchema";
 
 type EventMetadataRowsProps = {
@@ -15,8 +16,7 @@ type EventMetadataRowsProps = {
   onRemove: (index: number) => void;
 };
 
-const languageLabel = (code: string) =>
-  PLAN_LANGUAGE.find((l) => l.value === code)?.label ?? code;
+const languageLabel = (code: string) => getLanguageLabel(code);
 
 const EventMetadataRows = ({
   form,
@@ -27,6 +27,7 @@ const EventMetadataRows = ({
   onAdd,
   onRemove,
 }: EventMetadataRowsProps) => {
+  const { languageOptions } = useLanguages();
   const metadata = form.watch("metadata") ?? [];
 
   return (
@@ -71,11 +72,10 @@ const EventMetadataRows = ({
                         </Pecha.SelectTrigger>
                       </Pecha.FormControl>
                       <Pecha.SelectContent>
-                        {PLAN_LANGUAGE.map((lang) => {
+                        {languageOptions.map((lang) => {
                           const takenByAnother =
-                            usedLanguages.includes(
-                              lang.value as LanguageCode,
-                            ) && lang.value !== currentLang;
+                            usedLanguages.includes(lang.value) &&
+                            lang.value !== currentLang;
                           return (
                             <Pecha.SelectItem
                               key={lang.value}

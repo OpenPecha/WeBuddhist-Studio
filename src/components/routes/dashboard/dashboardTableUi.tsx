@@ -1,12 +1,12 @@
 import { FaStar } from "react-icons/fa";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { getLanguageLabel } from "@/components/api/languagesApi";
 import type { DashboardLanguageCode } from "./dashboardTable";
 
 const LANGUAGE_CHIP_CLASS =
   "rounded-full bg-[#F8F9FA] px-2.5 py-0.5 text-xs font-medium text-gray-900 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-100 dark:ring-gray-700";
 
 export function languageChipLabel(code: DashboardLanguageCode): string {
-  return PLAN_LANGUAGE.find((lang) => lang.value === code)?.label ?? code;
+  return getLanguageLabel(code);
 }
 
 export function FeaturedStar({

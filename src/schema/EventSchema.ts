@@ -1,18 +1,10 @@
 import { z } from "zod";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import type { LanguageCode } from "@/lib/languageCodes";
 
-const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as [
-  "EN",
-  "BO",
-  "ZH",
-  "HI",
-  "NE",
-  "MN",
-];
-export type LanguageCode = (typeof LANGUAGE_CODES)[number];
+export type { LanguageCode };
 
 export const eventMetadataRowSchema = z.object({
-  language: z.enum(LANGUAGE_CODES),
+  language: z.string().trim().min(1, "Language is required"),
   name: z.string().trim().min(1, "Name is required"),
   description: z.string().trim(),
 });

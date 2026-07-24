@@ -50,6 +50,7 @@ export interface SubTaskPayload {
   source_text_id?: string | null;
   pecha_segment_id?: string | null;
   segment_ids?: string[] | null;
+  segment_numbers?: number[] | null;
   start_ms?: number | null;
   end_ms?: number | null;
 }

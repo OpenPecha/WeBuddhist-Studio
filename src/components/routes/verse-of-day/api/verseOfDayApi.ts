@@ -1,12 +1,7 @@
 import axiosInstance from "@/config/axios-config";
 
 export interface VerseContent {
-  en: string;
-  bo: string;
-  zh: string;
-  hi: string;
-  ne: string;
-  mn: string;
+  [lang: string]: string;
 }
 
 export interface VerseOfDayPayload {

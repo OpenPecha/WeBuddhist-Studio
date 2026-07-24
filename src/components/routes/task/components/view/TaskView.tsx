@@ -80,7 +80,10 @@ const SourceReferenceWithVersion = ({ subtask }: { subtask: any }) => {
 
   return (
     <div className="relative">
-      <SourceReferenceContent content={subtask.content} />
+      <SourceReferenceContent
+        content={subtask.content}
+        segmentNumbers={subtask.segment_numbers}
+      />
       {preset && (
         <div className="relative mt-2 ml-4">
           {/* Connecting line */}

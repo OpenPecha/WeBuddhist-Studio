@@ -168,6 +168,18 @@ export const getLastSegmentId = (sections: any[]): string | null => {
   );
 };
 
+export const getFirstSegmentId = (sections: any[]): string | null => {
+  if (!sections?.length) {
+    return null;
+  }
+  const firstSection = sections[0];
+  return (
+    firstSection.segments?.[0]?.segment_id ??
+    getFirstSegmentId(firstSection.sections) ??
+    null
+  );
+};
+
 export const flattenSegments = (sections: any[]): any[] => {
   if (!sections?.length) return [];
   const result: any[] = [];
@@ -182,31 +194,43 @@ export const flattenSegments = (sections: any[]): any[] => {
   return result;
 };
 
-export const parseSelection = (
+export const parseRangeBounds = (
   input: string,
-  max: number,
-): Set<number> | null => {
+): { start: number; end: number } | null => {
   const trimmed = input.trim();
-  if (!trimmed) return null;
+  if (!trimmed || trimmed.endsWith("-")) return null;
 
   const rangeMatch = RANGE_REGEX.exec(trimmed);
   if (rangeMatch) {
     const start = Number.parseInt(rangeMatch[1], 10);
     const end = Number.parseInt(rangeMatch[2], 10);
-    if (start < 1 || end < start || start > max) return null;
-    const selected = new Set<number>();
-    for (let i = start; i <= Math.min(end, max); i++) selected.add(i);
-    return selected;
+    if (start < 1 || end < start) return null;
+    return { start, end };
   }
 
   const singleMatch = SINGLE_REGEX.exec(trimmed);
   if (singleMatch) {
     const num = Number.parseInt(singleMatch[1], 10);
-    if (num < 1 || num > max) return null;
-    return new Set([num]);
+    if (num < 1) return null;
+    return { start: num, end: num };
   }
 
   return null;
+};
+
+export const parseSelection = (
+  input: string,
+  max: number,
+): Set<number> | null => {
+  const bounds = parseRangeBounds(input);
+  if (!bounds) return null;
+  if (bounds.start > max) return null;
+
+  const selected = new Set<number>();
+  for (let i = bounds.start; i <= Math.min(bounds.end, max); i++) {
+    selected.add(i);
+  }
+  return selected;
 };
 
 export const toBackendISO = (d: Date): string =>

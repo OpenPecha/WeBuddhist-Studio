@@ -37,6 +37,7 @@ interface DashboardContentTableProps {
     featured: boolean,
   ) => void;
   platformRole?: PlatformRole;
+  /** Membership roles from the groups list API (`my_role`), keyed by group id. */
   groupRolesByGroupId?: Map<string, AuthorGroupMemberRole | undefined>;
   userInfo?: UserInfo | null;
 }
@@ -53,6 +54,7 @@ export function DashboardContentTable({
   const navigate = useNavigate();
   const platformReadOnly = isReviewer(platformRole);
   const showActionsColumn = shouldShowCmsActionsColumn(platformRole);
+  const rolesMap = groupRolesByGroupId ?? new Map();
 
   const renderBody = () => {
     if (isLoading)
@@ -64,11 +66,7 @@ export function DashboardContentTable({
         </Pecha.TableRow>
       );
     return rows.map((row) => {
-      const groupRole = resolveDashboardRowGroupRole(
-        row,
-        groupRolesByGroupId,
-        userInfo,
-      );
+      const groupRole = resolveDashboardRowGroupRole(row, rolesMap, userInfo);
       const canFeature = canChangeContentStatus(groupRole, platformRole);
       const daysLabel = `${row.total_days} ${row.total_days === 1 ? "Day" : "Days"}`;
       const titleHref =
