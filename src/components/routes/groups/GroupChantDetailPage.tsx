@@ -84,7 +84,9 @@ function SortableChantItemRow({
           </button>
         </Pecha.TableCell>
       ) : null}
-      <Pecha.TableCell className="text-muted-foreground">{index + 1}</Pecha.TableCell>
+      <Pecha.TableCell className="text-muted-foreground">
+        {index + 1}
+      </Pecha.TableCell>
       <Pecha.TableCell className="font-medium">{item.title}</Pecha.TableCell>
       <Pecha.TableCell>{item.language ?? "—"}</Pecha.TableCell>
       <Pecha.TableCell>{item.type ?? "—"}</Pecha.TableCell>
@@ -282,9 +284,7 @@ const GroupChantDetailPage = () => {
       ) : null}
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">
-          Items ({displayItems.length})
-        </h2>
+        <h2 className="text-lg font-semibold">Items ({displayItems.length})</h2>
 
         {isEditMode && (
           <div className="rounded-lg border border-blue-900 bg-blue-900/5 p-4 space-y-4">

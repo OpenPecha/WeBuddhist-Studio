@@ -48,8 +48,7 @@ export const useChantItemReorder = (
     },
   });
 
-  const displayItems =
-    orderedItems.length > 0 ? orderedItems : (items ?? []);
+  const displayItems = orderedItems.length > 0 ? orderedItems : (items ?? []);
   const canReorder = canWrite && displayItems.length > 1;
 
   const handleReorder = (activeId: string, overId: string) => {
