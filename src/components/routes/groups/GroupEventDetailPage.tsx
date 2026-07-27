@@ -3,7 +3,12 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { IoCalendarClearOutline } from "react-icons/io5";
-import { LuBookOpen, LuCircleDot, LuLibrary } from "react-icons/lu";
+import {
+  LuBookOpen,
+  LuCircleDot,
+  LuLibrary,
+  LuScrollText,
+} from "react-icons/lu";
 import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownPreview } from "@/components/ui/molecules/markdown-editor/MarkdownPreview";
 import { getApiErrorMessage } from "@/lib/apiErrors";
@@ -21,6 +26,7 @@ import {
   fetchCmsEvent,
   metadataArray,
   resolveLinkedAccumulator,
+  resolveLinkedChantCollection,
   resolveLinkedContent,
   type EventDTO,
   type EventMetadataDTO,
@@ -90,6 +96,7 @@ const GroupEventDetailPage = () => {
   const planId = data?.plan_id;
   const seriesId = data?.series_id;
   const accumulatorId = data?.accumulator_id;
+  const chantCollectionId = data?.group_recitation_collection_id;
 
   useEffect(() => {
     let active = true;
@@ -110,10 +117,15 @@ const GroupEventDetailPage = () => {
         setTitle("accumulator", o.title),
       );
     }
+    if (chantCollectionId && groupId) {
+      resolveLinkedChantCollection(groupId, chantCollectionId).then((o) =>
+        setTitle("chant", o.title),
+      );
+    }
     return () => {
       active = false;
     };
-  }, [groupId, planId, seriesId, accumulatorId]);
+  }, [groupId, planId, seriesId, accumulatorId, chantCollectionId]);
 
   const eventsListPath = groupId ? ROUTES.groupEvents(groupId) : ROUTES.groups;
 
@@ -155,6 +167,12 @@ const GroupEventDetailPage = () => {
       key: "accumulator",
       label: "Accumulator",
       Icon: LuCircleDot,
+    },
+    {
+      id: chantCollectionId,
+      key: "chant",
+      label: "Chant collection",
+      Icon: LuScrollText,
     },
   ].filter((link) => Boolean(link.id));
 

@@ -2,6 +2,7 @@ import axiosInstance from "@/config/axios-config";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { makeLinkedContentSearchFn } from "@/components/routes/groups/api/groupPickerApi";
 import { searchAccumulatorPresets } from "@/components/routes/groups/api/accumulatorPresetSearchApi";
+import { fetchChantCollection } from "@/components/routes/groups/api/chantsApi";
 import type { FkOption } from "@/components/routes/groups/components/FkMultiSearchSelector";
 import type {
   EventFormData,
@@ -46,6 +47,7 @@ export interface EventDTO {
   plan_id?: string;
   series_id?: string;
   accumulator_id?: string;
+  group_recitation_collection_id?: string;
   start_date: string;
   end_date: string;
   is_one_day: boolean;
@@ -88,6 +90,7 @@ export interface CreateEventRequest {
   plan_id?: string;
   series_id?: string;
   accumulator_id?: string;
+  group_recitation_collection_id?: string;
 }
 
 export interface UpdateEventRequest {
@@ -100,12 +103,14 @@ export interface UpdateEventRequest {
   plan_id?: string;
   series_id?: string;
   accumulator_id?: string;
+  group_recitation_collection_id?: string | null;
 }
 
 export interface EventListFilters {
   group_id?: string;
   plan_id?: string;
   accumulator_id?: string;
+  group_recitation_collection_id?: string;
   from_date?: string;
   to_date?: string;
   language?: string;
@@ -225,6 +230,8 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     plan_id: event.plan_id?.trim() ?? "",
     series_id: event.series_id?.trim() ?? "",
     accumulator_id: event.accumulator_id?.trim() ?? "",
+    group_recitation_collection_id:
+      event.group_recitation_collection_id?.trim() ?? "",
   };
 }
 
@@ -269,6 +276,7 @@ export function buildCreateEventBody(
   const planId = data.plan_id.trim();
   const seriesId = data.series_id.trim();
   const accumulatorId = data.accumulator_id.trim();
+  const chantCollectionId = data.group_recitation_collection_id.trim();
   return {
     group_id: groupId,
     start_date: data.start_date,
@@ -279,6 +287,9 @@ export function buildCreateEventBody(
     ...(planId ? { plan_id: planId } : {}),
     ...(seriesId ? { series_id: seriesId } : {}),
     ...(accumulatorId ? { accumulator_id: accumulatorId } : {}),
+    ...(chantCollectionId
+      ? { group_recitation_collection_id: chantCollectionId }
+      : {}),
   };
 }
 
@@ -333,6 +344,22 @@ export function resolveLinkedAccumulator(id: string): Promise<FkOption> {
   return resolveLinkOption(id, "Linked accumulator", searchAccumulatorPresets);
 }
 
+export async function resolveLinkedChantCollection(
+  groupId: string,
+  id: string,
+): Promise<FkOption> {
+  try {
+    const collection = await fetchChantCollection(groupId, id);
+    return {
+      id: collection.id,
+      title: collection.name?.trim() || "Linked chant collection",
+      ...(collection.img_url ? { image_url: collection.img_url } : {}),
+    };
+  } catch {
+    return { id, title: "Linked chant collection" };
+  }
+}
+
 function metadataEqual(a: EventMetadataRow[], b: EventMetadataRow[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -369,6 +396,12 @@ export function buildUpdateEventBody(
     const next = data[key].trim();
     const prev = original[key].trim();
     if (next !== prev) body[key] = next;
+  }
+
+  const nextChant = data.group_recitation_collection_id.trim();
+  const prevChant = original.group_recitation_collection_id.trim();
+  if (nextChant !== prevChant) {
+    body.group_recitation_collection_id = nextChant || null;
   }
 
   return body;

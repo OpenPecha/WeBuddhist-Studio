@@ -16,6 +16,7 @@ import {
   fetchCmsEvent,
   mapEventToFormData,
   resolveLinkedAccumulator,
+  resolveLinkedChantCollection,
   resolveLinkedContent,
   updateCmsEvent,
   type EventDTO,
@@ -78,6 +79,7 @@ const GroupEventFormPage = () => {
   const [accumulatorValue, setAccumulatorValue] = useState<FkOption | null>(
     null,
   );
+  const [chantValue, setChantValue] = useState<FkOption | null>(null);
 
   const eventQuery = useQuery({
     queryKey: ["cms-event", eventId],
@@ -120,6 +122,14 @@ const GroupEventFormPage = () => {
       );
     } else {
       setAccumulatorValue(null);
+    }
+    if (formData.group_recitation_collection_id && groupId) {
+      resolveLinkedChantCollection(
+        groupId,
+        formData.group_recitation_collection_id,
+      ).then(setChantValue);
+    } else {
+      setChantValue(null);
     }
   }, [isNew, eventData, form, groupId, setImagePreview, setSelectedImage]);
 
@@ -228,8 +238,10 @@ const GroupEventFormPage = () => {
             readOnly={readOnly}
             contentValue={contentValue}
             accumulatorValue={accumulatorValue}
+            chantValue={chantValue}
             onContentChange={setContentValue}
             onAccumulatorChange={setAccumulatorValue}
+            onChantChange={setChantValue}
           />
 
           <EventUrlLinksSection
