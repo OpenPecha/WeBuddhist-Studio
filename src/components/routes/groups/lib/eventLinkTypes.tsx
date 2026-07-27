@@ -26,3 +26,6 @@ export const eventLinkTypeLabel = (type: string): string => {
   const trimmed = type.trim();
   return TYPE_MAP.get(trimmed.toLowerCase())?.label ?? trimmed;
 };
+
+export const isSafeLinkUrl = (url: string): boolean =>
+  /^https?:\/\//i.test(url.trim());

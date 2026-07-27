@@ -12,7 +12,11 @@ import { getLanguageLabel } from "@/components/api/languagesApi";
 import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
-import { eventLinkIcon, eventLinkTypeLabel } from "./lib/eventLinkTypes";
+import {
+  eventLinkIcon,
+  eventLinkTypeLabel,
+  isSafeLinkUrl,
+} from "./lib/eventLinkTypes";
 import {
   fetchCmsEvent,
   metadataArray,
@@ -154,9 +158,9 @@ const GroupEventDetailPage = () => {
     },
   ].filter((link) => Boolean(link.id));
 
-  const urlLinks = [...(data.links ?? [])].sort(
-    (a, b) => a.display_order - b.display_order,
-  );
+  const urlLinks = [...(data.links ?? [])]
+    .filter((link) => isSafeLinkUrl(link.url))
+    .sort((a, b) => a.display_order - b.display_order);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
