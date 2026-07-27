@@ -5,6 +5,7 @@ import {
   eventSchema,
   defaultEventFormValues,
   emptyMetadataRow,
+  emptyLinkRow,
   type EventFormData,
   type LanguageCode,
 } from "@/schema/EventSchema";
@@ -13,10 +14,14 @@ import { useLanguages, type StudioLanguageOption } from "@/hooks/useLanguages";
 export type UseEventFormReturn = {
   form: UseFormReturn<EventFormData>;
   metadataRows: ReturnType<typeof useFieldArray<EventFormData, "metadata">>;
+  linkRows: ReturnType<typeof useFieldArray<EventFormData, "links">>;
   usedLanguages: LanguageCode[];
   availableLanguages: StudioLanguageOption[];
   addMetadataRow: () => void;
   removeMetadataRow: (index: number) => void;
+  addLinkRow: () => void;
+  removeLinkRow: (index: number) => void;
+  moveLinkRow: (from: number, to: number) => void;
   setImageUrl: (url: string) => void;
   setOneDay: (oneDay: boolean) => void;
   setStartDate: (iso: string) => void;
@@ -34,6 +39,11 @@ export const useEventForm = (): UseEventFormReturn => {
   const metadataRows = useFieldArray({
     control: form.control,
     name: "metadata",
+  });
+
+  const linkRows = useFieldArray({
+    control: form.control,
+    name: "links",
   });
 
   const metadata = form.watch("metadata") ?? [];
@@ -58,6 +68,30 @@ export const useEventForm = (): UseEventFormReturn => {
       metadataRows.remove(index);
     },
     [form, metadataRows],
+  );
+
+  const addLinkRow = useCallback(() => {
+    linkRows.append(emptyLinkRow());
+  }, [linkRows]);
+
+  const removeLinkRow = useCallback(
+    (index: number) => {
+      linkRows.remove(index);
+    },
+    [linkRows],
+  );
+
+  const moveLinkRow = useCallback(
+    (from: number, to: number) => {
+      const count = form.getValues("links")?.length ?? 0;
+      if (to < 0 || to >= count || from === to) return;
+      linkRows.move(from, to);
+      // move() alone does not flip isDirty; mark the field so Save enables.
+      form.setValue(`links.${to}.type`, form.getValues(`links.${to}.type`), {
+        shouldDirty: true,
+      });
+    },
+    [form, linkRows],
   );
 
   const setImageUrl = useCallback(
@@ -118,10 +152,14 @@ export const useEventForm = (): UseEventFormReturn => {
   return {
     form,
     metadataRows,
+    linkRows,
     usedLanguages,
     availableLanguages,
     addMetadataRow,
     removeMetadataRow,
+    addLinkRow,
+    removeLinkRow,
+    moveLinkRow,
     setImageUrl,
     setOneDay,
     setStartDate,

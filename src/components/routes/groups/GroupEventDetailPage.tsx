@@ -12,6 +12,7 @@ import { getLanguageLabel } from "@/components/api/languagesApi";
 import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
+import { eventLinkIcon, eventLinkTypeLabel } from "./lib/eventLinkTypes";
 import {
   fetchCmsEvent,
   metadataArray,
@@ -153,6 +154,10 @@ const GroupEventDetailPage = () => {
     },
   ].filter((link) => Boolean(link.id));
 
+  const urlLinks = [...(data.links ?? [])].sort(
+    (a, b) => a.display_order - b.display_order,
+  );
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
@@ -197,13 +202,47 @@ const GroupEventDetailPage = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 px-5 py-4 text-sm text-muted-foreground">
-          <IoCalendarClearOutline className="h-4 w-4" />
-          <span className="text-foreground">{formatDateRange(data)}</span>
-          {data.is_one_day ? (
-            <Pecha.Badge variant="secondary" className="ml-1">
-              One-day event
-            </Pecha.Badge>
+        <div className="space-y-3 px-5 py-4">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <IoCalendarClearOutline className="h-4 w-4" />
+            <span className="text-foreground">{formatDateRange(data)}</span>
+            {data.is_one_day ? (
+              <Pecha.Badge variant="secondary" className="ml-1">
+                One-day event
+              </Pecha.Badge>
+            ) : null}
+          </div>
+
+          {urlLinks.length > 0 ? (
+            <Pecha.TooltipProvider delayDuration={200}>
+              <div className="flex flex-wrap gap-2 border-t border-dashed pt-3">
+                {urlLinks.map((link) => {
+                  const Icon = eventLinkIcon(link.type);
+                  const label =
+                    link.label?.trim() || eventLinkTypeLabel(link.type);
+                  return (
+                    <Pecha.Tooltip key={link.id}>
+                      <Pecha.TooltipTrigger asChild>
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-[#A51C21] hover:text-[#A51C21]"
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="max-w-[12rem] truncate">
+                            {label}
+                          </span>
+                        </a>
+                      </Pecha.TooltipTrigger>
+                      <Pecha.TooltipContent className="max-w-xs break-all">
+                        {link.url}
+                      </Pecha.TooltipContent>
+                    </Pecha.Tooltip>
+                  );
+                })}
+              </div>
+            </Pecha.TooltipProvider>
           ) : null}
         </div>
       </div>

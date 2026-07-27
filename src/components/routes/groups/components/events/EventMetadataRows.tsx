@@ -52,7 +52,7 @@ const EventMetadataRows = ({
         return (
           <div
             key={field.id}
-            className="space-y-3 rounded-lg border border-border p-4"
+            className="space-y-3 rounded-lg border border-border bg-[#FAFAFA] p-4 dark:bg-[#262626]"
           >
             <div className="flex items-start justify-between gap-3">
               <Pecha.FormField
@@ -67,7 +67,7 @@ const EventMetadataRows = ({
                       disabled={readOnly}
                     >
                       <Pecha.FormControl>
-                        <Pecha.SelectTrigger>
+                        <Pecha.SelectTrigger className="w-full bg-white dark:bg-[#181818]">
                           <Pecha.SelectValue placeholder="Language" />
                         </Pecha.SelectTrigger>
                       </Pecha.FormControl>
@@ -116,6 +116,7 @@ const EventMetadataRows = ({
                       {...nameField}
                       placeholder="Event name"
                       disabled={readOnly}
+                      className="bg-white dark:bg-[#181818]"
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />
@@ -135,6 +136,8 @@ const EventMetadataRows = ({
                       onChange={descField.onChange}
                       placeholder="Description"
                       disabled={readOnly}
+                      className="bg-white dark:bg-[#181818]"
+                      textareaClassName="bg-white dark:bg-[#181818]"
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />

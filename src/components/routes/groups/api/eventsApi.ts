@@ -5,6 +5,7 @@ import { searchAccumulatorPresets } from "@/components/routes/groups/api/accumul
 import type { FkOption } from "@/components/routes/groups/components/FkMultiSearchSelector";
 import type {
   EventFormData,
+  EventLinkRow,
   EventMetadataRow,
   LanguageCode,
 } from "@/schema/EventSchema";
@@ -31,6 +32,14 @@ export type EventMetadataResponse =
   | EventMetadataDTO[]
   | null;
 
+export interface EventLinkDTO {
+  id: string;
+  type: string;
+  url: string;
+  label?: string;
+  display_order: number;
+}
+
 export interface EventDTO {
   id: string;
   group_id: string;
@@ -41,6 +50,7 @@ export interface EventDTO {
   end_date: string;
   is_one_day: boolean;
   metadata: EventMetadataResponse;
+  links?: EventLinkDTO[];
   image?: ImageUrlModel;
   image_url?: string;
   created_at: string;
@@ -61,11 +71,19 @@ export interface EventMetadataInput {
   language: LanguageCode;
 }
 
+export interface EventLinkInput {
+  type: string;
+  url: string;
+  label?: string;
+  display_order: number;
+}
+
 export interface CreateEventRequest {
   group_id: string;
   start_date: string;
   end_date: string;
   metadata: EventMetadataInput[];
+  links?: EventLinkInput[];
   image_url?: string;
   plan_id?: string;
   series_id?: string;
@@ -77,6 +95,7 @@ export interface UpdateEventRequest {
   start_date?: string;
   end_date?: string;
   metadata?: EventMetadataInput[];
+  links?: EventLinkInput[];
   image_url?: string;
   plan_id?: string;
   series_id?: string;
@@ -185,17 +204,50 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
       return a.language.localeCompare(b.language);
     });
 
+  const links = [...(event.links ?? [])]
+    .sort((a, b) => a.display_order - b.display_order)
+    .map(
+      (link): EventLinkRow => ({
+        type: link.type?.trim() ?? "",
+        url: link.url?.trim() ?? "",
+        label: link.label?.trim() ?? "",
+      }),
+    );
+
   return {
     start_date: event.start_date ?? "",
     end_date: event.end_date ?? "",
     is_one_day: Boolean(event.is_one_day),
     metadata:
       rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
+    links,
     image_url: event.image_url?.trim() ?? "",
     plan_id: event.plan_id?.trim() ?? "",
     series_id: event.series_id?.trim() ?? "",
     accumulator_id: event.accumulator_id?.trim() ?? "",
   };
+}
+
+function buildLinksInput(rows: EventLinkRow[]): EventLinkInput[] {
+  return rows.map((row, index) => {
+    const label = row.label.trim();
+    return {
+      type: row.type.trim(),
+      url: row.url.trim(),
+      display_order: index + 1,
+      ...(label ? { label } : {}),
+    };
+  });
+}
+
+function linksEqual(a: EventLinkRow[], b: EventLinkRow[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].type.trim() !== b[i].type.trim()) return false;
+    if (a[i].url.trim() !== b[i].url.trim()) return false;
+    if (a[i].label.trim() !== b[i].label.trim()) return false;
+  }
+  return true;
 }
 
 function buildMetadataInput(rows: EventMetadataRow[]): EventMetadataInput[] {
@@ -222,6 +274,7 @@ export function buildCreateEventBody(
     start_date: data.start_date,
     end_date: data.end_date,
     metadata: buildMetadataInput(data.metadata),
+    ...(data.links.length ? { links: buildLinksInput(data.links) } : {}),
     ...(imageUrl ? { image_url: imageUrl } : {}),
     ...(planId ? { plan_id: planId } : {}),
     ...(seriesId ? { series_id: seriesId } : {}),
@@ -236,7 +289,12 @@ async function resolveLinkOption(
     search?: string;
     skip?: number;
     limit?: number;
-  }) => Promise<{ items: FkOption[]; skip: number; limit: number; total: number }>,
+  }) => Promise<{
+    items: FkOption[];
+    skip: number;
+    limit: number;
+    total: number;
+  }>,
   fallbackKind?: "plan" | "series",
 ): Promise<FkOption> {
   const PAGE = 20;
@@ -249,23 +307,26 @@ async function resolveLinkOption(
       const fetched = res.skip + res.items.length;
       if (fetched >= res.total || res.items.length === 0) break;
     }
-  } catch {
-  }
-  return { id, title: fallbackLabel, ...(fallbackKind ? { kind: fallbackKind } : {}) };
+  } catch {}
+  return {
+    id,
+    title: fallbackLabel,
+    ...(fallbackKind ? { kind: fallbackKind } : {}),
+  };
 }
 
-/**
- * Hydrate the "Linked content" chip for an existing event. The stored id may be
- * a plan or a series; searching the group's content (tab=all) returns the row
- * with its `kind`, so we get both the title and the correct badge.
- */
 export function resolveLinkedContent(
   groupId: string,
   id: string,
   kind: "plan" | "series",
 ): Promise<FkOption> {
   const fallback = kind === "series" ? "Linked series" : "Linked plan";
-  return resolveLinkOption(id, fallback, makeLinkedContentSearchFn(groupId), kind);
+  return resolveLinkOption(
+    id,
+    fallback,
+    makeLinkedContentSearchFn(groupId),
+    kind,
+  );
 }
 
 export function resolveLinkedAccumulator(id: string): Promise<FkOption> {
@@ -294,6 +355,10 @@ export function buildUpdateEventBody(
 
   if (!metadataEqual(data.metadata, original.metadata)) {
     body.metadata = buildMetadataInput(data.metadata);
+  }
+
+  if (!linksEqual(data.links, original.links)) {
+    body.links = buildLinksInput(data.links);
   }
 
   const scalarKeys: (keyof Pick<

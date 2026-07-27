@@ -98,6 +98,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/atoms/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/atoms/tooltip";
 
 export const Pecha = {
   Avatar,
@@ -177,4 +183,8 @@ export const Pecha = {
   CommandItem,
   CommandShortcut,
   CommandSeparator,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 };

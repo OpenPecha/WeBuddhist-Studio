@@ -25,6 +25,7 @@ import type { FkOption } from "./components/FkMultiSearchSelector";
 import EventMetadataRows from "./components/events/EventMetadataRows";
 import EventDateSection from "./components/events/EventDateSection";
 import EventLinksSection from "./components/events/EventLinksSection";
+import EventUrlLinksSection from "./components/events/EventUrlLinksSection";
 import EventImageField from "./components/events/EventImageField";
 import type { EventFormData } from "@/schema/EventSchema";
 
@@ -56,10 +57,14 @@ const GroupEventFormPage = () => {
   const {
     form,
     metadataRows,
+    linkRows,
     usedLanguages,
     availableLanguages,
     addMetadataRow,
     removeMetadataRow,
+    addLinkRow,
+    removeLinkRow,
+    moveLinkRow,
     setImageUrl,
     setOneDay,
     setStartDate,
@@ -225,6 +230,15 @@ const GroupEventFormPage = () => {
             accumulatorValue={accumulatorValue}
             onContentChange={setContentValue}
             onAccumulatorChange={setAccumulatorValue}
+          />
+
+          <EventUrlLinksSection
+            form={form}
+            fields={linkRows.fields}
+            readOnly={readOnly}
+            onAdd={addLinkRow}
+            onRemove={removeLinkRow}
+            onMove={moveLinkRow}
           />
 
           <EventImageField
