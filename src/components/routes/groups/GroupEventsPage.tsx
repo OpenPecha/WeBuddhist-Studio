@@ -9,12 +9,14 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { fromBackendISO } from "@/lib/utils";
 import { ROUTES } from "@/routes/paths";
+import { FeaturedStar } from "@/components/routes/dashboard/dashboardTableUi";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
 import {
   deleteCmsEvent,
   eventName,
   fetchCmsEvents,
+  toggleEventFeatured,
   type EventDTO,
 } from "./api/eventsApi";
 
@@ -82,6 +84,15 @@ const GroupEventsPage = () => {
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
+  const featuredMutation = useMutation({
+    mutationFn: (id: string) => toggleEventFeatured(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cms-events", groupId] });
+    },
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Could not update featured")),
+  });
+
   const columnCount = canWrite ? 3 : 2;
 
   const body = useMemo(() => {
@@ -141,6 +152,15 @@ const GroupEventsPage = () => {
                 <Pecha.Button
                   variant="outline"
                   size="sm"
+                  disabled={featuredMutation.isPending}
+                  aria-label={event.featured ? "Featured" : "Not featured"}
+                  onClick={() => featuredMutation.mutate(event.id)}
+                >
+                  <FeaturedStar featured={event.featured} />
+                </Pecha.Button>
+                <Pecha.Button
+                  variant="outline"
+                  size="sm"
                   onClick={() =>
                     navigate(ROUTES.groupEventEdit(groupId, event.id))
                   }
@@ -171,6 +191,7 @@ const GroupEventsPage = () => {
     canWrite,
     groupId,
     navigate,
+    featuredMutation,
   ]);
 
   return (
