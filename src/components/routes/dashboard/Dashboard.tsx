@@ -11,7 +11,6 @@ import {
   mergeDashboardUrlState,
   parseDashboardSearchParams,
   type DashboardPlanStatus,
-  type DashboardSort,
   type DashboardUrlState,
 } from "@/components/routes/dashboard/dashboardUrlState";
 import { IoMdSearch } from "react-icons/io";
@@ -266,8 +265,6 @@ const Dashboard = () => {
         ? "Create a series to see it listed here."
         : "Try clearing search or add new plans and series.";
 
-  const sortValue: DashboardSort = urlState.sort ?? "recent";
-
   const groupFilterValue = urlState.groupId ?? "all";
 
   const filterBar = (
@@ -305,7 +302,7 @@ const Dashboard = () => {
           </Pecha.Select>
         </div>
       ) : null}
-     
+
       <div className="flex min-w-[160px] flex-col gap-1">
         <span className="text-xs font-medium text-muted-foreground">
           Language
