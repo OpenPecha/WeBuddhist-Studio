@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IoMdAdd, IoMdTrash } from "react-icons/io";
+import { IoPeopleOutline } from "react-icons/io5";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
@@ -82,7 +83,7 @@ const GroupEventsPage = () => {
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
-  const columnCount = canWrite ? 3 : 2;
+  const columnCount = canWrite ? 4 : 3;
 
   const body = useMemo(() => {
     if (isLoading) {
@@ -135,6 +136,12 @@ const GroupEventsPage = () => {
             </Link>
           </Pecha.TableCell>
           <Pecha.TableCell>{formatEventRange(event)}</Pecha.TableCell>
+          <Pecha.TableCell>
+            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+              <IoPeopleOutline className="h-4 w-4 shrink-0" />
+              {event.participant_count ?? 0}
+            </span>
+          </Pecha.TableCell>
           {canWrite ? (
             <Pecha.TableCell className="text-right">
               <div className="flex justify-end gap-2">
@@ -193,6 +200,7 @@ const GroupEventsPage = () => {
             <Pecha.TableRow>
               <Pecha.TableHead>Name</Pecha.TableHead>
               <Pecha.TableHead>Dates</Pecha.TableHead>
+              <Pecha.TableHead>Participants</Pecha.TableHead>
               {canWrite ? (
                 <Pecha.TableHead className="text-right">
                   Actions

@@ -55,6 +55,7 @@ export interface EventDTO {
   links?: EventLinkDTO[];
   image?: ImageUrlModel;
   image_url?: string;
+  participant_count?: number;
   created_at: string;
   created_by: string;
   updated_at?: string;
