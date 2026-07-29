@@ -5,13 +5,15 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { Button } from "@/components/ui/atoms/button";
 import { Calendar } from "@/components/ui/atoms/calendar";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { useLanguages } from "@/hooks/useLanguages";
+import type { LanguageCode } from "@/lib/languageCodes";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import {
   createVerseOfDay,
   updateVerseOfDay,
   type VerseOfDayPayload,
   type VerseOfDayItem,
+  type VerseContent,
 } from "./api/verseOfDayApi";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
@@ -31,7 +33,8 @@ interface VerseOfDayFormProps {
   existingVerses: VerseOfDayItem[];
 }
 
-type LanguageCode = "EN" | "BO" | "ZH" | "HI" | "NE" | "MN";
+const emptyVerses = (codes: string[]): VerseContent =>
+  Object.fromEntries(codes.map((code) => [code.toLowerCase(), ""]));
 
 const VerseOfDayForm = ({
   mode,
@@ -40,15 +43,12 @@ const VerseOfDayForm = ({
   onCancel,
   existingVerses,
 }: VerseOfDayFormProps) => {
+  const { languageOptions, getLanguageLabel } = useLanguages();
+  const languageCodes = languageOptions.map((l) => l.value);
   const [activeLanguage, setActiveLanguage] = useState<LanguageCode>("EN");
-  const [verses, setVerses] = useState({
-    en: "",
-    bo: "",
-    zh: "",
-    hi: "",
-    ne: "",
-    mn: "",
-  });
+  const [verses, setVerses] = useState<VerseContent>(() =>
+    emptyVerses(["EN", "BO", "ZH", "HI", "NE", "MN"]),
+  );
   const [imageKey, setImageKey] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
@@ -59,14 +59,15 @@ const VerseOfDayForm = ({
 
   useEffect(() => {
     if (mode === "edit" && initialData) {
-      setVerses({
-        en: initialData.verses.en || "",
-        bo: initialData.verses.bo || "",
-        zh: initialData.verses.zh || "",
-        hi: initialData.verses.hi || "",
-        ne: initialData.verses.ne || "",
-        mn: initialData.verses.mn || "",
-      });
+      const next = emptyVerses(
+        languageCodes.length > 0
+          ? languageCodes
+          : Object.keys(initialData.verses ?? {}).map((c) => c.toUpperCase()),
+      );
+      for (const [key, value] of Object.entries(initialData.verses ?? {})) {
+        next[key.toLowerCase()] = value || "";
+      }
+      setVerses(next);
       // Set image preview from existing data
       setImageKey(null);
       setImagePreview(initialData.image_url || null);
@@ -75,13 +76,13 @@ const VerseOfDayForm = ({
       setDate(parse(initialData.date, "yyyy-MM-dd", new Date()));
     } else {
       setActiveLanguage("EN");
-      setVerses({ en: "", bo: "", zh: "", hi: "", ne: "", mn: "" });
+      setVerses(emptyVerses(languageCodes.length > 0 ? languageCodes : ["EN"]));
       setImageKey(null);
       setImagePreview(null);
       setGroupId("");
       setDate(new Date());
     }
-  }, [mode, initialData]);
+  }, [mode, initialData, languageCodes.join(",")]);
 
   const createMutation = useMutation({
     mutationFn: createVerseOfDay,
@@ -135,14 +136,7 @@ const VerseOfDayForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !verses.en.trim() &&
-      !verses.bo.trim() &&
-      !verses.zh.trim() &&
-      !verses.hi.trim() &&
-      !verses.ne.trim() &&
-      !verses.mn.trim()
-    ) {
+    if (!Object.values(verses).some((v) => v.trim())) {
       toast.error("At least one verse content is required");
       return;
     }
@@ -174,18 +168,15 @@ const VerseOfDayForm = ({
       return;
     }
 
+    const trimmedVerses = Object.fromEntries(
+      Object.entries(verses).map(([key, value]) => [key, value.trim()]),
+    );
+
     // For create, send all required fields
     // For update, only send fields that have changed
     if (mode === "edit" && initialData) {
       const updatePayload: any = {
-        verses: {
-          en: verses.en.trim(),
-          bo: verses.bo.trim(),
-          zh: verses.zh.trim(),
-          hi: verses.hi.trim(),
-          ne: verses.ne.trim(),
-          mn: verses.mn.trim(),
-        },
+        verses: trimmedVerses,
       };
 
       // Only include date if it changed
@@ -213,14 +204,7 @@ const VerseOfDayForm = ({
       updateMutation.mutate({ id: initialData.id, payload: updatePayload });
     } else {
       const createPayload: any = {
-        verses: {
-          en: verses.en.trim(),
-          bo: verses.bo.trim(),
-          zh: verses.zh.trim(),
-          hi: verses.hi.trim(),
-          ne: verses.ne.trim(),
-          mn: verses.mn.trim(),
-        },
+        verses: trimmedVerses,
         image_urls: imageKey ? [imageKey] : [],
         group_id: groupId.trim() || null,
         date: format(date, "yyyy-MM-dd"),
@@ -230,9 +214,10 @@ const VerseOfDayForm = ({
   };
 
   const handleVerseChange = (value: string) => {
+    const key = activeLanguage.toLowerCase();
     setVerses({
       ...verses,
-      [activeLanguage.toLowerCase()]: value,
+      [key]: value,
     });
   };
 
@@ -243,11 +228,11 @@ const VerseOfDayForm = ({
       <div className="space-y-2">
         <label className="text-sm font-bold">Verse Content</label>
         <div className="flex gap-2 border-b">
-          {PLAN_LANGUAGE.map((lang) => (
+          {languageOptions.map((lang) => (
             <button
               key={lang.value}
               type="button"
-              onClick={() => setActiveLanguage(lang.value as LanguageCode)}
+              onClick={() => setActiveLanguage(lang.value)}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 activeLanguage === lang.value
                   ? "border-b-2 border-[#A51C21] text-[#A51C21]"
@@ -259,9 +244,9 @@ const VerseOfDayForm = ({
           ))}
         </div>
         <Textarea
-          value={verses[activeLanguage.toLowerCase() as keyof typeof verses]}
+          value={verses[activeLanguage.toLowerCase()] ?? ""}
           onChange={(e) => handleVerseChange(e.target.value)}
-          placeholder={`Enter verse content in ${PLAN_LANGUAGE.find((l) => l.value === activeLanguage)?.label}`}
+          placeholder={`Enter verse content in ${getLanguageLabel(activeLanguage)}`}
           className="min-h-[120px] resize-none"
         />
       </div>

@@ -2,6 +2,7 @@ import axiosInstance from "@/config/axios-config";
 import {
   LANGUAGE_CODE_ORDER,
   normalizeLanguageCode,
+  sortLanguageCodes,
 } from "@/lib/languageCodes";
 import type {
   LanguageCode,
@@ -138,9 +139,10 @@ function parseNameObject(
   name: Record<string, unknown>,
 ): SeriesFormData["languages"] {
   const languages: SeriesFormData["languages"] = {};
-  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
-  for (const code of order) {
-    const raw = name[code];
+  for (const key of Object.keys(name)) {
+    const code = normalizeLang(key);
+    if (!code) continue;
+    const raw = name[key];
     if (raw == null) continue;
     if (typeof raw === "string") {
       languages[code] = { title: raw.trim(), sub_title: "", description: "" };
@@ -250,9 +252,8 @@ export function mapSeriesDetailToFormData(
 export function buildSeriesMetadata(
   languages: SeriesFormData["languages"],
 ): SeriesMetadataInput[] {
-  const order: LanguageCode[] = [...LANGUAGE_CODE_ORDER];
   const out: SeriesMetadataInput[] = [];
-  for (const code of order) {
+  for (const code of sortLanguageCodes(Object.keys(languages))) {
     const block = languages[code];
     if (!block) continue;
     out.push({

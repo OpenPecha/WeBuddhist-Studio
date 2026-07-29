@@ -1,15 +1,7 @@
 import { z } from "zod";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import type { LanguageCode } from "@/lib/languageCodes";
 
-const LANGUAGE_CODES = PLAN_LANGUAGE.map((l) => l.value) as [
-  "EN",
-  "BO",
-  "ZH",
-  "HI",
-  "NE",
-  "MN",
-];
-export type GroupLanguageCode = (typeof LANGUAGE_CODES)[number];
+export type GroupLanguageCode = LanguageCode;
 
 export const groupLanguageBlockSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
@@ -38,19 +30,14 @@ export const groupCoreSchema = z
       ),
     group_type: authorGroupTypeSchema,
     is_public: z.boolean(),
-    languages: z.object({
-      EN: groupLanguageBlockSchema.optional(),
-      BO: groupLanguageBlockSchema.optional(),
-      ZH: groupLanguageBlockSchema.optional(),
-      HI: groupLanguageBlockSchema.optional(),
-      NE: groupLanguageBlockSchema.optional(),
-      MN: groupLanguageBlockSchema.optional(),
-    }),
+    languages: z.record(z.string(), groupLanguageBlockSchema),
     avatar_key: z.string().optional(),
     banner_key: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    const present = LANGUAGE_CODES.filter((c) => data.languages[c] != null);
+    const present = Object.keys(data.languages).filter(
+      (code) => data.languages[code] != null,
+    );
     if (present.length < 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
