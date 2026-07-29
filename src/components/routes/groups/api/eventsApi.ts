@@ -51,6 +51,7 @@ export interface EventDTO {
   start_date: string;
   end_date: string;
   is_one_day: boolean;
+  featured: boolean;
   metadata: EventMetadataResponse;
   links?: EventLinkDTO[];
   image?: ImageUrlModel;
@@ -163,6 +164,10 @@ export const updateCmsEvent = async (
 
 export const deleteCmsEvent = async (eventId: string): Promise<void> => {
   await axiosInstance.delete(`/api/v1/cms/events/${eventId}`);
+};
+
+export const toggleEventFeatured = async (eventId: string): Promise<void> => {
+  await axiosInstance.patch(`/api/v1/cms/events/${eventId}/featured`);
 };
 
 export const uploadEventImage = async (file: File): Promise<string> => {
