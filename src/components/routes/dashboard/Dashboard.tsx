@@ -11,7 +11,6 @@ import {
   mergeDashboardUrlState,
   parseDashboardSearchParams,
   type DashboardPlanStatus,
-  type DashboardSort,
   type DashboardUrlState,
 } from "@/components/routes/dashboard/dashboardUrlState";
 import { IoMdSearch } from "react-icons/io";
@@ -266,8 +265,6 @@ const Dashboard = () => {
         ? "Create a series to see it listed here."
         : "Try clearing search or add new plans and series.";
 
-  const sortValue: DashboardSort = urlState.sort ?? "recent";
-
   const groupFilterValue = urlState.groupId ?? "all";
 
   const filterBar = (
@@ -305,25 +302,7 @@ const Dashboard = () => {
           </Pecha.Select>
         </div>
       ) : null}
-      <div className="flex min-w-[180px] flex-col gap-1">
-        <span className="text-xs font-medium text-muted-foreground">Sort</span>
-        <Pecha.Select
-          value={sortValue}
-          onValueChange={() => {
-            // Backend sort is fixed; keep URL clean (omit `sort` = default).
-            replaceUrlState({ sort: null });
-          }}
-        >
-          <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
-            <Pecha.SelectValue placeholder="Sort" />
-          </Pecha.SelectTrigger>
-          <Pecha.SelectContent>
-            <Pecha.SelectItem value="recent">
-              Recently modified
-            </Pecha.SelectItem>
-          </Pecha.SelectContent>
-        </Pecha.Select>
-      </div>
+
       <div className="flex min-w-[160px] flex-col gap-1">
         <span className="text-xs font-medium text-muted-foreground">
           Language

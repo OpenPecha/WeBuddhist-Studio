@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Link,
   useNavigate,
@@ -6,7 +5,24 @@ import {
   useParams,
 } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { CSS } from "@dnd-kit/utilities";
 import { IoMdArrowBack, IoMdTrash, IoMdAdd, IoMdClose } from "react-icons/io";
+import { PiDotsSixVertical } from "react-icons/pi";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
@@ -23,6 +39,73 @@ import {
 } from "./api/chantsApi";
 import FkMultiSearchSelector from "./components/FkMultiSearchSelector";
 import type { FkOption } from "./components/FkMultiSearchSelector";
+import { useChantItemReorder } from "./hooks/useChantItemReorder";
+
+function SortableChantItemRow({
+  item,
+  index,
+  canWrite,
+  canReorder,
+  onRemove,
+}: {
+  readonly item: ChantCollectionItemDTO;
+  readonly index: number;
+  readonly canWrite: boolean;
+  readonly canReorder: boolean;
+  readonly onRemove: (item: ChantCollectionItemDTO) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id, disabled: !canReorder });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Pecha.TableRow ref={setNodeRef} style={style} {...attributes}>
+      {canWrite ? (
+        <Pecha.TableCell className="w-10">
+          <button
+            type="button"
+            className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground touch-none disabled:cursor-not-allowed disabled:opacity-30"
+            aria-label={`Reorder ${item.title}`}
+            disabled={!canReorder}
+            {...listeners}
+          >
+            <PiDotsSixVertical className="h-4 w-4" />
+          </button>
+        </Pecha.TableCell>
+      ) : null}
+      <Pecha.TableCell className="text-muted-foreground">
+        {index + 1}
+      </Pecha.TableCell>
+      <Pecha.TableCell className="font-medium">{item.title}</Pecha.TableCell>
+      <Pecha.TableCell>{item.language ?? "—"}</Pecha.TableCell>
+      <Pecha.TableCell>{item.type ?? "—"}</Pecha.TableCell>
+      {canWrite ? (
+        <Pecha.TableCell className="text-right">
+          <Pecha.Button
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={() => onRemove(item)}
+            aria-label={`Remove ${item.title}`}
+          >
+            <IoMdTrash className="h-4 w-4" />
+          </Pecha.Button>
+        </Pecha.TableCell>
+      ) : null}
+    </Pecha.TableRow>
+  );
+}
 
 const GroupChantDetailPage = () => {
   const { groupId, collectionId } = useParams<{
@@ -50,6 +133,17 @@ const GroupChantDetailPage = () => {
     enabled: Boolean(groupId) && Boolean(collectionId),
     refetchOnWindowFocus: false,
   });
+
+  const { displayItems, canReorder, handleReorder } = useChantItemReorder(
+    groupId,
+    collectionId,
+    data?.items,
+    canWrite,
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
 
   const deleteItemMutation = useMutation({
     mutationFn: (itemId: string) =>
@@ -90,7 +184,6 @@ const GroupChantDetailPage = () => {
       return;
     }
 
-    // Check for duplicates
     const existingTextIds = new Set(
       data?.items.map((item) => item.text_id) ?? [],
     );
@@ -99,11 +192,11 @@ const GroupChantDetailPage = () => {
     );
 
     if (duplicates.length > 0) {
-      toast.error(
+      const duplicateMessage =
         duplicates.length === 1
           ? `"${duplicates[0].title}" is already in this collection`
-          : `${duplicates.length} chant${duplicates.length > 1 ? "s are" : " is"} already in this collection`,
-      );
+          : `${duplicates.length} chants are already in this collection`;
+      toast.error(duplicateMessage);
       return;
     }
 
@@ -114,6 +207,19 @@ const GroupChantDetailPage = () => {
     setIsEditMode(false);
     setSelectedRecitations([]);
   };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      handleReorder(String(active.id), String(over.id));
+    }
+  };
+
+  const addButtonLabel = (() => {
+    if (addItemsMutation.isPending) return "Adding...";
+    const count = selectedRecitations.length;
+    return `Add ${count} ${count === 1 ? "Chant" : "Chants"}`;
+  })();
 
   const chantsListPath = groupId ? ROUTES.groupChants(groupId) : ROUTES.groups;
 
@@ -152,7 +258,7 @@ const GroupChantDetailPage = () => {
           </Button>
           <h1 className="text-xl font-bold">{data.name}</h1>
         </div>
-        {canWrite && !isEditMode ? (
+        {canWrite && !isEditMode && (
           <Button
             variant="default"
             size="sm"
@@ -161,11 +267,12 @@ const GroupChantDetailPage = () => {
           >
             <IoMdAdd className="w-4 h-4" /> Add Chants
           </Button>
-        ) : canWrite && isEditMode ? (
+        )}
+        {canWrite && isEditMode && (
           <Button variant="outline" size="sm" onClick={handleCancelEdit}>
             <IoMdClose className="w-4 h-4" /> Cancel
           </Button>
-        ) : null}
+        )}
       </div>
 
       {data.img_url ? (
@@ -177,7 +284,7 @@ const GroupChantDetailPage = () => {
       ) : null}
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Items ({data.items.length})</h2>
+        <h2 className="text-lg font-semibold">Items ({displayItems.length})</h2>
 
         {isEditMode && (
           <div className="rounded-lg border border-blue-900 bg-blue-900/5 p-4 space-y-4">
@@ -200,60 +307,56 @@ const GroupChantDetailPage = () => {
                 }
                 className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
               >
-                {addItemsMutation.isPending
-                  ? "Adding..."
-                  : `Add ${selectedRecitations.length} Chant${selectedRecitations.length === 1 ? "" : "s"}`}
+                {addButtonLabel}
               </Pecha.Button>
             </div>
           </div>
         )}
 
-        {data.items.length === 0 ? (
+        {displayItems.length === 0 ? (
           <p className="text-muted-foreground">No items in this collection.</p>
         ) : (
           <div className="rounded-lg border">
-            <Pecha.Table>
-              <Pecha.TableHeader>
-                <Pecha.TableRow>
-                  <Pecha.TableHead className="w-12">#</Pecha.TableHead>
-                  <Pecha.TableHead>Title</Pecha.TableHead>
-                  <Pecha.TableHead>Language</Pecha.TableHead>
-                  <Pecha.TableHead>Type</Pecha.TableHead>
-                  {canWrite ? (
-                    <Pecha.TableHead className="text-right">
-                      Actions
-                    </Pecha.TableHead>
-                  ) : null}
-                </Pecha.TableRow>
-              </Pecha.TableHeader>
-              <Pecha.TableBody>
-                {data.items.map((item, index) => (
-                  <Pecha.TableRow key={item.id}>
-                    <Pecha.TableCell className="text-muted-foreground">
-                      {index + 1}
-                    </Pecha.TableCell>
-                    <Pecha.TableCell className="font-medium">
-                      {item.title}
-                    </Pecha.TableCell>
-                    <Pecha.TableCell>{item.language ?? "—"}</Pecha.TableCell>
-                    <Pecha.TableCell>{item.type ?? "—"}</Pecha.TableCell>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+              modifiers={[restrictToVerticalAxis]}
+            >
+              <Pecha.Table>
+                <Pecha.TableHeader>
+                  <Pecha.TableRow>
+                    {canWrite ? <Pecha.TableHead className="w-10" /> : null}
+                    <Pecha.TableHead className="w-12">#</Pecha.TableHead>
+                    <Pecha.TableHead>Title</Pecha.TableHead>
+                    <Pecha.TableHead>Language</Pecha.TableHead>
+                    <Pecha.TableHead>Type</Pecha.TableHead>
                     {canWrite ? (
-                      <Pecha.TableCell className="text-right">
-                        <Pecha.Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setPendingDeleteItem(item)}
-                          aria-label={`Remove ${item.title}`}
-                        >
-                          <IoMdTrash className="h-4 w-4" />
-                        </Pecha.Button>
-                      </Pecha.TableCell>
+                      <Pecha.TableHead className="text-right">
+                        Actions
+                      </Pecha.TableHead>
                     ) : null}
                   </Pecha.TableRow>
-                ))}
-              </Pecha.TableBody>
-            </Pecha.Table>
+                </Pecha.TableHeader>
+                <SortableContext
+                  items={displayItems.map((item) => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Pecha.TableBody>
+                    {displayItems.map((item, index) => (
+                      <SortableChantItemRow
+                        key={item.id}
+                        item={item}
+                        index={index}
+                        canWrite={canWrite}
+                        canReorder={canReorder}
+                        onRemove={setPendingDeleteItem}
+                      />
+                    ))}
+                  </Pecha.TableBody>
+                </SortableContext>
+              </Pecha.Table>
+            </DndContext>
           </div>
         )}
       </div>

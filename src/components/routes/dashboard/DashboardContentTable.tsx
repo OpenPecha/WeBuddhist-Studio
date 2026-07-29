@@ -11,7 +11,6 @@ import type {
 } from "./dashboardTable";
 import {
   DASHBOARD_TABLE_ICON_BTN,
-  formatRowModified,
   isMockDashboardId,
 } from "./dashboardTable";
 import { ROUTES } from "@/routes/paths";
@@ -73,7 +72,7 @@ export function DashboardContentTable({
         row.kind === "plan" ? ROUTES.plan(row.id) : ROUTES.series(row.id);
       const canOpenTitle =
         row.kind === "series" || canAccessPlanRoutes(platformRole);
-      const modifiedDisplay = formatRowModified(row);
+   
       const canToggleFeatured =
         row.kind === "series" ||
         (row.kind === "plan" && !isMockDashboardId(row.id));
@@ -144,9 +143,7 @@ export function DashboardContentTable({
           <Pecha.TableCell className="text-sm text-center">
             {row.enrolled}
           </Pecha.TableCell>
-          <Pecha.TableCell className="text-sm text-center">
-            {modifiedDisplay}
-          </Pecha.TableCell>
+        
           <Pecha.TableCell className="text-center">
             {canToggleFeatured && canFeature && !platformReadOnly ? (
               <Pecha.Button
@@ -227,9 +224,7 @@ export function DashboardContentTable({
           <Pecha.TableHead className="w-[100px] font-bold text-center">
             {t("studio.dashboard.plan_used")}
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[130px] font-bold text-center">
-            Date Modified
-          </Pecha.TableHead>
+         
           <Pecha.TableHead className="w-[72px] font-bold text-center">
             Featured
           </Pecha.TableHead>
