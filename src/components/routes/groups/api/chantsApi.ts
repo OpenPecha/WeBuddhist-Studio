@@ -149,6 +149,24 @@ export const reorderChantItems = async (
   return data;
 };
 
+export const makeChantCollectionSearchFn =
+  (groupId: string) =>
+  async (params: { search?: string; skip?: number; limit?: number }) => {
+    const skip = params.skip ?? 0;
+    const limit = params.limit ?? 20;
+    const data = await fetchChantCollections(groupId, skip, limit);
+    return {
+      items: data.collections.map((collection) => ({
+        id: collection.id,
+        title: collection.name?.trim() || "Untitled collection",
+        ...(collection.img_url ? { image_url: collection.img_url } : {}),
+      })),
+      skip: data.skip,
+      limit: data.limit,
+      total: data.total,
+    };
+  };
+
 export const uploadChantImage = async (file: File): Promise<string> => {
   const { key } = await uploadImageToS3(file, "");
   return key;

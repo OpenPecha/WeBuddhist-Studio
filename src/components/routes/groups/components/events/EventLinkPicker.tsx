@@ -96,6 +96,11 @@ const EventLinkPicker = ({
             className="h-9 w-9 shrink-0 rounded object-cover"
           />
           <span className="min-w-0 flex-1 truncate text-sm">{value.title}</span>
+          {value.kind ? (
+            <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              {value.kind}
+            </span>
+          ) : null}
           {!disabled ? (
             <button
               type="button"
@@ -143,7 +148,14 @@ const EventLinkPicker = ({
                     alt=""
                     className="h-8 w-8 shrink-0 rounded object-cover"
                   />
-                  <span className="flex-1 text-sm">{item.title}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {item.title}
+                  </span>
+                  {item.kind ? (
+                    <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                      {item.kind}
+                    </span>
+                  ) : null}
                 </button>
               ))}
               {hasNextPage && (
