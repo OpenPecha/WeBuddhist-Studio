@@ -3,8 +3,14 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { IoCalendarClearOutline } from "react-icons/io5";
-import { LuBookOpen, LuCircleDot } from "react-icons/lu";
+import {
+  LuBookOpen,
+  LuCircleDot,
+  LuLibrary,
+  LuScrollText,
+} from "react-icons/lu";
 import { Pecha } from "@/components/ui/shadimport";
+import { MarkdownPreview } from "@/components/ui/molecules/markdown-editor/MarkdownPreview";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { cn, fromBackendISO } from "@/lib/utils";
 import { getLanguageLabel } from "@/components/api/languagesApi";
@@ -12,10 +18,16 @@ import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
 import {
+  eventLinkIcon,
+  eventLinkTypeLabel,
+  isSafeLinkUrl,
+} from "./lib/eventLinkTypes";
+import {
   fetchCmsEvent,
   metadataArray,
   resolveLinkedAccumulator,
-  resolveLinkedPlan,
+  resolveLinkedChantCollection,
+  resolveLinkedContent,
   type EventDTO,
   type EventMetadataDTO,
   type ImageUrlModel,
@@ -82,23 +94,38 @@ const GroupEventDetailPage = () => {
 
   const [linkTitles, setLinkTitles] = useState<Record<string, string>>({});
   const planId = data?.plan_id;
+  const seriesId = data?.series_id;
   const accumulatorId = data?.accumulator_id;
+  const chantCollectionId = data?.group_recitation_collection_id;
 
   useEffect(() => {
     let active = true;
     const setTitle = (key: string, title: string) =>
       active && setLinkTitles((prev) => ({ ...prev, [key]: title }));
-    if (planId)
-      resolveLinkedPlan(planId).then((o) => setTitle("plan", o.title));
+    if (planId && groupId) {
+      resolveLinkedContent(groupId, planId, "plan").then((o) =>
+        setTitle("plan", o.title),
+      );
+    }
+    if (seriesId && groupId) {
+      resolveLinkedContent(groupId, seriesId, "series").then((o) =>
+        setTitle("series", o.title),
+      );
+    }
     if (accumulatorId) {
       resolveLinkedAccumulator(accumulatorId).then((o) =>
         setTitle("accumulator", o.title),
       );
     }
+    if (chantCollectionId && groupId) {
+      resolveLinkedChantCollection(groupId, chantCollectionId).then((o) =>
+        setTitle("chant", o.title),
+      );
+    }
     return () => {
       active = false;
     };
-  }, [planId, accumulatorId]);
+  }, [groupId, planId, seriesId, accumulatorId, chantCollectionId]);
 
   const eventsListPath = groupId ? ROUTES.groupEvents(groupId) : ROUTES.groups;
 
@@ -134,13 +161,24 @@ const GroupEventDetailPage = () => {
 
   const links = [
     { id: planId, key: "plan", label: "Plan", Icon: LuBookOpen },
+    { id: seriesId, key: "series", label: "Series", Icon: LuLibrary },
     {
       id: accumulatorId,
       key: "accumulator",
       label: "Accumulator",
       Icon: LuCircleDot,
     },
+    {
+      id: chantCollectionId,
+      key: "chant",
+      label: "Chant collection",
+      Icon: LuScrollText,
+    },
   ].filter((link) => Boolean(link.id));
+
+  const urlLinks = [...(data.links ?? [])]
+    .filter((link) => isSafeLinkUrl(link.url))
+    .sort((a, b) => a.display_order - b.display_order);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -186,13 +224,47 @@ const GroupEventDetailPage = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 px-5 py-4 text-sm text-muted-foreground">
-          <IoCalendarClearOutline className="h-4 w-4" />
-          <span className="text-foreground">{formatDateRange(data)}</span>
-          {data.is_one_day ? (
-            <Pecha.Badge variant="secondary" className="ml-1">
-              One-day event
-            </Pecha.Badge>
+        <div className="space-y-3 px-5 py-4">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <IoCalendarClearOutline className="h-4 w-4" />
+            <span className="text-foreground">{formatDateRange(data)}</span>
+            {data.is_one_day ? (
+              <Pecha.Badge variant="secondary" className="ml-1">
+                One-day event
+              </Pecha.Badge>
+            ) : null}
+          </div>
+
+          {urlLinks.length > 0 ? (
+            <Pecha.TooltipProvider delayDuration={200}>
+              <div className="flex flex-wrap gap-2 border-t border-dashed pt-3">
+                {urlLinks.map((link) => {
+                  const Icon = eventLinkIcon(link.type);
+                  const label =
+                    link.label?.trim() || eventLinkTypeLabel(link.type);
+                  return (
+                    <Pecha.Tooltip key={link.id}>
+                      <Pecha.TooltipTrigger asChild>
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-[#A51C21] hover:text-[#A51C21]"
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="max-w-[12rem] truncate">
+                            {label}
+                          </span>
+                        </a>
+                      </Pecha.TooltipTrigger>
+                      <Pecha.TooltipContent className="max-w-xs break-all">
+                        {link.url}
+                      </Pecha.TooltipContent>
+                    </Pecha.Tooltip>
+                  );
+                })}
+              </div>
+            </Pecha.TooltipProvider>
           ) : null}
         </div>
       </div>
@@ -222,7 +294,10 @@ const GroupEventDetailPage = () => {
           Description
         </h2>
         {description ? (
-          <p className="whitespace-pre-line leading-relaxed">{description}</p>
+          <MarkdownPreview
+            value={description}
+            className="min-h-0 px-0 py-0 leading-relaxed"
+          />
         ) : (
           <p className="text-sm text-muted-foreground">
             No description for {languageLabel(active?.language ?? "EN")}.

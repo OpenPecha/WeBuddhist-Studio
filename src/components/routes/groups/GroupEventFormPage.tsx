@@ -16,7 +16,8 @@ import {
   fetchCmsEvent,
   mapEventToFormData,
   resolveLinkedAccumulator,
-  resolveLinkedPlan,
+  resolveLinkedChantCollection,
+  resolveLinkedContent,
   updateCmsEvent,
   type EventDTO,
   type ImageUrlModel,
@@ -25,6 +26,7 @@ import type { FkOption } from "./components/FkMultiSearchSelector";
 import EventMetadataRows from "./components/events/EventMetadataRows";
 import EventDateSection from "./components/events/EventDateSection";
 import EventLinksSection from "./components/events/EventLinksSection";
+import EventUrlLinksSection from "./components/events/EventUrlLinksSection";
 import EventImageField from "./components/events/EventImageField";
 import type { EventFormData } from "@/schema/EventSchema";
 
@@ -56,10 +58,14 @@ const GroupEventFormPage = () => {
   const {
     form,
     metadataRows,
+    linkRows,
     usedLanguages,
     availableLanguages,
     addMetadataRow,
     removeMetadataRow,
+    addLinkRow,
+    removeLinkRow,
+    moveLinkRow,
     setImageUrl,
     setOneDay,
     setStartDate,
@@ -69,10 +75,11 @@ const GroupEventFormPage = () => {
   const image = useEventImage({ setImageUrl });
   const { setImagePreview, setSelectedImage } = image;
 
-  const [planValue, setPlanValue] = useState<FkOption | null>(null);
+  const [contentValue, setContentValue] = useState<FkOption | null>(null);
   const [accumulatorValue, setAccumulatorValue] = useState<FkOption | null>(
     null,
   );
+  const [chantValue, setChantValue] = useState<FkOption | null>(null);
 
   const eventQuery = useQuery({
     queryKey: ["cms-event", eventId],
@@ -98,10 +105,16 @@ const GroupEventFormPage = () => {
     setImagePreview(resolveEventImageUrl(eventData));
     setSelectedImage(null);
 
-    if (formData.plan_id) {
-      resolveLinkedPlan(formData.plan_id).then(setPlanValue);
+    if (formData.plan_id && groupId) {
+      resolveLinkedContent(groupId, formData.plan_id, "plan").then(
+        setContentValue,
+      );
+    } else if (formData.series_id && groupId) {
+      resolveLinkedContent(groupId, formData.series_id, "series").then(
+        setContentValue,
+      );
     } else {
-      setPlanValue(null);
+      setContentValue(null);
     }
     if (formData.accumulator_id) {
       resolveLinkedAccumulator(formData.accumulator_id).then(
@@ -110,7 +123,15 @@ const GroupEventFormPage = () => {
     } else {
       setAccumulatorValue(null);
     }
-  }, [isNew, eventData, form, setImagePreview, setSelectedImage]);
+    if (formData.group_recitation_collection_id && groupId) {
+      resolveLinkedChantCollection(
+        groupId,
+        formData.group_recitation_collection_id,
+      ).then(setChantValue);
+    } else {
+      setChantValue(null);
+    }
+  }, [isNew, eventData, form, groupId, setImagePreview, setSelectedImage]);
 
   const eventsListPath = groupId ? ROUTES.groupEvents(groupId) : ROUTES.groups;
 
@@ -213,11 +234,23 @@ const GroupEventFormPage = () => {
 
           <EventLinksSection
             form={form}
+            groupId={groupId ?? ""}
             readOnly={readOnly}
-            planValue={planValue}
+            contentValue={contentValue}
             accumulatorValue={accumulatorValue}
-            onPlanChange={setPlanValue}
+            chantValue={chantValue}
+            onContentChange={setContentValue}
             onAccumulatorChange={setAccumulatorValue}
+            onChantChange={setChantValue}
+          />
+
+          <EventUrlLinksSection
+            form={form}
+            fields={linkRows.fields}
+            readOnly={readOnly}
+            onAdd={addLinkRow}
+            onRemove={removeLinkRow}
+            onMove={moveLinkRow}
           />
 
           <EventImageField
