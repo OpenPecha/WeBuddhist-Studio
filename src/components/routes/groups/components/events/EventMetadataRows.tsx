@@ -1,6 +1,7 @@
 import type { UseFormReturn } from "react-hook-form";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
+import { MarkdownEditor } from "@/components/ui/atoms/markdown-editor";
 import { getLanguageLabel } from "@/components/api/languagesApi";
 import { useLanguages } from "@/hooks/useLanguages";
 import type { EventFormData, LanguageCode } from "@/schema/EventSchema";
@@ -51,7 +52,7 @@ const EventMetadataRows = ({
         return (
           <div
             key={field.id}
-            className="space-y-3 rounded-lg border border-border p-4"
+            className="space-y-3 rounded-lg border border-border bg-[#FAFAFA] p-4 dark:bg-[#262626]"
           >
             <div className="flex items-start justify-between gap-3">
               <Pecha.FormField
@@ -66,7 +67,7 @@ const EventMetadataRows = ({
                       disabled={readOnly}
                     >
                       <Pecha.FormControl>
-                        <Pecha.SelectTrigger>
+                        <Pecha.SelectTrigger className="w-full bg-white dark:bg-[#181818]">
                           <Pecha.SelectValue placeholder="Language" />
                         </Pecha.SelectTrigger>
                       </Pecha.FormControl>
@@ -115,6 +116,7 @@ const EventMetadataRows = ({
                       {...nameField}
                       placeholder="Event name"
                       disabled={readOnly}
+                      className="bg-white dark:bg-[#181818]"
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />
@@ -129,11 +131,13 @@ const EventMetadataRows = ({
                 <Pecha.FormItem>
                   <Pecha.FormLabel>Description (optional)</Pecha.FormLabel>
                   <Pecha.FormControl>
-                    <Pecha.Textarea
-                      {...descField}
+                    <MarkdownEditor
+                      value={descField.value ?? ""}
+                      onChange={descField.onChange}
                       placeholder="Description"
                       disabled={readOnly}
-                      rows={3}
+                      className="bg-white dark:bg-[#181818]"
+                      textareaClassName="bg-white dark:bg-[#181818]"
                     />
                   </Pecha.FormControl>
                   <Pecha.FormMessage />
