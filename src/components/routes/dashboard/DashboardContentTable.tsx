@@ -9,10 +9,7 @@ import type {
   DashboardLanguageCode,
   DashboardTableRow,
 } from "./dashboardTable";
-import {
-  DASHBOARD_TABLE_ICON_BTN,
-  isMockDashboardId,
-} from "./dashboardTable";
+import { DASHBOARD_TABLE_ICON_BTN, isMockDashboardId } from "./dashboardTable";
 import { ROUTES } from "@/routes/paths";
 import { FeaturedStar, languageChip, statusChip } from "./dashboardTableUi";
 import type { PlatformRole } from "@/lib/platformAccess";
@@ -72,7 +69,7 @@ export function DashboardContentTable({
         row.kind === "plan" ? ROUTES.plan(row.id) : ROUTES.series(row.id);
       const canOpenTitle =
         row.kind === "series" || canAccessPlanRoutes(platformRole);
-   
+
       const canToggleFeatured =
         row.kind === "series" ||
         (row.kind === "plan" && !isMockDashboardId(row.id));
@@ -143,7 +140,7 @@ export function DashboardContentTable({
           <Pecha.TableCell className="text-sm text-center">
             {row.enrolled}
           </Pecha.TableCell>
-        
+
           <Pecha.TableCell className="text-center">
             {canToggleFeatured && canFeature && !platformReadOnly ? (
               <Pecha.Button
@@ -224,7 +221,7 @@ export function DashboardContentTable({
           <Pecha.TableHead className="w-[100px] font-bold text-center">
             {t("studio.dashboard.plan_used")}
           </Pecha.TableHead>
-         
+
           <Pecha.TableHead className="w-[72px] font-bold text-center">
             Featured
           </Pecha.TableHead>

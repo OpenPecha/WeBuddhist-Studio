@@ -54,6 +54,7 @@ export async function searchAccumulatorPresets(params: {
       params: {
         skip,
         limit,
+        show_recitations: true,
         ...(params.search?.trim() && { search: params.search.trim() }),
       },
     },

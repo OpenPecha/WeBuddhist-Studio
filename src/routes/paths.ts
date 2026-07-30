@@ -41,6 +41,7 @@ export const ROUTES = {
   groupSeriesNew: (groupId: string) => `/groups/${groupId}/series/new`,
   adminAuthors: "/admin/authors",
   adminChinaRestrictions: "/admin/china-restrictions",
+  accumulatorPresets: "/accumulator-presets",
 } as const;
 
 export const AUTH_ROUTE_PATHS: readonly string[] = [

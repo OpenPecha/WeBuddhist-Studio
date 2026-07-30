@@ -49,6 +49,7 @@ import GroupChantDetailPage from "./components/routes/groups/GroupChantDetailPag
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
+import AccumulatorPresetsPage from "./components/routes/accumulator-presets/AccumulatorPresetsPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
@@ -208,6 +209,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <VerseOfDay />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.accumulatorPresets,
+        element: (
+          <ProtectedRoute>
+            <AccumulatorPresetsPage />
           </ProtectedRoute>
         ),
       },
