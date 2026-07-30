@@ -13,7 +13,9 @@ type TitleSearchResponse = {
   total?: number;
 };
 
-function extractItems(data: TitleSearchResponse | TitleSearchItem[]): TitleSearchItem[] {
+function extractItems(
+  data: TitleSearchResponse | TitleSearchItem[],
+): TitleSearchItem[] {
   if (Array.isArray(data)) return data;
   return data.sources ?? data.texts ?? data.results ?? [];
 }

@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { IoChevronBack, IoNotificationsOutline, IoPersonOutline } from "react-icons/io5";
+import {
+  IoChevronBack,
+  IoNotificationsOutline,
+  IoPersonOutline,
+} from "react-icons/io5";
 import { useAuth } from "@/config/auth-context";
 import { NO_PROFILE_IMAGE } from "@/lib/constant";
 import { ROUTES } from "@/routes/paths";

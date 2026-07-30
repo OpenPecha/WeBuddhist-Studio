@@ -114,9 +114,7 @@ const AccumulatorPresetsPage = () => {
     }
   };
 
-  const totalPages = presetsData
-    ? Math.ceil(presetsData.total / PAGE_SIZE)
-    : 1;
+  const totalPages = presetsData ? Math.ceil(presetsData.total / PAGE_SIZE) : 1;
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (

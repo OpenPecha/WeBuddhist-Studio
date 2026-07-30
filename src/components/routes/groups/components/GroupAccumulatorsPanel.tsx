@@ -245,7 +245,10 @@ const GroupAccumulatorsPanel = ({
         preset: {
           id: created.id,
           title: presetDisplayName(created),
-          image_url: created.mala_image_url ?? created.mantra?.mala_image_url ?? undefined,
+          image_url:
+            created.mala_image_url ??
+            created.mantra?.mala_image_url ??
+            undefined,
         },
       }));
       setCreatePresetOpen(false);

@@ -92,9 +92,7 @@ const PresetFormDialog = ({
       preset?.target_count != null ? String(preset.target_count) : "",
     );
     setTextOption(
-      preset?.text_id
-        ? { id: preset.text_id, title: preset.text_id }
-        : null,
+      preset?.text_id ? { id: preset.text_id, title: preset.text_id } : null,
     );
     setMantraOption(
       preset?.mantra
@@ -121,10 +119,7 @@ const PresetFormDialog = ({
       const meta = created.metadata?.[0];
       setMantraOption({
         id: created.id,
-        title:
-          meta?.title?.trim() ||
-          meta?.mantra?.trim() ||
-          created.id,
+        title: meta?.title?.trim() || meta?.mantra?.trim() || created.id,
         image_url: created.mala_image_url ?? undefined,
       });
       setShowCreateMantra(false);
@@ -199,9 +194,7 @@ const PresetFormDialog = ({
       return;
     }
 
-    const parsedTarget = targetCount.trim()
-      ? Number(targetCount.trim())
-      : null;
+    const parsedTarget = targetCount.trim() ? Number(targetCount.trim()) : null;
     if (
       targetCount.trim() &&
       (!Number.isFinite(parsedTarget) || (parsedTarget ?? 0) < 1)
