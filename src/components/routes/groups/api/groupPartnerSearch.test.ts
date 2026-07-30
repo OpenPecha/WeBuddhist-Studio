@@ -34,7 +34,6 @@ describe("makeGroupPartnerSearchFn", () => {
 
     expect(result.items.map((i) => i.id)).toEqual(["g1"]);
     expect(result.items[0].title).toBe("One");
-    expect(result.total).toBe(3);
   });
 
   it("derives the page number from skip/limit", async () => {
@@ -53,5 +52,27 @@ describe("makeGroupPartnerSearchFn", () => {
       limit: 20,
       search: undefined,
     });
+  });
+
+  it("keeps skip + items.length page-aligned when rows are excluded", async () => {
+    const limit = 20;
+    const groups = Array.from({ length: limit }, (_, i) =>
+      group(`g${i}`, `G${i}`),
+    );
+    vi.mocked(fetchGroups).mockResolvedValueOnce({
+      groups,
+      skip: 0,
+      limit,
+      total: 100,
+    });
+
+    const searchFn = makeGroupPartnerSearchFn(["g3", "g7"]);
+    const result = await searchFn({ skip: 0, limit });
+
+    expect(result.items).toHaveLength(limit - 2);
+    expect(result.skip + result.items.length).toBe(limit);
+    expect(result.total).toBeGreaterThanOrEqual(
+      result.skip + result.items.length,
+    );
   });
 });

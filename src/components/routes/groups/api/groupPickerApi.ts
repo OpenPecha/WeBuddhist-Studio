@@ -111,7 +111,8 @@ export const makeGroupPartnerSearchFn =
       search: params.search,
     });
 
-    const items: FkOption[] = (data.groups ?? [])
+    const fetched = data.groups ?? [];
+    const items: FkOption[] = fetched
       .filter((group) => !exclude.has(group.id))
       .map((group) => ({
         id: group.id,
@@ -119,5 +120,11 @@ export const makeGroupPartnerSearchFn =
         image_url: resolveGroupAvatarUrl(group) ?? undefined,
       }));
 
-    return { items, skip, limit, total: data.total };
+    const removed = fetched.length - items.length;
+    return {
+      items,
+      skip: skip + removed,
+      limit,
+      total: Math.max(data.total - removed, skip + items.length),
+    };
   };
