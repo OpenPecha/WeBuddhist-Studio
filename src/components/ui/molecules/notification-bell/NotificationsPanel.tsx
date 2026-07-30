@@ -183,9 +183,7 @@ export function NotificationsPanel({
                       size="sm"
                       className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90 h-7 text-xs"
                       disabled={invitePending}
-                      onClick={() =>
-                        handleInviteAction(notification, "accept")
-                      }
+                      onClick={() => handleInviteAction(notification, "accept")}
                     >
                       {inviteActionMutation.isPending &&
                       inviteActionMutation.variables?.action === "accept"
@@ -198,9 +196,7 @@ export function NotificationsPanel({
                       variant="outline"
                       className="h-7 text-xs"
                       disabled={invitePending}
-                      onClick={() =>
-                        handleInviteAction(notification, "reject")
-                      }
+                      onClick={() => handleInviteAction(notification, "reject")}
                     >
                       {inviteActionMutation.isPending &&
                       inviteActionMutation.variables?.action === "reject"

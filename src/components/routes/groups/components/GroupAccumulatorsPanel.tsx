@@ -10,7 +10,7 @@ import ImageContentData from "@/components/ui/molecules/modals/image-upload/Imag
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { canChangeContentStatus } from "@/lib/contentPermissions";
-import { isReviewer } from "@/lib/platformAccess";
+import { isReviewer, shouldShowCmsActionsColumn } from "@/lib/platformAccess";
 import { fromBackendISO, toBackendISO } from "@/lib/utils";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import type { AuthorGroupMemberRole } from "../api/groupsApi";
@@ -23,6 +23,13 @@ import {
   updateGroupAccumulator,
   type GroupAccumulatorDTO,
 } from "../api/groupAccumulatorsApi";
+import {
+  createAccumulatorPreset,
+  presetDisplayName,
+  type AccumulatorPresetPayload,
+  type UpdateAccumulatorPresetPayload,
+} from "@/components/routes/accumulator-presets/api/accumulatorPresetsApi";
+import PresetFormDialog from "@/components/routes/accumulator-presets/PresetFormDialog";
 import GroupImageField from "./GroupImageField";
 import { GroupSectionHeader } from "./GroupSection";
 import type { FkOption } from "./FkMultiSearchSelector";
@@ -85,6 +92,7 @@ const GroupAccumulatorsPanel = ({
   const queryClient = useQueryClient();
   const { data: userInfo } = useUserInfo();
   const platformReadOnly = isReviewer(userInfo?.platform_role);
+  const canCreatePresets = shouldShowCmsActionsColumn(userInfo?.platform_role);
   const canCreate =
     !platformReadOnly && groupRole != null && groupRole !== "VIEWER";
   const canManage =
@@ -103,6 +111,7 @@ const GroupAccumulatorsPanel = ({
   const [presetQuery, setPresetQuery] = useState("");
   const [presetResults, setPresetResults] = useState<FkOption[]>([]);
   const [presetLoading, setPresetLoading] = useState(false);
+  const [createPresetOpen, setCreatePresetOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
 
@@ -226,6 +235,37 @@ const GroupAccumulatorsPanel = ({
     },
     onError: toastOnError,
   });
+
+  const createPresetMutation = useMutation({
+    mutationFn: createAccumulatorPreset,
+    onSuccess: (created) => {
+      toast.success("Preset created");
+      setForm((prev) => ({
+        ...prev,
+        preset: {
+          id: created.id,
+          title: presetDisplayName(created),
+          image_url:
+            created.mala_image_url ??
+            created.mantra?.mala_image_url ??
+            undefined,
+        },
+      }));
+      setCreatePresetOpen(false);
+      setPresetSearchOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["cms-accumulator-presets"] });
+      searchAccumulatorPresets({ limit: 20 }).then((result) => {
+        setPresetResults(result.items);
+      });
+    },
+    onError: toastOnError,
+  });
+
+  const handleCreatePresetSubmit = (
+    payload: AccumulatorPresetPayload | UpdateAccumulatorPresetPayload,
+  ) => {
+    createPresetMutation.mutate(payload as AccumulatorPresetPayload);
+  };
 
   const handleImageUpload = async (file: File) => {
     setImageUploading(true);
@@ -541,6 +581,18 @@ const GroupAccumulatorsPanel = ({
                         >
                           None
                         </Pecha.CommandItem>
+                        {canCreatePresets ? (
+                          <Pecha.CommandItem
+                            value="__create_preset__"
+                            onSelect={() => {
+                              setPresetSearchOpen(false);
+                              setCreatePresetOpen(true);
+                            }}
+                          >
+                            <IoMdAdd className="mr-2 h-4 w-4" />
+                            Create new preset…
+                          </Pecha.CommandItem>
+                        ) : null}
                         {presetLoading ? (
                           <Pecha.CommandItem disabled value="__loading__">
                             Searching…
@@ -565,7 +617,8 @@ const GroupAccumulatorsPanel = ({
                 </Pecha.PopoverContent>
               </Pecha.Popover>
               <p className="text-xs text-muted-foreground">
-                Optional link to a public mantra preset users count with.
+                Optional link to a public preset (mantra and/or text) users
+                count with.
               </p>
             </div>
 
@@ -604,6 +657,16 @@ const GroupAccumulatorsPanel = ({
           />
         </Pecha.DialogContent>
       </Pecha.Dialog>
+
+      {canCreatePresets ? (
+        <PresetFormDialog
+          open={createPresetOpen}
+          onOpenChange={setCreatePresetOpen}
+          preset={null}
+          isSubmitting={createPresetMutation.isPending}
+          onSubmit={handleCreatePresetSubmit}
+        />
+      ) : null}
 
       <Pecha.AlertDialog
         open={deleteTarget != null}
