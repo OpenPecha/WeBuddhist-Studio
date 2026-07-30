@@ -219,6 +219,10 @@ const PresetFormDialog = ({
     onSubmit(payload);
   };
 
+  const idleLabel = isEdit ? "Save changes" : "Create preset";
+  const pendingLabel = isEdit ? "Saving…" : "Creating…";
+  const submitLabel = isSubmitting ? pendingLabel : idleLabel;
+
   return (
     <Pecha.Dialog open={open} onOpenChange={onOpenChange}>
       <Pecha.DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -414,13 +418,7 @@ const PresetFormDialog = ({
               className="bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
               disabled={isSubmitting || createMantraMutation.isPending}
             >
-              {isSubmitting
-                ? isEdit
-                  ? "Saving…"
-                  : "Creating…"
-                : isEdit
-                  ? "Save changes"
-                  : "Create preset"}
+              {submitLabel}
             </Button>
           </div>
         </form>
