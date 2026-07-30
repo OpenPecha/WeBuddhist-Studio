@@ -36,6 +36,7 @@ import type { PlansByLanguage } from "./seriesDetailsTypes";
 import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
 import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
 import { SeriesLanguageActionsPanel } from "./SeriesLanguageActionsPanel";
+import SeriesPartnersSection from "./SeriesPartnersSection";
 import {
   buildSeriesLanguageParams,
   parseSeriesLanguageParam,
@@ -115,10 +116,12 @@ const SeriesDetailsPage = () => {
     groupRole,
     platformReadOnly,
     canEdit: canEditSeries,
+    canChangeStatus: canManageSeriesGroup,
     canTransfer: canTransferSeries,
   } = useGroupContentPermissions(seriesGroupId, seriesStatus);
 
   const canManageSeriesPlans = canEditSeries && !platformReadOnly;
+  const canManageSeriesPartners = canManageSeriesGroup && !platformReadOnly;
   const showClonePlansPanel =
     canManageSeriesPlans &&
     activePlans.length === 0 &&
@@ -299,6 +302,13 @@ const SeriesDetailsPage = () => {
             seriesStartDate={seriesStartDate}
           />
         ) : null}
+
+        <SeriesPartnersSection
+          seriesId={seriesId}
+          ownerGroupId={seriesGroupId}
+          language={activeLanguage}
+          canManage={canManageSeriesPartners}
+        />
       </div>
     </div>
   );
