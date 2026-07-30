@@ -228,10 +228,10 @@ const PresetFormDialog = ({
               ? `Edit preset — ${presetDisplayName(preset)}`
               : "Create accumulator preset"}
           </Pecha.DialogTitle>
-          <Pecha.DialogDescription>
+          <p className="text-sm text-muted-foreground">
             Link an optional text and mantra. At least one language name is
             required.
-          </Pecha.DialogDescription>
+          </p>
         </Pecha.DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 pt-2">
