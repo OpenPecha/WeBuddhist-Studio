@@ -120,7 +120,9 @@ const SeriesPartnersSection = ({
       addSeriesPartner(seriesId, groupId, language),
     onSuccess: () => {
       setIsAdding(false);
-      queryClient.invalidateQueries({ queryKey: ["series-partners", seriesId] });
+      queryClient.invalidateQueries({
+        queryKey: ["series-partners", seriesId],
+      });
     },
     onError: (err) =>
       toast.error(getApiErrorMessage(err, "Could not add partner group")),
@@ -130,7 +132,9 @@ const SeriesPartnersSection = ({
     mutationFn: (groupId: string) => removeSeriesPartner(seriesId, groupId),
     onSuccess: () => {
       setPendingRemove(null);
-      queryClient.invalidateQueries({ queryKey: ["series-partners", seriesId] });
+      queryClient.invalidateQueries({
+        queryKey: ["series-partners", seriesId],
+      });
     },
     onError: (err) =>
       toast.error(getApiErrorMessage(err, "Could not remove partner group")),
@@ -169,10 +173,7 @@ const SeriesPartnersSection = ({
                   <IoInformationCircleOutline className="h-4 w-4" />
                 </button>
               </Pecha.TooltipTrigger>
-              <Pecha.TooltipContent
-                side="right"
-                className="max-w-xs text-xs"
-              >
+              <Pecha.TooltipContent side="right" className="max-w-xs text-xs">
                 Groups whose page a user can enroll through. The series&rsquo;
                 own group is always a partner by default.
               </Pecha.TooltipContent>
@@ -253,10 +254,12 @@ const SeriesPartnersSection = ({
       >
         <Pecha.AlertDialogContent>
           <Pecha.AlertDialogHeader>
-            <Pecha.AlertDialogTitle>Remove partner group?</Pecha.AlertDialogTitle>
+            <Pecha.AlertDialogTitle>
+              Remove partner group?
+            </Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              &ldquo;{pendingRemove?.group_name ?? ""}&rdquo; will no longer be a
-              partner of this series. You can add it back later.
+              &ldquo;{pendingRemove?.group_name ?? ""}&rdquo; will no longer be
+              a partner of this series. You can add it back later.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>
@@ -268,7 +271,8 @@ const SeriesPartnersSection = ({
               disabled={removeMutation.isPending}
               onClick={(e) => {
                 e.preventDefault();
-                if (pendingRemove) removeMutation.mutate(pendingRemove.group_id);
+                if (pendingRemove)
+                  removeMutation.mutate(pendingRemove.group_id);
               }}
             >
               {removeMutation.isPending ? "Removing…" : "Remove"}
