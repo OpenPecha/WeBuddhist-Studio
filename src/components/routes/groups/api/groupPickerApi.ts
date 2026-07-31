@@ -1,6 +1,11 @@
 import { searchPlans } from "@/components/routes/create-series/api/planSearchApi";
 import type { PlanTagSummary } from "@/components/routes/tags/api/tagsApi";
 import type { TagSummaryDTO } from "./groupsApi";
+import {
+  fetchGroups,
+  pickGroupTitle,
+  resolveGroupAvatarUrl,
+} from "./groupsApi";
 import { searchSeries } from "./seriesSearchApi";
 import { fetchDashboardItems } from "@/components/routes/dashboard/dashboardApi";
 import type { FkOption } from "../components/FkMultiSearchSelector";
@@ -92,3 +97,34 @@ export function mapIdsToFkOptions(
 ): FkOption[] {
   return ids.map((id) => ({ id, title: titleById.get(id) ?? id }));
 }
+
+export const makeGroupPartnerSearchFn =
+  (excludeIds: string[]) => async (params: PickerSearchParams) => {
+    const limit = params.limit ?? 20;
+    const skip = params.skip ?? 0;
+    const page = Math.floor(skip / limit) + 1;
+    const exclude = new Set(excludeIds);
+
+    const data = await fetchGroups({
+      page,
+      limit,
+      search: params.search,
+    });
+
+    const fetched = data.groups ?? [];
+    const items: FkOption[] = fetched
+      .filter((group) => !exclude.has(group.id))
+      .map((group) => ({
+        id: group.id,
+        title: pickGroupTitle(group.metadata),
+        image_url: resolveGroupAvatarUrl(group) ?? undefined,
+      }));
+
+    const removed = fetched.length - items.length;
+    return {
+      items,
+      skip: skip + removed,
+      limit,
+      total: Math.max(data.total - removed, skip + items.length),
+    };
+  };
