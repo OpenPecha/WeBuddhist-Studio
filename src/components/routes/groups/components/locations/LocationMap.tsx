@@ -6,7 +6,6 @@ import "./leaflet-theme.css";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import { useTheme } from "@/providers/theme-provider";
 
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -21,14 +20,10 @@ const DEFAULT_CENTER: Coordinates = { lat: 20, lng: 78 };
 const DEFAULT_ZOOM = 3;
 const PINNED_ZOOM = 15;
 
-const TILES = {
-  light:
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-} as const;
+const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 const ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const MapClickHandler = ({
   onPick,
@@ -77,11 +72,8 @@ const LocationMap = ({
   readOnly = false,
   className = "h-72",
 }: LocationMapProps) => {
-  const { theme } = useTheme();
   const center = value ?? DEFAULT_CENTER;
   const zoom = value ? PINNED_ZOOM : DEFAULT_ZOOM;
-
-  const isDark = theme === "dark";
 
   return (
     <div
@@ -96,11 +88,7 @@ const LocationMap = ({
         attributionControl
         className="h-full w-full"
       >
-        <TileLayer
-          key={isDark ? "dark" : "light"}
-          attribution={ATTRIBUTION}
-          url={isDark ? TILES.dark : TILES.light}
-        />
+        <TileLayer attribution={ATTRIBUTION} url={TILE_URL} />
         {value ? (
           <Marker
             position={[value.lat, value.lng]}
