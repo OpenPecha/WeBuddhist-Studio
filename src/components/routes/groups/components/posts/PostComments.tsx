@@ -46,7 +46,9 @@ const PostComments = ({
 }: PostCommentsProps) => {
   const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState("");
-  const [replyingTo, setReplyingTo] = useState<GroupPostCommentDTO | null>(null);
+  const [replyingTo, setReplyingTo] = useState<GroupPostCommentDTO | null>(
+    null,
+  );
 
   const commentsQuery = useQuery({
     queryKey: commentQueryKey(postId),
@@ -63,7 +65,8 @@ const PostComments = ({
     const commentIds = new Set(comments.map((comment) => comment.id));
     return comments.filter(
       (comment) =>
-        !comment.parent_comment_id || !commentIds.has(comment.parent_comment_id),
+        !comment.parent_comment_id ||
+        !commentIds.has(comment.parent_comment_id),
     );
   }, [comments]);
 
@@ -136,10 +139,9 @@ const PostComments = ({
     },
     onMutate: async (comment) => {
       await queryClient.cancelQueries({ queryKey: commentQueryKey(postId) });
-      const previous =
-        queryClient.getQueryData<GroupPostCommentsResponse>(
-          commentQueryKey(postId),
-        );
+      const previous = queryClient.getQueryData<GroupPostCommentsResponse>(
+        commentQueryKey(postId),
+      );
       queryClient.setQueryData<GroupPostCommentsResponse>(
         commentQueryKey(postId),
         (current) =>
@@ -282,9 +284,7 @@ const PostComments = ({
 
       {replyingTo ? (
         <div className="mt-4 flex items-center justify-between rounded-md bg-muted px-3 py-2 text-xs">
-          <span>
-            Replying to {displayNameFromEmail(replyingTo.user_email)}
-          </span>
+          <span>Replying to {displayNameFromEmail(replyingTo.user_email)}</span>
           <button
             type="button"
             onClick={() => setReplyingTo(null)}

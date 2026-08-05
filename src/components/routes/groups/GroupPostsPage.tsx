@@ -34,8 +34,7 @@ const GroupPostsPage = () => {
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["cms-group-posts", groupId, page],
-    queryFn: () =>
-      fetchGroupPosts(groupId, (page - 1) * PAGE_SIZE, PAGE_SIZE),
+    queryFn: () => fetchGroupPosts(groupId, (page - 1) * PAGE_SIZE, PAGE_SIZE),
     enabled: Boolean(groupId),
     refetchOnWindowFocus: false,
   });

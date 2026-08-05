@@ -6,10 +6,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { SortableItem, SortableList } from "@/components/ui/atoms/sortable";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
 import { uploadPostImage } from "@/components/routes/groups/api/groupPostsApi";
-import {
-  MAX_POST_MEDIA_ITEMS,
-  type PostMediaRow,
-} from "@/schema/PostSchema";
+import { MAX_POST_MEDIA_ITEMS, type PostMediaRow } from "@/schema/PostSchema";
 
 type PostMediaSectionProps = {
   fields: { id: string }[];

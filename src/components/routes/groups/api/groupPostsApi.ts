@@ -260,7 +260,9 @@ export function mapPostToFormData(post: GroupPostDTO): PostFormData {
   };
 }
 
-export function buildCreatePostBody(data: PostFormData): CreateGroupPostRequest {
+export function buildCreatePostBody(
+  data: PostFormData,
+): CreateGroupPostRequest {
   const caption = data.caption.trim();
   const media = buildMediaInput(data.media);
   const links = buildLinksInput(data.links);

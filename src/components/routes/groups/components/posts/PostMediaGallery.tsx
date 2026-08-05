@@ -42,14 +42,15 @@ const PostMediaGallery = ({ media }: PostMediaGalleryProps) => {
         ) : activeMedia.media_type === "AUDIO" && mediaUrl ? (
           <div className="flex w-full flex-col items-center gap-4 px-8 text-white">
             <div className="text-sm font-medium">Audio</div>
-            <audio key={activeMedia.id} src={mediaUrl} controls className="w-full" />
+            <audio
+              key={activeMedia.id}
+              src={mediaUrl}
+              controls
+              className="w-full"
+            />
           </div>
         ) : mediaUrl ? (
-          <img
-            src={mediaUrl}
-            alt=""
-            className="h-full w-full object-contain"
-          />
+          <img src={mediaUrl} alt="" className="h-full w-full object-contain" />
         ) : (
           <div className="text-sm text-white/70">Media unavailable</div>
         )}

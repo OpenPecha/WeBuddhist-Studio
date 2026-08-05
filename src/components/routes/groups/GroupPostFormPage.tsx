@@ -120,10 +120,7 @@ const GroupPostFormPage = () => {
         <p className="text-center text-destructive">
           {getApiErrorMessage(postQuery.error, "Could not load this post.")}
         </p>
-        <Pecha.Button
-          variant="outline"
-          onClick={() => navigate(postsListPath)}
-        >
+        <Pecha.Button variant="outline" onClick={() => navigate(postsListPath)}>
           Back to posts
         </Pecha.Button>
       </div>
