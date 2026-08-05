@@ -44,6 +44,7 @@ import GroupEventsPage from "./components/routes/groups/GroupEventsPage.tsx";
 import GroupEventFormPage from "./components/routes/groups/GroupEventFormPage.tsx";
 import GroupEventDetailPage from "./components/routes/groups/GroupEventDetailPage.tsx";
 import GroupChantsPage from "./components/routes/groups/GroupChantsPage.tsx";
+import GroupLocationsPage from "./components/routes/groups/GroupLocationsPage.tsx";
 import GroupChantFormPage from "./components/routes/groups/GroupChantFormPage.tsx";
 import GroupChantDetailPage from "./components/routes/groups/GroupChantDetailPage.tsx";
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
@@ -253,6 +254,7 @@ const router = createBrowserRouter([
           { path: "events/new", element: <GroupEventFormPage /> },
           { path: "events/:eventId", element: <GroupEventDetailPage /> },
           { path: "events/:eventId/edit", element: <GroupEventFormPage /> },
+          { path: "locations", element: <GroupLocationsPage /> },
           { path: "chants", element: <GroupChantsPage /> },
           { path: "chants/new", element: <GroupChantFormPage /> },
           { path: "chants/:collectionId", element: <GroupChantDetailPage /> },

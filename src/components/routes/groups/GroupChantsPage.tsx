@@ -203,7 +203,7 @@ const GroupChantsPage = () => {
               Cancel
             </Pecha.AlertDialogCancel>
             <Pecha.AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-white hover:bg-destructive/90"
               disabled={deleteMutation.isPending}
               onClick={(e) => {
                 e.preventDefault();
