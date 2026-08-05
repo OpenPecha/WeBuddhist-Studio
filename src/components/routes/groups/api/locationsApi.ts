@@ -25,12 +25,6 @@ export interface CreateLocationRequest {
   longitude?: number;
 }
 
-export interface UpdateLocationRequest {
-  name?: string;
-  latitude?: number | null;
-  longitude?: number | null;
-}
-
 export interface LocationListParams {
   search?: string;
   skip?: number;
@@ -60,16 +54,6 @@ export const fetchLocations = async (
   return data;
 };
 
-export const fetchLocation = async (
-  groupId: string,
-  locationId: string,
-): Promise<LocationDetail> => {
-  const { data } = await axiosInstance.get<LocationDetail>(
-    `${locationsUrl(groupId)}/${locationId}`,
-  );
-  return data;
-};
-
 export const createLocation = async (
   groupId: string,
   body: CreateLocationRequest,
@@ -79,25 +63,6 @@ export const createLocation = async (
     body,
   );
   return data;
-};
-
-export const updateLocation = async (
-  groupId: string,
-  locationId: string,
-  body: UpdateLocationRequest,
-): Promise<LocationDetail> => {
-  const { data } = await axiosInstance.patch<LocationDetail>(
-    `${locationsUrl(groupId)}/${locationId}`,
-    body,
-  );
-  return data;
-};
-
-export const deleteLocation = async (
-  groupId: string,
-  locationId: string,
-): Promise<void> => {
-  await axiosInstance.delete(`${locationsUrl(groupId)}/${locationId}`);
 };
 
 export function hasCoordinates(
@@ -113,54 +78,3 @@ export function formatCoordinates(
   if (!hasCoordinates(location)) return null;
   return `${location.latitude.toFixed(digits)}, ${location.longitude.toFixed(digits)}`;
 }
-
-export function buildUpdateLocationBody(
-  next: { name: string; latitude: number | null; longitude: number | null },
-  original: Pick<EventLocation, "name" | "latitude" | "longitude">,
-): UpdateLocationRequest {
-  const body: UpdateLocationRequest = {};
-
-  const nextName = next.name.trim();
-  if (nextName !== original.name.trim()) body.name = nextName;
-
-  const prevLat = original.latitude ?? null;
-  const prevLng = original.longitude ?? null;
-
-  if (next.latitude !== prevLat || next.longitude !== prevLng) {
-    body.latitude = next.latitude;
-    body.longitude = next.longitude;
-  }
-
-  return body;
-}
-
-export interface LocationInUseError {
-  error: "LOCATION_IN_USE";
-  message: string;
-  event_count: number;
-}
-
-export function getLocationInUseError(
-  error: unknown,
-): LocationInUseError | null {
-  const detail = (
-    error as { response?: { data?: { detail?: Partial<LocationInUseError> } } }
-  )?.response?.data?.detail;
-  if (detail?.error !== "LOCATION_IN_USE") return null;
-  return {
-    error: "LOCATION_IN_USE",
-    message: detail.message ?? "This location is in use.",
-    event_count: detail.event_count ?? 0,
-  };
-}
-
-export const makeLocationSearchFn =
-  (groupId: string) => async (params: LocationListParams) => {
-    const data = await fetchLocations(groupId, params);
-    return {
-      items: data.locations,
-      skip: data.skip,
-      limit: data.limit,
-      total: data.total,
-    };
-  };

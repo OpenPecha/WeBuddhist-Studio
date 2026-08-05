@@ -212,12 +212,6 @@ const GroupLayout = () => {
             <NavLink to={ROUTES.groupChants(group.id)} className={navLinkClass}>
               Chants
             </NavLink>
-            <NavLink
-              to={ROUTES.groupLocations(group.id)}
-              className={navLinkClass}
-            >
-              Locations
-            </NavLink>
           </nav>
         }
       >
