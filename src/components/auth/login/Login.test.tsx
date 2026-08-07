@@ -4,7 +4,55 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Login from "./Login";
 import userEvent from "@testing-library/user-event";
 import axiosInstance from "@/config/axios-config";
-import { vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  AUTH0_INTENT,
+  PENDING_AUTH0_TOKEN_KEY,
+  setAuth0Intent,
+  setPendingAuth0Token,
+} from "@/config/auth0-config";
+import { PROFILE_REQUIRED_DETAIL } from "@/lib/phoneAuthApi";
+
+const mockLogin = vi.fn();
+const mockLoginWithRedirect = vi.fn();
+const mockGetAccessTokenSilently = vi.fn();
+const mockNavigate = vi.fn();
+const auth0State = {
+  isConfigured: true,
+  isAuthenticated: false,
+  isLoading: false,
+};
+
+vi.mock("@/config/auth-context", () => ({
+  useAuth: () => ({
+    login: mockLogin,
+    logout: vi.fn(),
+    isLoggedIn: false,
+    isAuthLoading: false,
+  }),
+}));
+
+vi.mock("@/config/studio-auth0", () => ({
+  useStudioAuth0: () => ({
+    isConfigured: auth0State.isConfigured,
+    isAuthenticated: auth0State.isAuthenticated,
+    isLoading: auth0State.isLoading,
+    loginWithRedirect: mockLoginWithRedirect,
+    getAccessTokenSilently: mockGetAccessTokenSilently,
+    logout: vi.fn(),
+  }),
+}));
+
+vi.mock("react-router-dom", async () => {
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -26,6 +74,12 @@ const renderWithProviders = (component: React.ReactElement) => {
 describe("Login Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
+    auth0State.isConfigured = true;
+    auth0State.isAuthenticated = false;
+    auth0State.isLoading = false;
+    mockGetAccessTokenSilently.mockResolvedValue("auth0-access-token");
+    mockLoginWithRedirect.mockResolvedValue(undefined);
   });
 
   it("renders login form with email and password fields", () => {
@@ -38,6 +92,8 @@ describe("Login Component", () => {
       screen.getByPlaceholderText("studio.login.placeholder.password"),
     ).toBeDefined();
     expect(screen.getByText("common.button.submit")).toBeDefined();
+    expect(screen.getByText("Continue with Google")).toBeDefined();
+    expect(screen.getByText("Continue with phone")).toBeDefined();
   });
 
   it("displays the app title and description", () => {
@@ -396,6 +452,259 @@ describe("Login Component", () => {
         expect(
           screen.getByText("Email re-verification failed"),
         ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Phone passwordless login", () => {
+    it("starts Universal Login with the SMS connection", async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<Login />);
+
+      await user.click(screen.getByText("Continue with phone"));
+
+      expect(mockLoginWithRedirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          authorizationParams: expect.objectContaining({
+            connection: "sms",
+          }),
+          appState: expect.objectContaining({
+            intent: AUTH0_INTENT.phoneLogin,
+            returnTo: "/login",
+          }),
+        }),
+      );
+    });
+
+    it("exchanges Auth0 callback token and stores backend tokens", async () => {
+      setAuth0Intent(AUTH0_INTENT.phoneLogin);
+      auth0State.isAuthenticated = true;
+      vi.mocked(axiosInstance.post).mockResolvedValue({
+        data: {
+          author_id: "author-1",
+          phone_number: "+15551234567",
+          status: "ACTIVE",
+          message: "Authentication successful",
+          user: { name: "Phone User" },
+          auth: {
+            access_token: "backend-access",
+            refresh_token: "backend-refresh",
+            token_type: "bearer",
+          },
+        },
+      });
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(mockGetAccessTokenSilently).toHaveBeenCalled();
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/phone/exchange",
+          { auth0_token: "auth0-access-token" },
+        );
+        expect(mockLogin).toHaveBeenCalledWith(
+          "backend-access",
+          "backend-refresh",
+        );
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
+      });
+    });
+
+    it("shows profile form when exchange requires first and last name", async () => {
+      const user = userEvent.setup();
+      setAuth0Intent(AUTH0_INTENT.phoneLogin);
+      auth0State.isAuthenticated = true;
+      vi.mocked(axiosInstance.post).mockRejectedValue({
+        response: { data: { detail: PROFILE_REQUIRED_DETAIL } },
+      });
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Create profile")).toBeInTheDocument();
+      });
+
+      vi.mocked(axiosInstance.post).mockResolvedValue({
+        data: {
+          author_id: "author-2",
+          phone_number: "+15551234567",
+          status: "INACTIVE",
+          message: "Author not active",
+          user: { name: "Ada Lovelace" },
+          auth: null,
+        },
+      });
+
+      await user.type(screen.getByLabelText("First name"), "Ada");
+      await user.type(screen.getByLabelText("Last name"), "Lovelace");
+      await user.click(screen.getByText("Create profile"));
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/phone/exchange",
+          {
+            auth0_token: "auth0-access-token",
+            first_name: "Ada",
+            last_name: "Lovelace",
+          },
+        );
+        expect(screen.getByText("Author not active")).toBeInTheDocument();
+        expect(sessionStorage.getItem(PENDING_AUTH0_TOKEN_KEY)).toBeNull();
+      });
+    });
+
+    it("restores profile form from a pending Auth0 token", async () => {
+      setPendingAuth0Token("auth0-access-token");
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Create profile")).toBeInTheDocument();
+      });
+    });
+
+    it("shows API failure message for phone exchange errors", async () => {
+      const user = userEvent.setup();
+      setPendingAuth0Token("auth0-access-token");
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Create profile")).toBeInTheDocument();
+      });
+
+      vi.mocked(axiosInstance.post).mockRejectedValue({
+        response: { data: { detail: "Invalid Auth0 SMS token" } },
+      });
+
+      await user.type(screen.getByLabelText("First name"), "Ada");
+      await user.type(screen.getByLabelText("Last name"), "Lovelace");
+      await user.click(screen.getByText("Create profile"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Invalid Auth0 SMS token")).toBeInTheDocument();
+      });
+    });
+
+    it("shows inactive account state for inactive phone exchange responses", async () => {
+      setAuth0Intent(AUTH0_INTENT.phoneLogin);
+      auth0State.isAuthenticated = true;
+      vi.mocked(axiosInstance.post).mockResolvedValue({
+        data: {
+          author_id: "author-3",
+          phone_number: "+15551234567",
+          status: "INACTIVE",
+          message: "Author not active",
+          user: { name: "Inactive User" },
+          auth: null,
+        },
+      });
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Author not active")).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            /activated by a platform administrator before you can sign in/i,
+          ),
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Google social login", () => {
+    it("starts Universal Login with the Google connection", async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<Login />);
+
+      await user.click(screen.getByText("Continue with Google"));
+
+      expect(mockLoginWithRedirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          authorizationParams: expect.objectContaining({
+            connection: "google-oauth2",
+          }),
+          appState: expect.objectContaining({
+            intent: AUTH0_INTENT.googleLogin,
+            returnTo: "/login",
+          }),
+        }),
+      );
+    });
+
+    it("exchanges Auth0 callback token and stores backend tokens", async () => {
+      setAuth0Intent(AUTH0_INTENT.googleLogin);
+      auth0State.isAuthenticated = true;
+      vi.mocked(axiosInstance.post).mockResolvedValue({
+        data: {
+          author_id: "author-g1",
+          email: "ada@example.com",
+          status: "ACTIVE",
+          message: "Authentication successful",
+          user: { name: "Ada Lovelace" },
+          auth: {
+            access_token: "backend-access",
+            refresh_token: "backend-refresh",
+            token_type: "bearer",
+          },
+        },
+      });
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(mockGetAccessTokenSilently).toHaveBeenCalled();
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/google/exchange",
+          { auth0_token: "auth0-access-token" },
+        );
+        expect(mockLogin).toHaveBeenCalledWith(
+          "backend-access",
+          "backend-refresh",
+        );
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
+      });
+    });
+
+    it("shows profile form when Google exchange requires first and last name", async () => {
+      const user = userEvent.setup();
+      setAuth0Intent(AUTH0_INTENT.googleLogin);
+      auth0State.isAuthenticated = true;
+      vi.mocked(axiosInstance.post).mockRejectedValue({
+        response: { data: { detail: PROFILE_REQUIRED_DETAIL } },
+      });
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Create profile")).toBeInTheDocument();
+      });
+
+      vi.mocked(axiosInstance.post).mockResolvedValue({
+        data: {
+          author_id: "author-g2",
+          email: "ada@example.com",
+          status: "INACTIVE",
+          message: "Author not active",
+          user: { name: "Ada Lovelace" },
+          auth: null,
+        },
+      });
+
+      await user.type(screen.getByLabelText("First name"), "Ada");
+      await user.type(screen.getByLabelText("Last name"), "Lovelace");
+      await user.click(screen.getByText("Create profile"));
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/google/exchange",
+          {
+            auth0_token: "auth0-access-token",
+            first_name: "Ada",
+            last_name: "Lovelace",
+          },
+        );
+        expect(screen.getByText("Author not active")).toBeInTheDocument();
+        expect(sessionStorage.getItem(PENDING_AUTH0_TOKEN_KEY)).toBeNull();
       });
     });
   });
