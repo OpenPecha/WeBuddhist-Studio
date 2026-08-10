@@ -83,8 +83,10 @@ const AdminAuthorsPage = () => {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const contact = (a: AdminAuthorDTO) => a.email || a.phone_number || "—";
+
   const displayName = (a: AdminAuthorDTO) =>
-    [a.firstname, a.lastname].filter(Boolean).join(" ").trim() || a.email;
+    [a.firstname, a.lastname].filter(Boolean).join(" ").trim() || contact(a);
 
   if (userInfo && !canAccess) {
     return <Navigate to={ROUTES.dashboard} replace />;
@@ -129,7 +131,7 @@ const AdminAuthorsPage = () => {
           <Pecha.TableHeader>
             <Pecha.TableRow>
               <Pecha.TableHead>Name</Pecha.TableHead>
-              <Pecha.TableHead>Email</Pecha.TableHead>
+              <Pecha.TableHead>Contact</Pecha.TableHead>
               <Pecha.TableHead>Role</Pecha.TableHead>
               <Pecha.TableHead>Verified</Pecha.TableHead>
               <Pecha.TableHead>Active</Pecha.TableHead>
@@ -155,7 +157,7 @@ const AdminAuthorsPage = () => {
               authors.map((author) => (
                 <Pecha.TableRow key={author.id}>
                   <Pecha.TableCell>{displayName(author)}</Pecha.TableCell>
-                  <Pecha.TableCell>{author.email}</Pecha.TableCell>
+                  <Pecha.TableCell>{contact(author)}</Pecha.TableCell>
                   <Pecha.TableCell>
                     {writeEnabled ? (
                       <select
