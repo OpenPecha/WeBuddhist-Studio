@@ -32,6 +32,7 @@ import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
 import Tags from "./components/routes/tags/Tags.tsx";
+import TraditionsPage from "./components/routes/traditions/TraditionsPage.tsx";
 import VerseOfDay from "./components/routes/verse-of-day/VerseOfDay.tsx";
 import Groups from "./components/routes/groups/Groups.tsx";
 import GroupLayout from "./components/routes/groups/GroupLayout.tsx";
@@ -204,6 +205,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Tags />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.traditions,
+        element: (
+          <ProtectedRoute>
+            <TraditionsPage />
           </ProtectedRoute>
         ),
       },
