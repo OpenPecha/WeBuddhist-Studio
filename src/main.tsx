@@ -55,6 +55,7 @@ import AccumulatorPresetsPage from "./components/routes/accumulator-presets/Accu
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
+import { StudioAuth0Provider } from "./config/studio-auth0.tsx";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
@@ -297,18 +298,20 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <TolgeeProvider tolgee={tolgee}>
-        <PlanAuthProvider>
-          <UserbackProvider>
-            <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-              <RouterProvider router={router} />
-              <ReactQueryDevtools initialIsOpen={false} />
-              <Toaster />
-            </ThemeProvider>
-          </UserbackProvider>
-        </PlanAuthProvider>
-      </TolgeeProvider>
-    </QueryClientProvider>
+    <StudioAuth0Provider>
+      <QueryClientProvider client={queryClient}>
+        <TolgeeProvider tolgee={tolgee}>
+          <PlanAuthProvider>
+            <UserbackProvider>
+              <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+                <RouterProvider router={router} />
+                <ReactQueryDevtools initialIsOpen={false} />
+                <Toaster />
+              </ThemeProvider>
+            </UserbackProvider>
+          </PlanAuthProvider>
+        </TolgeeProvider>
+      </QueryClientProvider>
+    </StudioAuth0Provider>
   </StrictMode>,
 );

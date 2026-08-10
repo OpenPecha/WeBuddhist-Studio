@@ -5,7 +5,7 @@ import ContainerLayout from "@/components/ui/atoms/studio-card";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/config/auth-context";
 import { useTranslate } from "@tolgee/react";
 import { createPasswordHash } from "@/lib/utils";
@@ -15,6 +15,32 @@ import {
 } from "@/lib/platformAccess";
 import { getApiErrorDetail } from "@/lib/apiErrors";
 import { ROUTES } from "@/routes/paths";
+import { useStudioAuth0 } from "@/config/studio-auth0";
+import {
+  AUTH0_INTENT,
+  clearPendingAuth0Token,
+  consumeAuth0Intent,
+  getAuth0Config,
+  getPendingAuth0Provider,
+  getPendingAuth0Token,
+  peekAuth0Intent,
+  setAuth0Intent,
+  setPendingAuth0Token,
+  type Auth0PendingProvider,
+} from "@/config/auth0-config";
+import {
+  exchangePhoneToken,
+  getPhoneAuthErrorMessage,
+  isPhoneExchangeInactive,
+  isProfileRequiredDetail,
+  type PhoneExchangeResponse,
+} from "@/lib/phoneAuthApi";
+import {
+  exchangeGoogleToken,
+  getGoogleAuthErrorMessage,
+  isGoogleExchangeInactive,
+  type GoogleExchangeResponse,
+} from "@/lib/googleAuthApi";
 
 interface LoginData {
   email: string;
@@ -30,7 +56,24 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [showEmailReverify, setShowEmailReverify] = useState<boolean>(false);
   const [inactiveOnly, setInactiveOnly] = useState(false);
+  const [needsOAuthProfile, setNeedsOAuthProfile] = useState(false);
+  const [oauthProfileProvider, setOauthProfileProvider] =
+    useState<Auth0PendingProvider>("phone");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [oauthExchangePending, setOauthExchangePending] = useState(false);
+  const [pendingOauthProvider, setPendingOauthProvider] =
+    useState<Auth0PendingProvider | null>(null);
+  const oauthCallbackHandled = useRef(false);
   const { login } = useAuth();
+  const auth0Config = getAuth0Config();
+  const {
+    isConfigured: isAuth0Configured,
+    loginWithRedirect,
+    getAccessTokenSilently,
+    isAuthenticated: isAuth0Authenticated,
+    isLoading: isAuth0Loading,
+  } = useStudioAuth0();
 
   useEffect(() => {
     const state = location.state as {
@@ -42,6 +85,167 @@ const Login = () => {
       setErrors(state.message ?? AUTHOR_NOT_ACTIVE_DETAIL);
     }
   }, [location.state]);
+
+  const applyPhoneExchangeResult = (data: PhoneExchangeResponse) => {
+    if (isPhoneExchangeInactive(data)) {
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
+      setInactiveOnly(true);
+      setErrors(data.message || AUTHOR_NOT_ACTIVE_DETAIL);
+      return;
+    }
+
+    if (data.auth?.access_token && data.auth?.refresh_token) {
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
+      login(data.auth.access_token, data.auth.refresh_token);
+      navigate(ROUTES.dashboard);
+      return;
+    }
+
+    setErrors(data.message || "Phone authentication failed");
+  };
+
+  const applyGoogleExchangeResult = (data: GoogleExchangeResponse) => {
+    if (isGoogleExchangeInactive(data)) {
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
+      setInactiveOnly(true);
+      setErrors(data.message || AUTHOR_NOT_ACTIVE_DETAIL);
+      return;
+    }
+
+    if (data.auth?.access_token && data.auth?.refresh_token) {
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
+      login(data.auth.access_token, data.auth.refresh_token);
+      navigate(ROUTES.dashboard);
+      return;
+    }
+
+    setErrors(data.message || "Google authentication failed");
+  };
+
+  const phoneExchangeMutation = useMutation({
+    mutationFn: exchangePhoneToken,
+    onSuccess: (data) => {
+      applyPhoneExchangeResult(data);
+    },
+    onError: (error: unknown) => {
+      const detail = getApiErrorDetail(error);
+      if (isProfileRequiredDetail(detail)) {
+        setOauthProfileProvider("phone");
+        setNeedsOAuthProfile(true);
+        setErrors("");
+        return;
+      }
+      if (isAuthorNotActiveDetail(detail)) {
+        clearPendingAuth0Token();
+        setNeedsOAuthProfile(false);
+        setInactiveOnly(true);
+        setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
+        return;
+      }
+      setErrors(getPhoneAuthErrorMessage(error));
+    },
+    onSettled: () => {
+      setOauthExchangePending(false);
+      setPendingOauthProvider(null);
+    },
+  });
+
+  const googleExchangeMutation = useMutation({
+    mutationFn: exchangeGoogleToken,
+    onSuccess: (data) => {
+      applyGoogleExchangeResult(data);
+    },
+    onError: (error: unknown) => {
+      const detail = getApiErrorDetail(error);
+      if (isProfileRequiredDetail(detail)) {
+        setOauthProfileProvider("google");
+        setNeedsOAuthProfile(true);
+        setErrors("");
+        return;
+      }
+      if (isAuthorNotActiveDetail(detail)) {
+        clearPendingAuth0Token();
+        setNeedsOAuthProfile(false);
+        setInactiveOnly(true);
+        setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
+        return;
+      }
+      setErrors(getGoogleAuthErrorMessage(error));
+    },
+    onSettled: () => {
+      setOauthExchangePending(false);
+      setPendingOauthProvider(null);
+    },
+  });
+
+  useEffect(() => {
+    if (!isAuth0Configured) return;
+    if (isAuth0Loading || oauthCallbackHandled.current) return;
+
+    const pendingToken = getPendingAuth0Token();
+    const pendingProvider = getPendingAuth0Provider();
+    if (pendingToken && !needsOAuthProfile) {
+      setOauthProfileProvider(pendingProvider ?? "phone");
+      setNeedsOAuthProfile(true);
+    }
+
+    const intent = peekAuth0Intent();
+    if (
+      intent !== AUTH0_INTENT.phoneLogin &&
+      intent !== AUTH0_INTENT.googleLogin
+    ) {
+      return;
+    }
+    if (!isAuth0Authenticated) return;
+
+    oauthCallbackHandled.current = true;
+    consumeAuth0Intent();
+    const provider: Auth0PendingProvider =
+      intent === AUTH0_INTENT.googleLogin ? "google" : "phone";
+
+    const runExchange = async () => {
+      setOauthExchangePending(true);
+      setPendingOauthProvider(provider);
+      setErrors("");
+      try {
+        const auth0Token = await getAccessTokenSilently({
+          authorizationParams: auth0Config.audience
+            ? { audience: auth0Config.audience }
+            : undefined,
+        });
+        setPendingAuth0Token(auth0Token, provider);
+        if (provider === "google") {
+          googleExchangeMutation.mutate({ auth0_token: auth0Token });
+        } else {
+          phoneExchangeMutation.mutate({ auth0_token: auth0Token });
+        }
+      } catch {
+        oauthCallbackHandled.current = false;
+        setOauthExchangePending(false);
+        setPendingOauthProvider(null);
+        setErrors(
+          provider === "google"
+            ? "Unable to complete Google login. Please try again."
+            : "Unable to complete phone login. Please try again.",
+        );
+      }
+    };
+
+    void runExchange();
+    // Intentionally omit mutations from deps to avoid re-running callback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isAuth0Configured,
+    auth0Config.audience,
+    getAccessTokenSilently,
+    isAuth0Authenticated,
+    isAuth0Loading,
+    needsOAuthProfile,
+  ]);
 
   const loginMutation = useMutation<any, Error, LoginData>({
     mutationFn: async (loginData: LoginData) => {
@@ -116,6 +320,80 @@ const Login = () => {
     emailReverifyMutation.mutate({ email });
   };
 
+  const startAuth0Login = async (
+    connection: string,
+    intent: typeof AUTH0_INTENT.phoneLogin | typeof AUTH0_INTENT.googleLogin,
+    failureMessage: string,
+  ) => {
+    setErrors("");
+    setSuccessMessage("");
+    setInactiveOnly(false);
+    setNeedsOAuthProfile(false);
+
+    if (!isAuth0Configured) {
+      setErrors(
+        intent === AUTH0_INTENT.googleLogin
+          ? "Google login is not configured."
+          : "Phone login is not configured.",
+      );
+      return;
+    }
+
+    try {
+      setAuth0Intent(intent);
+      await loginWithRedirect({
+        authorizationParams: {
+          connection,
+          redirect_uri: window.location.origin,
+          ...(auth0Config.audience ? { audience: auth0Config.audience } : {}),
+        },
+        appState: {
+          intent,
+          returnTo: ROUTES.login,
+        },
+      });
+    } catch {
+      setErrors(failureMessage);
+    }
+  };
+
+  const handleContinueWithPhone = async () => {
+    await startAuth0Login(
+      auth0Config.connection,
+      AUTH0_INTENT.phoneLogin,
+      "Unable to start phone login. Please try again.",
+    );
+  };
+
+  const handleContinueWithGoogle = async () => {
+    await startAuth0Login(
+      auth0Config.googleConnection,
+      AUTH0_INTENT.googleLogin,
+      "Unable to start Google login. Please try again.",
+    );
+  };
+
+  const handleOAuthProfileSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const auth0Token = getPendingAuth0Token();
+    if (!auth0Token) {
+      setErrors("Sign-in session expired. Please try again.");
+      setNeedsOAuthProfile(false);
+      return;
+    }
+    setErrors("");
+    const payload = {
+      auth0_token: auth0Token,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+    };
+    if (oauthProfileProvider === "google") {
+      googleExchangeMutation.mutate(payload);
+    } else {
+      phoneExchangeMutation.mutate(payload);
+    }
+  };
+
   if (inactiveOnly) {
     return (
       <ContainerLayout title={t("studio.login.title")}>
@@ -132,9 +410,71 @@ const Login = () => {
     );
   }
 
+  if (needsOAuthProfile) {
+    const profilePending =
+      oauthProfileProvider === "google"
+        ? googleExchangeMutation.isPending
+        : phoneExchangeMutation.isPending;
+
+    return (
+      <ContainerLayout title={t("studio.login.title")}>
+        <form
+          key="oauth-profile"
+          className="w-full max-w-[425px] space-y-4"
+          onSubmit={handleOAuthProfileSubmit}
+        >
+          <p className="text-sm text-muted-foreground">
+            Enter your name to finish creating your account.
+          </p>
+          <div className="text-sm space-y-2">
+            <Label htmlFor="first_name" className="font-medium">
+              First name
+            </Label>
+            <Input
+              id="first_name"
+              name="first_name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="text-sm space-y-2">
+            <Label htmlFor="last_name" className="font-medium">
+              Last name
+            </Label>
+            <Input
+              id="last_name"
+              name="last_name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
+          <Button
+            type="submit"
+            variant="outline"
+            className="w-full text-sm"
+            disabled={profilePending}
+          >
+            {profilePending ? "Creating profile..." : "Create profile"}
+          </Button>
+          {errors && (
+            <div className="text-red-800 text-center dark:text-red-400 text-sm">
+              {errors}
+            </div>
+          )}
+        </form>
+      </ContainerLayout>
+    );
+  }
+
   return (
     <ContainerLayout title={t("studio.login.title")}>
-      <form className="w-full max-w-[425px] space-y-4" onSubmit={handleLogin}>
+      <form
+        key="email-login"
+        className="w-full max-w-[425px] space-y-4"
+        onSubmit={handleLogin}
+      >
         <div className="text-sm space-y-2">
           <Label htmlFor="email" className="font-medium">
             {t("common.email")}
@@ -166,6 +506,32 @@ const Login = () => {
         <div className="flex mt-4 justify-center ">
           <Button type="submit" variant="outline" className="w-full text-sm ">
             {t("common.button.submit")}
+          </Button>
+        </div>
+        <div className="flex justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full text-sm"
+            onClick={handleContinueWithGoogle}
+            disabled={oauthExchangePending || isAuth0Loading}
+          >
+            {pendingOauthProvider === "google"
+              ? "Continuing with Google..."
+              : "Continue with Google"}
+          </Button>
+        </div>
+        <div className="flex justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full text-sm"
+            onClick={handleContinueWithPhone}
+            disabled={oauthExchangePending || isAuth0Loading}
+          >
+            {pendingOauthProvider === "phone"
+              ? "Continuing with phone..."
+              : "Continue with phone"}
           </Button>
         </div>
         {showEmailReverify && (
