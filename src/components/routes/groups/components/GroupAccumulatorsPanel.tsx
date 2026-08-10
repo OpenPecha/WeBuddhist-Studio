@@ -686,7 +686,7 @@ const GroupAccumulatorsPanel = ({
           <Pecha.AlertDialogFooter>
             <Pecha.AlertDialogCancel>Cancel</Pecha.AlertDialogCancel>
             <Pecha.AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-white hover:bg-destructive/90"
               onClick={() => {
                 if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
               }}

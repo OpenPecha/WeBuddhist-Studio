@@ -23,6 +23,7 @@ export type UseEventFormReturn = {
   removeLinkRow: (index: number) => void;
   moveLinkRow: (from: number, to: number) => void;
   setImageUrl: (url: string) => void;
+  setLocationId: (id: string) => void;
   setOneDay: (oneDay: boolean) => void;
   setStartDate: (iso: string) => void;
   setEndDate: (iso: string) => void;
@@ -104,6 +105,16 @@ export const useEventForm = (): UseEventFormReturn => {
     [form],
   );
 
+  const setLocationId = useCallback(
+    (id: string) => {
+      form.setValue("location_id", id, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [form],
+  );
+
   const setStartDate = useCallback(
     (iso: string) => {
       form.setValue("start_date", iso, {
@@ -161,6 +172,7 @@ export const useEventForm = (): UseEventFormReturn => {
     removeLinkRow,
     moveLinkRow,
     setImageUrl,
+    setLocationId,
     setOneDay,
     setStartDate,
     setEndDate,

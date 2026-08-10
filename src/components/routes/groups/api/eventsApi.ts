@@ -3,6 +3,7 @@ import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { makeLinkedContentSearchFn } from "@/components/routes/groups/api/groupPickerApi";
 import { searchAccumulatorPresets } from "@/components/routes/groups/api/accumulatorPresetSearchApi";
 import { fetchChantCollection } from "@/components/routes/groups/api/chantsApi";
+import type { EventLocation } from "@/components/routes/groups/api/locationsApi";
 import type { FkOption } from "@/components/routes/groups/components/FkMultiSearchSelector";
 import type {
   EventFormData,
@@ -48,6 +49,8 @@ export interface EventDTO {
   series_id?: string;
   accumulator_id?: string;
   group_recitation_collection_id?: string;
+  location_id?: string;
+  location?: EventLocation;
   start_date: string;
   end_date: string;
   is_one_day: boolean;
@@ -93,6 +96,7 @@ export interface CreateEventRequest {
   series_id?: string;
   accumulator_id?: string;
   group_recitation_collection_id?: string;
+  location_id?: string;
 }
 
 export interface UpdateEventRequest {
@@ -106,6 +110,7 @@ export interface UpdateEventRequest {
   series_id?: string;
   accumulator_id?: string;
   group_recitation_collection_id?: string | null;
+  location_id?: string | null;
 }
 
 export interface EventListFilters {
@@ -238,6 +243,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     accumulator_id: event.accumulator_id?.trim() ?? "",
     group_recitation_collection_id:
       event.group_recitation_collection_id?.trim() ?? "",
+    location_id: event.location_id?.trim() ?? "",
   };
 }
 
@@ -283,6 +289,7 @@ export function buildCreateEventBody(
   const seriesId = data.series_id.trim();
   const accumulatorId = data.accumulator_id.trim();
   const chantCollectionId = data.group_recitation_collection_id.trim();
+  const locationId = data.location_id.trim();
   return {
     group_id: groupId,
     start_date: data.start_date,
@@ -296,6 +303,7 @@ export function buildCreateEventBody(
     ...(chantCollectionId
       ? { group_recitation_collection_id: chantCollectionId }
       : {}),
+    ...(locationId ? { location_id: locationId } : {}),
   };
 }
 
@@ -408,6 +416,12 @@ export function buildUpdateEventBody(
   const prevChant = original.group_recitation_collection_id.trim();
   if (nextChant !== prevChant) {
     body.group_recitation_collection_id = nextChant || null;
+  }
+
+  const nextLocation = data.location_id.trim();
+  const prevLocation = original.location_id.trim();
+  if (nextLocation !== prevLocation) {
+    body.location_id = nextLocation || null;
   }
 
   return body;
