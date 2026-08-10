@@ -28,6 +28,8 @@ import EventDateSection from "./components/events/EventDateSection";
 import EventLinksSection from "./components/events/EventLinksSection";
 import EventUrlLinksSection from "./components/events/EventUrlLinksSection";
 import EventImageField from "./components/events/EventImageField";
+import LocationPicker from "./components/locations/LocationPicker";
+import type { EventLocation } from "./api/locationsApi";
 import type { EventFormData } from "@/schema/EventSchema";
 
 function resolveEventImageUrl(event: EventDTO): string | null {
@@ -67,6 +69,7 @@ const GroupEventFormPage = () => {
     removeLinkRow,
     moveLinkRow,
     setImageUrl,
+    setLocationId,
     setOneDay,
     setStartDate,
     setEndDate,
@@ -80,6 +83,9 @@ const GroupEventFormPage = () => {
     null,
   );
   const [chantValue, setChantValue] = useState<FkOption | null>(null);
+  const [locationValue, setLocationValue] = useState<EventLocation | null>(
+    null,
+  );
 
   const eventQuery = useQuery({
     queryKey: ["cms-event", eventId],
@@ -131,6 +137,7 @@ const GroupEventFormPage = () => {
     } else {
       setChantValue(null);
     }
+    setLocationValue(eventData.location ?? null);
   }, [isNew, eventData, form, groupId, setImagePreview, setSelectedImage]);
 
   const eventsListPath = groupId ? ROUTES.groupEvents(groupId) : ROUTES.groups;
@@ -230,6 +237,17 @@ const GroupEventFormPage = () => {
             readOnly={readOnly}
             onAdd={addMetadataRow}
             onRemove={removeMetadataRow}
+          />
+
+          <LocationPicker
+            groupId={groupId ?? ""}
+            value={locationValue}
+            readOnly={readOnly}
+            canCreate={canWrite}
+            onChange={(location) => {
+              setLocationValue(location);
+              setLocationId(location?.id ?? "");
+            }}
           />
 
           <EventLinksSection

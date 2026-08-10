@@ -1,0 +1,82 @@
+.leaflet-container {
+  font-family: inherit;
+  background: #f3f4f6;
+}
+
+.dark .leaflet-container {
+  background: #1f1f1f;
+}
+
+.leaflet-container .leaflet-bar {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 2px 8px rgb(0 0 0 / 0.08);
+  overflow: hidden;
+}
+
+.leaflet-container .leaflet-bar a {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  color: #374151;
+  background: #ffffff;
+  border-bottom: 1px solid rgb(0 0 0 / 0.06);
+  font-size: 1.05rem;
+  font-weight: 500;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.leaflet-container .leaflet-bar a:last-child {
+  border-bottom: none;
+}
+
+.leaflet-container .leaflet-bar a:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.leaflet-container .leaflet-bar a.leaflet-disabled {
+  background: #fafafa;
+  color: #d1d5db;
+}
+
+.dark .leaflet-container .leaflet-bar a {
+  color: #e5e7eb;
+  background: #2b2b2b;
+  border-bottom-color: rgb(255 255 255 / 0.07);
+}
+
+.dark .leaflet-container .leaflet-bar a:hover {
+  background: #383838;
+  color: #ffffff;
+}
+
+.dark .leaflet-container .leaflet-bar a.leaflet-disabled {
+  background: #232323;
+  color: #5b5b5b;
+}
+
+.leaflet-container .leaflet-control-attribution {
+  background: rgb(255 255 255 / 0.82);
+  color: #6b7280;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 0.375rem 0 0 0;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: #4b5563;
+}
+
+.dark .leaflet-container .leaflet-control-attribution {
+  background: rgb(24 24 24 / 0.82);
+  color: #9ca3af;
+}
+
+.dark .leaflet-container .leaflet-control-attribution a {
+  color: #cbd5e1;
+}

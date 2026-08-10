@@ -45,6 +45,7 @@ export const eventSchema = z
     series_id: z.string().trim(),
     accumulator_id: z.string().trim(),
     group_recitation_collection_id: z.string().trim(),
+    location_id: z.string().trim(),
   })
   .superRefine((data, ctx) => {
     if (data.start_date && data.end_date && data.end_date < data.start_date) {
@@ -93,4 +94,5 @@ export const defaultEventFormValues = (): EventFormData => ({
   series_id: "",
   accumulator_id: "",
   group_recitation_collection_id: "",
+  location_id: "",
 });

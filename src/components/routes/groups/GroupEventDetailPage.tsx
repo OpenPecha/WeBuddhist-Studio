@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { IoCalendarClearOutline } from "react-icons/io5";
+import { MdLocationOn } from "react-icons/md";
 import {
   LuBookOpen,
   LuCircleDot,
@@ -32,6 +33,8 @@ import {
   type EventMetadataDTO,
   type ImageUrlModel,
 } from "./api/eventsApi";
+import { formatCoordinates, hasCoordinates } from "./api/locationsApi";
+import LocationMap from "./components/locations/LocationMap";
 
 const languageLabel = (code: string) => getLanguageLabel(code);
 
@@ -158,6 +161,11 @@ const GroupEventDetailPage = () => {
     rows.find((r) => r.language === activeLang) ?? pickDefault(rows);
   const title = active?.name?.trim() || "Untitled event";
   const description = active?.description?.trim();
+
+  const eventLocation = data.location ?? null;
+  const locationCoords = eventLocation
+    ? formatCoordinates(eventLocation)
+    : null;
 
   const links = [
     { id: planId, key: "plan", label: "Plan", Icon: LuBookOpen },
@@ -304,6 +312,37 @@ const GroupEventDetailPage = () => {
           </p>
         )}
       </div>
+
+      {eventLocation ? (
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Location
+          </h2>
+          <div className="flex items-center gap-3 rounded-lg border bg-card p-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+              <MdLocationOn className="h-4 w-4 text-muted-foreground" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate font-medium">{eventLocation.name}</p>
+              {locationCoords ? (
+                <p className="text-xs text-muted-foreground">
+                  {locationCoords}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          {hasCoordinates(eventLocation) ? (
+            <LocationMap
+              value={{
+                lat: eventLocation.latitude,
+                lng: eventLocation.longitude,
+              }}
+              readOnly
+              className="h-56"
+            />
+          ) : null}
+        </div>
+      ) : null}
 
       {links.length > 0 && (
         <div className="space-y-3">
