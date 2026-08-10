@@ -46,6 +46,8 @@ import GroupEventDetailPage from "./components/routes/groups/GroupEventDetailPag
 import GroupChantsPage from "./components/routes/groups/GroupChantsPage.tsx";
 import GroupChantFormPage from "./components/routes/groups/GroupChantFormPage.tsx";
 import GroupChantDetailPage from "./components/routes/groups/GroupChantDetailPage.tsx";
+import GroupPostsPage from "./components/routes/groups/GroupPostsPage.tsx";
+import GroupPostFormPage from "./components/routes/groups/GroupPostFormPage.tsx";
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
@@ -253,6 +255,9 @@ const router = createBrowserRouter([
           { path: "events/new", element: <GroupEventFormPage /> },
           { path: "events/:eventId", element: <GroupEventDetailPage /> },
           { path: "events/:eventId/edit", element: <GroupEventFormPage /> },
+          { path: "posts", element: <GroupPostsPage /> },
+          { path: "posts/new", element: <GroupPostFormPage /> },
+          { path: "posts/:postId/edit", element: <GroupPostFormPage /> },
           { path: "chants", element: <GroupChantsPage /> },
           { path: "chants/new", element: <GroupChantFormPage /> },
           { path: "chants/:collectionId", element: <GroupChantDetailPage /> },
