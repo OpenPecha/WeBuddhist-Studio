@@ -53,6 +53,7 @@ import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
 import AccumulatorPresetsPage from "./components/routes/accumulator-presets/AccumulatorPresetsPage.tsx";
+import TextAudioPage from "./components/routes/text-audio/TextAudioPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
@@ -229,6 +230,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AccumulatorPresetsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.textAudio,
+        element: (
+          <ProtectedRoute>
+            <TextAudioPage />
           </ProtectedRoute>
         ),
       },

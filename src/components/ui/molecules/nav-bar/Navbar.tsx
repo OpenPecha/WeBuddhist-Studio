@@ -1,14 +1,13 @@
 import pechaIcon from "../../../../assets/icon/pecha_icon.png";
 import { Link, useLocation } from "react-router-dom";
 import { ModeToggle } from "../mode-toggle/modetoggle";
+import { IoAnalytics, IoPricetags, IoPeople, IoPulse, IoBook} from "react-icons/io5";
 import {
-  IoAnalytics,
-  IoPricetags,
-  IoPeople,
-  IoPulse,
-  IoBook,
-} from "react-icons/io5";
-import { MdDashboard, MdAdminPanelSettings, MdPublicOff } from "react-icons/md";
+  MdAudioFile,
+  MdDashboard,
+  MdAdminPanelSettings,
+  MdPublicOff,
+} from "react-icons/md";
 import { ROUTES } from "@/routes/paths";
 import { LanguageToggle } from "../language-toggle/languageToggle";
 import AuthLogout from "../auth-logout/AuthLogout";
@@ -59,6 +58,12 @@ const navItems = [
     label: "Groups",
     path: ROUTES.groups,
     tooltip: "Manage author groups",
+  },
+  {
+    icon: <MdAudioFile className="w-4 h-4" />,
+    label: "Text audio",
+    path: ROUTES.textAudio,
+    tooltip: "Manage text audio",
   },
 ];
 const tooltipItems = [

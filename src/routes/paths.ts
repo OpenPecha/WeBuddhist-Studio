@@ -47,6 +47,7 @@ export const ROUTES = {
   adminAuthors: "/admin/authors",
   adminChinaRestrictions: "/admin/china-restrictions",
   accumulatorPresets: "/accumulator-presets",
+  textAudio: "/text-audio",
 } as const;
 
 export const AUTH_ROUTE_PATHS: readonly string[] = [
