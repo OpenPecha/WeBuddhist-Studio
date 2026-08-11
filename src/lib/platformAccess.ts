@@ -28,6 +28,21 @@ export function isReviewer(role?: PlatformRole | string): boolean {
   return normalizeRoleArg(role) === "REVIEWER";
 }
 
+/** Platform staff (SUPER_ADMIN, REVIEWER) use the admin login; everyone else uses the regular login. */
+export function isAdminLoginRole(role?: PlatformRole | string): boolean {
+  return isSuperAdmin(role) || isReviewer(role);
+}
+
+export type LoginVariant = "user" | "admin";
+
+export function isRoleAllowedForLoginVariant(
+  role: PlatformRole | undefined,
+  variant: LoginVariant,
+): boolean {
+  const isAdminRole = isAdminLoginRole(role);
+  return variant === "admin" ? isAdminRole : !isAdminRole;
+}
+
 /** Row menus (dashboard, series plans, tags, group members, etc.). */
 export function shouldShowCmsActionsColumn(
   role?: PlatformRole | string,

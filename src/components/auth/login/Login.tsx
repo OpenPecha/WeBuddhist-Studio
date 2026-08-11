@@ -2,16 +2,21 @@ import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
 import ContainerLayout from "@/components/ui/atoms/studio-card";
+import { IoCallOutline, IoLockClosedOutline, IoMailOutline } from "react-icons/io5";
+import { FcGoogle } from "react-icons/fc";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/config/axios-config";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/config/auth-context";
 import { useTranslate } from "@tolgee/react";
-import { createPasswordHash } from "@/lib/utils";
+import { cn, createPasswordHash } from "@/lib/utils";
 import {
   AUTHOR_NOT_ACTIVE_DETAIL,
   isAuthorNotActiveDetail,
+  isRoleAllowedForLoginVariant,
+  normalizePlatformRole,
+  type LoginVariant,
 } from "@/lib/platformAccess";
 import { getApiErrorDetail } from "@/lib/apiErrors";
 import { ROUTES } from "@/routes/paths";
@@ -47,8 +52,14 @@ interface LoginData {
   password: string;
 }
 
-const Login = () => {
+interface LoginProps {
+  variant?: LoginVariant;
+}
+
+const Login = ({ variant = "user" }: LoginProps) => {
   const { t } = useTranslate();
+  const pageTitle =
+    variant === "admin" ? "Staff & reviewer sign in" : t("studio.login.title");
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
@@ -86,6 +97,32 @@ const Login = () => {
     }
   }, [location.state]);
 
+  /** Confirms the account's platform role matches this login page before granting access. */
+  const completeLogin = async (accessToken: string, refreshToken?: string) => {
+    let role: ReturnType<typeof normalizePlatformRole> | undefined;
+    try {
+      const { data } = await axiosInstance.get(`/api/v1/authors/info`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      role = normalizePlatformRole(data?.platform_role);
+    } catch {
+      setErrors("Unable to verify your account. Please try again.");
+      return;
+    }
+
+    if (!isRoleAllowedForLoginVariant(role, variant)) {
+      setErrors(
+        variant === "admin"
+          ? "This sign-in is for staff accounts only. Please use the regular login."
+          : "This account is a staff account. Please use the staff login.",
+      );
+      return;
+    }
+
+    login(accessToken, refreshToken);
+    navigate(ROUTES.dashboard);
+  };
+
   const applyPhoneExchangeResult = (data: PhoneExchangeResponse) => {
     if (isPhoneExchangeInactive(data)) {
       clearPendingAuth0Token();
@@ -98,8 +135,7 @@ const Login = () => {
     if (data.auth?.access_token && data.auth?.refresh_token) {
       clearPendingAuth0Token();
       setNeedsOAuthProfile(false);
-      login(data.auth.access_token, data.auth.refresh_token);
-      navigate(ROUTES.dashboard);
+      void completeLogin(data.auth.access_token, data.auth.refresh_token);
       return;
     }
 
@@ -118,8 +154,7 @@ const Login = () => {
     if (data.auth?.access_token && data.auth?.refresh_token) {
       clearPendingAuth0Token();
       setNeedsOAuthProfile(false);
-      login(data.auth.access_token, data.auth.refresh_token);
-      navigate(ROUTES.dashboard);
+      void completeLogin(data.auth.access_token, data.auth.refresh_token);
       return;
     }
 
@@ -258,8 +293,7 @@ const Login = () => {
     onSuccess: (data: any) => {
       const accessToken = data.auth.access_token;
       const refreshToken = data.auth.refresh_token;
-      login(accessToken, refreshToken);
-      navigate(ROUTES.dashboard);
+      void completeLogin(accessToken, refreshToken);
     },
     onError: (error: any) => {
       const detail = getApiErrorDetail(error) ?? "Login failed";
@@ -349,7 +383,7 @@ const Login = () => {
         },
         appState: {
           intent,
-          returnTo: ROUTES.login,
+          returnTo: variant === "admin" ? ROUTES.adminLogin : ROUTES.login,
         },
       });
     } catch {
@@ -396,8 +430,11 @@ const Login = () => {
 
   if (inactiveOnly) {
     return (
-      <ContainerLayout title={t("studio.login.title")}>
-        <div className="w-full max-w-[425px] space-y-4 text-center">
+      <ContainerLayout
+        title={pageTitle}
+        accent={variant === "admin" ? "staff" : "default"}
+      >
+        <div className="animate-in fade-in-0 slide-in-from-top-1 w-full max-w-[425px] space-y-4 text-center duration-500">
           <p className="text-sm text-muted-foreground">
             {errors || AUTHOR_NOT_ACTIVE_DETAIL}
           </p>
@@ -417,10 +454,13 @@ const Login = () => {
         : phoneExchangeMutation.isPending;
 
     return (
-      <ContainerLayout title={t("studio.login.title")}>
+      <ContainerLayout
+        title={pageTitle}
+        accent={variant === "admin" ? "staff" : "default"}
+      >
         <form
           key="oauth-profile"
-          className="w-full max-w-[425px] space-y-4"
+          className="animate-in fade-in-0 slide-in-from-bottom-2 w-full max-w-[425px] space-y-4 duration-500"
           onSubmit={handleOAuthProfileSubmit}
         >
           <p className="text-sm text-muted-foreground">
@@ -453,13 +493,13 @@ const Login = () => {
           <Button
             type="submit"
             variant="outline"
-            className="w-full text-sm"
+            className="w-full text-sm transition-transform hover:scale-[1.02] active:scale-[0.98]"
             disabled={profilePending}
           >
             {profilePending ? "Creating profile..." : "Create profile"}
           </Button>
           {errors && (
-            <div className="text-red-800 text-center dark:text-red-400 text-sm">
+            <div className="animate-in fade-in-0 slide-in-from-top-1 text-center text-sm text-red-800 duration-300 dark:text-red-400">
               {errors}
             </div>
           )}
@@ -469,53 +509,82 @@ const Login = () => {
   }
 
   return (
-    <ContainerLayout title={t("studio.login.title")}>
+    <ContainerLayout
+      title={pageTitle}
+      accent={variant === "admin" ? "staff" : "default"}
+    >
       <form
         key="email-login"
-        className="w-full max-w-[425px] space-y-4"
+        className="animate-in fade-in-0 slide-in-from-bottom-2 w-full max-w-[425px] space-y-4 duration-500"
         onSubmit={handleLogin}
       >
         <div className="text-sm space-y-2">
           <Label htmlFor="email" className="font-medium">
             {t("common.email")}
           </Label>
-          <Input
-            type="email"
-            placeholder={t("studio.login.placeholder.email")}
-            className=" placeholder:text-[#b1b1b1]"
-            required
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-            }}
-          />
+          <div className="relative">
+            <IoMailOutline className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="email"
+              type="email"
+              placeholder={t("studio.login.placeholder.email")}
+              className="pl-9 placeholder:text-[#b1b1b1]"
+              required
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+            />
+          </div>
         </div>
 
         <div className="text-sm space-y-2">
           <Label htmlFor="password" className="font-medium">
             {t("common.password")}
           </Label>
-          <Input
-            type="password"
-            name="password"
-            placeholder={t("studio.login.placeholder.password")}
-            className=" placeholder:text-[#b1b1b1]"
-            required
-          />
+          <div className="relative">
+            <IoLockClosedOutline className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              placeholder={t("studio.login.placeholder.password")}
+              className="pl-9 placeholder:text-[#b1b1b1]"
+              required
+            />
+          </div>
         </div>
-        <div className="flex mt-4 justify-center ">
-          <Button type="submit" variant="outline" className="w-full text-sm ">
+        <div className="flex justify-center pt-2">
+          <Button
+            type="submit"
+            className={cn(
+              "w-full text-sm text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]",
+              variant === "admin"
+                ? "bg-gradient-to-r from-indigo-500 to-violet-500 shadow-indigo-500/20 hover:from-indigo-600 hover:to-violet-600"
+                : "bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/20 hover:from-amber-600 hover:to-orange-600",
+            )}
+          >
             {t("common.button.submit")}
           </Button>
         </div>
+
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">
+            or continue with
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
         <div className="flex justify-center">
           <Button
             type="button"
             variant="outline"
-            className="w-full text-sm"
+            className="w-full text-sm transition-transform hover:scale-[1.02] active:scale-[0.98]"
             onClick={handleContinueWithGoogle}
             disabled={oauthExchangePending || isAuth0Loading}
           >
+            <FcGoogle className="h-4 w-4 shrink-0" />
             {pendingOauthProvider === "google"
               ? "Continuing with Google..."
               : "Continue with Google"}
@@ -525,17 +594,18 @@ const Login = () => {
           <Button
             type="button"
             variant="outline"
-            className="w-full text-sm"
+            className="w-full text-sm transition-transform hover:scale-[1.02] active:scale-[0.98]"
             onClick={handleContinueWithPhone}
             disabled={oauthExchangePending || isAuth0Loading}
           >
+            <IoCallOutline className="h-4 w-4 shrink-0" />
             {pendingOauthProvider === "phone"
               ? "Continuing with phone..."
               : "Continue with phone"}
           </Button>
         </div>
         {showEmailReverify && (
-          <div>
+          <div className="animate-in fade-in-0 duration-300">
             <Button
               type="button"
               variant="outline"
@@ -550,26 +620,53 @@ const Login = () => {
           </div>
         )}
         {errors && (
-          <div className="text-red-800 text-center dark:text-red-400 text-sm">
+          <div className="animate-in fade-in-0 slide-in-from-top-1 text-center text-sm text-red-800 duration-300 dark:text-red-400">
             {errors}
           </div>
         )}
         {successMessage && (
-          <div className="text-green-800 text-center dark:text-green-400 text-sm">
+          <div className="animate-in fade-in-0 slide-in-from-top-1 text-center text-sm text-green-800 duration-300 dark:text-green-400">
             {successMessage}
           </div>
         )}
         <div className="flex justify-center">
-          <Link to="/forgot-password" className="text-sm">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
             {t("studio.login.forgot_password")}
           </Link>
         </div>
 
-        <div className="flex justify-center">
-          <Link to="/signup" className="text-sm">
-            {t("studio.login.no_account")}
-          </Link>
-        </div>
+        {variant === "admin" ? (
+          <div className="flex justify-center">
+            <Link
+              to={ROUTES.login}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Not staff? Sign in here
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-center">
+              <Link
+                to="/signup"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {t("studio.login.no_account")}
+              </Link>
+            </div>
+            <div className="flex justify-center">
+              <Link
+                to={ROUTES.adminLogin}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Staff sign in
+              </Link>
+            </div>
+          </>
+        )}
       </form>
     </ContainerLayout>
   );

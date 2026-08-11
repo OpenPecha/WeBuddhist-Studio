@@ -80,6 +80,9 @@ describe("Login Component", () => {
     auth0State.isLoading = false;
     mockGetAccessTokenSilently.mockResolvedValue("auth0-access-token");
     mockLoginWithRedirect.mockResolvedValue(undefined);
+    vi.mocked(axiosInstance.get).mockResolvedValue({
+      data: { platform_role: "CREATOR" },
+    });
   });
 
   it("renders login form with email and password fields", () => {
@@ -165,6 +168,80 @@ describe("Login Component", () => {
     await user.click(screen.getByText("common.button.submit"));
     await waitFor(() => {
       expect(screen.getByText("Not Found")).toBeInTheDocument();
+    });
+  });
+
+  describe("Role gating", () => {
+    it("logs in a CREATOR account through the regular login", async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<Login />);
+      vi.mocked(axiosInstance.post).mockResolvedValue({
+        data: {
+          auth: {
+            access_token: "test-token",
+            refresh_token: "test-refresh-token",
+          },
+        },
+      });
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "test@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(mockLogin).toHaveBeenCalledWith(
+          "test-token",
+          "test-refresh-token",
+        );
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
+      });
+    });
+
+    it("rejects a staff account signing in through the regular login", async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<Login />);
+      vi.mocked(axiosInstance.post).mockResolvedValue({
+        data: {
+          auth: {
+            access_token: "staff-token",
+            refresh_token: "staff-refresh-token",
+          },
+        },
+      });
+      vi.mocked(axiosInstance.get).mockResolvedValue({
+        data: { platform_role: "SUPER_ADMIN" },
+      });
+
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.email"),
+        "admin@example.com",
+      );
+      await user.type(
+        screen.getByPlaceholderText("studio.login.placeholder.password"),
+        "password123",
+      );
+      await user.click(screen.getByText("common.button.submit"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            "This account is a staff account. Please use the staff login.",
+          ),
+        ).toBeInTheDocument();
+        expect(mockLogin).not.toHaveBeenCalled();
+        expect(mockNavigate).not.toHaveBeenCalledWith("/dashboard");
+      });
+    });
+
+    it("shows a link to the staff login page", () => {
+      renderWithProviders(<Login />);
+      expect(screen.getByText("Staff sign in")).toBeInTheDocument();
     });
   });
 

@@ -20,7 +20,7 @@ import {
 import AuthAvatar from "@/components/ui/molecules/auth-avatar/AuthAvatar";
 import VerseOfDayButton from "@/components/routes/verse-of-day/VerseOfDayButton";
 import { useUserInfo } from "@/hooks/useUserInfo";
-import { canAccessAdminAuthors } from "@/lib/platformAccess";
+import { canAccessAdminAuthors, isAdminLoginRole } from "@/lib/platformAccess";
 
 const navItems = [
   {
@@ -95,11 +95,18 @@ const tooltipItems = [
 
 const Navbar = () => {
   const location = useLocation();
-  const { data: userInfo } = useUserInfo();
+  const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
   const showAdminAuthors = canAccessAdminAuthors(userInfo?.platform_role);
+  /** Plain CREATOR accounts only manage their author groups — no other CMS pages. */
+  const isGroupsOnly =
+    !isUserInfoLoading && !isAdminLoginRole(userInfo?.platform_role);
+
+  const visibleNavItems = isGroupsOnly
+    ? navItems.filter((item) => item.path === ROUTES.groups)
+    : navItems;
 
   const allNavItems = [
-    ...navItems,
+    ...visibleNavItems,
     ...(showAdminAuthors
       ? [
           {
@@ -123,7 +130,7 @@ const Navbar = () => {
       <div className="font-dynamic p-2 flex flex-col justify-between items-center">
         <div className="flex flex-col space-y-10 items-center">
           <Link
-            to="/dashboard"
+            to={isGroupsOnly ? ROUTES.groups : ROUTES.dashboard}
             className="flex mt-6  flex-col w-full items-center gap-2 group cursor-pointer"
           >
             <img
@@ -138,6 +145,7 @@ const Navbar = () => {
                 <TooltipTrigger asChild>
                   <Link
                     to={item.path}
+                    aria-label={item.tooltip}
                     className={` border p-2 rounded-md dark:hover:text-white hover:text-black transition-all duration-300 hover:cursor-pointer ${
                       location.pathname === item.path ||
                       (item.path === ROUTES.dashboard &&
@@ -162,7 +170,7 @@ const Navbar = () => {
                 </TooltipContent>
               </Tooltip>
             ))}
-            <VerseOfDayButton />
+            {!isGroupsOnly && <VerseOfDayButton />}
           </div>
         </div>
         <div className="flex flex-col items-center h-44 space-y-2 pb-2">
