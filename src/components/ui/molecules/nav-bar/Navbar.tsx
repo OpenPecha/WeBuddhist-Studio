@@ -1,7 +1,7 @@
 import pechaIcon from "../../../../assets/icon/pecha_icon.png";
 import { Link, useLocation } from "react-router-dom";
 import { ModeToggle } from "../mode-toggle/modetoggle";
-import { IoAnalytics, IoPricetags, IoPeople, IoPulse } from "react-icons/io5";
+import { IoAnalytics, IoPricetags, IoPeople, IoPulse, IoBook} from "react-icons/io5";
 import {
   MdAudioFile,
   MdDashboard,
@@ -40,6 +40,12 @@ const navItems = [
     label: "Tags",
     path: ROUTES.tags,
     tooltip: "Manage tags",
+  },
+  {
+    icon: <IoBook className="w-4 h-4" />,
+    label: "Traditions",
+    path: ROUTES.traditions,
+    tooltip: "Manage traditions",
   },
   {
     icon: <IoPulse className="w-4 h-4" />,
