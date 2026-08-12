@@ -17,6 +17,7 @@ import {
 } from "@tolgee/react";
 import { LANGUAGE } from "./lib/constant.ts";
 import Login from "./components/auth/login/Login";
+import AdminLogin from "./components/auth/login/AdminLogin";
 import ForgotPassword from "./components/auth/forgot-password/ForgotPassword";
 import EmailVerification from "./components/auth/email-verification/EmailVerification";
 import Signup from "./components/auth/signup/Signup";
@@ -84,6 +85,10 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: ROUTES.adminLogin,
+        element: <AdminLogin />,
       },
       {
         path: "/signup",
