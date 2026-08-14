@@ -73,6 +73,8 @@ const GroupEventFormPage = () => {
     setOneDay,
     setStartDate,
     setEndDate,
+    setIsRecurring,
+    setRecurrence,
   } = useEventForm();
 
   const image = useEventImage({ setImageUrl });
@@ -227,6 +229,8 @@ const GroupEventFormPage = () => {
             onStartChange={setStartDate}
             onEndChange={setEndDate}
             onOneDayChange={setOneDay}
+            onIsRecurringChange={setIsRecurring}
+            onRecurrenceChange={setRecurrence}
           />
 
           <EventMetadataRows
