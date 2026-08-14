@@ -258,7 +258,9 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
   if (event.recurrence) {
     recurrence = {
       frequency: event.recurrence.frequency as "YEARLY" | "MONTHLY",
-      date_system: event.recurrence.date_system as "GREGORIAN" | "TIBETAN_LUNAR",
+      date_system: event.recurrence.date_system as
+        | "GREGORIAN"
+        | "TIBETAN_LUNAR",
       calendar_type: event.recurrence.calendar_type?.trim() ?? "",
       month: event.recurrence.month ?? null,
       day: event.recurrence.day,
@@ -318,9 +320,7 @@ function buildMetadataInput(rows: EventMetadataRow[]): EventMetadataInput[] {
   });
 }
 
-function buildRecurrenceInput(
-  recurrence: RecurrenceFormData,
-): RecurrenceInput {
+function buildRecurrenceInput(recurrence: RecurrenceFormData): RecurrenceInput {
   const calendarType = recurrence.calendar_type.trim();
   return {
     frequency: recurrence.frequency,
@@ -342,7 +342,7 @@ export function buildCreateEventBody(
   const accumulatorId = data.accumulator_id.trim();
   const chantCollectionId = data.group_recitation_collection_id.trim();
   const locationId = data.location_id.trim();
-  
+
   const body: CreateEventRequest = {
     group_id: groupId,
     metadata: buildMetadataInput(data.metadata),

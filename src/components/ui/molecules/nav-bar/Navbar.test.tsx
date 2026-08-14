@@ -25,7 +25,9 @@ describe("Navbar", () => {
 
     renderNavbar();
 
-    expect(screen.getByRole("link", { name: /manage author groups/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /manage author groups/i }),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: /go to dashboard/i }),
     ).not.toBeInTheDocument();
@@ -54,10 +56,9 @@ describe("Navbar", () => {
 
     renderNavbar();
 
-    expect(screen.getByRole("link", { name: /pecha studio logo/i })).toHaveAttribute(
-      "href",
-      "/groups",
-    );
+    expect(
+      screen.getByRole("link", { name: /pecha studio logo/i }),
+    ).toHaveAttribute("href", "/groups");
   });
 
   it("shows the full nav for a SUPER_ADMIN account", () => {
@@ -68,11 +69,21 @@ describe("Navbar", () => {
 
     renderNavbar();
 
-    expect(screen.getByRole("link", { name: /go to dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /view analytics/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /manage tags/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /manage author groups/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /author administration/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /go to dashboard/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /view analytics/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /manage tags/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /manage author groups/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /author administration/i }),
+    ).toBeInTheDocument();
   });
 
   it("shows the full nav for a REVIEWER account", () => {
@@ -83,8 +94,12 @@ describe("Navbar", () => {
 
     renderNavbar();
 
-    expect(screen.getByRole("link", { name: /go to dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /manage author groups/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /go to dashboard/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /manage author groups/i }),
+    ).toBeInTheDocument();
   });
 
   it("does not restrict the nav while user info is still loading", () => {
@@ -95,6 +110,8 @@ describe("Navbar", () => {
 
     renderNavbar();
 
-    expect(screen.getByRole("link", { name: /go to dashboard/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /go to dashboard/i }),
+    ).toBeInTheDocument();
   });
 });

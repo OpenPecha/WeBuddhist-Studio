@@ -8,14 +8,16 @@ export const RecurrenceFrequency = {
   MONTHLY: "MONTHLY",
 } as const;
 
-export type RecurrenceFrequency = typeof RecurrenceFrequency[keyof typeof RecurrenceFrequency];
+export type RecurrenceFrequency =
+  (typeof RecurrenceFrequency)[keyof typeof RecurrenceFrequency];
 
 export const RecurrenceDateSystem = {
   GREGORIAN: "GREGORIAN",
   TIBETAN_LUNAR: "TIBETAN_LUNAR",
 } as const;
 
-export type RecurrenceDateSystem = typeof RecurrenceDateSystem[keyof typeof RecurrenceDateSystem];
+export type RecurrenceDateSystem =
+  (typeof RecurrenceDateSystem)[keyof typeof RecurrenceDateSystem];
 
 export const eventMetadataRowSchema = z.object({
   language: z.string().trim().min(1, "Language is required"),

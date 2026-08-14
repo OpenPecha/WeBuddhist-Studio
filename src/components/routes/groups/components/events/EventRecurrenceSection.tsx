@@ -93,10 +93,7 @@ const EventRecurrenceSection = ({
             value={recurrence.date_system}
             disabled={readOnly}
             onValueChange={(value) =>
-              updateField(
-                "date_system",
-                value as "GREGORIAN" | "TIBETAN_LUNAR",
-              )
+              updateField("date_system", value as "GREGORIAN" | "TIBETAN_LUNAR")
             }
           >
             <Pecha.SelectTrigger className="h-12">

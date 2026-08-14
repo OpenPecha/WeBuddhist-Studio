@@ -1,7 +1,13 @@
 import pechaIcon from "../../../../assets/icon/pecha_icon.png";
 import { Link, useLocation } from "react-router-dom";
 import { ModeToggle } from "../mode-toggle/modetoggle";
-import { IoAnalytics, IoPricetags, IoPeople, IoPulse, IoBook} from "react-icons/io5";
+import {
+  IoAnalytics,
+  IoPricetags,
+  IoPeople,
+  IoPulse,
+  IoBook,
+} from "react-icons/io5";
 import {
   MdAudioFile,
   MdDashboard,
