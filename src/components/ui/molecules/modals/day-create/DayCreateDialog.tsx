@@ -333,10 +333,7 @@ const DayCreateDialog = ({
                       </Pecha.SelectTrigger>
                       <Pecha.SelectContent>
                         {templateDays.map((day) => (
-                          <Pecha.SelectItem
-                            key={day.id}
-                            value={String(day.id)}
-                          >
+                          <Pecha.SelectItem key={day.id} value={String(day.id)}>
                             Day {day.day_number}
                           </Pecha.SelectItem>
                         ))}
