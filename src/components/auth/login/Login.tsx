@@ -2,7 +2,11 @@ import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
 import { Label } from "@/components/ui/atoms/label";
 import ContainerLayout from "@/components/ui/atoms/studio-card";
-import { IoCallOutline, IoLockClosedOutline, IoMailOutline } from "react-icons/io5";
+import {
+  IoCallOutline,
+  IoLockClosedOutline,
+  IoMailOutline,
+} from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
