@@ -111,7 +111,10 @@ const TextAudioPage = () => {
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      const durationMs = await getAudioDurationMs(file);
+      // The browser can't decode every valid audio codec (e.g. ALAC m4a
+      // from iOS/Mac Voice Memos) - duration is a nice-to-have, so don't
+      // let a failed probe block the upload itself.
+      const durationMs = await getAudioDurationMs(file).catch(() => undefined);
       return uploadTextAudio({
         text: selectedText!,
         file,
