@@ -10,6 +10,7 @@ type EventDateSectionProps = {
   form: UseFormReturn<EventFormData>;
   isOneDay: boolean;
   readOnly: boolean;
+  isNew?: boolean;
   onStartChange: (iso: string) => void;
   onEndChange: (iso: string) => void;
   onOneDayChange: (oneDay: boolean) => void;
@@ -18,13 +19,18 @@ type EventDateSectionProps = {
 const DatePickerButton = ({
   value,
   disabled,
+  disablePastDates,
   onSelect,
 }: {
   value: string;
   disabled?: boolean;
+  disablePastDates?: boolean;
   onSelect: (iso: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   return (
     <Pecha.Popover open={open} onOpenChange={setOpen}>
       <Pecha.PopoverTrigger asChild>
@@ -47,6 +53,7 @@ const DatePickerButton = ({
           className="cursor-pointer"
           mode="single"
           selected={value ? fromBackendISO(value) : undefined}
+          disabled={disablePastDates ? (date) => date < today : undefined}
           onSelect={(d) => {
             setOpen(false);
             if (d) onSelect(toBackendISO(d));
@@ -61,6 +68,7 @@ const EventDateSection = ({
   form,
   isOneDay,
   readOnly,
+  isNew = true,
   onStartChange,
   onEndChange,
   onOneDayChange,
@@ -89,6 +97,7 @@ const EventDateSection = ({
           <DatePickerButton
             value={startDate}
             disabled={readOnly}
+            disablePastDates={isNew}
             onSelect={onStartChange}
           />
           {errors.start_date ? (
@@ -103,6 +112,7 @@ const EventDateSection = ({
           <DatePickerButton
             value={endDate}
             disabled={readOnly || isOneDay}
+            disablePastDates={isNew}
             onSelect={onEndChange}
           />
           {errors.end_date ? (

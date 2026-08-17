@@ -73,7 +73,7 @@ const GroupEventFormPage = () => {
     setOneDay,
     setStartDate,
     setEndDate,
-  } = useEventForm();
+  } = useEventForm(isNew);
 
   const image = useEventImage({ setImageUrl });
   const { setImagePreview, setSelectedImage } = image;
@@ -224,6 +224,7 @@ const GroupEventFormPage = () => {
             form={form}
             isOneDay={isOneDay}
             readOnly={readOnly}
+            isNew={isNew}
             onStartChange={setStartDate}
             onEndChange={setEndDate}
             onOneDayChange={setOneDay}
