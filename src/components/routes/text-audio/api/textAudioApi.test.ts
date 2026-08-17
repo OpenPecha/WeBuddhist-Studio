@@ -13,9 +13,9 @@ describe("parseOtrFile", () => {
   it("returns the parsed content for a valid OTR file", async () => {
     const content = { text: "<p>hello</p>", media: "", "media-time": "" };
 
-    await expect(parseOtrFile(makeFile(JSON.stringify(content)))).resolves.toEqual(
-      content,
-    );
+    await expect(
+      parseOtrFile(makeFile(JSON.stringify(content))),
+    ).resolves.toEqual(content);
   });
 
   it("rejects a file that is not valid JSON", async () => {

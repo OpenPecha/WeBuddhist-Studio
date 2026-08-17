@@ -98,11 +98,15 @@ export const uploadTextAudio = async ({
   body.append("file", file);
   if (durationMs != null) body.append("duration_ms", String(durationMs));
 
-  const { data } = await axiosInstance.post<TextAudio>(audioPath(text.id), body, {
-    onUploadProgress: ({ loaded, total }) => {
-      if (total) onProgress(Math.round((loaded * 100) / total));
+  const { data } = await axiosInstance.post<TextAudio>(
+    audioPath(text.id),
+    body,
+    {
+      onUploadProgress: ({ loaded, total }) => {
+        if (total) onProgress(Math.round((loaded * 100) / total));
+      },
     },
-  });
+  );
   return data;
 };
 

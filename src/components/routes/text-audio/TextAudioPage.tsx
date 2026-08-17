@@ -117,7 +117,8 @@ const TextAudioPage = () => {
   });
 
   const deleteAudioMutation = useMutation({
-    mutationFn: (audio: TextAudio) => deleteTextAudio(selectedText!.id, audio.id),
+    mutationFn: (audio: TextAudio) =>
+      deleteTextAudio(selectedText!.id, audio.id),
     onSuccess: (_, audio) => {
       queryClient.invalidateQueries({
         queryKey: ["text-audios", selectedText?.id],
@@ -632,7 +633,9 @@ const TextAudioPage = () => {
             <Pecha.AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
               disabled={deleteOtrMutation.isPending}
-              onClick={() => otrToDelete && deleteOtrMutation.mutate(otrToDelete)}
+              onClick={() =>
+                otrToDelete && deleteOtrMutation.mutate(otrToDelete)
+              }
             >
               {deleteOtrMutation.isPending ? "Deleting…" : "Delete"}
             </Pecha.AlertDialogAction>
