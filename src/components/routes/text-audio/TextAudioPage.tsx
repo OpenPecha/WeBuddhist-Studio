@@ -25,6 +25,7 @@ import {
   fetchAudioOtrs,
   fetchOtrContent,
   fetchTextAudios,
+  fetchTextSegments,
   INVALID_OTR_MESSAGE,
   otrNameFromFile,
   parseOtrFile,
@@ -37,6 +38,7 @@ import {
   uploadAudioOtr,
   uploadTextAudio,
 } from "./api/textAudioApi";
+import { OtrSyncPlayer } from "./OtrSyncPlayer";
 
 interface PendingOtr {
   name: string;
@@ -97,6 +99,13 @@ const TextAudioPage = () => {
     queryFn: () =>
       fetchOtrContent(selectedText!.id, selectedAudioId!, selectedOtrId!),
     enabled: Boolean(selectedText && selectedAudioId && selectedOtrId),
+    retry: false,
+  });
+
+  const segmentsQuery = useQuery({
+    queryKey: ["text-segments", selectedText?.id],
+    queryFn: () => fetchTextSegments(selectedText!.id),
+    enabled: Boolean(selectedText && selectedOtrId),
     retry: false,
   });
 
@@ -666,19 +675,28 @@ const TextAudioPage = () => {
                           {new Date(selectedOtr.updated_at).toLocaleString()}
                         </span>
                       </div>
-                      {otrContentQuery.isLoading ? (
+                      {otrContentQuery.isLoading || segmentsQuery.isLoading ? (
                         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <FiLoader className="animate-spin" /> Loading JSON…
+                          <FiLoader className="animate-spin" /> Loading sync
+                          preview…
                         </p>
                       ) : otrContentQuery.isError ? (
                         <p className="text-sm text-red-500">
                           {getApiErrorMessage(otrContentQuery.error)}
                         </p>
-                      ) : (
-                        <pre className="max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs whitespace-pre-wrap break-all">
-                          {JSON.stringify(otrContentQuery.data, null, 2)}
-                        </pre>
-                      )}
+                      ) : segmentsQuery.isError ? (
+                        <p className="text-sm text-red-500">
+                          {getApiErrorMessage(segmentsQuery.error)}
+                        </p>
+                      ) : otrContentQuery.data &&
+                        segmentsQuery.data &&
+                        selectedAudio ? (
+                        <OtrSyncPlayer
+                          audioUrl={selectedAudio.audio_url}
+                          spans={otrContentQuery.data.spans}
+                          segments={segmentsQuery.data.segments}
+                        />
+                      ) : null}
                     </div>
                   ) : null}
                 </div>

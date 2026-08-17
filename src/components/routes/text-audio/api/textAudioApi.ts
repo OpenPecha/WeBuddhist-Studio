@@ -44,6 +44,16 @@ export interface TextAudioOtrContent {
   spans: OtrSpanEntry[];
 }
 
+export interface TextSegmentContent {
+  segment_id: string;
+  content: string;
+}
+
+export interface TextAudioSegments {
+  text_id: string;
+  segments: TextSegmentContent[];
+}
+
 export const INVALID_OTR_MESSAGE = "Please upload a valid OTR/JSON file.";
 
 export class InvalidOtrFileError extends Error {
@@ -96,6 +106,13 @@ export const searchTexts = async (title: string) => {
 
 export const fetchTextAudios = async (textId: string) => {
   const { data } = await axiosInstance.get<TextAudio[]>(audioPath(textId));
+  return data;
+};
+
+export const fetchTextSegments = async (textId: string) => {
+  const { data } = await axiosInstance.get<TextAudioSegments>(
+    `/api/v1/cms/texts/${encodeURIComponent(textId)}/segments`,
+  );
   return data;
 };
 
