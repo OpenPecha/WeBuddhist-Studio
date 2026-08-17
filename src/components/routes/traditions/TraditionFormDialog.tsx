@@ -116,7 +116,10 @@ const TraditionFormDialog = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const normalizedCode = code.trim().toLowerCase().replace(/[\s-]+/g, "_");
+    const normalizedCode = code
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, "_");
     if (!/^[a-z][a-z0-9_]{1,62}$/.test(normalizedCode)) {
       toast.error(
         "Code must start with a letter and use lowercase letters, numbers, or underscores",

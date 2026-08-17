@@ -68,13 +68,16 @@ const DayCreateDialog = ({
     },
   );
 
-  const { data: templatePlanData, isFetching: isTemplatePlanFetching } =
-    useQuery({
-      queryKey: ["day-create-template-plan", templatePlanId],
-      queryFn: () => fetchPlanDetails(templatePlanId!),
-      enabled: !!templatePlanId && open,
-      refetchOnWindowFocus: false,
-    });
+  const {
+    data: templatePlanData,
+    isFetching: isTemplatePlanFetching,
+    isError: isTemplatePlanError,
+  } = useQuery({
+    queryKey: ["day-create-template-plan", templatePlanId],
+    queryFn: () => fetchPlanDetails(templatePlanId!),
+    enabled: !!templatePlanId && open,
+    refetchOnWindowFocus: false,
+  });
 
   const planOptions = planSearchData?.pages.flatMap((page) => page.plans) ?? [];
   const templateDays: Array<{ id: string; day_number: number }> =
@@ -106,7 +109,8 @@ const DayCreateDialog = ({
     resetForm();
   };
 
-  const formatPlanLanguage = (language: string) => {
+  const formatPlanLanguage = (language: string | undefined | null) => {
+    if (!language) return "";
     const code = normalizeLanguageCode(language);
     return code ? getNativeLanguageLabel(code) : language;
   };
@@ -311,29 +315,31 @@ const DayCreateDialog = ({
                       <FiLoader className="w-4 h-4 animate-spin" />
                       Loading days…
                     </div>
+                  ) : isTemplatePlanError ? (
+                    <p className="text-sm text-destructive py-1">
+                      Could not load days for this plan
+                    </p>
+                  ) : templateDays.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-1">
+                      No days in this plan
+                    </p>
                   ) : (
                     <Pecha.Select
-                      value={sourceDayId ?? ""}
-                      onValueChange={(v) =>
-                        setSourceDayId(v === "" ? undefined : v)
-                      }
+                      value={sourceDayId}
+                      onValueChange={setSourceDayId}
                     >
                       <Pecha.SelectTrigger className="bg-background">
                         <Pecha.SelectValue placeholder="Select a day…" />
                       </Pecha.SelectTrigger>
                       <Pecha.SelectContent>
-                        {templateDays.map((day) => {
-                          return (
-                            <Pecha.SelectItem key={day.id} value={day.id}>
-                              Day {day.day_number}
-                            </Pecha.SelectItem>
-                          );
-                        })}
-                        {templateDays.length === 0 && (
-                          <Pecha.SelectItem value="" disabled>
-                            No days in this plan
+                        {templateDays.map((day) => (
+                          <Pecha.SelectItem
+                            key={day.id}
+                            value={String(day.id)}
+                          >
+                            Day {day.day_number}
                           </Pecha.SelectItem>
-                        )}
+                        ))}
                       </Pecha.SelectContent>
                     </Pecha.Select>
                   )}

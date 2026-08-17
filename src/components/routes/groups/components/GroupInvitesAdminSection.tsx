@@ -229,12 +229,13 @@ const GroupInvitesAdminSection = ({
           </Pecha.DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              The invitee does not need a Studio account yet — they&apos;ll get an
-              email invite either way. If they&apos;re already registered they&apos;ll
-              also get an in-app notification now; otherwise it appears once
-              they sign up and verify their email (valid for about 30 minutes).
-              Authors who previously left can be invited again if they are not
-              currently members and have no pending invite for this email.
+              The invitee does not need a Studio account yet — they&apos;ll get
+              an email invite either way. If they&apos;re already registered
+              they&apos;ll also get an in-app notification now; otherwise it
+              appears once they sign up and verify their email (valid for about
+              30 minutes). Authors who previously left can be invited again if
+              they are not currently members and have no pending invite for this
+              email.
             </p>
             <div className="space-y-2">
               <label className="text-sm font-medium">Email</label>
