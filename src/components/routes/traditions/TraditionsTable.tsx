@@ -1,6 +1,7 @@
 import { Pecha } from "@/components/ui/shadimport";
 import { IoMdCreate, IoMdTrash } from "react-icons/io";
 import type { Tradition } from "./api/traditionsApi";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 interface TraditionsTableProps {
   traditions: Tradition[];
@@ -48,7 +49,9 @@ const TraditionsTable = ({
               </Pecha.TableCell>
               <Pecha.TableCell>
                 <div className="flex flex-col gap-1">
-                  <span className="font-medium">{tradition.name}</span>
+                  <span className="font-medium">
+                    {capitalizeFirstLetter(tradition.name?.trim() || "Untitled")}
+                  </span>
                   {tradition.metadata?.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {tradition.metadata.map((meta) => (
@@ -77,7 +80,7 @@ const TraditionsTable = ({
                       type="button"
                       onClick={() => onEdit(tradition)}
                       className="p-2 rounded-md border hover:bg-muted/50 transition-colors"
-                      aria-label={`Edit ${tradition.name}`}
+                      aria-label={`Edit ${capitalizeFirstLetter(tradition.name?.trim() || "Untitled")}`}
                     >
                       <IoMdCreate className="w-4 h-4" />
                     </button>
@@ -85,7 +88,7 @@ const TraditionsTable = ({
                       type="button"
                       onClick={() => onDelete(tradition)}
                       className="p-2 rounded-md border text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                      aria-label={`Delete ${tradition.name}`}
+                      aria-label={`Delete ${capitalizeFirstLetter(tradition.name?.trim() || "Untitled")}`}
                     >
                       <IoMdTrash className="w-4 h-4" />
                     </button>

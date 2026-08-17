@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
@@ -102,7 +103,9 @@ const GroupChantsPage = () => {
             ) : (
               <div className="h-12 w-12 shrink-0 rounded bg-muted" />
             )}
-            <span className="min-w-0 truncate">{collection.name}</span>
+            <span className="min-w-0 truncate">
+              {capitalizeFirstLetter(collection.name?.trim() || "Untitled")}
+            </span>
           </Link>
         </Pecha.TableCell>
         <Pecha.TableCell>
@@ -195,7 +198,8 @@ const GroupChantsPage = () => {
             <Pecha.AlertDialogTitle>Delete collection?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
               This will permanently remove &ldquo;
-              {pendingDelete?.name ?? ""}&rdquo;. This action cannot be undone.
+              {capitalizeFirstLetter(pendingDelete?.name?.trim() || "Untitled")}
+              &rdquo;. This action cannot be undone.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>

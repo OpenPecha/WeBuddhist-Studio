@@ -1,5 +1,6 @@
 import axiosInstance from "@/config/axios-config";
 import type { LanguageCode } from "@/schema/SeriesSchema";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 export interface AccumulatorMetadataDTO {
   language: string;
@@ -128,12 +129,13 @@ export const deleteAccumulatorPreset = async (
 
 export function presetDisplayName(preset: AccumulatorPreset): string {
   const metaName = preset.metadata?.[0]?.name?.trim();
-  if (metaName) return metaName;
+  if (metaName) return capitalizeFirstLetter(metaName);
   const mantraTitle = preset.mantra?.title?.trim();
-  if (mantraTitle) return mantraTitle;
+  if (mantraTitle) return capitalizeFirstLetter(mantraTitle);
   const mantraText = preset.mantra?.mantra?.trim();
   if (mantraText) {
-    return mantraText.length > 60 ? `${mantraText.slice(0, 57)}…` : mantraText;
+    const truncated = mantraText.length > 60 ? `${mantraText.slice(0, 57)}…` : mantraText;
+    return capitalizeFirstLetter(truncated);
   }
   return "Untitled preset";
 }

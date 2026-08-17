@@ -12,6 +12,7 @@ import { getApiErrorMessage } from "@/lib/apiErrors";
 import { canChangeContentStatus } from "@/lib/contentPermissions";
 import { isReviewer, shouldShowCmsActionsColumn } from "@/lib/platformAccess";
 import { fromBackendISO, toBackendISO } from "@/lib/utils";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import type { AuthorGroupMemberRole } from "../api/groupsApi";
 import { searchAccumulatorPresets } from "../api/accumulatorPresetSearchApi";
@@ -350,7 +351,9 @@ const GroupAccumulatorsPanel = ({
                 )}
                 <div className="flex-1 min-w-0 space-y-1">
                   <p className="font-medium truncate">
-                    {accumulator.title?.trim() || "Untitled accumulator"}
+                    {capitalizeFirstLetter(
+                      accumulator.title?.trim() || "Untitled accumulator"
+                    )}
                   </p>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span>
@@ -679,8 +682,10 @@ const GroupAccumulatorsPanel = ({
             <Pecha.AlertDialogTitle>Delete accumulator?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
               This will remove &ldquo;
-              {deleteTarget?.title?.trim() || "Untitled accumulator"}&rdquo;
-              from the group. This action cannot be undone.
+              {capitalizeFirstLetter(
+                deleteTarget?.title?.trim() || "Untitled accumulator"
+              )}
+              &rdquo; from the group. This action cannot be undone.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>
