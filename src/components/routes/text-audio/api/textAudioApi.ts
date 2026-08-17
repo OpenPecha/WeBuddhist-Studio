@@ -29,6 +29,21 @@ export interface TextAudioOtr {
 
 export type OtrContent = Record<string, unknown>;
 
+export interface OtrSpanRange {
+  start: number;
+  end: number;
+}
+
+export interface OtrSpanEntry {
+  span: OtrSpanRange;
+  timestamp: number;
+}
+
+export interface TextAudioOtrContent {
+  text: string;
+  spans: OtrSpanEntry[];
+}
+
 export const INVALID_OTR_MESSAGE = "Please upload a valid OTR/JSON file.";
 
 export class InvalidOtrFileError extends Error {
@@ -166,7 +181,7 @@ export const fetchOtrContent = async (
   audioId: string,
   otrId: string,
 ) => {
-  const { data } = await axiosInstance.get<OtrContent>(
+  const { data } = await axiosInstance.get<TextAudioOtrContent>(
     `${audioPath(textId, audioId)}/otr/${encodeURIComponent(otrId)}`,
   );
   return data;
