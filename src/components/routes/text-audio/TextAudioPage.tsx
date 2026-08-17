@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Dropzone from "react-dropzone";
 import { useDebounce } from "use-debounce";
-import { FiFileText, FiLoader, FiSearch, FiUpload } from "react-icons/fi";
+import {
+  FiCheck,
+  FiEdit2,
+  FiFileText,
+  FiLoader,
+  FiSearch,
+  FiUpload,
+  FiX,
+} from "react-icons/fi";
 import { FaTrash } from "react-icons/fa6";
 import { toast } from "sonner";
 
@@ -25,6 +33,7 @@ import {
   type TextAudio,
   type TextAudioOtr,
   type TextSearchResult,
+  updateTextAudioName,
   uploadAudioOtr,
   uploadTextAudio,
 } from "./api/textAudioApi";
@@ -48,6 +57,8 @@ const TextAudioPage = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [audioToDelete, setAudioToDelete] = useState<TextAudio | null>(null);
   const [otrToDelete, setOtrToDelete] = useState<TextAudioOtr | null>(null);
+  const [editingAudioId, setEditingAudioId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
 
   const searchQuery = useQuery({
     queryKey: ["text-audio-search", debouncedSearch],
@@ -133,6 +144,22 @@ const TextAudioPage = () => {
       }),
   });
 
+  const renameAudioMutation = useMutation({
+    mutationFn: ({ audio, name }: { audio: TextAudio; name: string }) =>
+      updateTextAudioName(selectedText!.id, audio.id, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["text-audios", selectedText?.id],
+      });
+      setEditingAudioId(null);
+      toast.success("Audio renamed");
+    },
+    onError: (error) =>
+      toast.error("Failed to rename audio", {
+        description: getApiErrorMessage(error),
+      }),
+  });
+
   const uploadOtrMutation = useMutation({
     mutationFn: (otr: PendingOtr) =>
       uploadAudioOtr({
@@ -183,6 +210,25 @@ const TextAudioPage = () => {
     setSelectedAudioId(audioId);
     setSelectedOtrId(null);
     setPendingOtr(null);
+  };
+
+  const startRenameAudio = (audio: TextAudio) => {
+    setEditingAudioId(audio.id);
+    setEditingName(audio.name);
+  };
+
+  const cancelRenameAudio = () => {
+    setEditingAudioId(null);
+    setEditingName("");
+  };
+
+  const saveRenameAudio = (audio: TextAudio) => {
+    const name = editingName.trim();
+    if (!name || name === audio.name) {
+      cancelRenameAudio();
+      return;
+    }
+    renameAudioMutation.mutate({ audio, name });
   };
 
   const handleOtrDrop = async (files: File[]) => {
@@ -310,6 +356,62 @@ const TextAudioPage = () => {
                           : "hover:bg-muted/50"
                       }`}
                     >
+                      {editingAudioId === audio.id ? (
+                        <div
+                          className="flex items-center gap-1"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <Pecha.Input
+                            autoFocus
+                            value={editingName}
+                            onChange={(event) =>
+                              setEditingName(event.target.value)
+                            }
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter")
+                                saveRenameAudio(audio);
+                              if (event.key === "Escape")
+                                cancelRenameAudio();
+                            }}
+                            className="h-8"
+                          />
+                          <Pecha.Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={renameAudioMutation.isPending}
+                            onClick={() => saveRenameAudio(audio)}
+                          >
+                            <FiCheck />
+                          </Pecha.Button>
+                          <Pecha.Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={renameAudioMutation.isPending}
+                            onClick={cancelRenameAudio}
+                          >
+                            <FiX />
+                          </Pecha.Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-medium">
+                            {audio.name}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label="Rename audio"
+                            className="text-muted-foreground hover:text-foreground"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              startRenameAudio(audio);
+                            }}
+                          >
+                            <FiEdit2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
                       <audio
                         key={audio.audio_url}
                         controls
@@ -420,7 +522,7 @@ const TextAudioPage = () => {
                 <div className="space-y-3 rounded-lg border p-4">
                   <div>
                     <h3 className="text-sm font-semibold">
-                      OTR files — {selectedAudio.file_name}
+                      OTR files — {selectedAudio.name}
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       Upload OTR/JSON transcripts for this audio and select one
@@ -596,7 +698,7 @@ const TextAudioPage = () => {
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Delete this audio?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              “{audioToDelete?.file_name}” and all of its OTR files will be
+              “{audioToDelete?.name}” and all of its OTR files will be
               permanently deleted.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>

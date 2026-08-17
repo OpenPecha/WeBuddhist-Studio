@@ -11,6 +11,7 @@ export interface TextAudio {
   text_title: string;
   audio_key: string;
   audio_url: string;
+  name: string;
   file_name: string;
   mime_type: string | null;
   file_size_bytes: number | null;
@@ -112,6 +113,18 @@ export const uploadTextAudio = async ({
 
 export const deleteTextAudio = async (textId: string, audioId: string) => {
   await axiosInstance.delete(audioPath(textId, audioId));
+};
+
+export const updateTextAudioName = async (
+  textId: string,
+  audioId: string,
+  name: string,
+) => {
+  const { data } = await axiosInstance.patch<TextAudio>(
+    audioPath(textId, audioId),
+    { name },
+  );
+  return data;
 };
 
 export const fetchAudioOtrs = async (textId: string, audioId: string) => {
