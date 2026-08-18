@@ -6,8 +6,10 @@ import {
   defaultEventFormValues,
   emptyMetadataRow,
   emptyLinkRow,
+  emptyRecurrence,
   type EventFormData,
   type LanguageCode,
+  type RecurrenceFormData,
 } from "@/schema/EventSchema";
 import { useLanguages, type StudioLanguageOption } from "@/hooks/useLanguages";
 
@@ -27,6 +29,8 @@ export type UseEventFormReturn = {
   setOneDay: (oneDay: boolean) => void;
   setStartDate: (iso: string) => void;
   setEndDate: (iso: string) => void;
+  setIsRecurring: (isRecurring: boolean) => void;
+  setRecurrence: (recurrence: RecurrenceFormData | null) => void;
 };
 
 export const useEventForm = (): UseEventFormReturn => {
@@ -160,6 +164,32 @@ export const useEventForm = (): UseEventFormReturn => {
     [form],
   );
 
+  const setIsRecurring = useCallback(
+    (isRecurring: boolean) => {
+      form.setValue("is_recurring", isRecurring, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      if (isRecurring && !form.getValues("recurrence")) {
+        form.setValue("recurrence", emptyRecurrence(), {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    },
+    [form],
+  );
+
+  const setRecurrence = useCallback(
+    (recurrence: RecurrenceFormData | null) => {
+      form.setValue("recurrence", recurrence, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [form],
+  );
+
   return {
     form,
     metadataRows,
@@ -176,5 +206,7 @@ export const useEventForm = (): UseEventFormReturn => {
     setOneDay,
     setStartDate,
     setEndDate,
+    setIsRecurring,
+    setRecurrence,
   };
 };
