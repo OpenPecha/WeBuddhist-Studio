@@ -112,8 +112,8 @@ const TextAudioPage = () => {
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
       // The browser can't decode every valid audio codec (e.g. ALAC m4a
-      // from iOS/Mac Voice Memos) - duration is a nice-to-have, so don't
-      // let a failed probe block the upload itself.
+      // from iOS/Mac Voice Memos), and the server re-probes the converted
+      // MP3 anyway - so never let a failed probe block the upload.
       const durationMs = await getAudioDurationMs(file).catch(() => undefined);
       return uploadTextAudio({
         text: selectedText!,
@@ -483,7 +483,8 @@ const TextAudioPage = () => {
                         {pendingFile ? pendingFile.name : "Add an audio file"}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        MP3, M4A, WAV, AAC, or OGG; maximum 50 MB
+                        MP3, M4A, WAV, AAC, or OGG; maximum 50 MB. Files are
+                        converted to MP3 so they play in every browser.
                       </p>
                     </div>
                   )}
