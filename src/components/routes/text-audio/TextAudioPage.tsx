@@ -57,8 +57,15 @@ const TextAudioPage = () => {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingOtr, setPendingOtr] = useState<PendingOtr | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [audioToDelete, setAudioToDelete] = useState<TextAudio | null>(null);
-  const [otrToDelete, setOtrToDelete] = useState<TextAudioOtr | null>(null);
+  const [audioToDelete, setAudioToDelete] = useState<{
+    textId: string;
+    audio: TextAudio;
+  } | null>(null);
+  const [otrToDelete, setOtrToDelete] = useState<{
+    textId: string;
+    audioId: string;
+    otr: TextAudioOtr;
+  } | null>(null);
   const [editingAudioId, setEditingAudioId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
 
@@ -109,26 +116,43 @@ const TextAudioPage = () => {
     retry: false,
   });
 
+  // Every mutation below can still be in flight when the user selects a
+  // different text/audio/OTR, and TanStack Query re-binds onSuccess/onError
+  // to the component's latest render before invoking them - so reading
+  // selectedText/selectedAudioId/selectedOtrId there would see whatever the
+  // user has navigated to *since*, not the parent the request was actually
+  // made for. Each mutation instead takes its parent ids as variables,
+  // captured synchronously at the moment it's fired, and completions use
+  // those captured ids both for cache invalidation and to decide whether
+  // it's still safe to touch selection state.
   const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({
+      text,
+      file,
+    }: {
+      text: TextSearchResult;
+      file: File;
+    }) => {
       // The browser can't decode every valid audio codec (e.g. ALAC m4a
       // from iOS/Mac Voice Memos), and the server re-probes the converted
       // MP3 anyway - so never let a failed probe block the upload.
       const durationMs = await getAudioDurationMs(file).catch(() => undefined);
       return uploadTextAudio({
-        text: selectedText!,
+        text,
         file,
         durationMs,
         onProgress: setUploadProgress,
       });
     },
-    onSuccess: (audio) => {
+    onSuccess: (audio, { text }) => {
       queryClient.invalidateQueries({
-        queryKey: ["text-audios", selectedText?.id],
+        queryKey: ["text-audios", text.id],
       });
-      setPendingFile(null);
-      setUploadProgress(0);
-      selectAudio(audio.id);
+      if (selectedText?.id === text.id) {
+        setPendingFile(null);
+        setUploadProgress(0);
+        selectAudio(audio.id);
+      }
       toast.success("Audio uploaded");
     },
     onError: (error) => {
@@ -140,13 +164,15 @@ const TextAudioPage = () => {
   });
 
   const deleteAudioMutation = useMutation({
-    mutationFn: (audio: TextAudio) =>
-      deleteTextAudio(selectedText!.id, audio.id),
-    onSuccess: (_, audio) => {
+    mutationFn: ({ textId, audio }: { textId: string; audio: TextAudio }) =>
+      deleteTextAudio(textId, audio.id),
+    onSuccess: (_, { textId, audio }) => {
       queryClient.invalidateQueries({
-        queryKey: ["text-audios", selectedText?.id],
+        queryKey: ["text-audios", textId],
       });
-      if (selectedAudioId === audio.id) selectAudio(null);
+      if (selectedText?.id === textId && selectedAudioId === audio.id) {
+        selectAudio(null);
+      }
       setAudioToDelete(null);
       toast.success("Audio deleted");
     },
@@ -157,11 +183,18 @@ const TextAudioPage = () => {
   });
 
   const renameAudioMutation = useMutation({
-    mutationFn: ({ audio, name }: { audio: TextAudio; name: string }) =>
-      updateTextAudioName(selectedText!.id, audio.id, name),
-    onSuccess: () => {
+    mutationFn: ({
+      textId,
+      audio,
+      name,
+    }: {
+      textId: string;
+      audio: TextAudio;
+      name: string;
+    }) => updateTextAudioName(textId, audio.id, name),
+    onSuccess: (_, { textId }) => {
       queryClient.invalidateQueries({
-        queryKey: ["text-audios", selectedText?.id],
+        queryKey: ["text-audios", textId],
       });
       setEditingAudioId(null);
       toast.success("Audio renamed");
@@ -173,19 +206,29 @@ const TextAudioPage = () => {
   });
 
   const uploadOtrMutation = useMutation({
-    mutationFn: (otr: PendingOtr) =>
+    mutationFn: ({
+      textId,
+      audioId,
+      otr,
+    }: {
+      textId: string;
+      audioId: string;
+      otr: PendingOtr;
+    }) =>
       uploadAudioOtr({
-        textId: selectedText!.id,
-        audioId: selectedAudioId!,
+        textId,
+        audioId,
         name: otr.name,
         content: otr.content,
       }),
-    onSuccess: (otr) => {
+    onSuccess: (otr, { textId, audioId }) => {
       queryClient.invalidateQueries({
-        queryKey: ["text-audio-otrs", selectedText?.id, selectedAudioId],
+        queryKey: ["text-audio-otrs", textId, audioId],
       });
-      setPendingOtr(null);
-      setSelectedOtrId(otr.id);
+      if (selectedText?.id === textId && selectedAudioId === audioId) {
+        setPendingOtr(null);
+        setSelectedOtrId(otr.id);
+      }
       toast.success("OTR saved");
     },
     onError: (error) =>
@@ -195,13 +238,26 @@ const TextAudioPage = () => {
   });
 
   const deleteOtrMutation = useMutation({
-    mutationFn: (otr: TextAudioOtr) =>
-      deleteAudioOtr(selectedText!.id, selectedAudioId!, otr.id),
-    onSuccess: (_, otr) => {
+    mutationFn: ({
+      textId,
+      audioId,
+      otr,
+    }: {
+      textId: string;
+      audioId: string;
+      otr: TextAudioOtr;
+    }) => deleteAudioOtr(textId, audioId, otr.id),
+    onSuccess: (_, { textId, audioId, otr }) => {
       queryClient.invalidateQueries({
-        queryKey: ["text-audio-otrs", selectedText?.id, selectedAudioId],
+        queryKey: ["text-audio-otrs", textId, audioId],
       });
-      if (selectedOtrId === otr.id) setSelectedOtrId(null);
+      if (
+        selectedText?.id === textId &&
+        selectedAudioId === audioId &&
+        selectedOtrId === otr.id
+      ) {
+        setSelectedOtrId(null);
+      }
       setOtrToDelete(null);
       toast.success("OTR deleted");
     },
@@ -240,7 +296,7 @@ const TextAudioPage = () => {
       cancelRenameAudio();
       return;
     }
-    renameAudioMutation.mutate({ audio, name });
+    renameAudioMutation.mutate({ textId: selectedText!.id, audio, name });
   };
 
   const handleOtrDrop = async (files: File[]) => {
@@ -380,10 +436,8 @@ const TextAudioPage = () => {
                               setEditingName(event.target.value)
                             }
                             onKeyDown={(event) => {
-                              if (event.key === "Enter")
-                                saveRenameAudio(audio);
-                              if (event.key === "Escape")
-                                cancelRenameAudio();
+                              if (event.key === "Enter") saveRenameAudio(audio);
+                              if (event.key === "Escape") cancelRenameAudio();
                             }}
                             className="h-8"
                           />
@@ -447,7 +501,10 @@ const TextAudioPage = () => {
                             disabled={deleteAudioMutation.isPending}
                             onClick={(event) => {
                               event.stopPropagation();
-                              setAudioToDelete(audio);
+                              setAudioToDelete({
+                                textId: selectedText.id,
+                                audio,
+                              });
                             }}
                           >
                             <FaTrash />
@@ -510,7 +567,12 @@ const TextAudioPage = () => {
                       type="button"
                       className="bg-[#A51C21] hover:bg-[#A51C21]/90"
                       disabled={isUploading}
-                      onClick={() => uploadMutation.mutate(pendingFile)}
+                      onClick={() =>
+                        uploadMutation.mutate({
+                          text: selectedText,
+                          file: pendingFile,
+                        })
+                      }
                     >
                       {isUploading ? (
                         <FiLoader className="animate-spin" />
@@ -575,7 +637,13 @@ const TextAudioPage = () => {
                             variant="ghost"
                             size="sm"
                             disabled={deleteOtrMutation.isPending}
-                            onClick={() => setOtrToDelete(otr)}
+                            onClick={() =>
+                              setOtrToDelete({
+                                textId: selectedText.id,
+                                audioId: selectedAudioId!,
+                                otr,
+                              })
+                            }
                           >
                             <FaTrash className="h-3 w-3" />
                           </Pecha.Button>
@@ -644,8 +712,12 @@ const TextAudioPage = () => {
                           }
                           onClick={() =>
                             uploadOtrMutation.mutate({
-                              ...pendingOtr,
-                              name: pendingOtr.name.trim(),
+                              textId: selectedText.id,
+                              audioId: selectedAudioId!,
+                              otr: {
+                                ...pendingOtr,
+                                name: pendingOtr.name.trim(),
+                              },
                             })
                           }
                         >
@@ -720,7 +792,7 @@ const TextAudioPage = () => {
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Delete this audio?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              “{audioToDelete?.name}” and all of its OTR files will be
+              “{audioToDelete?.audio.name}” and all of its OTR files will be
               permanently deleted.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
@@ -749,7 +821,7 @@ const TextAudioPage = () => {
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Delete this OTR?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              “{otrToDelete?.name}” will be permanently deleted.
+              “{otrToDelete?.otr.name}” will be permanently deleted.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>
