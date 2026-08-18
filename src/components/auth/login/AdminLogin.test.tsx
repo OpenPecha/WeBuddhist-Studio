@@ -167,9 +167,14 @@ describe("AdminLogin Component", () => {
     });
   });
 
-  it("does not show the signup link, and links back to the regular login", () => {
+  it("does not show the signup link, and offers a tab back to the regular login", () => {
     renderWithProviders(<AdminLogin />);
     expect(screen.queryByText("studio.login.no_account")).toBeNull();
-    expect(screen.getByText("Not staff? Sign in here")).toBeInTheDocument();
+    const staffTab = screen.getByRole("tab", { name: "Staff sign in" });
+    expect(staffTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Sign in" })).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
   });
 });

@@ -239,9 +239,15 @@ describe("Login Component", () => {
       });
     });
 
-    it("shows a link to the staff login page", () => {
+    it("shows a tab to the staff login page", () => {
       renderWithProviders(<Login />);
-      expect(screen.getByText("Staff sign in")).toBeInTheDocument();
+      const staffTab = screen.getByRole("tab", { name: "Staff sign in" });
+      expect(staffTab).toBeInTheDocument();
+      expect(staffTab).toHaveAttribute("aria-selected", "false");
+      expect(screen.getByRole("tab", { name: "Sign in" })).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
     });
   });
 

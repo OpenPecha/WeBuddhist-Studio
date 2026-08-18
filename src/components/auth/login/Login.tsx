@@ -23,6 +23,7 @@ import {
   type LoginVariant,
 } from "@/lib/platformAccess";
 import { getApiErrorDetail } from "@/lib/apiErrors";
+import LoginModeTabs from "./LoginModeTabs";
 import { ROUTES } from "@/routes/paths";
 import { useStudioAuth0 } from "@/config/studio-auth0";
 import {
@@ -517,6 +518,7 @@ const Login = ({ variant = "user" }: LoginProps) => {
       title={pageTitle}
       accent={variant === "admin" ? "staff" : "default"}
     >
+      <LoginModeTabs variant={variant} />
       <form
         key="email-login"
         className="animate-in fade-in-0 slide-in-from-bottom-2 w-full max-w-[425px] space-y-4 duration-500"
@@ -642,34 +644,15 @@ const Login = ({ variant = "user" }: LoginProps) => {
           </Link>
         </div>
 
-        {variant === "admin" ? (
+        {variant === "user" && (
           <div className="flex justify-center">
             <Link
-              to={ROUTES.login}
+              to="/signup"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              Not staff? Sign in here
+              {t("studio.login.no_account")}
             </Link>
           </div>
-        ) : (
-          <>
-            <div className="flex justify-center">
-              <Link
-                to="/signup"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {t("studio.login.no_account")}
-              </Link>
-            </div>
-            <div className="flex justify-center">
-              <Link
-                to={ROUTES.adminLogin}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Staff sign in
-              </Link>
-            </div>
-          </>
         )}
       </form>
     </ContainerLayout>
