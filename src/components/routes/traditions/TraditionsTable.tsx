@@ -50,7 +50,9 @@ const TraditionsTable = ({
               <Pecha.TableCell>
                 <div className="flex flex-col gap-1">
                   <span className="font-medium">
-                    {capitalizeFirstLetter(tradition.name?.trim() || "Untitled")}
+                    {capitalizeFirstLetter(
+                      tradition.name?.trim() || "Untitled",
+                    )}
                   </span>
                   {tradition.metadata?.length > 0 ? (
                     <div className="flex flex-wrap gap-1">

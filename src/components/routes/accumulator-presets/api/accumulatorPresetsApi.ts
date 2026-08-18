@@ -134,7 +134,8 @@ export function presetDisplayName(preset: AccumulatorPreset): string {
   if (mantraTitle) return capitalizeFirstLetter(mantraTitle);
   const mantraText = preset.mantra?.mantra?.trim();
   if (mantraText) {
-    const truncated = mantraText.length > 60 ? `${mantraText.slice(0, 57)}…` : mantraText;
+    const truncated =
+      mantraText.length > 60 ? `${mantraText.slice(0, 57)}…` : mantraText;
     return capitalizeFirstLetter(truncated);
   }
   return "Untitled preset";

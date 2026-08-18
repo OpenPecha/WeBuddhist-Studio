@@ -35,9 +35,7 @@ const baseEventSchema = z.object({
   start_date: z.string().trim().min(1, "Start date is required"),
   end_date: z.string().trim().min(1, "End date is required"),
   is_one_day: z.boolean(),
-  metadata: z
-    .array(eventMetadataRowSchema)
-    .min(1, "Add at least one language"),
+  metadata: z.array(eventMetadataRowSchema).min(1, "Add at least one language"),
   links: z.array(eventLinkRowSchema),
   image_url: z.string().trim(),
   plan_id: z.string().trim(),
@@ -47,7 +45,10 @@ const baseEventSchema = z.object({
   location_id: z.string().trim(),
 });
 
-const commonValidation = (data: z.infer<typeof baseEventSchema>, ctx: z.RefinementCtx) => {
+const commonValidation = (
+  data: z.infer<typeof baseEventSchema>,
+  ctx: z.RefinementCtx,
+) => {
   if (data.start_date && data.end_date && data.end_date < data.start_date) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

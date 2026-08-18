@@ -352,7 +352,7 @@ const GroupAccumulatorsPanel = ({
                 <div className="flex-1 min-w-0 space-y-1">
                   <p className="font-medium truncate">
                     {capitalizeFirstLetter(
-                      accumulator.title?.trim() || "Untitled accumulator"
+                      accumulator.title?.trim() || "Untitled accumulator",
                     )}
                   </p>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -683,7 +683,7 @@ const GroupAccumulatorsPanel = ({
             <Pecha.AlertDialogDescription>
               This will remove &ldquo;
               {capitalizeFirstLetter(
-                deleteTarget?.title?.trim() || "Untitled accumulator"
+                deleteTarget?.title?.trim() || "Untitled accumulator",
               )}
               &rdquo; from the group. This action cannot be undone.
             </Pecha.AlertDialogDescription>

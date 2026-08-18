@@ -160,7 +160,7 @@ export const makeChantCollectionSearchFn =
       items: data.collections.map((collection) => ({
         id: collection.id,
         title: capitalizeFirstLetter(
-          collection.name?.trim() || "Untitled collection"
+          collection.name?.trim() || "Untitled collection",
         ),
         ...(collection.img_url ? { image_url: collection.img_url } : {}),
       })),

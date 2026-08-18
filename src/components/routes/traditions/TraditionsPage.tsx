@@ -64,13 +64,8 @@ const TraditionsPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: TraditionPayload;
-    }) => updateTradition(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: TraditionPayload }) =>
+      updateTradition(id, payload),
     onSuccess: () => {
       toast.success("Tradition updated successfully");
       setFormOpen(false);
@@ -175,7 +170,9 @@ const TraditionsPage = () => {
         )}
       </div>
 
-      <Activity mode={traditionsData?.traditions?.length ? "visible" : "hidden"}>
+      <Activity
+        mode={traditionsData?.traditions?.length ? "visible" : "hidden"}
+      >
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -207,7 +204,9 @@ const TraditionsPage = () => {
               This will permanently delete{" "}
               <strong>
                 {capitalizeFirstLetter(
-                  deleteTarget?.name?.trim() || deleteTarget?.code || "Untitled"
+                  deleteTarget?.name?.trim() ||
+                    deleteTarget?.code ||
+                    "Untitled",
                 )}
               </strong>{" "}
               and remove it from users who selected it.

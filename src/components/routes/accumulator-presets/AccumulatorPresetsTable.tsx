@@ -71,7 +71,7 @@ const AccumulatorPresetsTable = ({
                 {capitalizeFirstLetter(
                   preset.mantra?.title?.trim() ||
                     preset.mantra?.mantra?.trim() ||
-                    "—"
+                    "—",
                 )}
               </Pecha.TableCell>
               <Pecha.TableCell className="max-w-[180px] truncate font-mono text-xs text-muted-foreground">

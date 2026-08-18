@@ -30,7 +30,7 @@ const DatePickerButton = ({
   const [open, setOpen] = useState(false);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   return (
     <Pecha.Popover open={open} onOpenChange={setOpen}>
       <Pecha.PopoverTrigger asChild>
