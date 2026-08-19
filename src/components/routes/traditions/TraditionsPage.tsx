@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/atoms/button";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 import {
   createTradition,
   deleteTradition,
@@ -201,8 +202,14 @@ const TraditionsPage = () => {
             <Pecha.AlertDialogTitle>Delete tradition?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
               This will permanently delete{" "}
-              <strong>{deleteTarget?.name ?? deleteTarget?.code}</strong> and
-              remove it from users who selected it.
+              <strong>
+                {capitalizeFirstLetter(
+                  deleteTarget?.name?.trim() ||
+                    deleteTarget?.code ||
+                    "Untitled",
+                )}
+              </strong>{" "}
+              and remove it from users who selected it.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>

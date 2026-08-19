@@ -1,5 +1,6 @@
 import axiosInstance from "@/config/axios-config";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 export interface ChantCollectionItemDTO {
   id: string;
@@ -158,7 +159,9 @@ export const makeChantCollectionSearchFn =
     return {
       items: data.collections.map((collection) => ({
         id: collection.id,
-        title: collection.name?.trim() || "Untitled collection",
+        title: capitalizeFirstLetter(
+          collection.name?.trim() || "Untitled collection",
+        ),
         ...(collection.img_url ? { image_url: collection.img_url } : {}),
       })),
       skip: data.skip,

@@ -226,6 +226,7 @@ const GroupEventFormPage = () => {
             form={form}
             isOneDay={isOneDay}
             readOnly={readOnly}
+            isNew={isNew}
             onStartChange={setStartDate}
             onEndChange={setEndDate}
             onOneDayChange={setOneDay}

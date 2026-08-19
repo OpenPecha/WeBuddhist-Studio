@@ -16,6 +16,7 @@ import {
   LANGUAGE_CODE_ORDER,
   normalizeLanguageCode,
 } from "@/lib/languageCodes";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 export interface ImageUrlModel {
   thumbnail: string;
@@ -214,11 +215,11 @@ export function eventName(
   preferred: LanguageCode = "EN",
 ): string {
   const arr = metadataArray(event.metadata);
-  return (
+  const name =
     arr.find((e) => e.language.toUpperCase() === preferred)?.name ??
     arr[0]?.name ??
-    "Untitled event"
-  );
+    "Untitled event";
+  return capitalizeFirstLetter(name);
 }
 
 const LANGUAGE_ORDER = LANGUAGE_CODE_ORDER;

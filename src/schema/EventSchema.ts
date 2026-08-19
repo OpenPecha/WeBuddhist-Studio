@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { LanguageCode } from "@/lib/languageCodes";
+import { fromBackendISO, isPastDate } from "@/lib/utils";
 
 export type { LanguageCode };
 
@@ -93,62 +94,82 @@ export const recurrenceSchema = z
 
 export type RecurrenceFormData = z.infer<typeof recurrenceSchema>;
 
-export const eventSchema = z
-  .object({
-    is_recurring: z.boolean(),
-    start_date: z.string().trim(),
-    end_date: z.string().trim(),
-    is_one_day: z.boolean(),
-    recurrence: recurrenceSchema.nullable(),
-    metadata: z
-      .array(eventMetadataRowSchema)
-      .min(1, "Add at least one language"),
-    links: z.array(eventLinkRowSchema),
-    image_url: z.string().trim(),
-    plan_id: z.string().trim(),
-    series_id: z.string().trim(),
-    accumulator_id: z.string().trim(),
-    group_recitation_collection_id: z.string().trim(),
-    location_id: z.string().trim(),
-  })
-  .superRefine((data, ctx) => {
-    // Either dates or recurrence required
-    if (!data.is_recurring) {
-      if (!data.start_date || data.start_date.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Start date is required",
-          path: ["start_date"],
-        });
-      }
-      if (!data.end_date || data.end_date.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "End date is required",
-          path: ["end_date"],
-        });
-      }
-      if (data.start_date && data.end_date && data.end_date < data.start_date) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "End date must be on or after the start date",
-          path: ["end_date"],
-        });
-      }
-    }
+const baseEventSchema = z.object({
+  is_recurring: z.boolean(),
+  start_date: z.string().trim(),
+  end_date: z.string().trim(),
+  is_one_day: z.boolean(),
+  recurrence: recurrenceSchema.nullable(),
+  metadata: z.array(eventMetadataRowSchema).min(1, "Add at least one language"),
+  links: z.array(eventLinkRowSchema),
+  image_url: z.string().trim(),
+  plan_id: z.string().trim(),
+  series_id: z.string().trim(),
+  accumulator_id: z.string().trim(),
+  group_recitation_collection_id: z.string().trim(),
+  location_id: z.string().trim(),
+});
 
-    const seen = new Set<string>();
-    data.metadata.forEach((row, index) => {
-      if (seen.has(row.language)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Each language can only be added once",
-          path: ["metadata", index, "language"],
-        });
-      }
-      seen.add(row.language);
-    });
+const commonValidation = (
+  data: z.infer<typeof baseEventSchema>,
+  ctx: z.RefinementCtx,
+) => {
+  // Either dates or recurrence required
+  if (!data.is_recurring) {
+    if (!data.start_date || data.start_date.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Start date is required",
+        path: ["start_date"],
+      });
+    }
+    if (!data.end_date || data.end_date.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End date is required",
+        path: ["end_date"],
+      });
+    }
+    if (data.start_date && data.end_date && data.end_date < data.start_date) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End date must be on or after the start date",
+        path: ["end_date"],
+      });
+    }
+  }
+
+  const seen = new Set<string>();
+  data.metadata.forEach((row, index) => {
+    if (seen.has(row.language)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Each language can only be added once",
+        path: ["metadata", index, "language"],
+      });
+    }
+    seen.add(row.language);
   });
+};
+
+export const eventSchema = baseEventSchema.superRefine((data, ctx) => {
+  commonValidation(data, ctx);
+
+  // Compare calendar dates in local time; parsing the backend's
+  // UTC-midnight string with new Date() shifts it to the previous
+  // local day in negative UTC-offset timezones.
+  if (!data.is_recurring && data.start_date) {
+    if (isPastDate(fromBackendISO(data.start_date))) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Start date cannot be in the past",
+        path: ["start_date"],
+      });
+    }
+  }
+});
+
+export const eventEditSchema = baseEventSchema.superRefine(commonValidation);
 
 export type EventFormData = z.infer<typeof eventSchema>;
 

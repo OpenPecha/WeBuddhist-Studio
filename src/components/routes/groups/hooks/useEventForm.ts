@@ -3,6 +3,7 @@ import { useForm, useFieldArray, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   eventSchema,
+  eventEditSchema,
   defaultEventFormValues,
   emptyMetadataRow,
   emptyLinkRow,
@@ -33,10 +34,10 @@ export type UseEventFormReturn = {
   setRecurrence: (recurrence: RecurrenceFormData | null) => void;
 };
 
-export const useEventForm = (): UseEventFormReturn => {
+export const useEventForm = (isNew: boolean = true): UseEventFormReturn => {
   const { languageOptions } = useLanguages();
   const form = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
+    resolver: zodResolver(isNew ? eventSchema : eventEditSchema),
     defaultValues: defaultEventFormValues(),
     mode: "onChange",
   });

@@ -11,6 +11,7 @@ import { sortLanguageCodes } from "@/lib/languageCodes";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { usesStaffWideDashboardGroupList } from "@/lib/platformAccess";
 import type { UserInfo } from "@/hooks/useUserInfo";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
@@ -587,11 +588,11 @@ export function pickGroupTitle(
   metadata: GroupMetadataDTO[] | undefined,
   fallback = "Untitled group",
 ): string {
-  if (!metadata?.length) return fallback;
+  if (!metadata?.length) return capitalizeFirstLetter(fallback);
   const en = metadata.find((m) => m.language === "EN");
-  if (en?.title?.trim()) return en.title.trim();
+  if (en?.title?.trim()) return capitalizeFirstLetter(en.title.trim());
   const first = metadata.find((m) => m.title?.trim());
-  return first?.title?.trim() || fallback;
+  return capitalizeFirstLetter(first?.title?.trim() || fallback);
 }
 
 export function resolveGroupBannerUrl(group: {
@@ -648,7 +649,8 @@ export function pickGroupLinkedPlanTitle(
   plan: GroupLinkedPlanDTO,
   fallback = "Untitled plan",
 ): string {
-  return plan.title?.trim() || fallback;
+  const title = plan.title?.trim() || fallback;
+  return capitalizeFirstLetter(title);
 }
 
 export function groupLinkedPlansToFkOptions(

@@ -4,6 +4,7 @@ import {
   type AccumulatorPreset,
   presetDisplayName,
 } from "./api/accumulatorPresetsApi";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 interface AccumulatorPresetsTableProps {
   presets: AccumulatorPreset[];
@@ -67,9 +68,11 @@ const AccumulatorPresetsTable = ({
                 </div>
               </Pecha.TableCell>
               <Pecha.TableCell className="max-w-[220px] truncate text-sm text-muted-foreground">
-                {preset.mantra?.title?.trim() ||
-                  preset.mantra?.mantra?.trim() ||
-                  "—"}
+                {capitalizeFirstLetter(
+                  preset.mantra?.title?.trim() ||
+                    preset.mantra?.mantra?.trim() ||
+                    "—",
+                )}
               </Pecha.TableCell>
               <Pecha.TableCell className="max-w-[180px] truncate font-mono text-xs text-muted-foreground">
                 {preset.text_id || "—"}
