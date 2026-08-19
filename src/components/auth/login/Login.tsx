@@ -31,6 +31,7 @@ import {
   clearPendingAuth0Token,
   consumeAuth0Intent,
   getAuth0Config,
+  getAuth0ProviderFromToken,
   getPendingAuth0Provider,
   getPendingAuth0Token,
   peekAuth0Intent,
@@ -51,6 +52,12 @@ import {
   isGoogleExchangeInactive,
   type GoogleExchangeResponse,
 } from "@/lib/googleAuthApi";
+import {
+  exchangeEmailToken,
+  getEmailAuthErrorMessage,
+  isEmailExchangeInactive,
+  type EmailExchangeResponse,
+} from "@/lib/emailAuthApi";
 
 interface LoginData {
   email: string;
@@ -166,6 +173,25 @@ const Login = ({ variant = "user" }: LoginProps) => {
     setErrors(data.message || "Google authentication failed");
   };
 
+  const applyEmailExchangeResult = (data: EmailExchangeResponse) => {
+    if (isEmailExchangeInactive(data)) {
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
+      setInactiveOnly(true);
+      setErrors(data.message || AUTHOR_NOT_ACTIVE_DETAIL);
+      return;
+    }
+
+    if (data.auth?.access_token && data.auth?.refresh_token) {
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
+      void completeLogin(data.auth.access_token, data.auth.refresh_token);
+      return;
+    }
+
+    setErrors(data.message || "Email authentication failed");
+  };
+
   const phoneExchangeMutation = useMutation({
     mutationFn: exchangePhoneToken,
     onSuccess: (data) => {
@@ -186,6 +212,10 @@ const Login = ({ variant = "user" }: LoginProps) => {
         setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
         return;
       }
+      // The stored token can never succeed after this point; clear it so the
+      // profile form is not re-shown with a token the backend already rejected.
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
       setErrors(getPhoneAuthErrorMessage(error));
     },
     onSettled: () => {
@@ -214,7 +244,39 @@ const Login = ({ variant = "user" }: LoginProps) => {
         setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
         return;
       }
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
       setErrors(getGoogleAuthErrorMessage(error));
+    },
+    onSettled: () => {
+      setOauthExchangePending(false);
+      setPendingOauthProvider(null);
+    },
+  });
+
+  const emailExchangeMutation = useMutation({
+    mutationFn: exchangeEmailToken,
+    onSuccess: (data) => {
+      applyEmailExchangeResult(data);
+    },
+    onError: (error: unknown) => {
+      const detail = getApiErrorDetail(error);
+      if (isProfileRequiredDetail(detail)) {
+        setOauthProfileProvider("email");
+        setNeedsOAuthProfile(true);
+        setErrors("");
+        return;
+      }
+      if (isAuthorNotActiveDetail(detail)) {
+        clearPendingAuth0Token();
+        setNeedsOAuthProfile(false);
+        setInactiveOnly(true);
+        setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
+        return;
+      }
+      clearPendingAuth0Token();
+      setNeedsOAuthProfile(false);
+      setErrors(getEmailAuthErrorMessage(error));
     },
     onSettled: () => {
       setOauthExchangePending(false);
@@ -244,12 +306,12 @@ const Login = ({ variant = "user" }: LoginProps) => {
 
     oauthCallbackHandled.current = true;
     consumeAuth0Intent();
-    const provider: Auth0PendingProvider =
+    const intentProvider: Auth0PendingProvider =
       intent === AUTH0_INTENT.googleLogin ? "google" : "phone";
 
     const runExchange = async () => {
       setOauthExchangePending(true);
-      setPendingOauthProvider(provider);
+      setPendingOauthProvider(intentProvider);
       setErrors("");
       try {
         const auth0Token = await getAccessTokenSilently({
@@ -257,9 +319,16 @@ const Login = ({ variant = "user" }: LoginProps) => {
             ? { audience: auth0Config.audience }
             : undefined,
         });
+        // The user may have switched identifier (e.g. email instead of phone)
+        // on the Auth0 page, so trust the token's connection over the intent.
+        const provider =
+          getAuth0ProviderFromToken(auth0Token) ?? intentProvider;
+        setPendingOauthProvider(provider);
         setPendingAuth0Token(auth0Token, provider);
         if (provider === "google") {
           googleExchangeMutation.mutate({ auth0_token: auth0Token });
+        } else if (provider === "email") {
+          emailExchangeMutation.mutate({ auth0_token: auth0Token });
         } else {
           phoneExchangeMutation.mutate({ auth0_token: auth0Token });
         }
@@ -268,7 +337,7 @@ const Login = ({ variant = "user" }: LoginProps) => {
         setOauthExchangePending(false);
         setPendingOauthProvider(null);
         setErrors(
-          provider === "google"
+          intentProvider === "google"
             ? "Unable to complete Google login. Please try again."
             : "Unable to complete phone login. Please try again.",
         );
@@ -428,6 +497,8 @@ const Login = ({ variant = "user" }: LoginProps) => {
     };
     if (oauthProfileProvider === "google") {
       googleExchangeMutation.mutate(payload);
+    } else if (oauthProfileProvider === "email") {
+      emailExchangeMutation.mutate(payload);
     } else {
       phoneExchangeMutation.mutate(payload);
     }
@@ -456,7 +527,9 @@ const Login = ({ variant = "user" }: LoginProps) => {
     const profilePending =
       oauthProfileProvider === "google"
         ? googleExchangeMutation.isPending
-        : phoneExchangeMutation.isPending;
+        : oauthProfileProvider === "email"
+          ? emailExchangeMutation.isPending
+          : phoneExchangeMutation.isPending;
 
     return (
       <ContainerLayout
