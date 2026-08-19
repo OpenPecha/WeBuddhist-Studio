@@ -25,8 +25,7 @@ export function getAuth0ProviderFromToken(
     const payloadPart = token.split(".")[1];
     if (!payloadPart) return null;
     const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
-    const padded =
-      normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
     const payload = JSON.parse(atob(padded)) as { sub?: unknown };
     const sub = typeof payload.sub === "string" ? payload.sub : "";
     if (sub.startsWith("sms|")) return "phone";
