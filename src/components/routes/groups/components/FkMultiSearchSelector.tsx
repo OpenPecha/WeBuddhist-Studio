@@ -9,6 +9,7 @@ export type FkOption = {
   id: string;
   title: string;
   image_url?: string;
+  kind?: "plan" | "series";
 };
 
 type SearchFn = (params: {

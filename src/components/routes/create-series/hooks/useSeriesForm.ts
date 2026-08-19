@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PLAN_LANGUAGE } from "@/lib/constant";
 import {
   seriesSchema,
   type SeriesFormData,
   type LanguageCode,
   type SeriesPlan,
 } from "@/schema/SeriesSchema";
+import { useLanguages, type StudioLanguageOption } from "@/hooks/useLanguages";
 
 export type UseSeriesFormReturn = {
   form: UseFormReturn<SeriesFormData>;
@@ -15,7 +15,7 @@ export type UseSeriesFormReturn = {
   plans: SeriesFormData["plans"];
   imageUrl: string;
   addedLanguages: LanguageCode[];
-  availableLanguages: typeof PLAN_LANGUAGE;
+  availableLanguages: StudioLanguageOption[];
   canSubmit: boolean;
   addLanguage: (code: LanguageCode) => void;
   removeLanguage: (code: LanguageCode) => void;
@@ -26,6 +26,7 @@ export type UseSeriesFormReturn = {
 };
 
 export const useSeriesForm = (): UseSeriesFormReturn => {
+  const { languageOptions } = useLanguages();
   const form = useForm<SeriesFormData>({
     resolver: zodResolver(seriesSchema),
     defaultValues: {
@@ -41,8 +42,8 @@ export const useSeriesForm = (): UseSeriesFormReturn => {
   const imageUrl = form.watch("image_url") ?? "";
 
   const addedLanguages = Object.keys(languages) as LanguageCode[];
-  const availableLanguages = PLAN_LANGUAGE.filter(
-    ({ value }) => !languages[value as LanguageCode],
+  const availableLanguages = languageOptions.filter(
+    ({ value }) => !languages[value],
   );
   const allAddedLanguagesComplete =
     addedLanguages.length > 0 &&

@@ -1,12 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pecha } from "@/components/ui/shadimport";
-import { parseSelection } from "@/lib/utils";
+import { useDebounce } from "use-debounce";
+import { parseRangeBounds, parseSelection } from "@/lib/utils";
 
 export interface SourceData {
   content: string;
   pecha_segment_id: string;
   text_id: string;
   segment_ids: string[];
+  segment_numbers?: number[];
 }
 
 const SelectedSourceDetail = ({
@@ -14,30 +16,123 @@ const SelectedSourceDetail = ({
   selectedSource,
   onAdd,
   bottomRef,
+  topRef,
   isFetchingNextPage,
+  isFetchingPreviousPage,
+  isRangeLoading,
+  totalSegments = 0,
+  onRangeNavigate,
+  scrollToSegmentNumber,
 }: {
   segments: any[];
   selectedSource: any;
   onAdd: (sourceData: SourceData) => void;
   bottomRef?: (node?: Element | null) => void;
+  topRef?: (node?: Element | null) => void;
   isFetchingNextPage?: boolean;
+  isFetchingPreviousPage?: boolean;
+  /** True while a range jump request is in flight. */
+  isRangeLoading?: boolean;
+  totalSegments?: number;
+  onRangeNavigate?: (start: number, end: number) => void;
+  scrollToSegmentNumber?: number | null;
 }) => {
   const [rangeInput, setRangeInput] = useState("");
   const [selectAll, setSelectAll] = useState(false);
+  const [debouncedRangeInput] = useDebounce(rangeInput, 400);
+  const lastNavigatedRange = useRef<string | null>(null);
+  const scrolledToRef = useRef<number | null>(null);
 
-  const segmentCount = segments.length;
+  const selectionMax = totalSegments || segments.length;
 
   const selectedIndices = useMemo(() => {
-    if (!segmentCount) return null;
-    return parseSelection(rangeInput, segmentCount);
-  }, [rangeInput, segmentCount]);
+    if (!selectionMax) return null;
+    return parseSelection(rangeInput, selectionMax);
+  }, [rangeInput, selectionMax]);
 
-  const isAddDisabled = !selectedIndices;
+  const loadedSegmentNumbers = useMemo(() => {
+    const numbers = new Set<number>();
+    segments.forEach((seg: any, i: number) => {
+      numbers.add(seg.segment_number ?? i + 1);
+    });
+    return numbers;
+  }, [segments]);
+
+  const rangePending =
+    Boolean(parseRangeBounds(rangeInput)) &&
+    rangeInput.trim() !== debouncedRangeInput.trim();
+
+  const selectionFullyLoaded =
+    selectedIndices != null &&
+    [...selectedIndices].every((n) => loadedSegmentNumbers.has(n));
+
+  const isAddDisabled =
+    !selectedIndices ||
+    !selectionFullyLoaded ||
+    rangePending ||
+    Boolean(isRangeLoading);
+
+  useEffect(() => {
+    lastNavigatedRange.current = null;
+    scrolledToRef.current = null;
+    setRangeInput("");
+    setSelectAll(false);
+  }, [selectedSource?.id]);
+
+  useEffect(() => {
+    const bounds = parseRangeBounds(debouncedRangeInput);
+    if (!bounds || !onRangeNavigate) return;
+
+    const key = `${bounds.start}-${bounds.end}`;
+    if (lastNavigatedRange.current === key) return;
+    lastNavigatedRange.current = key;
+    scrolledToRef.current = null;
+    onRangeNavigate(bounds.start, bounds.end);
+  }, [debouncedRangeInput, onRangeNavigate]);
+
+  useEffect(() => {
+    if (scrollToSegmentNumber == null) {
+      scrolledToRef.current = null;
+      return;
+    }
+    // Only scroll once per range jump — not again when infinite-scroll appends pages.
+    if (scrolledToRef.current === scrollToSegmentNumber) return;
+    if (!loadedSegmentNumbers.has(scrollToSegmentNumber)) return;
+
+    scrolledToRef.current = scrollToSegmentNumber;
+    requestAnimationFrame(() => {
+      const el = document.querySelector(
+        `[data-segment-number="${scrollToSegmentNumber}"]`,
+      );
+      if (!el) {
+        scrolledToRef.current = null;
+        return;
+      }
+      const viewport = el.closest(
+        '[data-slot="scroll-area-viewport"]',
+      ) as HTMLElement | null;
+      if (viewport) {
+        const elRect = el.getBoundingClientRect();
+        const vpRect = viewport.getBoundingClientRect();
+        viewport.scrollTo({
+          top: viewport.scrollTop + (elRect.top - vpRect.top),
+          behavior: "smooth",
+        });
+        return;
+      }
+      el.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  }, [scrollToSegmentNumber, loadedSegmentNumbers]);
 
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
-    if (checked && segmentCount > 0) {
-      setRangeInput(`1-${segmentCount}`);
+    if (checked && segments.length > 0) {
+      const numbers = segments.map(
+        (s: any, i: number) => s.segment_number ?? i + 1,
+      );
+      const first = Math.min(...numbers);
+      const last = Math.max(...numbers);
+      setRangeInput(`${first}-${last}`);
     } else {
       setRangeInput("");
     }
@@ -46,7 +141,15 @@ const SelectedSourceDetail = ({
   const handleAdd = () => {
     if (!selectedIndices || !selectedSource) return;
     const sortedIndices = Array.from(selectedIndices).sort((a, b) => a - b);
-    const selected = sortedIndices.map((i) => segments[i - 1]).filter(Boolean);
+    const selected = sortedIndices
+      .map((n) =>
+        segments.find(
+          (seg: any, i: number) => (seg.segment_number ?? i + 1) === n,
+        ),
+      )
+      .filter(Boolean);
+    if (selected.length === 0) return;
+
     const content = selected.map((seg: any) => seg.content).join("\n");
     const segmentIds = selected.map((seg: any) => seg.segment_id);
     const pechaSegmentId = selected[0]?.pecha_segment_id || "";
@@ -58,6 +161,9 @@ const SelectedSourceDetail = ({
       pecha_segment_id: pechaSegmentId,
       text_id: textId,
       segment_ids: segmentIds,
+      segment_numbers: selected.map(
+        (seg: any, i: number) => seg.segment_number ?? i + 1,
+      ),
     });
   };
 
@@ -65,7 +171,7 @@ const SelectedSourceDetail = ({
     <div className="mt-3 space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
-          Select Range (e.g. 1-{segmentCount})
+          Select Range (e.g. 1-{selectionMax || "N"})
         </span>
         <label className="flex items-center gap-1.5 cursor-pointer">
           <span
@@ -98,7 +204,11 @@ const SelectedSourceDetail = ({
           onClick={handleAdd}
           className="h-10 px-6 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add
+          {isRangeLoading ||
+          rangePending ||
+          (selectedIndices && !selectionFullyLoaded)
+            ? "Loading…"
+            : "Add"}
         </Pecha.Button>
       </div>
 
@@ -115,18 +225,38 @@ const SelectedSourceDetail = ({
         className="border border-[#DEDEDE] dark:border-[#313132] rounded-[10px] h-[calc(100vh-380px)]"
       >
         <div className="p-4 space-y-4">
+          {segments.length === 0 &&
+            !isFetchingNextPage &&
+            !isFetchingPreviousPage && (
+              <p className="text-center text-sm text-gray-500">
+                Loading segments...
+              </p>
+            )}
+          {topRef && (
+            <div
+              ref={topRef}
+              className="h-5 w-full opacity-0 pointer-events-none"
+            />
+          )}
+          {isFetchingPreviousPage && (
+            <p className="text-center text-sm text-gray-500">
+              Loading earlier segments...
+            </p>
+          )}
           {segments.map((segment: any, segIndex: number) => {
-            const isSelected = selectedIndices?.has(segIndex + 1);
+            const segmentNumber = segment.segment_number ?? segIndex + 1;
+            const isSelected = selectedIndices?.has(segmentNumber);
             return (
               <div
                 key={segment.segment_id || segIndex}
+                data-segment-number={segmentNumber}
                 className={`border p-3 rounded-[10px] text-sm transition-colors bg-[#F9F9F9] dark:bg-sidebar-secondary  ${
                   isSelected
                     ? "border-solid border-foreground dark:border-foreground"
                     : "dark:bg-sidebar-secondary border-dashed border-[#E1E1E1] dark:border-[#313132]"
                 }`}
               >
-                <span className="font-medium">{segIndex + 1}. </span>
+                <span className="font-medium">{segmentNumber}. </span>
                 <span
                   dangerouslySetInnerHTML={{
                     __html: segment.content,

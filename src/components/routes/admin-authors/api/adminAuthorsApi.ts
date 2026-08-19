@@ -3,7 +3,8 @@ import type { PlatformRole } from "@/lib/platformAccess";
 
 export type AdminAuthorDTO = {
   id: string;
-  email: string;
+  email?: string | null;
+  phone_number?: string | null;
   firstname?: string | null;
   lastname?: string | null;
   platform_role: PlatformRole;

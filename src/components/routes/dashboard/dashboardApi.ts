@@ -9,6 +9,7 @@ import {
   tolgeeLocaleToDashboardLanguage,
   type DashboardTableRow,
 } from "./dashboardTable";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 /** Series rows omit `title` in JSON; titles live in `metadata`. */
 export function displayDashboardItemTitle(
@@ -16,7 +17,8 @@ export function displayDashboardItemTitle(
   localeLanguage?: string,
 ): string {
   if (item.type === "plan") {
-    return item.title?.trim() || "Untitled plan";
+    const title = item.title?.trim() || "Untitled plan";
+    return capitalizeFirstLetter(title);
   }
   const preferredLanguage = tolgeeLocaleToDashboardLanguage(localeLanguage);
   const fromMeta = pickSeriesTitle(
@@ -24,7 +26,8 @@ export function displayDashboardItemTitle(
     item.metadata,
     preferredLanguage ?? undefined,
   );
-  return fromMeta === "Untitled" ? "Untitled series" : fromMeta;
+  const title = fromMeta === "Untitled" ? "Untitled series" : fromMeta;
+  return capitalizeFirstLetter(title);
 }
 
 function mapDashboardItemToTableRow(

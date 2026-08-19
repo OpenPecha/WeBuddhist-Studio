@@ -11,7 +11,6 @@ import {
   mergeDashboardUrlState,
   parseDashboardSearchParams,
   type DashboardPlanStatus,
-  type DashboardSort,
   type DashboardUrlState,
 } from "@/components/routes/dashboard/dashboardUrlState";
 import { IoMdSearch } from "react-icons/io";
@@ -33,8 +32,9 @@ import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { toast } from "sonner";
 import { useUserInfo } from "@/hooks/useUserInfo";
-import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
+import { useLanguages } from "@/hooks/useLanguages";
 import { useDashboardGroupFilterOptions } from "@/hooks/useDashboardGroupFilterOptions";
+import { useGroupRolesMap } from "@/hooks/useGroupRolesMap";
 import { isReviewer } from "@/lib/platformAccess";
 
 const SEARCH_DEBOUNCE_MS = 500;
@@ -87,6 +87,7 @@ function DashboardListPlaceholder({
 const Dashboard = () => {
   const { t } = useTranslate();
   const { data: userInfo } = useUserInfo();
+  const { languageOptions } = useLanguages();
   const tolgee = useTolgee(["language"]);
   const localeLanguage = tolgee.getLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -130,6 +131,7 @@ const Dashboard = () => {
 
   const {
     options: groupFilterOptions,
+    rolesByGroupId,
     isLoading: isGroupFilterLoading,
     showFilter: showGroupFilter,
     isStaffWideList: isStaffWideGroupList,
@@ -194,6 +196,34 @@ const Dashboard = () => {
 
   const rows = dashboardData?.rows ?? [];
 
+  const groupIdsMissingRole = useMemo(
+    () =>
+      rows
+        .map((r) => r.group_id)
+        .filter((id): id is string => Boolean(id) && !rolesByGroupId.has(id!)),
+    [rows, rolesByGroupId],
+  );
+
+  const fallbackRolesByGroupId = useGroupRolesMap(
+    groupIdsMissingRole,
+    userInfo
+      ? {
+          id: userInfo.id,
+          email: userInfo.email,
+          platform_role: userInfo.platform_role,
+        }
+      : undefined,
+  );
+
+  const mergedGroupRolesByGroupId = useMemo(() => {
+    if (fallbackRolesByGroupId.size === 0) return rolesByGroupId;
+    const merged = new Map(rolesByGroupId);
+    fallbackRolesByGroupId.forEach((role, id) => {
+      if (role && !merged.has(id)) merged.set(id, role);
+    });
+    return merged;
+  }, [rolesByGroupId, fallbackRolesByGroupId]);
+
   useEffect(() => {
     if (isStaffWideGroupList) return;
     if (!urlState.groupId || isGroupFilterLoading) return;
@@ -209,16 +239,6 @@ const Dashboard = () => {
     resetPageFilters,
   ]);
 
-  const groupRolesByGroupId = useGroupRolesMap(
-    rows.map((r) => r.group_id),
-    userInfo
-      ? {
-          id: userInfo.id,
-          email: userInfo.email,
-          platform_role: userInfo.platform_role,
-        }
-      : undefined,
-  );
   const platformReadOnly = isReviewer(userInfo?.platform_role);
   const hasRows = rows.length > 0;
   const isLoadingTable = status === "pending" || isFetching;
@@ -244,8 +264,6 @@ const Dashboard = () => {
       : urlState.tab === "series"
         ? "Create a series to see it listed here."
         : "Try clearing search or add new plans and series.";
-
-  const sortValue: DashboardSort = urlState.sort ?? "recent";
 
   const groupFilterValue = urlState.groupId ?? "all";
 
@@ -284,25 +302,7 @@ const Dashboard = () => {
           </Pecha.Select>
         </div>
       ) : null}
-      <div className="flex min-w-[180px] flex-col gap-1">
-        <span className="text-xs font-medium text-muted-foreground">Sort</span>
-        <Pecha.Select
-          value={sortValue}
-          onValueChange={() => {
-            // Backend sort is fixed; keep URL clean (omit `sort` = default).
-            replaceUrlState({ sort: null });
-          }}
-        >
-          <Pecha.SelectTrigger className="h-9 w-[200px] bg-white dark:bg-input/30">
-            <Pecha.SelectValue placeholder="Sort" />
-          </Pecha.SelectTrigger>
-          <Pecha.SelectContent>
-            <Pecha.SelectItem value="recent">
-              Recently modified
-            </Pecha.SelectItem>
-          </Pecha.SelectContent>
-        </Pecha.Select>
-      </div>
+
       <div className="flex min-w-[160px] flex-col gap-1">
         <span className="text-xs font-medium text-muted-foreground">
           Language
@@ -321,9 +321,11 @@ const Dashboard = () => {
           </Pecha.SelectTrigger>
           <Pecha.SelectContent>
             <Pecha.SelectItem value="all">All languages</Pecha.SelectItem>
-            <Pecha.SelectItem value="EN">English</Pecha.SelectItem>
-            <Pecha.SelectItem value="ZH">中文</Pecha.SelectItem>
-            <Pecha.SelectItem value="BO">བོད་སྐད།</Pecha.SelectItem>
+            {languageOptions.map((lang) => (
+              <Pecha.SelectItem key={lang.value} value={lang.value}>
+                {lang.label}
+              </Pecha.SelectItem>
+            ))}
           </Pecha.SelectContent>
         </Pecha.Select>
       </div>
@@ -428,7 +430,7 @@ const Dashboard = () => {
               t={t}
               handleFeatured={platformReadOnly ? () => {} : handleFeatured}
               platformRole={userInfo?.platform_role}
-              groupRolesByGroupId={groupRolesByGroupId}
+              groupRolesByGroupId={mergedGroupRolesByGroupId}
               userInfo={userInfo}
             />
           </div>

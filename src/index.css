@@ -203,6 +203,52 @@
 .dark .bg-dots {
   --dots-color: rgba(255, 255, 255, 0.08);
 }
+
+@keyframes blob-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(4%, 6%) scale(1.08);
+  }
+  66% {
+    transform: translate(-3%, -4%) scale(0.95);
+  }
+}
+
+@keyframes drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 120px 120px;
+  }
+}
+
+.animate-blob {
+  animation: blob-float 16s ease-in-out infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-drift {
+  animation: drift 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob,
+  .animate-drift {
+    animation: none;
+  }
+}
+
 ::-webkit-scrollbar,
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,

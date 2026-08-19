@@ -9,8 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IoMdArrowBack } from "react-icons/io";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
-import axiosInstance from "@/config/axios-config";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import { useLanguages } from "@/hooks/useLanguages";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { ROUTES } from "@/routes/paths";
 import {
@@ -37,17 +36,11 @@ import type { PlansByLanguage } from "./seriesDetailsTypes";
 import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
 import { DropdownButton } from "@/components/ui/molecules/dropdown-button/DropdownButton";
 import { SeriesLanguageActionsPanel } from "./SeriesLanguageActionsPanel";
+import SeriesPartnersSection from "./SeriesPartnersSection";
 import {
   buildSeriesLanguageParams,
   parseSeriesLanguageParam,
 } from "./seriesDetailsUrlState";
-
-const togglePlanFeatured = async (planId: string) => {
-  const { data } = await axiosInstance.patch(
-    `/api/v1/cms/plans/${planId}/featured`,
-  );
-  return data;
-};
 
 const SeriesDetailsPage = () => {
   const { seriesId } = useParams<{ seriesId: string }>();
@@ -55,6 +48,7 @@ const SeriesDetailsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [plansByLang, setPlansByLang] = useState<PlansByLanguage>({});
+  const { languageOptions } = useLanguages();
 
   const activeLanguage = useMemo(
     () => parseSeriesLanguageParam(searchParams),
@@ -122,11 +116,12 @@ const SeriesDetailsPage = () => {
     groupRole,
     platformReadOnly,
     canEdit: canEditSeries,
-    canChangeStatus: canFeaturePlans,
+    canChangeStatus: canManageSeriesGroup,
     canTransfer: canTransferSeries,
   } = useGroupContentPermissions(seriesGroupId, seriesStatus);
 
   const canManageSeriesPlans = canEditSeries && !platformReadOnly;
+  const canManageSeriesPartners = canManageSeriesGroup && !platformReadOnly;
   const showClonePlansPanel =
     canManageSeriesPlans &&
     activePlans.length === 0 &&
@@ -145,15 +140,6 @@ const SeriesDetailsPage = () => {
           ?.response?.data?.detail?.message ?? "Could not update series plans";
       toast.error(message);
     },
-  });
-
-  const featuredMutation = useMutation({
-    mutationFn: togglePlanFeatured,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
-    },
-    onError: () => toast.error("Could not update featured"),
   });
 
   const applyGrouped = (next: PlansByLanguage) => {
@@ -247,19 +233,20 @@ const SeriesDetailsPage = () => {
         ) : null}
       </div>
 
-      {platformReadOnly ? (
+      {platformReadOnly && (
         <p className="mx-4 mt-2 text-sm text-muted-foreground">
           You have read-only access to this series.
         </p>
-      ) : !canEditSeries ? (
+      )}
+      {!platformReadOnly && !canEditSeries && (
         <p className="mx-4 mt-2 text-sm text-muted-foreground">
           This series cannot be edited with your current role.
         </p>
-      ) : null}
+      )}
 
       <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
         <div className="flex flex-wrap gap-6">
-          {PLAN_LANGUAGE.map(({ label, value }) => {
+          {languageOptions.map(({ label, value }) => {
             const code = value as LanguageCode;
             const count = tabCounts[code] ?? 0;
             return (
@@ -298,9 +285,7 @@ const SeriesDetailsPage = () => {
               groupRole={groupRole}
               platformRole={platformRole}
               readOnly={platformReadOnly || !canManageSeriesPlans}
-              canFeature={canFeaturePlans}
               onReorder={handleReorder}
-              onToggleFeatured={(planId) => featuredMutation.mutate(planId)}
               onRemoveFromSeries={handleRemove}
             />
           </div>
@@ -317,6 +302,13 @@ const SeriesDetailsPage = () => {
             seriesStartDate={seriesStartDate}
           />
         ) : null}
+
+        <SeriesPartnersSection
+          seriesId={seriesId}
+          ownerGroupId={seriesGroupId}
+          language={activeLanguage}
+          canManage={canManageSeriesPartners}
+        />
       </div>
     </div>
   );

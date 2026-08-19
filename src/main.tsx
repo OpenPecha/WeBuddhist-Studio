@@ -17,6 +17,7 @@ import {
 } from "@tolgee/react";
 import { LANGUAGE } from "./lib/constant.ts";
 import Login from "./components/auth/login/Login";
+import AdminLogin from "./components/auth/login/AdminLogin";
 import ForgotPassword from "./components/auth/forgot-password/ForgotPassword";
 import EmailVerification from "./components/auth/email-verification/EmailVerification";
 import Signup from "./components/auth/signup/Signup";
@@ -32,6 +33,7 @@ import ResetPassword from "./components/auth/reset-password/ResetPassword.tsx";
 import PlanDetailsPage from "./components/routes/task/PlanDetailsPage.tsx";
 import Profile from "./components/routes/profile/Profile.tsx";
 import Tags from "./components/routes/tags/Tags.tsx";
+import TraditionsPage from "./components/routes/traditions/TraditionsPage.tsx";
 import VerseOfDay from "./components/routes/verse-of-day/VerseOfDay.tsx";
 import Groups from "./components/routes/groups/Groups.tsx";
 import GroupLayout from "./components/routes/groups/GroupLayout.tsx";
@@ -40,12 +42,23 @@ import GroupAboutEditPage from "./components/routes/groups/GroupAboutEditPage.ts
 import GroupContentPage from "./components/routes/groups/GroupContentPage.tsx";
 import GroupTransfersPage from "./components/routes/groups/GroupTransfersPage.tsx";
 import GroupMembersPage from "./components/routes/groups/GroupMembersPage.tsx";
+import GroupEventsPage from "./components/routes/groups/GroupEventsPage.tsx";
+import GroupEventFormPage from "./components/routes/groups/GroupEventFormPage.tsx";
+import GroupEventDetailPage from "./components/routes/groups/GroupEventDetailPage.tsx";
+import GroupChantsPage from "./components/routes/groups/GroupChantsPage.tsx";
+import GroupChantFormPage from "./components/routes/groups/GroupChantFormPage.tsx";
+import GroupChantDetailPage from "./components/routes/groups/GroupChantDetailPage.tsx";
+import GroupPostsPage from "./components/routes/groups/GroupPostsPage.tsx";
+import GroupPostFormPage from "./components/routes/groups/GroupPostFormPage.tsx";
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
+import AccumulatorPresetsPage from "./components/routes/accumulator-presets/AccumulatorPresetsPage.tsx";
+import TextAudioPage from "./components/routes/text-audio/TextAudioPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "./routes/paths.ts";
+import { StudioAuth0Provider } from "./config/studio-auth0.tsx";
 
 const queryClient = new QueryClient();
 const defaultLanguage = import.meta.env.VITE_DEFAULT_LANGUAGE || "en";
@@ -72,6 +85,10 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: ROUTES.adminLogin,
+        element: <AdminLogin />,
       },
       {
         path: "/signup",
@@ -174,7 +191,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/analytics",
+        path: ROUTES.analytics,
         element: (
           <ProtectedRoute>
             <Analytics />
@@ -198,10 +215,34 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: ROUTES.traditions,
+        element: (
+          <ProtectedRoute>
+            <TraditionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: ROUTES.verseOfDay,
         element: (
           <ProtectedRoute>
             <VerseOfDay />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.accumulatorPresets,
+        element: (
+          <ProtectedRoute>
+            <AccumulatorPresetsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.textAudio,
+        element: (
+          <ProtectedRoute>
+            <TextAudioPage />
           </ProtectedRoute>
         ),
       },
@@ -234,6 +275,20 @@ const router = createBrowserRouter([
           { path: "content", element: <GroupContentPage /> },
           { path: "transfers", element: <GroupTransfersPage /> },
           { path: "members", element: <GroupMembersPage /> },
+          { path: "events", element: <GroupEventsPage /> },
+          { path: "events/new", element: <GroupEventFormPage /> },
+          { path: "events/:eventId", element: <GroupEventDetailPage /> },
+          { path: "events/:eventId/edit", element: <GroupEventFormPage /> },
+          { path: "posts", element: <GroupPostsPage /> },
+          { path: "posts/new", element: <GroupPostFormPage /> },
+          { path: "posts/:postId/edit", element: <GroupPostFormPage /> },
+          { path: "chants", element: <GroupChantsPage /> },
+          { path: "chants/new", element: <GroupChantFormPage /> },
+          { path: "chants/:collectionId", element: <GroupChantDetailPage /> },
+          {
+            path: "chants/:collectionId/edit",
+            element: <GroupChantFormPage />,
+          },
         ],
       },
       {
@@ -266,18 +321,20 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <TolgeeProvider tolgee={tolgee}>
-        <PlanAuthProvider>
-          <UserbackProvider>
-            <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-              <RouterProvider router={router} />
-              <ReactQueryDevtools initialIsOpen={false} />
-              <Toaster />
-            </ThemeProvider>
-          </UserbackProvider>
-        </PlanAuthProvider>
-      </TolgeeProvider>
-    </QueryClientProvider>
+    <StudioAuth0Provider>
+      <QueryClientProvider client={queryClient}>
+        <TolgeeProvider tolgee={tolgee}>
+          <PlanAuthProvider>
+            <UserbackProvider>
+              <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+                <RouterProvider router={router} />
+                <ReactQueryDevtools initialIsOpen={false} />
+                <Toaster />
+              </ThemeProvider>
+            </UserbackProvider>
+          </PlanAuthProvider>
+        </TolgeeProvider>
+      </QueryClientProvider>
+    </StudioAuth0Provider>
   </StrictMode>,
 );

@@ -7,18 +7,11 @@ export const USERBACK_ID = "A-JldUwSRlsuKf8Te85bql54w7U";
 export const NO_PROFILE_IMAGE =
   "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
 export const LANGUAGE = "language";
+export const SIDEBAR_EXPANDED = "sidebarExpanded";
 export const DIFFICULTY = [
   { label: "Beginner", value: "BEGINNER" },
   { label: "Intermediate", value: "INTERMEDIATE" },
   { label: "Advanced", value: "ADVANCED" },
-];
-export const PLAN_LANGUAGE = [
-  { label: "English", value: "EN" },
-  { label: "བོད་ཡིག", value: "BO" },
-  { label: "中文", value: "ZH" },
-  { label: "Hindi", value: "HI" },
-  { label: "Nepali", value: "NE" },
-  { label: "Mongolian", value: "MN" },
 ];
 export const SOCIAL_PLATFORMS = [
   { value: "facebook", label: "Facebook", icon: "Facebook" },

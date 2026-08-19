@@ -27,7 +27,7 @@ describe("resolveDashboardRowGroupRole", () => {
     ).toBe("OWNER");
   });
 
-  it("falls back to AUTHOR for CREATOR on DRAFT when role unknown", () => {
+  it("falls back to AUTHOR for CREATOR on DRAFT when group_id is missing", () => {
     expect(
       resolveDashboardRowGroupRole({ ...baseRow, group_id: null }, new Map(), {
         id: "u1",
@@ -37,5 +37,15 @@ describe("resolveDashboardRowGroupRole", () => {
         has_group: true,
       }),
     ).toBe("AUTHOR");
+  });
+
+  it("does not invent a role when group_id is set but map has no my_role yet", () => {
+    expect(
+      resolveDashboardRowGroupRole({ ...baseRow, group_id: "g1" }, new Map(), {
+        id: "u1",
+        platform_role: "CREATOR",
+        can_create_content: true,
+      }),
+    ).toBeUndefined();
   });
 });

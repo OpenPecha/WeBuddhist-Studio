@@ -9,11 +9,7 @@ import type {
   DashboardLanguageCode,
   DashboardTableRow,
 } from "./dashboardTable";
-import {
-  DASHBOARD_TABLE_ICON_BTN,
-  formatRowModified,
-  isMockDashboardId,
-} from "./dashboardTable";
+import { DASHBOARD_TABLE_ICON_BTN, isMockDashboardId } from "./dashboardTable";
 import { ROUTES } from "@/routes/paths";
 import { FeaturedStar, languageChip, statusChip } from "./dashboardTableUi";
 import type { PlatformRole } from "@/lib/platformAccess";
@@ -37,6 +33,7 @@ interface DashboardContentTableProps {
     featured: boolean,
   ) => void;
   platformRole?: PlatformRole;
+  /** Membership roles from the groups list API (`my_role`), keyed by group id. */
   groupRolesByGroupId?: Map<string, AuthorGroupMemberRole | undefined>;
   userInfo?: UserInfo | null;
 }
@@ -53,6 +50,7 @@ export function DashboardContentTable({
   const navigate = useNavigate();
   const platformReadOnly = isReviewer(platformRole);
   const showActionsColumn = shouldShowCmsActionsColumn(platformRole);
+  const rolesMap = groupRolesByGroupId ?? new Map();
 
   const renderBody = () => {
     if (isLoading)
@@ -64,18 +62,14 @@ export function DashboardContentTable({
         </Pecha.TableRow>
       );
     return rows.map((row) => {
-      const groupRole = resolveDashboardRowGroupRole(
-        row,
-        groupRolesByGroupId,
-        userInfo,
-      );
+      const groupRole = resolveDashboardRowGroupRole(row, rolesMap, userInfo);
       const canFeature = canChangeContentStatus(groupRole, platformRole);
       const daysLabel = `${row.total_days} ${row.total_days === 1 ? "Day" : "Days"}`;
       const titleHref =
         row.kind === "plan" ? ROUTES.plan(row.id) : ROUTES.series(row.id);
       const canOpenTitle =
         row.kind === "series" || canAccessPlanRoutes(platformRole);
-      const modifiedDisplay = formatRowModified(row);
+
       const canToggleFeatured =
         row.kind === "series" ||
         (row.kind === "plan" && !isMockDashboardId(row.id));
@@ -146,9 +140,7 @@ export function DashboardContentTable({
           <Pecha.TableCell className="text-sm text-center">
             {row.enrolled}
           </Pecha.TableCell>
-          <Pecha.TableCell className="text-sm text-center">
-            {modifiedDisplay}
-          </Pecha.TableCell>
+
           <Pecha.TableCell className="text-center">
             {canToggleFeatured && canFeature && !platformReadOnly ? (
               <Pecha.Button
@@ -229,9 +221,7 @@ export function DashboardContentTable({
           <Pecha.TableHead className="w-[100px] font-bold text-center">
             {t("studio.dashboard.plan_used")}
           </Pecha.TableHead>
-          <Pecha.TableHead className="w-[130px] font-bold text-center">
-            Date Modified
-          </Pecha.TableHead>
+
           <Pecha.TableHead className="w-[72px] font-bold text-center">
             Featured
           </Pecha.TableHead>

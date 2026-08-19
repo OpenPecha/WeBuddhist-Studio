@@ -31,7 +31,8 @@ import {
   fetchSeriesList,
   type SeriesOption,
 } from "@/components/routes/create-series/api/seriesApi";
-import { DIFFICULTY, PLAN_LANGUAGE } from "@/lib/constant";
+import { DIFFICULTY } from "@/lib/constant";
+import { useLanguages } from "@/hooks/useLanguages";
 import { cn, toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -85,6 +86,7 @@ const Createplan = () => {
   );
 
   const [isDateOpen, setIsDateOpen] = useState(false);
+  const { languageOptions, getLanguageLabel } = useLanguages();
   const { planId, groupId } = useParams<{
     planId?: string;
     groupId?: string;
@@ -178,9 +180,7 @@ const Createplan = () => {
       const seriesTitle = seriesOptions.find(
         (s) => s.id === planNewFromSeries.seriesId,
       )?.title;
-      const languageLabel = PLAN_LANGUAGE.find(
-        (l) => l.value === planNewFromSeries.language,
-      )?.label;
+      const languageLabel = getLanguageLabel(planNewFromSeries.language);
       if (seriesTitle && languageLabel) {
         return `Add New Plan for ${seriesTitle} (${languageLabel})`;
       }
@@ -194,6 +194,7 @@ const Createplan = () => {
     lockSeriesAndLanguageFields,
     seriesOptions,
     isSeriesLoading,
+    getLanguageLabel,
   ]);
 
   useEffect(() => {
@@ -898,7 +899,7 @@ const Createplan = () => {
                         </Pecha.SelectTrigger>
                       </Pecha.FormControl>
                       <Pecha.SelectContent>
-                        {PLAN_LANGUAGE.map((planlang) => (
+                        {languageOptions.map((planlang) => (
                           <Pecha.SelectItem
                             key={planlang.value}
                             value={planlang.value}

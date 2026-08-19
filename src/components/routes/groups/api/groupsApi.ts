@@ -1,11 +1,17 @@
 import axiosInstance from "@/config/axios-config";
 import {
+  getLanguageLabel,
+  getLanguageName,
+} from "@/components/api/languagesApi";
+import {
   resolveDashboardItemImageUrl,
   type DashboardImageVariants,
 } from "@/components/routes/dashboard/dashboardTable";
+import { sortLanguageCodes } from "@/lib/languageCodes";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 import { usesStaffWideDashboardGroupList } from "@/lib/platformAccess";
 import type { UserInfo } from "@/hooks/useUserInfo";
+import { capitalizeFirstLetter } from "@/lib/textUtils";
 
 export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
@@ -120,6 +126,8 @@ export interface AuthorGroupListItem {
   avatar?: string | null;
   avatar_key?: string | null;
   avatar_url?: string | null;
+  /** Current user's membership role when returned by the CMS list API. */
+  my_role?: AuthorGroupMemberRole | null;
 }
 
 export interface AuthorGroupDetailDTO extends AuthorGroupListItem {
@@ -580,11 +588,11 @@ export function pickGroupTitle(
   metadata: GroupMetadataDTO[] | undefined,
   fallback = "Untitled group",
 ): string {
-  if (!metadata?.length) return fallback;
+  if (!metadata?.length) return capitalizeFirstLetter(fallback);
   const en = metadata.find((m) => m.language === "EN");
-  if (en?.title?.trim()) return en.title.trim();
+  if (en?.title?.trim()) return capitalizeFirstLetter(en.title.trim());
   const first = metadata.find((m) => m.title?.trim());
-  return first?.title?.trim() || fallback;
+  return capitalizeFirstLetter(first?.title?.trim() || fallback);
 }
 
 export function resolveGroupBannerUrl(group: {
@@ -641,7 +649,8 @@ export function pickGroupLinkedPlanTitle(
   plan: GroupLinkedPlanDTO,
   fallback = "Untitled plan",
 ): string {
-  return plan.title?.trim() || fallback;
+  const title = plan.title?.trim() || fallback;
+  return capitalizeFirstLetter(title);
 }
 
 export function groupLinkedPlansToFkOptions(
@@ -661,17 +670,8 @@ export function groupLinkedPlansToFkOptions(
   });
 }
 
-const LANGUAGE_LABELS: Record<LanguageCode, string> = {
-  EN: "English",
-  BO: "Tibetan",
-  ZH: "Chinese",
-  HI: "Hindi",
-  NE: "Nepali",
-  MN: "Mongolian",
-};
-
 export function languageLabelForCode(code: LanguageCode): string {
-  return LANGUAGE_LABELS[code] ?? code;
+  return getLanguageName(code) || getLanguageLabel(code);
 }
 
 export function buildGroupMetadata(
@@ -687,9 +687,8 @@ export function buildGroupMetadata(
     >
   >,
 ): GroupMetadataInput[] {
-  const order: LanguageCode[] = ["EN", "BO", "ZH", "HI", "NE", "MN"];
   const out: GroupMetadataInput[] = [];
-  for (const code of order) {
+  for (const code of sortLanguageCodes(Object.keys(languages))) {
     const block = languages[code];
     if (!block) continue;
     const descriptionLong = block.description_long?.trim() ?? "";

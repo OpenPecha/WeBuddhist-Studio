@@ -206,6 +206,15 @@ const GroupLayout = () => {
             >
               Members
             </NavLink>
+            <NavLink to={ROUTES.groupEvents(group.id)} className={navLinkClass}>
+              Events
+            </NavLink>
+            <NavLink to={ROUTES.groupPosts(group.id)} className={navLinkClass}>
+              Posts
+            </NavLink>
+            <NavLink to={ROUTES.groupChants(group.id)} className={navLinkClass}>
+              Chants
+            </NavLink>
           </nav>
         }
       >
@@ -249,7 +258,7 @@ const GroupLayout = () => {
               Cancel
             </Pecha.AlertDialogCancel>
             <Pecha.AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-white hover:bg-destructive/90"
               disabled={deleteMutation.isPending || !nameMatches}
               onClick={(e) => {
                 e.preventDefault();

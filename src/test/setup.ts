@@ -15,6 +15,31 @@ vi.mock("@/config/auth-context", () => ({
   }),
 }));
 
+vi.mock("@/config/studio-auth0", () => ({
+  StudioAuth0Provider: ({ children }: { children: React.ReactNode }) =>
+    children,
+  useStudioAuth0: () => ({
+    isConfigured: true,
+    isAuthenticated: false,
+    isLoading: false,
+    loginWithRedirect: vi.fn(),
+    getAccessTokenSilently: vi.fn(),
+    logout: vi.fn(),
+  }),
+  useStudioAuth0Logout: () => vi.fn(),
+}));
+
+vi.mock("@auth0/auth0-react", () => ({
+  Auth0Provider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth0: () => ({
+    isAuthenticated: false,
+    isLoading: false,
+    loginWithRedirect: vi.fn(),
+    getAccessTokenSilently: vi.fn(),
+    logout: vi.fn(),
+  }),
+}));
+
 vi.mock("@/config/axios-config", () => ({
   default: {
     get: vi.fn(),
@@ -51,13 +76,8 @@ vi.mock("@/hooks/useUserInfo", () => ({
   }),
 }));
 
-Object.defineProperty(global, "URL", {
-  value: {
-    createObjectURL: vi.fn(() => "mock-blob-url"),
-    revokeObjectURL: vi.fn(),
-  },
-  writable: true,
-});
+global.URL.createObjectURL = vi.fn(() => "mock-blob-url");
+global.URL.revokeObjectURL = vi.fn();
 
 global.ResizeObserver = class ResizeObserver {
   observe() {}

@@ -1,10 +1,10 @@
 import { IoMdAdd } from "react-icons/io";
 import { Pecha } from "@/components/ui/shadimport";
-import { PLAN_LANGUAGE } from "@/lib/constant";
+import type { StudioLanguageOption } from "@/hooks/useLanguages";
 import type { LanguageCode } from "@/schema/SeriesSchema";
 
 type AddLanguageSelectProps = {
-  availableLanguages: typeof PLAN_LANGUAGE;
+  availableLanguages: StudioLanguageOption[];
   addedLanguages: LanguageCode[];
   onAdd: (code: LanguageCode) => void;
 };
