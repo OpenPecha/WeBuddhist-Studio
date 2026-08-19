@@ -104,8 +104,6 @@ const EventDateSection = ({
           <Pecha.Checkbox
             checked={isRecurring}
             disabled={readOnly}
-            disablePastDates={isNew}
-            onSelect={onStartChange}
             onCheckedChange={(checked) => {
               if (checked) onIsRecurringChange(true);
             }}
@@ -134,6 +132,7 @@ const EventDateSection = ({
               <DatePickerButton
                 value={startDate}
                 disabled={readOnly}
+                disablePastDates={isNew}
                 onSelect={onStartChange}
               />
               {errors.start_date ? (
@@ -148,6 +147,7 @@ const EventDateSection = ({
               <DatePickerButton
                 value={endDate}
                 disabled={readOnly || isOneDay}
+                disablePastDates={isNew}
                 onSelect={onEndChange}
               />
               {errors.end_date ? (
