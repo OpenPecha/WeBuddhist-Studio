@@ -4,7 +4,8 @@ import { IoCalendarClearOutline } from "react-icons/io5";
 import { format } from "date-fns";
 import { Pecha } from "@/components/ui/shadimport";
 import { fromBackendISO, toBackendISO } from "@/lib/utils";
-import type { EventFormData } from "@/schema/EventSchema";
+import type { EventFormData, RecurrenceFormData } from "@/schema/EventSchema";
+import EventRecurrenceSection from "./EventRecurrenceSection";
 
 type EventDateSectionProps = {
   form: UseFormReturn<EventFormData>;
@@ -14,6 +15,8 @@ type EventDateSectionProps = {
   onStartChange: (iso: string) => void;
   onEndChange: (iso: string) => void;
   onOneDayChange: (oneDay: boolean) => void;
+  onIsRecurringChange: (isRecurring: boolean) => void;
+  onRecurrenceChange: (recurrence: RecurrenceFormData) => void;
 };
 
 const DatePickerButton = ({
@@ -72,56 +75,101 @@ const EventDateSection = ({
   onStartChange,
   onEndChange,
   onOneDayChange,
+  onIsRecurringChange,
+  onRecurrenceChange,
 }: EventDateSectionProps) => {
   const startDate = form.watch("start_date");
   const endDate = form.watch("end_date");
+  const isRecurring = form.watch("is_recurring");
   const { errors } = form.formState;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold">Dates</h3>
-        <label className="flex items-center gap-2 text-sm">
-          <Pecha.Checkbox
-            checked={isOneDay}
-            disabled={readOnly}
-            onCheckedChange={(checked) => onOneDayChange(checked === true)}
-          />
-          One-day event
-        </label>
+        <h3 className="text-sm font-bold">Event Type</h3>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <span className="text-sm font-medium">Start date</span>
-          <DatePickerButton
-            value={startDate}
+      <div className="flex gap-4">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <Pecha.Checkbox
+            checked={!isRecurring}
+            disabled={readOnly}
+            onCheckedChange={(checked) => {
+              if (checked) onIsRecurringChange(false);
+            }}
+          />
+          One-time event
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <Pecha.Checkbox
+            checked={isRecurring}
             disabled={readOnly}
             disablePastDates={isNew}
             onSelect={onStartChange}
+            onCheckedChange={(checked) => {
+              if (checked) onIsRecurringChange(true);
+            }}
           />
-          {errors.start_date ? (
-            <p className="text-sm text-destructive">
-              {errors.start_date.message}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="space-y-1">
-          <span className="text-sm font-medium">End date</span>
-          <DatePickerButton
-            value={endDate}
-            disabled={readOnly || isOneDay}
-            disablePastDates={isNew}
-            onSelect={onEndChange}
-          />
-          {errors.end_date ? (
-            <p className="text-sm text-destructive">
-              {errors.end_date.message}
-            </p>
-          ) : null}
-        </div>
+          Recurring event
+        </label>
       </div>
+
+      {!isRecurring ? (
+        <>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold">Dates</h3>
+            <label className="flex items-center gap-2 text-sm">
+              <Pecha.Checkbox
+                checked={isOneDay}
+                disabled={readOnly}
+                onCheckedChange={(checked) => onOneDayChange(checked === true)}
+              />
+              One-day event
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <span className="text-sm font-medium">Start date</span>
+              <DatePickerButton
+                value={startDate}
+                disabled={readOnly}
+                onSelect={onStartChange}
+              />
+              {errors.start_date ? (
+                <p className="text-sm text-destructive">
+                  {errors.start_date.message}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-sm font-medium">End date</span>
+              <DatePickerButton
+                value={endDate}
+                disabled={readOnly || isOneDay}
+                onSelect={onEndChange}
+              />
+              {errors.end_date ? (
+                <p className="text-sm text-destructive">
+                  {errors.end_date.message}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold">Recurrence Settings</h3>
+          </div>
+          <EventRecurrenceSection
+            form={form}
+            readOnly={readOnly}
+            onRecurrenceChange={onRecurrenceChange}
+          />
+        </>
+      )}
     </div>
   );
 };

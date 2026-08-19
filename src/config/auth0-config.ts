@@ -10,7 +10,32 @@ export const AUTH0_INTENT = {
 
 export type Auth0PhoneIntent = (typeof AUTH0_INTENT)[keyof typeof AUTH0_INTENT];
 
-export type Auth0PendingProvider = "phone" | "google";
+export type Auth0PendingProvider = "phone" | "google" | "email";
+
+/**
+ * Determines which backend exchange a raw Auth0 access token belongs to by
+ * inspecting its subject claim. Users can switch identifier (e.g. pick email
+ * instead of phone) on the Auth0 universal login page, so the login intent we
+ * stored before the redirect is not a reliable signal of the connection used.
+ */
+export function getAuth0ProviderFromToken(
+  token: string,
+): Auth0PendingProvider | null {
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) return null;
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded)) as { sub?: unknown };
+    const sub = typeof payload.sub === "string" ? payload.sub : "";
+    if (sub.startsWith("sms|")) return "phone";
+    if (sub.startsWith("google-oauth2|")) return "google";
+    if (sub.startsWith("auth0|") || sub.startsWith("email|")) return "email";
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export function getAuth0Config() {
   const domain = (import.meta.env.VITE_AUTH0_DOMAIN || "").trim();
@@ -75,7 +100,7 @@ export function getPendingAuth0Token(): string | null {
 
 export function getPendingAuth0Provider(): Auth0PendingProvider | null {
   const provider = sessionStorage.getItem(PENDING_AUTH0_PROVIDER_KEY);
-  if (provider === "phone" || provider === "google") {
+  if (provider === "phone" || provider === "google" || provider === "email") {
     return provider;
   }
   return null;

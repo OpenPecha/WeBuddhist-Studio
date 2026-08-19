@@ -10,6 +10,7 @@ import type {
   EventLinkRow,
   EventMetadataRow,
   LanguageCode,
+  RecurrenceFormData,
 } from "@/schema/EventSchema";
 import {
   LANGUAGE_CODE_ORDER,
@@ -43,6 +44,24 @@ export interface EventLinkDTO {
   display_order: number;
 }
 
+export interface RecurrenceDTO {
+  frequency: string;
+  date_system: string;
+  calendar_type?: string;
+  month?: number;
+  day: number;
+  duration_days: number;
+}
+
+export interface RecurrenceInput {
+  frequency: string;
+  date_system: string;
+  calendar_type?: string;
+  month?: number | null;
+  day: number;
+  duration_days: number;
+}
+
 export interface EventDTO {
   id: string;
   group_id: string;
@@ -56,6 +75,9 @@ export interface EventDTO {
   end_date: string;
   is_one_day: boolean;
   featured: boolean;
+  is_recurring?: boolean;
+  recurrence?: RecurrenceDTO;
+  occurrence_date?: string;
   metadata: EventMetadataResponse;
   links?: EventLinkDTO[];
   image?: ImageUrlModel;
@@ -88,8 +110,8 @@ export interface EventLinkInput {
 
 export interface CreateEventRequest {
   group_id: string;
-  start_date: string;
-  end_date: string;
+  start_date?: string;
+  end_date?: string;
   metadata: EventMetadataInput[];
   links?: EventLinkInput[];
   image_url?: string;
@@ -98,6 +120,7 @@ export interface CreateEventRequest {
   accumulator_id?: string;
   group_recitation_collection_id?: string;
   location_id?: string;
+  recurrence?: RecurrenceInput;
 }
 
 export interface UpdateEventRequest {
@@ -112,6 +135,7 @@ export interface UpdateEventRequest {
   accumulator_id?: string;
   group_recitation_collection_id?: string | null;
   location_id?: string | null;
+  recurrence?: RecurrenceInput;
 }
 
 export interface EventListFilters {
@@ -231,10 +255,26 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
       }),
     );
 
+  let recurrence: RecurrenceFormData | null = null;
+  if (event.recurrence) {
+    recurrence = {
+      frequency: event.recurrence.frequency as "YEARLY" | "MONTHLY",
+      date_system: event.recurrence.date_system as
+        | "GREGORIAN"
+        | "TIBETAN_LUNAR",
+      calendar_type: event.recurrence.calendar_type?.trim() ?? "",
+      month: event.recurrence.month ?? null,
+      day: event.recurrence.day,
+      duration_days: event.recurrence.duration_days,
+    };
+  }
+
   return {
+    is_recurring: Boolean(event.is_recurring),
     start_date: event.start_date ?? "",
     end_date: event.end_date ?? "",
     is_one_day: Boolean(event.is_one_day),
+    recurrence,
     metadata:
       rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
     links,
@@ -281,6 +321,18 @@ function buildMetadataInput(rows: EventMetadataRow[]): EventMetadataInput[] {
   });
 }
 
+function buildRecurrenceInput(recurrence: RecurrenceFormData): RecurrenceInput {
+  const calendarType = recurrence.calendar_type.trim();
+  return {
+    frequency: recurrence.frequency,
+    date_system: recurrence.date_system,
+    ...(calendarType ? { calendar_type: calendarType } : {}),
+    month: recurrence.month,
+    day: recurrence.day,
+    duration_days: recurrence.duration_days,
+  };
+}
+
 export function buildCreateEventBody(
   data: EventFormData,
   groupId: string,
@@ -291,10 +343,9 @@ export function buildCreateEventBody(
   const accumulatorId = data.accumulator_id.trim();
   const chantCollectionId = data.group_recitation_collection_id.trim();
   const locationId = data.location_id.trim();
-  return {
+
+  const body: CreateEventRequest = {
     group_id: groupId,
-    start_date: data.start_date,
-    end_date: data.end_date,
     metadata: buildMetadataInput(data.metadata),
     ...(data.links.length ? { links: buildLinksInput(data.links) } : {}),
     ...(imageUrl ? { image_url: imageUrl } : {}),
@@ -306,6 +357,15 @@ export function buildCreateEventBody(
       : {}),
     ...(locationId ? { location_id: locationId } : {}),
   };
+
+  if (data.is_recurring && data.recurrence) {
+    body.recurrence = buildRecurrenceInput(data.recurrence);
+  } else {
+    body.start_date = data.start_date;
+    body.end_date = data.end_date;
+  }
+
+  return body;
 }
 
 async function resolveLinkOption(
@@ -423,6 +483,28 @@ export function buildUpdateEventBody(
   const prevLocation = original.location_id.trim();
   if (nextLocation !== prevLocation) {
     body.location_id = nextLocation || null;
+  }
+
+  // Handle recurrence changes
+  if (data.is_recurring !== original.is_recurring) {
+    if (data.is_recurring && data.recurrence) {
+      body.recurrence = buildRecurrenceInput(data.recurrence);
+    } else {
+      body.start_date = data.start_date;
+      body.end_date = data.end_date;
+    }
+  } else if (data.is_recurring && data.recurrence && original.recurrence) {
+    // Check if recurrence fields changed
+    if (
+      data.recurrence.frequency !== original.recurrence.frequency ||
+      data.recurrence.date_system !== original.recurrence.date_system ||
+      data.recurrence.calendar_type !== original.recurrence.calendar_type ||
+      data.recurrence.month !== original.recurrence.month ||
+      data.recurrence.day !== original.recurrence.day ||
+      data.recurrence.duration_days !== original.recurrence.duration_days
+    ) {
+      body.recurrence = buildRecurrenceInput(data.recurrence);
+    }
   }
 
   return body;

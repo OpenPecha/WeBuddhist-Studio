@@ -239,9 +239,15 @@ describe("Login Component", () => {
       });
     });
 
-    it("shows a link to the staff login page", () => {
+    it("shows a tab to the staff login page", () => {
       renderWithProviders(<Login />);
-      expect(screen.getByText("Staff sign in")).toBeInTheDocument();
+      const staffTab = screen.getByRole("tab", { name: "Staff sign in" });
+      expect(staffTab).toBeInTheDocument();
+      expect(staffTab).toHaveAttribute("aria-selected", "false");
+      expect(screen.getByRole("tab", { name: "Sign in" })).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
     });
   });
 
@@ -659,6 +665,86 @@ describe("Login Component", () => {
       await waitFor(() => {
         expect(screen.getByText("Invalid Auth0 SMS token")).toBeInTheDocument();
       });
+      expect(screen.queryByText("Create profile")).not.toBeInTheDocument();
+      expect(sessionStorage.getItem(PENDING_AUTH0_TOKEN_KEY)).toBeNull();
+    });
+
+    it("keeps the profile form and pending token on a transient network failure", async () => {
+      const user = userEvent.setup();
+      setPendingAuth0Token("auth0-access-token");
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Create profile")).toBeInTheDocument();
+      });
+
+      vi.mocked(axiosInstance.post).mockRejectedValueOnce(
+        new Error("Network Error"),
+      );
+
+      await user.type(screen.getByLabelText("First name"), "Ada");
+      await user.type(screen.getByLabelText("Last name"), "Lovelace");
+      await user.click(screen.getByText("Create profile"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Phone authentication failed"),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByText("Create profile")).toBeInTheDocument();
+      expect(sessionStorage.getItem(PENDING_AUTH0_TOKEN_KEY)).toBe(
+        "auth0-access-token",
+      );
+
+      vi.mocked(axiosInstance.post).mockResolvedValueOnce({
+        data: {
+          author_id: "author-4",
+          phone_number: "+15551234567",
+          status: "ACTIVE",
+          message: "Authentication successful",
+          user: { name: "Ada Lovelace" },
+          auth: {
+            access_token: "backend-access",
+            refresh_token: "backend-refresh",
+            token_type: "bearer",
+          },
+        },
+      });
+
+      await user.click(screen.getByText("Create profile"));
+
+      await waitFor(() => {
+        expect(mockLogin).toHaveBeenCalledWith(
+          "backend-access",
+          "backend-refresh",
+        );
+      });
+    });
+
+    it("keeps the profile form and pending token on a server error", async () => {
+      const user = userEvent.setup();
+      setPendingAuth0Token("auth0-access-token");
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Create profile")).toBeInTheDocument();
+      });
+
+      vi.mocked(axiosInstance.post).mockRejectedValueOnce({
+        response: { status: 502, data: { detail: "Bad gateway" } },
+      });
+
+      await user.type(screen.getByLabelText("First name"), "Ada");
+      await user.type(screen.getByLabelText("Last name"), "Lovelace");
+      await user.click(screen.getByText("Create profile"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Bad gateway")).toBeInTheDocument();
+      });
+      expect(screen.getByText("Create profile")).toBeInTheDocument();
+      expect(sessionStorage.getItem(PENDING_AUTH0_TOKEN_KEY)).toBe(
+        "auth0-access-token",
+      );
     });
 
     it("shows inactive account state for inactive phone exchange responses", async () => {
@@ -782,6 +868,172 @@ describe("Login Component", () => {
         );
         expect(screen.getByText("Author not active")).toBeInTheDocument();
         expect(sessionStorage.getItem(PENDING_AUTH0_TOKEN_KEY)).toBeNull();
+      });
+    });
+  });
+
+  describe("Provider routing from Auth0 token subject", () => {
+    const makeJwt = (sub: string) =>
+      ["header", btoa(JSON.stringify({ sub })), "signature"].join(".");
+
+    const successResponse = (extra: Record<string, unknown> = {}) => ({
+      data: {
+        author_id: "author-r1",
+        status: "ACTIVE",
+        message: "Authentication successful",
+        user: { name: "Ada Lovelace" },
+        auth: {
+          access_token: "backend-access",
+          refresh_token: "backend-refresh",
+          token_type: "bearer",
+        },
+        ...extra,
+      },
+    });
+
+    it("routes a phone-subject JWT to the phone exchange", async () => {
+      const token = makeJwt("sms|681f2");
+      setAuth0Intent(AUTH0_INTENT.googleLogin);
+      auth0State.isAuthenticated = true;
+      mockGetAccessTokenSilently.mockResolvedValue(token);
+      vi.mocked(axiosInstance.post).mockResolvedValue(
+        successResponse({ phone_number: "+15551234567" }),
+      );
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/phone/exchange",
+          { auth0_token: token },
+        );
+        expect(mockLogin).toHaveBeenCalledWith(
+          "backend-access",
+          "backend-refresh",
+        );
+      });
+    });
+
+    it("routes a google-subject JWT to the Google exchange despite a phone intent", async () => {
+      const token = makeJwt("google-oauth2|10859");
+      setAuth0Intent(AUTH0_INTENT.phoneLogin);
+      auth0State.isAuthenticated = true;
+      mockGetAccessTokenSilently.mockResolvedValue(token);
+      vi.mocked(axiosInstance.post).mockResolvedValue(
+        successResponse({ email: "ada@example.com" }),
+      );
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/google/exchange",
+          { auth0_token: token },
+        );
+        expect(mockLogin).toHaveBeenCalledWith(
+          "backend-access",
+          "backend-refresh",
+        );
+      });
+    });
+
+    it("routes an email-subject JWT to the email exchange despite a phone intent", async () => {
+      const token = makeJwt("auth0|64ac1");
+      setAuth0Intent(AUTH0_INTENT.phoneLogin);
+      auth0State.isAuthenticated = true;
+      mockGetAccessTokenSilently.mockResolvedValue(token);
+      vi.mocked(axiosInstance.post).mockResolvedValue(
+        successResponse({ email: "ada@example.com" }),
+      );
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/email/exchange",
+          { auth0_token: token },
+        );
+        expect(mockLogin).toHaveBeenCalledWith(
+          "backend-access",
+          "backend-refresh",
+        );
+      });
+    });
+
+    it("completes the email profile flow through the email exchange", async () => {
+      const user = userEvent.setup();
+      const token = makeJwt("email|64ac1");
+      setAuth0Intent(AUTH0_INTENT.phoneLogin);
+      auth0State.isAuthenticated = true;
+      mockGetAccessTokenSilently.mockResolvedValue(token);
+      vi.mocked(axiosInstance.post).mockRejectedValue({
+        response: { data: { detail: PROFILE_REQUIRED_DETAIL } },
+      });
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Create profile")).toBeInTheDocument();
+      });
+
+      vi.mocked(axiosInstance.post).mockResolvedValue(
+        successResponse({ email: "ada@example.com" }),
+      );
+
+      await user.type(screen.getByLabelText("First name"), "Ada");
+      await user.type(screen.getByLabelText("Last name"), "Lovelace");
+      await user.click(screen.getByText("Create profile"));
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/email/exchange",
+          {
+            auth0_token: token,
+            first_name: "Ada",
+            last_name: "Lovelace",
+          },
+        );
+        expect(mockLogin).toHaveBeenCalledWith(
+          "backend-access",
+          "backend-refresh",
+        );
+      });
+    });
+
+    it("falls back to the intent provider for opaque non-JWT tokens", async () => {
+      setAuth0Intent(AUTH0_INTENT.googleLogin);
+      auth0State.isAuthenticated = true;
+      mockGetAccessTokenSilently.mockResolvedValue("opaque-token");
+      vi.mocked(axiosInstance.post).mockResolvedValue(
+        successResponse({ email: "ada@example.com" }),
+      );
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/google/exchange",
+          { auth0_token: "opaque-token" },
+        );
+      });
+    });
+
+    it("falls back to the intent provider for unknown JWT subjects", async () => {
+      const token = makeJwt("windowslive|abc");
+      setAuth0Intent(AUTH0_INTENT.phoneLogin);
+      auth0State.isAuthenticated = true;
+      mockGetAccessTokenSilently.mockResolvedValue(token);
+      vi.mocked(axiosInstance.post).mockResolvedValue(
+        successResponse({ phone_number: "+15551234567" }),
+      );
+
+      renderWithProviders(<Login />);
+
+      await waitFor(() => {
+        expect(axiosInstance.post).toHaveBeenCalledWith(
+          "/api/v1/cms/auth/phone/exchange",
+          { auth0_token: token },
+        );
       });
     });
   });
