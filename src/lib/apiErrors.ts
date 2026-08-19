@@ -18,6 +18,19 @@ export function getApiErrorDetail(error: unknown): string | undefined {
   return undefined;
 }
 
+/**
+ * True for failures that do not indicate the request itself was rejected:
+ * network errors/timeouts (no HTTP response) and 5xx server errors. These are
+ * safe to retry with the same payload.
+ */
+export function isTransientApiError(error: unknown): boolean {
+  const err = error as { response?: { status?: number } } | null;
+  if (!err || typeof err !== "object") return true;
+  if (!err.response) return true;
+  const status = err.response.status;
+  return typeof status === "number" && status >= 500;
+}
+
 const FRIENDLY_MESSAGES: Record<string, string> = {
   [AUTHOR_NOT_ACTIVE_DETAIL]: AUTHOR_NOT_ACTIVE_DETAIL,
   CONTENT_PUBLISHED_READ_ONLY:

@@ -22,7 +22,7 @@ import {
   normalizePlatformRole,
   type LoginVariant,
 } from "@/lib/platformAccess";
-import { getApiErrorDetail } from "@/lib/apiErrors";
+import { getApiErrorDetail, isTransientApiError } from "@/lib/apiErrors";
 import LoginModeTabs from "./LoginModeTabs";
 import { ROUTES } from "@/routes/paths";
 import { useStudioAuth0 } from "@/config/studio-auth0";
@@ -212,6 +212,12 @@ const Login = ({ variant = "user" }: LoginProps) => {
         setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
         return;
       }
+      // Transient network/server failures do not invalidate the stored token;
+      // keep the profile form so the user can retry without re-authenticating.
+      if (isTransientApiError(error) && needsOAuthProfile) {
+        setErrors(getPhoneAuthErrorMessage(error));
+        return;
+      }
       // The stored token can never succeed after this point; clear it so the
       // profile form is not re-shown with a token the backend already rejected.
       clearPendingAuth0Token();
@@ -244,6 +250,10 @@ const Login = ({ variant = "user" }: LoginProps) => {
         setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
         return;
       }
+      if (isTransientApiError(error) && needsOAuthProfile) {
+        setErrors(getGoogleAuthErrorMessage(error));
+        return;
+      }
       clearPendingAuth0Token();
       setNeedsOAuthProfile(false);
       setErrors(getGoogleAuthErrorMessage(error));
@@ -272,6 +282,10 @@ const Login = ({ variant = "user" }: LoginProps) => {
         setNeedsOAuthProfile(false);
         setInactiveOnly(true);
         setErrors(AUTHOR_NOT_ACTIVE_DETAIL);
+        return;
+      }
+      if (isTransientApiError(error) && needsOAuthProfile) {
+        setErrors(getEmailAuthErrorMessage(error));
         return;
       }
       clearPendingAuth0Token();
