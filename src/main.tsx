@@ -53,6 +53,7 @@ import GroupPostFormPage from "./components/routes/groups/GroupPostFormPage.tsx"
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
+import ChatReportsPage from "./components/routes/chat-reports/ChatReportsPage.tsx";
 import AccumulatorPresetsPage from "./components/routes/accumulator-presets/AccumulatorPresetsPage.tsx";
 import TextAudioPage from "./components/routes/text-audio/TextAudioPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
@@ -304,6 +305,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ChinaRestrictionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.adminChatReports,
+        element: (
+          <ProtectedRoute>
+            <ChatReportsPage />
           </ProtectedRoute>
         ),
       },
