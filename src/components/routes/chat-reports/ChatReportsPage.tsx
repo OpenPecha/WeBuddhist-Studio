@@ -21,7 +21,10 @@ const PAGE_SIZE = 20;
 const TABLE_COLUMN_COUNT = 7;
 
 const formatEnumLabel = (value: string) =>
-  value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  value
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
 const displayName = (user?: ChatReportUserDTO | null) => {
   if (!user) return null;
@@ -82,7 +85,10 @@ const renderTableBody = ({
       </Pecha.TableCell>
       <Pecha.TableCell>
         <div className="max-w-[24rem]">
-          <p className="line-clamp-3 break-words" title={report.message_text ?? ""}>
+          <p
+            className="line-clamp-3 break-words"
+            title={report.message_text ?? ""}
+          >
             {report.message_text?.trim() || "—"}
           </p>
           {report.description?.trim() ? (
@@ -94,7 +100,9 @@ const renderTableBody = ({
       </Pecha.TableCell>
       <Pecha.TableCell>{formatEnumLabel(report.reason)}</Pecha.TableCell>
       <Pecha.TableCell>
-        {report.room_name?.trim() || <span className="text-muted-foreground">—</span>}
+        {report.room_name?.trim() || (
+          <span className="text-muted-foreground">—</span>
+        )}
       </Pecha.TableCell>
       <Pecha.TableCell>
         {report.created_at
@@ -141,7 +149,9 @@ const ChatReportsPage = () => {
         limit: PAGE_SIZE,
         ...(sourceFilter !== "ALL" && { source: sourceFilter }),
         ...(reasonFilter !== "ALL" && { reason: reasonFilter }),
-        ...(statusFilter !== "ALL" && { resolved: statusFilter === "RESOLVED" }),
+        ...(statusFilter !== "ALL" && {
+          resolved: statusFilter === "RESOLVED",
+        }),
       }),
     enabled: canAccess,
   });
