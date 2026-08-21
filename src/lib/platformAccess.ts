@@ -80,6 +80,7 @@ export const NO_GROUP_ALLOWED_PREFIXES = [
   "/profile",
   "/admin/authors",
   "/admin/china-restrictions",
+  "/admin/chat-reports",
 ] as const;
 
 export function isPathAllowedWithoutGroup(pathname: string): boolean {

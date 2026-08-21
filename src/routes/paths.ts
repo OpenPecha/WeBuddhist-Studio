@@ -47,6 +47,7 @@ export const ROUTES = {
   groupSeriesNew: (groupId: string) => `/groups/${groupId}/series/new`,
   adminAuthors: "/admin/authors",
   adminChinaRestrictions: "/admin/china-restrictions",
+  adminChatReports: "/admin/chat-reports",
   accumulatorPresets: "/accumulator-presets",
   textAudio: "/text-audio",
 } as const;

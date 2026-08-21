@@ -16,6 +16,7 @@ import {
   MdAudioFile,
   MdDashboard,
   MdAdminPanelSettings,
+  MdOutlineReportProblem,
   MdPublicOff,
 } from "react-icons/md";
 import { ROUTES } from "@/routes/paths";
@@ -113,6 +114,7 @@ const SECTION_PATHS: string[] = [
   ROUTES.groups,
   ROUTES.adminAuthors,
   ROUTES.adminChinaRestrictions,
+  ROUTES.adminChatReports,
 ];
 
 const isActivePath = (itemPath: string, currentPath: string) => {
@@ -157,6 +159,12 @@ const Navbar = () => {
             label: "China",
             path: ROUTES.adminChinaRestrictions,
             tooltip: "China content restrictions",
+          },
+          {
+            icon: <MdOutlineReportProblem className="w-4 h-4" />,
+            label: "Chat Reports",
+            path: ROUTES.adminChatReports,
+            tooltip: "Chat moderation reports",
           },
         ]
       : []),
