@@ -57,6 +57,7 @@ export const fetchPlanDays = async (plan_id: string) => {
 export interface CreateDaysRequest {
   number_of_days?: number;
   source_day_id?: string;
+  cascade?: boolean;
 }
 
 export interface DayDTO {
