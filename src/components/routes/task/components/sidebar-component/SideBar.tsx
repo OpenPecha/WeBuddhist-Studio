@@ -1,4 +1,4 @@
-import { useState, Activity } from "react";
+import { useEffect, useState, Activity } from "react";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
@@ -15,7 +15,10 @@ import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 import { PiDotsSixVertical } from "react-icons/pi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchPlanDetails } from "../../api/planApi";
-import { usePlanMutations } from "../../hooks/usePlanMutations";
+import {
+  usePlanMutations,
+  PLAN_DAYS_OVERLAP_NEXT_PLAN_CODE,
+} from "../../hooks/usePlanMutations";
 import { useTaskReorder } from "../../hooks/useTaskReorder";
 import { useDayReorder } from "../../hooks/useDayReorder";
 
@@ -42,6 +45,19 @@ const SideBar = ({
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedDayIds, setSelectedDayIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [seriesOverlapPrompt, setSeriesOverlapPrompt] = useState<{
+    planId: string;
+    request: { number_of_days?: number; source_day_id?: string };
+    overflowDays: number;
+    nextPlanStartDate: string;
+  } | null>(null);
+
+  // Discard any pending overlap confirmation if the author navigates to a
+  // different plan before confirming — it must never fire against a plan
+  // other than the one whose overlap was actually approved.
+  useEffect(() => {
+    setSeriesOverlapPrompt(null);
+  }, [planId]);
 
   const { data: currentPlan, isLoading } = useQuery({
     queryKey: ["planDetails", planId],
@@ -106,19 +122,46 @@ const SideBar = ({
     setShowBulkDeleteConfirm(false);
   };
 
+  const onDaysCreated = (newDays?: { day_number: number }[] | null) => {
+    if (newDays && newDays.length > 0) {
+      onDaySelect(newDays[0].day_number);
+      setExpandedDay(newDays[0].day_number);
+    }
+    queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
+  };
+
   const handleCreateDays = (req: {
     number_of_days?: number;
     source_day_id?: string;
   }) => {
     createNewDay.mutate(req, {
-      onSuccess: (newDays) => {
-        if (newDays && newDays.length > 0) {
-          onDaySelect(newDays[0].day_number);
-          setExpandedDay(newDays[0].day_number);
+      onSuccess: onDaysCreated,
+      onError: (error: any) => {
+        const detail = error?.response?.data?.detail;
+        if (detail?.code === PLAN_DAYS_OVERLAP_NEXT_PLAN_CODE && planId) {
+          setSeriesOverlapPrompt({
+            planId,
+            request: req,
+            overflowDays: detail.overflow_days,
+            nextPlanStartDate: detail.next_plan_start_date,
+          });
         }
-        queryClient.invalidateQueries({ queryKey: ["planDetails", planId] });
       },
     });
+  };
+
+  const handleConfirmSeriesShift = () => {
+    if (!seriesOverlapPrompt) return;
+    const { planId: promptPlanId, request } = seriesOverlapPrompt;
+    setSeriesOverlapPrompt(null);
+    // The mutation binds to the plan currently in the route; if that plan
+    // changed since the prompt was raised, drop the stale request instead of
+    // shifting the wrong plan's series.
+    if (promptPlanId !== planId) return;
+    createNewDay.mutate(
+      { ...request, cascade: true },
+      { onSuccess: onDaysCreated },
+    );
   };
 
   const canEnterSelectMode =
@@ -474,6 +517,37 @@ const SideBar = ({
               onClick={handleBulkDelete}
             >
               Delete
+            </Pecha.AlertDialogAction>
+          </Pecha.AlertDialogFooter>
+        </Pecha.AlertDialogContent>
+      </Pecha.AlertDialog>
+
+      {/* Series overlap: offer to shift the rest of the series forward */}
+      <Pecha.AlertDialog
+        open={!!seriesOverlapPrompt}
+        onOpenChange={(open) => !open && setSeriesOverlapPrompt(null)}
+      >
+        <Pecha.AlertDialogContent>
+          <Pecha.AlertDialogHeader>
+            <Pecha.AlertDialogTitle>
+              Shift the rest of the series?
+            </Pecha.AlertDialogTitle>
+            <Pecha.AlertDialogDescription>
+              Adding these days would push past the next plan in this series,
+              which starts on {seriesOverlapPrompt?.nextPlanStartDate}. Shift
+              that plan (and any plans after it) forward by{" "}
+              {seriesOverlapPrompt?.overflowDays} day
+              {seriesOverlapPrompt?.overflowDays === 1 ? "" : "s"} to make room?
+            </Pecha.AlertDialogDescription>
+          </Pecha.AlertDialogHeader>
+          <Pecha.AlertDialogFooter>
+            <Pecha.AlertDialogCancel
+              onClick={() => setSeriesOverlapPrompt(null)}
+            >
+              Cancel
+            </Pecha.AlertDialogCancel>
+            <Pecha.AlertDialogAction onClick={handleConfirmSeriesShift}>
+              Shift schedule &amp; add days
             </Pecha.AlertDialogAction>
           </Pecha.AlertDialogFooter>
         </Pecha.AlertDialogContent>
