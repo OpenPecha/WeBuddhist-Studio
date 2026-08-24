@@ -3,7 +3,7 @@ import { useBlocker, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ROUTES } from "@/routes/paths";
 import { sortLanguageCodes } from "@/lib/languageCodes";
-import type { LanguageCode } from "@/schema/SeriesSchema";
+import type { LanguageCode, SeriesFormData } from "@/schema/SeriesSchema";
 import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
 import { canWriteCms } from "@/lib/platformAccess";
 import { useSeriesForm } from "@/components/routes/create-series/hooks/useSeriesForm";
@@ -77,6 +77,7 @@ export const useCreateSeriesController = () => {
     file: File | null;
     preview: string | null;
   }>({ file: null, preview: null });
+  const preSubmitBaselineRef = useRef<SeriesFormData | null>(null);
 
   useEffect(() => {
     if (isNew || !seriesData) return;
@@ -154,6 +155,17 @@ export const useCreateSeriesController = () => {
         setImagePreview(resolvedImageUrl || null);
         setSelectedImage(null);
       }
+      preSubmitBaselineRef.current = null;
+    },
+    onUpdateFailed: () => {
+      // The submit rebase already stamped the in-flight values as "clean"
+      // optimistically; since persistence failed, restore the prior
+      // baseline so those unsaved edits are dirty again, Save re-enables,
+      // and the unsaved-changes navigation guard protects them.
+      if (preSubmitBaselineRef.current) {
+        form.reset(preSubmitBaselineRef.current, { keepValues: true });
+        preSubmitBaselineRef.current = null;
+      }
     },
   });
 
@@ -165,6 +177,10 @@ export const useCreateSeriesController = () => {
       preview: image.imagePreview,
     };
     if (!isNew) {
+      // Snapshot the current baseline so a failed save can restore it.
+      preSubmitBaselineRef.current = structuredClone(
+        form.formState.defaultValues,
+      ) as SeriesFormData;
       // Rebase the clean baseline onto exactly what's being submitted, so
       // dirty-tracking during the pending request only flags edits made
       // *after* this point, letting onUpdated tell those apart from the

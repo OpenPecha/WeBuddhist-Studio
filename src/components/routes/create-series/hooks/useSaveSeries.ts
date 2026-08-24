@@ -20,6 +20,7 @@ type UseSaveSeriesParams = {
   groupId?: string;
   seriesData?: SeriesDetailDTO;
   onUpdated: (series: SeriesDetailDTO) => void;
+  onUpdateFailed: () => void;
 };
 
 export const useSaveSeries = ({
@@ -28,6 +29,7 @@ export const useSaveSeries = ({
   groupId,
   seriesData,
   onUpdated,
+  onUpdateFailed,
 }: UseSaveSeriesParams) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -65,6 +67,9 @@ export const useSaveSeries = ({
           description: error.message,
         },
       );
+      if (!isNew) {
+        onUpdateFailed();
+      }
     },
   });
 };
