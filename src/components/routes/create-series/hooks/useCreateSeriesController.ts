@@ -78,6 +78,7 @@ export const useCreateSeriesController = () => {
     preview: string | null;
   }>({ file: null, preview: null });
   const preSubmitBaselineRef = useRef<SeriesFormData | null>(null);
+  const submittedSeriesIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isNew || !seriesData) return;
@@ -114,26 +115,19 @@ export const useCreateSeriesController = () => {
     }
   }, [orderedAddedLanguages, activePlansLanguage]);
 
-  const hasUnsavedChanges =
-    form.formState.isDirty && !form.formState.isSubmitSuccessful;
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
-  );
-
-  useEffect(() => {
-    if (blocker.state === "blocked") {
-      setShowNavigationDialog(true);
-    }
-  }, [blocker.state]);
-
   const saveSeriesMutation = useSaveSeries({
     isNew,
     seriesId,
     groupId,
     seriesData,
     onUpdated: (updated) => {
+      if (submittedSeriesIdRef.current !== seriesId) {
+        // The route has since navigated to a different series; the form
+        // now mounted belongs to that other record, so applying this
+        // response here would silently overwrite it with the wrong
+        // series' content.
+        return;
+      }
       seriesHydratedIdRef.current = updated.id;
       // The onSubmit handler already rebased dirty-tracking onto the
       // submitted snapshot, so any field still dirty here was edited *after*
@@ -158,6 +152,11 @@ export const useCreateSeriesController = () => {
       preSubmitBaselineRef.current = null;
     },
     onUpdateFailed: () => {
+      if (submittedSeriesIdRef.current !== seriesId) {
+        // Same guard as onUpdated: this failure belongs to a series that's
+        // no longer mounted, so there's no local baseline to restore here.
+        return;
+      }
       // The submit rebase already stamped the in-flight values as "clean"
       // optimistically; since persistence failed, restore the prior
       // baseline so those unsaved edits are dirty again, Save re-enables,
@@ -169,6 +168,21 @@ export const useCreateSeriesController = () => {
     },
   });
 
+  const hasUnsavedChanges =
+    (form.formState.isDirty && !form.formState.isSubmitSuccessful) ||
+    (!isNew && saveSeriesMutation.isPending);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setShowNavigationDialog(true);
+    }
+  }, [blocker.state]);
+
   const onSubmit = form.handleSubmit((data) => {
     if (formReadOnly) return;
     const featured = isNew ? false : (seriesData?.featured ?? false);
@@ -177,6 +191,10 @@ export const useCreateSeriesController = () => {
       preview: image.imagePreview,
     };
     if (!isNew) {
+      // Tag this request with the series it was submitted for, so a
+      // response that arrives after the route has moved on to a different
+      // series can be told apart and ignored instead of misapplied.
+      submittedSeriesIdRef.current = seriesId ?? null;
       // Snapshot the current baseline so a failed save can restore it.
       preSubmitBaselineRef.current = structuredClone(
         form.formState.defaultValues,
