@@ -1,4 +1,4 @@
-import { useState, Activity } from "react";
+import { useEffect, useState, Activity } from "react";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { MdExpandMore } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
@@ -46,10 +46,18 @@ const SideBar = ({
   const [selectedDayIds, setSelectedDayIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [seriesOverlapPrompt, setSeriesOverlapPrompt] = useState<{
+    planId: string;
     request: { number_of_days?: number; source_day_id?: string };
     overflowDays: number;
     nextPlanStartDate: string;
   } | null>(null);
+
+  // Discard any pending overlap confirmation if the author navigates to a
+  // different plan before confirming — it must never fire against a plan
+  // other than the one whose overlap was actually approved.
+  useEffect(() => {
+    setSeriesOverlapPrompt(null);
+  }, [planId]);
 
   const { data: currentPlan, isLoading } = useQuery({
     queryKey: ["planDetails", planId],
@@ -130,8 +138,9 @@ const SideBar = ({
       onSuccess: onDaysCreated,
       onError: (error: any) => {
         const detail = error?.response?.data?.detail;
-        if (detail?.code === PLAN_DAYS_OVERLAP_NEXT_PLAN_CODE) {
+        if (detail?.code === PLAN_DAYS_OVERLAP_NEXT_PLAN_CODE && planId) {
           setSeriesOverlapPrompt({
+            planId,
             request: req,
             overflowDays: detail.overflow_days,
             nextPlanStartDate: detail.next_plan_start_date,
@@ -143,8 +152,12 @@ const SideBar = ({
 
   const handleConfirmSeriesShift = () => {
     if (!seriesOverlapPrompt) return;
-    const { request } = seriesOverlapPrompt;
+    const { planId: promptPlanId, request } = seriesOverlapPrompt;
     setSeriesOverlapPrompt(null);
+    // The mutation binds to the plan currently in the route; if that plan
+    // changed since the prompt was raised, drop the stale request instead of
+    // shifting the wrong plan's series.
+    if (promptPlanId !== planId) return;
     createNewDay.mutate(
       { ...request, cascade: true },
       { onSuccess: onDaysCreated },
