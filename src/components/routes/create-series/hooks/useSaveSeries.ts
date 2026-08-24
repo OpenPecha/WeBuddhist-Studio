@@ -19,6 +19,7 @@ type UseSaveSeriesParams = {
   seriesId?: string;
   groupId?: string;
   seriesData?: SeriesDetailDTO;
+  onUpdated: (series: SeriesDetailDTO) => void;
 };
 
 export const useSaveSeries = ({
@@ -26,6 +27,7 @@ export const useSaveSeries = ({
   seriesId,
   groupId,
   seriesData,
+  onUpdated,
 }: UseSaveSeriesParams) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -34,8 +36,7 @@ export const useSaveSeries = ({
     mutationFn: async ({ data, featured }: SaveSeriesInput) => {
       if (isNew) {
         const body = buildSeriesCreateBody(data, featured, groupId);
-        const created = await postSeries(body);
-        return { id: String(created.id) };
+        return postSeries(body);
       }
       if (!seriesId || !seriesData) {
         throw new Error("Missing series data for update");
@@ -44,8 +45,7 @@ export const useSaveSeries = ({
         original: mapSeriesDetailToFormData(seriesData),
         originalFeatured: seriesData.featured,
       });
-      await putUpdateSeries({ seriesId, body });
-      return { id: seriesId };
+      return putUpdateSeries({ seriesId, body });
     },
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
@@ -55,7 +55,8 @@ export const useSaveSeries = ({
         return;
       }
       toast.success("Saved");
-      void queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
+      queryClient.setQueryData(["series", seriesId], result);
+      onUpdated(result);
     },
     onError: (error: Error) => {
       toast.error(

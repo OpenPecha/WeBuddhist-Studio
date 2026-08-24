@@ -127,6 +127,17 @@ export const useCreateSeriesController = () => {
     seriesId,
     groupId,
     seriesData,
+    onUpdated: (updated) => {
+      seriesHydratedIdRef.current = updated.id;
+      form.reset(mapSeriesDetailToFormData(updated));
+      const resolvedImageUrl = resolveDashboardItemImageUrl({
+        image_url: updated.image_url,
+        image_key: updated.image_key,
+        image: updated.image,
+      });
+      setImagePreview(resolvedImageUrl || null);
+      setSelectedImage(null);
+    },
   });
 
   const onSubmit = form.handleSubmit((data) => {
