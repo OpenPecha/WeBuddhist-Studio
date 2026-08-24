@@ -114,9 +114,7 @@ const SideBar = ({
     setShowBulkDeleteConfirm(false);
   };
 
-  const onDaysCreated = (
-    newDays?: { day_number: number }[] | null,
-  ) => {
+  const onDaysCreated = (newDays?: { day_number: number }[] | null) => {
     if (newDays && newDays.length > 0) {
       onDaySelect(newDays[0].day_number);
       setExpandedDay(newDays[0].day_number);
@@ -526,8 +524,7 @@ const SideBar = ({
               which starts on {seriesOverlapPrompt?.nextPlanStartDate}. Shift
               that plan (and any plans after it) forward by{" "}
               {seriesOverlapPrompt?.overflowDays} day
-              {seriesOverlapPrompt?.overflowDays === 1 ? "" : "s"} to make
-              room?
+              {seriesOverlapPrompt?.overflowDays === 1 ? "" : "s"} to make room?
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>
