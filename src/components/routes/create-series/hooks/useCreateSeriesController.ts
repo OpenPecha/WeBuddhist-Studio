@@ -127,12 +127,6 @@ export const useCreateSeriesController = () => {
     seriesId,
     groupId,
     seriesData,
-    onCreated: () => {
-      form.reset({ languages: {}, plans: {}, image_url: "" });
-      setSelectedImage(null);
-      setImagePreview(null);
-      setActivePlansLanguage(null);
-    },
   });
 
   const onSubmit = form.handleSubmit((data) => {

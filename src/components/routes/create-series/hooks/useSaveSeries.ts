@@ -19,7 +19,6 @@ type UseSaveSeriesParams = {
   seriesId?: string;
   groupId?: string;
   seriesData?: SeriesDetailDTO;
-  onCreated: () => void;
 };
 
 export const useSaveSeries = ({
@@ -27,7 +26,6 @@ export const useSaveSeries = ({
   seriesId,
   groupId,
   seriesData,
-  onCreated,
 }: UseSaveSeriesParams) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -49,22 +47,15 @@ export const useSaveSeries = ({
       await putUpdateSeries({ seriesId, body });
       return { id: seriesId };
     },
-    onSuccess: () => {
-      toast.success(
-        isNew ? "Series created successfully!" : "Series updated successfully!",
-      );
+    onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
-      if (seriesId && !isNew) {
-        void queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
-      }
       if (isNew) {
-        onCreated();
-        if (groupId) {
-          navigate(ROUTES.group(groupId));
-          return;
-        }
+        toast.success("Series created successfully!");
+        navigate(ROUTES.series(result.id));
+        return;
       }
-      navigate(ROUTES.dashboard);
+      toast.success("Saved");
+      void queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
     },
     onError: (error: Error) => {
       toast.error(
