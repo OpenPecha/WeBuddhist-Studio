@@ -73,6 +73,11 @@ export const useCreateSeriesController = () => {
     seriesHydratedIdRef.current = null;
   }, [seriesId]);
 
+  const pendingImageSnapshotRef = useRef<{
+    file: File | null;
+    preview: string | null;
+  }>({ file: null, preview: null });
+
   useEffect(() => {
     if (isNew || !seriesData) return;
     if (seriesHydratedIdRef.current === seriesData.id) return;
@@ -129,20 +134,35 @@ export const useCreateSeriesController = () => {
     seriesData,
     onUpdated: (updated) => {
       seriesHydratedIdRef.current = updated.id;
-      form.reset(mapSeriesDetailToFormData(updated));
-      const resolvedImageUrl = resolveDashboardItemImageUrl({
-        image_url: updated.image_url,
-        image_key: updated.image_key,
-        image: updated.image,
+      // keepDirtyValues preserves any edits made while the request was in
+      // flight, syncing the server-normalized baseline into untouched fields
+      // only, so newer local edits are never silently overwritten.
+      form.reset(mapSeriesDetailToFormData(updated), {
+        keepDirtyValues: true,
       });
-      setImagePreview(resolvedImageUrl || null);
-      setSelectedImage(null);
+
+      const imageChangedDuringSave =
+        image.selectedImage !== pendingImageSnapshotRef.current.file ||
+        image.imagePreview !== pendingImageSnapshotRef.current.preview;
+      if (!imageChangedDuringSave) {
+        const resolvedImageUrl = resolveDashboardItemImageUrl({
+          image_url: updated.image_url,
+          image_key: updated.image_key,
+          image: updated.image,
+        });
+        setImagePreview(resolvedImageUrl || null);
+        setSelectedImage(null);
+      }
     },
   });
 
   const onSubmit = form.handleSubmit((data) => {
     if (formReadOnly) return;
     const featured = isNew ? false : (seriesData?.featured ?? false);
+    pendingImageSnapshotRef.current = {
+      file: image.selectedImage,
+      preview: image.imagePreview,
+    };
     saveSeriesMutation.mutate({ data, featured });
   });
 
