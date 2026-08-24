@@ -134,9 +134,10 @@ export const useCreateSeriesController = () => {
     seriesData,
     onUpdated: (updated) => {
       seriesHydratedIdRef.current = updated.id;
-      // keepDirtyValues preserves any edits made while the request was in
-      // flight, syncing the server-normalized baseline into untouched fields
-      // only, so newer local edits are never silently overwritten.
+      // The onSubmit handler already rebased dirty-tracking onto the
+      // submitted snapshot, so any field still dirty here was edited *after*
+      // submission and is preserved; everything else takes the fresh
+      // server-normalized value and becomes the new clean baseline.
       form.reset(mapSeriesDetailToFormData(updated), {
         keepDirtyValues: true,
       });
@@ -163,6 +164,13 @@ export const useCreateSeriesController = () => {
       file: image.selectedImage,
       preview: image.imagePreview,
     };
+    if (!isNew) {
+      // Rebase the clean baseline onto exactly what's being submitted, so
+      // dirty-tracking during the pending request only flags edits made
+      // *after* this point, letting onUpdated tell those apart from the
+      // fields that were simply part of this save.
+      form.reset(data, { keepValues: true });
+    }
     saveSeriesMutation.mutate({ data, featured });
   });
 
