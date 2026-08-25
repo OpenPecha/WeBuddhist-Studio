@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { IoChatbubbleOutline } from "react-icons/io5";
@@ -84,9 +84,18 @@ const GroupJoinRequestsSection = ({
 
   const [status, setStatus] = useState<GroupJoinRequestStatus>("PENDING");
   const [page, setPage] = useState(1);
-  const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
+  /** Keyed by request id so overlapping actions each track their own row. */
+  const [inFlight, setInFlight] = useState<
+    Record<string, "approve" | "reject">
+  >({});
 
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data,
+    status: queryStatus,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["cms-group-join-requests", groupId, status, page],
     queryFn: () =>
       fetchGroupJoinRequests(groupId, {
@@ -101,6 +110,15 @@ const GroupJoinRequestsSection = ({
   const requests = data?.requests ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Moderating the last row on a trailing page shrinks the list past the
+  // current offset; step back so the view never strands on an empty page.
+  useEffect(() => {
+    if (queryStatus !== "success") return;
+    if (page > totalPages && totalPages > 0) {
+      setPage(totalPages);
+    }
+  }, [queryStatus, page, totalPages]);
 
   const invalidate = () => {
     queryClient.invalidateQueries({
@@ -126,7 +144,8 @@ const GroupJoinRequestsSection = ({
       action === "approve"
         ? approveGroupJoinRequest(groupId, requestId)
         : rejectGroupJoinRequest(groupId, requestId),
-    onMutate: ({ requestId }) => setPendingRequestId(requestId),
+    onMutate: ({ requestId, action }) =>
+      setInFlight((current) => ({ ...current, [requestId]: action })),
     onSuccess: (_data, { action, userName }) => {
       toast.success(
         action === "approve"
@@ -143,7 +162,12 @@ const GroupJoinRequestsSection = ({
       }
       toast.error(getApiErrorMessage(err));
     },
-    onSettled: () => setPendingRequestId(null),
+    onSettled: (_data, _err, { requestId }) =>
+      setInFlight((current) => {
+        const next = { ...current };
+        delete next[requestId];
+        return next;
+      }),
   });
 
   const handleStatusChange = (next: GroupJoinRequestStatus) => {
@@ -151,9 +175,21 @@ const GroupJoinRequestsSection = ({
     setPage(1);
   };
 
+  const runAction = (
+    request: GroupJoinRequestDTO,
+    action: "approve" | "reject",
+  ) => {
+    if (inFlight[request.id]) return;
+    actionMutation.mutate({
+      requestId: request.id,
+      action,
+      userName: request.user_name,
+    });
+  };
+
   const renderRequest = (request: GroupJoinRequestDTO) => {
-    const rowPending =
-      actionMutation.isPending && pendingRequestId === request.id;
+    const rowAction = inFlight[request.id];
+    const rowPending = Boolean(rowAction);
     const isPendingRequest = request.status === "PENDING";
     const message = request.message?.trim();
 
@@ -209,17 +245,9 @@ const GroupJoinRequestsSection = ({
                 size="sm"
                 className="h-8 min-w-[6rem] bg-[#A51C21] text-white hover:bg-[#A51C21]/90"
                 disabled={rowPending}
-                onClick={() =>
-                  actionMutation.mutate({
-                    requestId: request.id,
-                    action: "approve",
-                    userName: request.user_name,
-                  })
-                }
+                onClick={() => runAction(request, "approve")}
               >
-                {rowPending && actionMutation.variables?.action === "approve"
-                  ? "Approving…"
-                  : "Approve"}
+                {rowAction === "approve" ? "Approving…" : "Approve"}
               </Button>
               <Button
                 type="button"
@@ -227,17 +255,9 @@ const GroupJoinRequestsSection = ({
                 variant="outline"
                 className="h-8 min-w-[6rem]"
                 disabled={rowPending}
-                onClick={() =>
-                  actionMutation.mutate({
-                    requestId: request.id,
-                    action: "reject",
-                    userName: request.user_name,
-                  })
-                }
+                onClick={() => runAction(request, "reject")}
               >
-                {rowPending && actionMutation.variables?.action === "reject"
-                  ? "Rejecting…"
-                  : "Reject"}
+                {rowAction === "reject" ? "Rejecting…" : "Reject"}
               </Button>
             </div>
           ) : null}
