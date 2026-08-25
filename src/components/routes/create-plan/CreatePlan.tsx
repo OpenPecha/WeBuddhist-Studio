@@ -35,7 +35,7 @@ import { DIFFICULTY } from "@/lib/constant";
 import { useLanguages } from "@/hooks/useLanguages";
 import { cn, toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pecha } from "@/components/ui/shadimport";
 import ImageContentData from "@/components/ui/molecules/modals/image-upload/ImageContentData";
@@ -100,6 +100,7 @@ const Createplan = () => {
   );
   type PlanFormData = z.infer<typeof planSchema>;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (isCreateMode && !groupId) {
@@ -281,14 +282,11 @@ const Createplan = () => {
       toast.success("Plan created successfully!", {
         description: "Your plan has been created and is now available.",
       });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
-      if (groupId) {
-        navigate(ROUTES.group(groupId));
-      } else {
-        navigate(ROUTES.plan(data.id));
-      }
+      navigate(ROUTES.plan(data.id));
     },
     onError: (error) => {
       toast.error("Failed to create plan", {
@@ -299,10 +297,11 @@ const Createplan = () => {
   const updatePlanMutation = useMutation({
     mutationFn: updatePlan,
     onSuccess: () => {
-      toast.success("Plan updated successfully!", {
-        description: "Your plan has been updated and is now available.",
-      });
-      navigate(ROUTES.dashboard);
+      toast.success("Saved");
+      void queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
+      if (planId) {
+        void queryClient.invalidateQueries({ queryKey: ["plan", planId] });
+      }
     },
     onError: (error) => {
       toast.error("Failed to update plan", {
