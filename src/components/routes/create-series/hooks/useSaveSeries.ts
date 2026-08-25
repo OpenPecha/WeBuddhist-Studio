@@ -19,7 +19,8 @@ type UseSaveSeriesParams = {
   seriesId?: string;
   groupId?: string;
   seriesData?: SeriesDetailDTO;
-  onCreated: () => void;
+  onUpdated: (series: SeriesDetailDTO) => void;
+  onUpdateFailed: () => void;
 };
 
 export const useSaveSeries = ({
@@ -27,7 +28,8 @@ export const useSaveSeries = ({
   seriesId,
   groupId,
   seriesData,
-  onCreated,
+  onUpdated,
+  onUpdateFailed,
 }: UseSaveSeriesParams) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -36,8 +38,7 @@ export const useSaveSeries = ({
     mutationFn: async ({ data, featured }: SaveSeriesInput) => {
       if (isNew) {
         const body = buildSeriesCreateBody(data, featured, groupId);
-        const created = await postSeries(body);
-        return { id: String(created.id) };
+        return postSeries(body);
       }
       if (!seriesId || !seriesData) {
         throw new Error("Missing series data for update");
@@ -46,25 +47,18 @@ export const useSaveSeries = ({
         original: mapSeriesDetailToFormData(seriesData),
         originalFeatured: seriesData.featured,
       });
-      await putUpdateSeries({ seriesId, body });
-      return { id: seriesId };
+      return putUpdateSeries({ seriesId, body });
     },
-    onSuccess: () => {
-      toast.success(
-        isNew ? "Series created successfully!" : "Series updated successfully!",
-      );
+    onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: ["dashboard-items"] });
-      if (seriesId && !isNew) {
-        void queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
-      }
       if (isNew) {
-        onCreated();
-        if (groupId) {
-          navigate(ROUTES.group(groupId));
-          return;
-        }
+        toast.success("Series created successfully!");
+        navigate(ROUTES.series(result.id));
+        return;
       }
-      navigate(ROUTES.dashboard);
+      toast.success("Saved");
+      queryClient.setQueryData(["series", seriesId], result);
+      onUpdated(result);
     },
     onError: (error: Error) => {
       toast.error(
@@ -73,6 +67,9 @@ export const useSaveSeries = ({
           description: error.message,
         },
       );
+      if (!isNew) {
+        onUpdateFailed();
+      }
     },
   });
 };

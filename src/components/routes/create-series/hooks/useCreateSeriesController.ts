@@ -3,7 +3,7 @@ import { useBlocker, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ROUTES } from "@/routes/paths";
 import { sortLanguageCodes } from "@/lib/languageCodes";
-import type { LanguageCode } from "@/schema/SeriesSchema";
+import type { LanguageCode, SeriesFormData } from "@/schema/SeriesSchema";
 import { useGroupContentPermissions } from "@/hooks/useGroupContentPermissions";
 import { canWriteCms } from "@/lib/platformAccess";
 import { useSeriesForm } from "@/components/routes/create-series/hooks/useSeriesForm";
@@ -73,6 +73,13 @@ export const useCreateSeriesController = () => {
     seriesHydratedIdRef.current = null;
   }, [seriesId]);
 
+  const pendingImageSnapshotRef = useRef<{
+    file: File | null;
+    preview: string | null;
+  }>({ file: null, preview: null });
+  const preSubmitBaselineRef = useRef<SeriesFormData | null>(null);
+  const submittedSeriesIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (isNew || !seriesData) return;
     if (seriesHydratedIdRef.current === seriesData.id) return;
@@ -108,8 +115,62 @@ export const useCreateSeriesController = () => {
     }
   }, [orderedAddedLanguages, activePlansLanguage]);
 
+  const saveSeriesMutation = useSaveSeries({
+    isNew,
+    seriesId,
+    groupId,
+    seriesData,
+    onUpdated: (updated) => {
+      if (submittedSeriesIdRef.current !== seriesId) {
+        // The route has since navigated to a different series; the form
+        // now mounted belongs to that other record, so applying this
+        // response here would silently overwrite it with the wrong
+        // series' content.
+        return;
+      }
+      seriesHydratedIdRef.current = updated.id;
+      // The onSubmit handler already rebased dirty-tracking onto the
+      // submitted snapshot, so any field still dirty here was edited *after*
+      // submission and is preserved; everything else takes the fresh
+      // server-normalized value and becomes the new clean baseline.
+      form.reset(mapSeriesDetailToFormData(updated), {
+        keepDirtyValues: true,
+      });
+
+      const imageChangedDuringSave =
+        image.selectedImage !== pendingImageSnapshotRef.current.file ||
+        image.imagePreview !== pendingImageSnapshotRef.current.preview;
+      if (!imageChangedDuringSave) {
+        const resolvedImageUrl = resolveDashboardItemImageUrl({
+          image_url: updated.image_url,
+          image_key: updated.image_key,
+          image: updated.image,
+        });
+        setImagePreview(resolvedImageUrl || null);
+        setSelectedImage(null);
+      }
+      preSubmitBaselineRef.current = null;
+    },
+    onUpdateFailed: () => {
+      if (submittedSeriesIdRef.current !== seriesId) {
+        // Same guard as onUpdated: this failure belongs to a series that's
+        // no longer mounted, so there's no local baseline to restore here.
+        return;
+      }
+      // The submit rebase already stamped the in-flight values as "clean"
+      // optimistically; since persistence failed, restore the prior
+      // baseline so those unsaved edits are dirty again, Save re-enables,
+      // and the unsaved-changes navigation guard protects them.
+      if (preSubmitBaselineRef.current) {
+        form.reset(preSubmitBaselineRef.current, { keepValues: true });
+        preSubmitBaselineRef.current = null;
+      }
+    },
+  });
+
   const hasUnsavedChanges =
-    form.formState.isDirty && !form.formState.isSubmitSuccessful;
+    (form.formState.isDirty && !form.formState.isSubmitSuccessful) ||
+    (!isNew && saveSeriesMutation.isPending);
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -122,22 +183,28 @@ export const useCreateSeriesController = () => {
     }
   }, [blocker.state]);
 
-  const saveSeriesMutation = useSaveSeries({
-    isNew,
-    seriesId,
-    groupId,
-    seriesData,
-    onCreated: () => {
-      form.reset({ languages: {}, plans: {}, image_url: "" });
-      setSelectedImage(null);
-      setImagePreview(null);
-      setActivePlansLanguage(null);
-    },
-  });
-
   const onSubmit = form.handleSubmit((data) => {
     if (formReadOnly) return;
     const featured = isNew ? false : (seriesData?.featured ?? false);
+    pendingImageSnapshotRef.current = {
+      file: image.selectedImage,
+      preview: image.imagePreview,
+    };
+    if (!isNew) {
+      // Tag this request with the series it was submitted for, so a
+      // response that arrives after the route has moved on to a different
+      // series can be told apart and ignored instead of misapplied.
+      submittedSeriesIdRef.current = seriesId ?? null;
+      // Snapshot the current baseline so a failed save can restore it.
+      preSubmitBaselineRef.current = structuredClone(
+        form.formState.defaultValues,
+      ) as SeriesFormData;
+      // Rebase the clean baseline onto exactly what's being submitted, so
+      // dirty-tracking during the pending request only flags edits made
+      // *after* this point, letting onUpdated tell those apart from the
+      // fields that were simply part of this save.
+      form.reset(data, { keepValues: true });
+    }
     saveSeriesMutation.mutate({ data, featured });
   });
 
