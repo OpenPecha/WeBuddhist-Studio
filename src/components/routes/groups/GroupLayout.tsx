@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import {
   canDeleteGroup,
   canManageGroupInvites,
+  canManageJoinRequests,
   getEffectiveGroupRole,
 } from "./lib/groupPermissions";
 import {
@@ -32,6 +33,7 @@ import {
   type AuthorGroupDetailDTO,
   type AuthorGroupMemberRole,
 } from "./api/groupsApi";
+import { fetchGroupJoinRequests } from "./api/groupJoinRequestsApi";
 import { GroupPageShell } from "./components/GroupPageShell";
 import type { UserInfo } from "@/hooks/useUserInfo";
 
@@ -72,6 +74,21 @@ const GroupLayout = () => {
     queryFn: () => fetchGroup(groupId!),
     enabled: Boolean(groupId),
     refetchOnWindowFocus: false,
+  });
+
+  const moderatesGroup =
+    !isReviewer(userInfo?.platform_role) &&
+    canManageJoinRequests(
+      getEffectiveGroupRole(group?.members ?? [], userInfo),
+    );
+
+  const { data: pendingJoinRequests } = useQuery({
+    queryKey: ["cms-group-join-requests-count", groupId],
+    // limit 1: only `total` is used, so there is no need to pull the rows.
+    queryFn: () =>
+      fetchGroupJoinRequests(groupId!, { status: "PENDING", limit: 1 }),
+    enabled: Boolean(groupId) && moderatesGroup,
+    refetchOnWindowFocus: true,
   });
 
   const deleteMutation = useMutation({
@@ -121,6 +138,9 @@ const GroupLayout = () => {
     canManageGroupInvites(myRole) || myRole === "OWNER";
   const readOnlyPlatform = isReviewer(userInfo?.platform_role);
   const showTransfersNav = !readOnlyPlatform;
+  const showJoinRequestsNav =
+    !readOnlyPlatform && canManageJoinRequests(myRole);
+  const pendingCount = pendingJoinRequests?.total ?? 0;
   const showDelete = !readOnlyPlatform && canDelete;
   const nameMatches =
     confirmName.trim().toLowerCase() === groupTitle.trim().toLowerCase();
@@ -206,6 +226,24 @@ const GroupLayout = () => {
             >
               Members
             </NavLink>
+            {showJoinRequestsNav ? (
+              <NavLink
+                to={ROUTES.groupJoinRequests(group.id)}
+                className={navLinkClass}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  Join requests
+                  {pendingCount > 0 ? (
+                    <span
+                      className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#A51C21] px-1 text-[10px] font-medium text-white"
+                      aria-label={`${pendingCount} pending`}
+                    >
+                      {pendingCount > 9 ? "9+" : pendingCount}
+                    </span>
+                  ) : null}
+                </span>
+              </NavLink>
+            ) : null}
             <NavLink to={ROUTES.groupEvents(group.id)} className={navLinkClass}>
               Events
             </NavLink>

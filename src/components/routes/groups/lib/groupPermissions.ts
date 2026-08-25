@@ -89,6 +89,12 @@ export function canManageGroupInvites(
   return role ? MEMBER_MANAGEMENT_ROLES.includes(role) : false;
 }
 
+export function canManageJoinRequests(
+  role: AuthorGroupMemberRole | undefined,
+): boolean {
+  return role ? MEMBER_MANAGEMENT_ROLES.includes(role) : false;
+}
+
 export function inviteRoleOptions(
   myRole: AuthorGroupMemberRole | undefined,
 ): AuthorGroupMemberRole[] {

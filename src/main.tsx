@@ -42,6 +42,7 @@ import GroupAboutEditPage from "./components/routes/groups/GroupAboutEditPage.ts
 import GroupContentPage from "./components/routes/groups/GroupContentPage.tsx";
 import GroupTransfersPage from "./components/routes/groups/GroupTransfersPage.tsx";
 import GroupMembersPage from "./components/routes/groups/GroupMembersPage.tsx";
+import GroupJoinRequestsPage from "./components/routes/groups/GroupJoinRequestsPage.tsx";
 import GroupEventsPage from "./components/routes/groups/GroupEventsPage.tsx";
 import GroupEventFormPage from "./components/routes/groups/GroupEventFormPage.tsx";
 import GroupEventDetailPage from "./components/routes/groups/GroupEventDetailPage.tsx";
@@ -276,6 +277,7 @@ const router = createBrowserRouter([
           { path: "content", element: <GroupContentPage /> },
           { path: "transfers", element: <GroupTransfersPage /> },
           { path: "members", element: <GroupMembersPage /> },
+          { path: "join-requests", element: <GroupJoinRequestsPage /> },
           { path: "events", element: <GroupEventsPage /> },
           { path: "events/new", element: <GroupEventFormPage /> },
           { path: "events/:eventId", element: <GroupEventDetailPage /> },
