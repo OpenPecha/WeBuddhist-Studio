@@ -15,9 +15,11 @@ import {
 } from "@/components/routes/content-transfer/api/transferApi";
 import {
   fetchNotifications,
+  getJoinRequestNotificationGroupId,
   getTransferNotificationTargetGroupId,
   isContentTransferNotification,
   isGroupInviteNotification,
+  isGroupJoinRequestNotification,
   markNotificationRead,
   type NotificationDTO,
 } from "@/components/routes/notifications/api/notificationsApi";
@@ -205,6 +207,25 @@ export function NotificationsPanel({
                     </Button>
                   </div>
                 )}
+                {isGroupJoinRequestNotification(notification) &&
+                getJoinRequestNotificationGroupId(notification) ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="link"
+                    className="h-auto p-0 text-xs text-[#A51C21]"
+                    onClick={() => {
+                      onRequestClose?.();
+                      navigate(
+                        ROUTES.groupJoinRequests(
+                          getJoinRequestNotificationGroupId(notification)!,
+                        ),
+                      );
+                    }}
+                  >
+                    Review request
+                  </Button>
+                ) : null}
                 {isContentTransferNotification(notification) && (
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap gap-2">

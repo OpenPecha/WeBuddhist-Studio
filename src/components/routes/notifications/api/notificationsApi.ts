@@ -3,6 +3,7 @@ import axiosInstance from "@/config/axios-config";
 export type NotificationCategory =
   | "group_invite"
   | "content_transfer_incoming"
+  | "group_join_request"
   | (string & {});
 
 export interface NotificationDTO {
@@ -132,6 +133,26 @@ export const isContentTransferNotification = (
 ): boolean =>
   notification.category === "content_transfer_incoming" &&
   Boolean(notification.reference_id);
+
+/**
+ * Note: unlike `group_invite` and `content_transfer_incoming` — whose
+ * `reference_id` is the entity their bell actions operate on — a
+ * `group_join_request` notification carries the GROUP id in `reference_id`,
+ * not the join-request id. The bell takes no per-request action for this
+ * category; the id exists purely to route to the review screen, which lists
+ * every pending request for the group.
+ */
+export const isGroupJoinRequestNotification = (
+  notification: NotificationDTO,
+): boolean =>
+  notification.category === "group_join_request" &&
+  Boolean(notification.reference_id);
+
+export function getJoinRequestNotificationGroupId(
+  notification: NotificationDTO,
+): string | undefined {
+  return notification.reference_id?.trim() || undefined;
+}
 
 export function getTransferNotificationTargetGroupId(
   notification: NotificationDTO,
