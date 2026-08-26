@@ -3,6 +3,7 @@ import { useAuth } from "@/config/auth-context";
 import { Navigate, useLocation } from "react-router-dom";
 import { useTranslate } from "@tolgee/react";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { Button } from "@/components/ui/atoms/button";
 import {
   needsGroupOnboardingRedirect,
   needsInactiveLogout,
@@ -18,7 +19,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isLoggedIn, isAuthLoading, logout } = useAuth();
   const { t } = useTranslate();
   const location = useLocation();
-  const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo({
+  const {
+    data: userInfo,
+    isLoading: isUserInfoLoading,
+    isError: isUserInfoError,
+    refetch: refetchUserInfo,
+  } = useUserInfo({
     enabled: isLoggedIn,
   });
 
@@ -46,6 +52,19 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         replace
         state={inactive ? { inactive: true } : undefined}
       />
+    );
+  }
+
+  if (isLoggedIn && isUserInfoError && !userInfo) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <div className="text-base text-red-500">
+          Failed to load your profile.
+        </div>
+        <Button variant="outline" onClick={() => refetchUserInfo()}>
+          Retry
+        </Button>
+      </div>
     );
   }
 
