@@ -9,6 +9,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { fromBackendISO } from "@/lib/utils";
+import { DEFAULT_TIMEZONE } from "@/schema/EventSchema";
 import { ROUTES } from "@/routes/paths";
 import { FeaturedStar } from "@/components/routes/dashboard/dashboardTableUi";
 import type { GroupOutletContext } from "./GroupLayout";
@@ -23,19 +24,20 @@ import {
 
 const PAGE_SIZE = 20;
 
-const formatEventDate = (iso: string): string => {
+const formatEventDate = (iso: string, timezone: string): string => {
   if (!iso) return "—";
   try {
-    return format(fromBackendISO(iso), "MMM d, yyyy");
+    return format(fromBackendISO(iso, timezone).date, "MMM d, yyyy");
   } catch {
     return iso.slice(0, 10);
   }
 };
 
 const formatEventRange = (event: EventDTO): string => {
-  const start = formatEventDate(event.start_date);
+  const timezone = event.timezone?.trim() || DEFAULT_TIMEZONE;
+  const start = formatEventDate(event.start_date, timezone);
   if (event.is_one_day || event.start_date === event.end_date) return start;
-  return `${start} – ${formatEventDate(event.end_date)}`;
+  return `${start} – ${formatEventDate(event.end_date, timezone)}`;
 };
 
 const eventThumbnail = (event: EventDTO): string | null => {

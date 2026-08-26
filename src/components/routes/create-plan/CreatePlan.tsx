@@ -33,7 +33,12 @@ import {
 } from "@/components/routes/create-series/api/seriesApi";
 import { DIFFICULTY } from "@/lib/constant";
 import { useLanguages } from "@/hooks/useLanguages";
-import { cn, toBackendISO, fromBackendISO, isPastDate } from "@/lib/utils";
+import {
+  cn,
+  toBackendMidnightISO,
+  fromBackendMidnightISO,
+  isPastDate,
+} from "@/lib/utils";
 import axiosInstance from "@/config/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -679,7 +684,7 @@ const Createplan = () => {
                           >
                             {field.value
                               ? format(
-                                  fromBackendISO(field.value),
+                                  fromBackendMidnightISO(field.value),
                                   "MMM d, yyyy",
                                 )
                               : "Choose Date"}
@@ -695,12 +700,12 @@ const Createplan = () => {
                           mode="single"
                           selected={
                             field.value
-                              ? fromBackendISO(field.value)
+                              ? fromBackendMidnightISO(field.value)
                               : undefined
                           }
                           onSelect={(d) => {
                             setIsDateOpen(false);
-                            field.onChange(d ? toBackendISO(d) : null);
+                            field.onChange(d ? toBackendMidnightISO(d) : null);
                           }}
                           disabled={isPastDate}
                         />
