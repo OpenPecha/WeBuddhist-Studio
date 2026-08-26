@@ -9,6 +9,7 @@ import {
   IoPulse,
   IoBook,
   IoBookOutline,
+  IoDocumentTextOutline,
   IoChevronBack,
   IoChevronForward,
 } from "react-icons/io5";
@@ -81,6 +82,12 @@ const navItems = [
     label: "Verse of Day",
     path: ROUTES.verseOfDay,
     tooltip: "Verse of Day",
+  },
+  {
+    icon: <IoDocumentTextOutline className="w-4 h-4" />,
+    label: "Poems",
+    path: ROUTES.poems,
+    tooltip: "Poems",
   },
 ];
 
