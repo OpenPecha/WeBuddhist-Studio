@@ -149,7 +149,8 @@ const commonValidation = (
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "End date and time must be on or after the start date and time",
+        message:
+          "End date and time must be on or after the start date and time",
         path: ["end_time"],
       });
     }

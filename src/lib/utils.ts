@@ -299,7 +299,14 @@ const getZonedParts = (date: Date, timeZone: string): ZonedParts => {
  */
 export const getTimeZoneOffsetMs = (date: Date, timeZone: string): number => {
   const p = getZonedParts(date, timeZone);
-  const asUTC = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+  const asUTC = Date.UTC(
+    p.year,
+    p.month - 1,
+    p.day,
+    p.hour,
+    p.minute,
+    p.second,
+  );
   return asUTC - date.getTime();
 };
 

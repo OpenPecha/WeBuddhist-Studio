@@ -22,12 +22,8 @@ describe("getTimeZoneOffsetMs", () => {
     const summer = new Date(Date.UTC(2026, 5, 15, 12, 0, 0));
     const winter = new Date(Date.UTC(2026, 11, 15, 12, 0, 0));
     const fiveThirtyHoursMs = 5.5 * 60 * 60 * 1000;
-    expect(getTimeZoneOffsetMs(summer, "Asia/Kolkata")).toBe(
-      fiveThirtyHoursMs,
-    );
-    expect(getTimeZoneOffsetMs(winter, "Asia/Kolkata")).toBe(
-      fiveThirtyHoursMs,
-    );
+    expect(getTimeZoneOffsetMs(summer, "Asia/Kolkata")).toBe(fiveThirtyHoursMs);
+    expect(getTimeZoneOffsetMs(winter, "Asia/Kolkata")).toBe(fiveThirtyHoursMs);
   });
 
   it("resolves DST-dependent offsets for America/New_York", () => {
@@ -100,7 +96,10 @@ describe("toBackendISO / fromBackendISO round trip", () => {
 describe("legacy events without a stored timezone", () => {
   it("falls back to Asia/Kolkata when mapping to form data (mirrors mapEventToFormData)", () => {
     const DEFAULT_TIMEZONE = "Asia/Kolkata";
-    const legacyEvent = { start_date: "2026-05-01T00:00:00Z", timezone: undefined as string | undefined };
+    const legacyEvent = {
+      start_date: "2026-05-01T00:00:00Z",
+      timezone: undefined as string | undefined,
+    };
     const timezone = legacyEvent.timezone?.trim() || DEFAULT_TIMEZONE;
     expect(timezone).toBe("Asia/Kolkata");
 
