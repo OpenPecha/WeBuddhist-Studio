@@ -6,6 +6,7 @@ import { format } from "date-fns";
 interface PoemsListProps {
   poems: PoemItem[];
   isLoading?: boolean;
+  showActionsColumn?: boolean;
   onEdit: (item: PoemItem) => void;
   onDelete: (item: PoemItem) => void;
 }
@@ -22,7 +23,13 @@ const StatusBadge = ({ status }: { status: PoemItem["status"] }) => (
   </span>
 );
 
-const PoemsList = ({ poems, isLoading, onEdit, onDelete }: PoemsListProps) => {
+const PoemsList = ({
+  poems,
+  isLoading,
+  showActionsColumn = true,
+  onEdit,
+  onDelete,
+}: PoemsListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -50,9 +57,11 @@ const PoemsList = ({ poems, isLoading, onEdit, onDelete }: PoemsListProps) => {
             <Pecha.TableHead className="w-[160px]">Chapter</Pecha.TableHead>
             <Pecha.TableHead className="w-[110px]">Status</Pecha.TableHead>
             <Pecha.TableHead className="w-[150px]">Updated</Pecha.TableHead>
-            <Pecha.TableHead className="w-[180px] text-right">
-              Actions
-            </Pecha.TableHead>
+            {showActionsColumn ? (
+              <Pecha.TableHead className="w-[180px] text-right">
+                Actions
+              </Pecha.TableHead>
+            ) : null}
           </Pecha.TableRow>
         </Pecha.TableHeader>
         <Pecha.TableBody>
@@ -89,27 +98,29 @@ const PoemsList = ({ poems, isLoading, onEdit, onDelete }: PoemsListProps) => {
               <Pecha.TableCell className="whitespace-nowrap">
                 {format(new Date(poem.updated_at), "MMM dd, yyyy")}
               </Pecha.TableCell>
-              <Pecha.TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(poem)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDelete(poem)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </Pecha.TableCell>
+              {showActionsColumn ? (
+                <Pecha.TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(poem)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onDelete(poem)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </Pecha.TableCell>
+              ) : null}
             </Pecha.TableRow>
           ))}
         </Pecha.TableBody>

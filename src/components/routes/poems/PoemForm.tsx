@@ -121,13 +121,25 @@ const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => 
     }
 
     if (mode === "edit" && initialData) {
+      // imageKey: a newly uploaded replacement image.
+      // imagePreview is cleared by handleRemoveImage whether the removed
+      // image was newly uploaded or already existed on the poem, so an
+      // explicit null must be sent only when an existing image was removed
+      // (otherwise the field is omitted and the PATCH leaves it untouched).
+      let imageKeyValue: string | null | undefined;
+      if (imageKey) {
+        imageKeyValue = imageKey;
+      } else if (!imagePreview && initialData.image_url) {
+        imageKeyValue = null;
+      }
+
       const payload: UpdatePoemPayload = {
         title: title.trim(),
         content: content.trim(),
         author_name: authorName.trim(),
         chapter_name: chapterName.trim() || null,
         status: poemStatus,
-        ...(imageKey && { image_key: imageKey }),
+        ...(imageKeyValue !== undefined && { image_key: imageKeyValue }),
       };
       updateMutation.mutate({ id: initialData.id, payload });
     } else {

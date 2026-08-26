@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useDebounce } from "use-debounce";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/atoms/button";
 import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { shouldShowCmsActionsColumn } from "@/lib/platformAccess";
 import { fetchPoemsList, deletePoem, type PoemItem } from "./api/poemApi";
 import PoemsList from "./PoemsList";
 import PoemFormDialog from "./PoemFormDialog";
@@ -15,6 +17,8 @@ import PoemFormDialog from "./PoemFormDialog";
 const PAGE_SIZE = 10;
 
 const Poems = () => {
+  const { data: userInfo } = useUserInfo();
+  const showActionsColumn = shouldShowCmsActionsColumn(userInfo?.platform_role);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
@@ -76,6 +80,15 @@ const Poems = () => {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  // If the dataset shrank (deletions elsewhere, filter change) enough that
+  // the selected page no longer exists, snap back to the last valid page
+  // instead of showing a false "no poems" state with pagination hidden.
+  useEffect(() => {
+    if (data && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [data, currentPage, totalPages]);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#F5F5F5] dark:bg-[#181818] font-dynamic">
       <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200 dark:border-[#313132] bg-white dark:bg-[#1E1E1E]">
@@ -92,13 +105,15 @@ const Poems = () => {
               }}
             />
           </div>
-          <Button
-            variant="outline"
-            className="bg-gray-100 hover:bg-gray-200"
-            onClick={handleOpenCreate}
-          >
-            <IoMdAdd /> Add Poem
-          </Button>
+          {showActionsColumn ? (
+            <Button
+              variant="outline"
+              className="bg-gray-100 hover:bg-gray-200"
+              onClick={handleOpenCreate}
+            >
+              <IoMdAdd /> Add Poem
+            </Button>
+          ) : null}
         </div>
         <AuthButton />
       </div>
@@ -111,19 +126,22 @@ const Poems = () => {
         ) : poems.length === 0 && !isLoading ? (
           <div className="flex flex-col h-full items-center justify-center">
             <p className="text-base text-muted-foreground">No poems found</p>
-            <Button
-              variant="outline"
-              className="mt-2"
-              onClick={handleOpenCreate}
-            >
-              <IoMdAdd /> Add Poem
-            </Button>
+            {showActionsColumn ? (
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={handleOpenCreate}
+              >
+                <IoMdAdd /> Add Poem
+              </Button>
+            ) : null}
           </div>
         ) : (
           <div className="h-full overflow-auto">
             <PoemsList
               poems={poems}
               isLoading={isLoading}
+              showActionsColumn={showActionsColumn}
               onEdit={handleOpenEdit}
               onDelete={setDeleteTarget}
             />
@@ -141,15 +159,17 @@ const Poems = () => {
         </div>
       )}
 
-      <PoemFormDialog
-        open={formOpen}
-        onOpenChange={(open: boolean) => {
-          setFormOpen(open);
-          if (!open) setEditingItem(null);
-        }}
-        editingItem={editingItem}
-        onSuccess={handleFormSuccess}
-      />
+      {showActionsColumn ? (
+        <PoemFormDialog
+          open={formOpen}
+          onOpenChange={(open: boolean) => {
+            setFormOpen(open);
+            if (!open) setEditingItem(null);
+          }}
+          editingItem={editingItem}
+          onSuccess={handleFormSuccess}
+        />
+      ) : null}
 
       <Pecha.AlertDialog
         open={!!deleteTarget}
