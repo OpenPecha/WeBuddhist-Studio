@@ -55,6 +55,7 @@ const PoemsList = ({
             <Pecha.TableHead className="w-[280px]">Title</Pecha.TableHead>
             <Pecha.TableHead className="w-[160px]">Author</Pecha.TableHead>
             <Pecha.TableHead className="w-[160px]">Chapter</Pecha.TableHead>
+            <Pecha.TableHead className="w-[90px]">Language</Pecha.TableHead>
             <Pecha.TableHead className="w-[110px]">Status</Pecha.TableHead>
             <Pecha.TableHead className="w-[150px]">Updated</Pecha.TableHead>
             {showActionsColumn ? (
@@ -91,6 +92,11 @@ const PoemsList = ({
               </Pecha.TableCell>
               <Pecha.TableCell>
                 <p className="truncate text-sm">{poem.chapter_name || "—"}</p>
+              </Pecha.TableCell>
+              <Pecha.TableCell>
+                <span className="text-sm text-muted-foreground">
+                  {poem.language}
+                </span>
               </Pecha.TableCell>
               <Pecha.TableCell>
                 <StatusBadge status={poem.status} />

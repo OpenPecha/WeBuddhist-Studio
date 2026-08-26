@@ -5,6 +5,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Textarea } from "@/components/ui/atoms/textarea";
 import { Button } from "@/components/ui/atoms/button";
 import { getApiErrorMessage } from "@/lib/apiErrors";
+import { useLanguages } from "@/hooks/useLanguages";
 import {
   createPoem,
   updatePoem,
@@ -25,10 +26,12 @@ interface PoemFormProps {
 }
 
 const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => {
+  const { languageOptions } = useLanguages();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [chapterName, setChapterName] = useState("");
+  const [language, setLanguage] = useState("EN");
   const [poemStatus, setPoemStatus] = useState<PoemStatus>("DRAFT");
   const [imageKey, setImageKey] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -41,6 +44,7 @@ const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => 
       setContent(initialData.content);
       setAuthorName(initialData.author_name);
       setChapterName(initialData.chapter_name || "");
+      setLanguage(initialData.language || "EN");
       setPoemStatus(initialData.status);
       setImageKey(null);
       setImagePreview(initialData.image_url || null);
@@ -49,6 +53,7 @@ const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => 
       setContent("");
       setAuthorName("");
       setChapterName("");
+      setLanguage("EN");
       setPoemStatus("DRAFT");
       setImageKey(null);
       setImagePreview(null);
@@ -138,6 +143,7 @@ const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => 
         content: content.trim(),
         author_name: authorName.trim(),
         chapter_name: chapterName.trim() || null,
+        language,
         status: poemStatus,
         ...(imageKeyValue !== undefined && { image_key: imageKeyValue }),
       };
@@ -148,6 +154,7 @@ const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => 
         content: content.trim(),
         author_name: authorName.trim(),
         chapter_name: chapterName.trim() || null,
+        language,
         status: poemStatus,
         ...(imageKey && { image_key: imageKey }),
       };
@@ -197,20 +204,37 @@ const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => 
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-bold">Status</label>
-        <Pecha.Select
-          value={poemStatus}
-          onValueChange={(v) => setPoemStatus(v as PoemStatus)}
-        >
-          <Pecha.SelectTrigger className="w-[200px]">
-            <Pecha.SelectValue />
-          </Pecha.SelectTrigger>
-          <Pecha.SelectContent>
-            <Pecha.SelectItem value="DRAFT">Draft</Pecha.SelectItem>
-            <Pecha.SelectItem value="PUBLISHED">Published</Pecha.SelectItem>
-          </Pecha.SelectContent>
-        </Pecha.Select>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-bold">Language</label>
+          <Pecha.Select value={language} onValueChange={setLanguage}>
+            <Pecha.SelectTrigger className="w-full">
+              <Pecha.SelectValue />
+            </Pecha.SelectTrigger>
+            <Pecha.SelectContent>
+              {languageOptions.map((lang) => (
+                <Pecha.SelectItem key={lang.value} value={lang.value}>
+                  {lang.label}
+                </Pecha.SelectItem>
+              ))}
+            </Pecha.SelectContent>
+          </Pecha.Select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold">Status</label>
+          <Pecha.Select
+            value={poemStatus}
+            onValueChange={(v) => setPoemStatus(v as PoemStatus)}
+          >
+            <Pecha.SelectTrigger className="w-full">
+              <Pecha.SelectValue />
+            </Pecha.SelectTrigger>
+            <Pecha.SelectContent>
+              <Pecha.SelectItem value="DRAFT">Draft</Pecha.SelectItem>
+              <Pecha.SelectItem value="PUBLISHED">Published</Pecha.SelectItem>
+            </Pecha.SelectContent>
+          </Pecha.Select>
+        </div>
       </div>
 
       <div className="space-y-2">

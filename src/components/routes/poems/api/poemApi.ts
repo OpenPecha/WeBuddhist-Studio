@@ -8,6 +8,7 @@ export interface PoemItem {
   content: string;
   author_name: string;
   chapter_name: string | null;
+  language: string;
   image_url: string | null;
   status: PoemStatus;
   published_at: string | null;
@@ -27,6 +28,7 @@ export interface CreatePoemPayload {
   content: string;
   author_name: string;
   chapter_name?: string | null;
+  language?: string;
   image_key?: string | null;
   status?: PoemStatus;
 }
@@ -36,6 +38,7 @@ export interface UpdatePoemPayload {
   content?: string;
   author_name?: string;
   chapter_name?: string | null;
+  language?: string;
   image_key?: string | null;
   status?: PoemStatus;
 }
@@ -46,12 +49,14 @@ export type FetchPoemsParams = {
   status?: PoemStatus;
   chapterName?: string;
   authorName?: string;
+  language?: string;
 };
 
 export const fetchPoemsList = async (
   params: FetchPoemsParams = {},
 ): Promise<PoemsListResponse> => {
-  const { page = 1, limit = 10, status, chapterName, authorName } = params;
+  const { page = 1, limit = 10, status, chapterName, authorName, language } =
+    params;
   const { data } = await axiosInstance.get<PoemsListResponse>(
     `/api/v1/cms/poems`,
     {
@@ -61,6 +66,7 @@ export const fetchPoemsList = async (
         ...(status && { status }),
         ...(chapterName?.trim() && { chapter_name: chapterName.trim() }),
         ...(authorName?.trim() && { author_name: authorName.trim() }),
+        ...(language && { language }),
       },
     },
   );

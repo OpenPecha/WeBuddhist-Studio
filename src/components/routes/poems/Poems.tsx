@@ -9,6 +9,7 @@ import AuthButton from "@/components/ui/molecules/auth-button/AuthButton";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { useLanguages } from "@/hooks/useLanguages";
 import { shouldShowCmsActionsColumn } from "@/lib/platformAccess";
 import { fetchPoemsList, deletePoem, type PoemItem } from "./api/poemApi";
 import PoemsList from "./PoemsList";
@@ -18,8 +19,11 @@ const PAGE_SIZE = 10;
 
 const Poems = () => {
   const { data: userInfo } = useUserInfo();
-  const showActionsColumn = shouldShowCmsActionsColumn(userInfo?.platform_role);
+  const showActionsColumn =
+    !!userInfo && shouldShowCmsActionsColumn(userInfo.platform_role);
+  const { languageOptions } = useLanguages();
   const [search, setSearch] = useState("");
+  const [languageFilter, setLanguageFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch] = useDebounce(search, 500);
   const [formOpen, setFormOpen] = useState(false);
@@ -29,12 +33,13 @@ const Poems = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["poems-list", currentPage, debouncedSearch],
+    queryKey: ["poems-list", currentPage, debouncedSearch, languageFilter],
     queryFn: () =>
       fetchPoemsList({
         page: currentPage,
         limit: PAGE_SIZE,
         authorName: debouncedSearch,
+        language: languageFilter || undefined,
       }),
     refetchOnWindowFocus: false,
     retry: false,
@@ -105,6 +110,25 @@ const Poems = () => {
               }}
             />
           </div>
+          <Pecha.Select
+            value={languageFilter || "ALL"}
+            onValueChange={(v) => {
+              setLanguageFilter(v === "ALL" ? "" : v);
+              if (currentPage !== 1) setCurrentPage(1);
+            }}
+          >
+            <Pecha.SelectTrigger className="w-[160px]">
+              <Pecha.SelectValue placeholder="All languages" />
+            </Pecha.SelectTrigger>
+            <Pecha.SelectContent>
+              <Pecha.SelectItem value="ALL">All languages</Pecha.SelectItem>
+              {languageOptions.map((lang) => (
+                <Pecha.SelectItem key={lang.value} value={lang.value}>
+                  {lang.label}
+                </Pecha.SelectItem>
+              ))}
+            </Pecha.SelectContent>
+          </Pecha.Select>
           {showActionsColumn ? (
             <Button
               variant="outline"
