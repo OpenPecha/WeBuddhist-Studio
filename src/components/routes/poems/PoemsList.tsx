@@ -83,9 +83,7 @@ const PoemsList = ({
                 )}
               </Pecha.TableCell>
               <Pecha.TableCell className="max-w-[280px]">
-                <p className="text-sm font-medium line-clamp-2">
-                  {poem.title}
-                </p>
+                <p className="text-sm font-medium line-clamp-2">{poem.title}</p>
               </Pecha.TableCell>
               <Pecha.TableCell>
                 <p className="truncate text-sm">{poem.author_name}</p>

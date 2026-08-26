@@ -55,8 +55,14 @@ export type FetchPoemsParams = {
 export const fetchPoemsList = async (
   params: FetchPoemsParams = {},
 ): Promise<PoemsListResponse> => {
-  const { page = 1, limit = 10, status, chapterName, authorName, language } =
-    params;
+  const {
+    page = 1,
+    limit = 10,
+    status,
+    chapterName,
+    authorName,
+    language,
+  } = params;
   const { data } = await axiosInstance.get<PoemsListResponse>(
     `/api/v1/cms/poems`,
     {

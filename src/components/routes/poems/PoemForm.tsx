@@ -25,7 +25,12 @@ interface PoemFormProps {
   onCancel: () => void;
 }
 
-const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => {
+const PoemForm = ({
+  mode,
+  initialData,
+  onSuccess,
+  onCancel,
+}: PoemFormProps) => {
   const { languageOptions } = useLanguages();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -294,7 +299,10 @@ const PoemForm = ({ mode, initialData, onSuccess, onCancel }: PoemFormProps) => 
         </Button>
       </div>
 
-      <Pecha.Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+      <Pecha.Dialog
+        open={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+      >
         <Pecha.DialogContent showCloseButton>
           <Pecha.DialogHeader>
             <Pecha.DialogTitle>Upload & Crop Image</Pecha.DialogTitle>
