@@ -139,11 +139,18 @@ const commonValidation = (
         path: ["end_date"],
       });
     }
-    if (data.start_date && data.end_date && data.end_date < data.start_date) {
+    if (
+      data.start_date &&
+      data.end_date &&
+      (data.end_date < data.start_date ||
+        (data.end_date === data.start_date &&
+          (data.end_time || DEFAULT_END_TIME) <
+            (data.start_time || DEFAULT_START_TIME)))
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "End date must be on or after the start date",
-        path: ["end_date"],
+        message: "End date and time must be on or after the start date and time",
+        path: ["end_time"],
       });
     }
   }

@@ -512,7 +512,7 @@ export function buildUpdateEventBody(
     data.end_time !== original.end_time ||
     timezone !== originalTimezone;
 
-  if (dateInputsChanged) {
+  if (dateInputsChanged && !data.is_recurring) {
     body.start_date = composeBackendDate(
       data.start_date,
       data.start_time,
