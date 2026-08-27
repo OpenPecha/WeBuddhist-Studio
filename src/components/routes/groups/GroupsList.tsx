@@ -11,6 +11,7 @@ import {
   resolveGroupAvatarUrl,
   type AuthorGroupListItem,
 } from "./api/groupsApi";
+import GroupStatusBadge from "./components/GroupStatusBadge";
 
 interface GroupsListProps {
   groups: AuthorGroupListItem[];
@@ -54,7 +55,13 @@ const GroupsList = ({ groups, isLoading }: GroupsListProps) => {
                 <AvatarFallback>{title.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1 space-y-1">
-                <p className="font-medium truncate">{title}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-medium truncate">{title}</p>
+                  <GroupStatusBadge
+                    status={group.status}
+                    className="shrink-0"
+                  />
+                </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="text-muted-foreground">
                     {groupTypeLabel(group.group_type)}

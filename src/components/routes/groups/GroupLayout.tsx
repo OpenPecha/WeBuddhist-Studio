@@ -20,6 +20,7 @@ import { ROUTES } from "@/routes/paths";
 import { isReviewer } from "@/lib/platformAccess";
 import { cn } from "@/lib/utils";
 import {
+  canChangeGroupStatus,
   canDeleteGroup,
   canManageGroupInvites,
   canManageJoinRequests,
@@ -35,6 +36,8 @@ import {
 } from "./api/groupsApi";
 import { fetchGroupJoinRequests } from "./api/groupJoinRequestsApi";
 import { GroupPageShell } from "./components/GroupPageShell";
+import GroupStatusBadge from "./components/GroupStatusBadge";
+import GroupPublishControl from "./components/GroupPublishControl";
 import type { UserInfo } from "@/hooks/useUserInfo";
 
 export type GroupOutletContext = {
@@ -44,6 +47,7 @@ export type GroupOutletContext = {
   userInfo: UserInfo | null | undefined;
   readOnlyPlatform: boolean;
   canManageTransfers: boolean;
+  canPublishGroup: boolean;
 };
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -142,6 +146,7 @@ const GroupLayout = () => {
     !readOnlyPlatform && canManageJoinRequests(myRole);
   const pendingCount = pendingJoinRequests?.total ?? 0;
   const showDelete = !readOnlyPlatform && canDelete;
+  const canPublishGroup = !readOnlyPlatform && canChangeGroupStatus(myRole);
   const nameMatches =
     confirmName.trim().toLowerCase() === groupTitle.trim().toLowerCase();
   const isAboutSection =
@@ -171,6 +176,7 @@ const GroupLayout = () => {
     userInfo,
     readOnlyPlatform,
     canManageTransfers,
+    canPublishGroup,
   };
 
   return (
@@ -181,21 +187,27 @@ const GroupLayout = () => {
         title={groupTitle}
         avatarUrl={avatarUrl}
         subtitle={
-          <p className="mt-2 text-sm text-muted-foreground font-mono">
-            /{group.slug}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-sm text-muted-foreground font-mono">
+              /{group.slug}
+            </p>
+            <GroupStatusBadge status={group.status} />
+          </div>
         }
         headerActions={
-          showDelete ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <IoMdTrash className="w-4 h-4" /> Delete
-            </Button>
-          ) : undefined
+          <>
+            {canPublishGroup ? <GroupPublishControl group={group} /> : null}
+            {showDelete ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <IoMdTrash className="w-4 h-4" /> Delete
+              </Button>
+            ) : null}
+          </>
         }
         nav={
           <nav className="flex flex-wrap gap-1 px-4 sm:px-8 border-b border-dashed border-gray-300 dark:border-input">
