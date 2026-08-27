@@ -36,9 +36,13 @@ const GroupPublishControl = ({
   const statusMutation = useMutation({
     mutationFn: (status: "PUBLISHED" | "UNPUBLISHED") =>
       updateGroupStatus(group.id, status),
-    // PATCH returns the full detail DTO, so seed the cache instead of refetching.
     onSuccess: (updated) => {
-      queryClient.setQueryData(["cms-group", group.id], updated);
+      // PATCH returns the full detail DTO, but merge rather than replace so a
+      // partial response can never strip fields the detail pages dereference.
+      queryClient.setQueryData<AuthorGroupDetailDTO>(
+        ["cms-group", group.id],
+        (previous) => (previous ? { ...previous, ...updated } : updated),
+      );
       queryClient.invalidateQueries({ queryKey: ["cms-groups"] });
       setConfirmOpen(false);
       toast.success(
@@ -57,6 +61,10 @@ const GroupPublishControl = ({
     }
     statusMutation.mutate("PUBLISHED");
   };
+
+  // Without a status there is no current state to act on, so offer no action
+  // rather than guessing — matches the badge and draft banner.
+  if (!group.status) return null;
 
   return (
     <>

@@ -16,11 +16,24 @@ beforeEach(() => {
   sessionStorage.setItem("accessToken", "token");
 });
 
+/** The endpoint returns the same shape as GET /cms/author/groups/{id}. */
+const detailDto = {
+  id: "g1",
+  slug: "g1",
+  is_public: true,
+  status: "PUBLISHED",
+  metadata: [{ title: "Group one", language: "EN" }],
+  tags: [],
+  follower_count: 0,
+  members: [],
+  social_links: [],
+  series: [],
+  plans: [],
+};
+
 describe("updateGroupStatus", () => {
   it("PATCHes the status endpoint with the exact case-sensitive value", async () => {
-    vi.mocked(axiosInstance.patch).mockResolvedValueOnce({
-      data: { id: "g1", status: "PUBLISHED" },
-    });
+    vi.mocked(axiosInstance.patch).mockResolvedValueOnce({ data: detailDto });
 
     const result = await updateGroupStatus("g1", "PUBLISHED");
 
@@ -29,12 +42,12 @@ describe("updateGroupStatus", () => {
       { status: "PUBLISHED" },
       { headers: { Authorization: "Bearer token" } },
     );
-    expect(result).toEqual({ id: "g1", status: "PUBLISHED" });
+    expect(result).toEqual(detailDto);
   });
 
   it("sends UNPUBLISHED when hiding a live group", async () => {
     vi.mocked(axiosInstance.patch).mockResolvedValueOnce({
-      data: { id: "g1", status: "UNPUBLISHED" },
+      data: { ...detailDto, status: "UNPUBLISHED" },
     });
 
     await updateGroupStatus("g1", "UNPUBLISHED");
