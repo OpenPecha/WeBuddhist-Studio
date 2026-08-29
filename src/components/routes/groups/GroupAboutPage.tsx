@@ -7,10 +7,11 @@ import { ROUTES } from "@/routes/paths";
 import { languageLabelForCode, resolveGroupBannerUrl } from "./api/groupsApi";
 import { canEditGroupSettings } from "./lib/groupPermissions";
 import { GroupDetailCard } from "./components/GroupSection";
+import GroupDraftBanner from "./components/GroupDraftBanner";
 import type { GroupOutletContext } from "./GroupLayout";
 
 const GroupAboutPage = () => {
-  const { group, groupId, myRole, readOnlyPlatform } =
+  const { group, groupId, myRole, readOnlyPlatform, canPublishGroup } =
     useOutletContext<GroupOutletContext>();
   const bannerUrl = resolveGroupBannerUrl(group);
   const memberCount = group.member_count ?? group.members.length;
@@ -18,6 +19,8 @@ const GroupAboutPage = () => {
 
   return (
     <div className="space-y-6">
+      <GroupDraftBanner group={group} canPublish={canPublishGroup} />
+
       {canEdit ? (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" asChild>

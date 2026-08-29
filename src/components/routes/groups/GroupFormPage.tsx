@@ -81,7 +81,10 @@ const GroupFormPage = () => {
   const createMutation = useMutation({
     mutationFn: createGroup,
     onSuccess: (data) => {
-      toast.success("Group created");
+      toast.success("Group created", {
+        description:
+          "It's a draft and isn't visible in the app yet — publish it when you're ready.",
+      });
       queryClient.invalidateQueries({ queryKey: ["cms-groups"] });
       navigate(ROUTES.groupEdit(data.id));
     },

@@ -17,6 +17,13 @@ export type AuthorGroupMemberRole = "OWNER" | "ADMIN" | "AUTHOR" | "VIEWER";
 
 export type AuthorGroupType = "PAGE" | "COMMUNITY";
 
+/** App visibility, independent of `is_public`. DRAFT and UNPUBLISHED are both hidden. */
+export type AuthorGroupStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED";
+
+export function isGroupVisibleInApp(status?: AuthorGroupStatus): boolean {
+  return status === "PUBLISHED";
+}
+
 export const GROUP_TYPE_OPTIONS: {
   value: AuthorGroupType;
   label: string;
@@ -118,6 +125,8 @@ export interface AuthorGroupListItem {
   slug: string;
   group_type?: AuthorGroupType;
   is_public: boolean;
+  /** Optional until the backend status rollout has shipped everywhere. */
+  status?: AuthorGroupStatus;
   metadata: GroupMetadataDTO[];
   tags: TagSummaryDTO[];
   follower_count: number;
@@ -242,6 +251,8 @@ export interface FetchGroupsParams {
   language?: string;
   tag_id?: string;
   group_type?: AuthorGroupType;
+  /** Omit to list every status. */
+  status?: AuthorGroupStatus;
   /** When true, lists all groups eligible as transfer targets (not only membership). */
   for_transfer?: boolean;
   /** When true, lists groups the user may filter dashboard content by (staff-wide read list). */
@@ -269,6 +280,7 @@ export const fetchGroups = async ({
   language,
   tag_id,
   group_type,
+  status,
   for_transfer,
   for_dashboard,
 }: FetchGroupsParams): Promise<AuthorGroupListResponse> => {
@@ -287,6 +299,7 @@ export const fetchGroups = async ({
         ...(language && { language }),
         ...(tag_id && { tag_id }),
         ...(group_type && { group_type }),
+        ...(status && { status }),
         ...(for_transfer && { for_transfer: true }),
         ...(for_dashboard && { for_dashboard: true }),
       },
@@ -416,6 +429,19 @@ export const patchGroup = async (
   const { data } = await axiosInstance.patch<AuthorGroupDetailDTO>(
     `/api/v1/cms/author/groups/${groupId}`,
     payload,
+    { headers: getAuthHeaders() },
+  );
+  return data;
+};
+
+/** Non-destructive: members, content and followers persist and return on re-publish. */
+export const updateGroupStatus = async (
+  groupId: string,
+  status: AuthorGroupStatus,
+): Promise<AuthorGroupDetailDTO> => {
+  const { data } = await axiosInstance.patch<AuthorGroupDetailDTO>(
+    `/api/v1/cms/author/groups/${groupId}/status`,
+    { status },
     { headers: getAuthHeaders() },
   );
   return data;

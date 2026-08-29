@@ -76,6 +76,12 @@ export function canEditGroupSettings(
   return role === "OWNER" || role === "ADMIN";
 }
 
+export function canChangeGroupStatus(
+  role: AuthorGroupMemberRole | undefined,
+): boolean {
+  return role ? MEMBER_MANAGEMENT_ROLES.includes(role) : false;
+}
+
 /** Owners and platform SUPER_ADMIN (via getEffectiveGroupRole) can delete a group. */
 export function canDeleteGroup(
   role: AuthorGroupMemberRole | undefined,
