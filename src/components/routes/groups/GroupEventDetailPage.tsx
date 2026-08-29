@@ -14,6 +14,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownPreview } from "@/components/ui/molecules/markdown-editor/MarkdownPreview";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { cn, fromBackendISO } from "@/lib/utils";
+import { DEFAULT_TIMEZONE } from "@/schema/EventSchema";
 import { getLanguageLabel } from "@/components/api/languagesApi";
 import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
@@ -38,19 +39,20 @@ import LocationMap from "./components/locations/LocationMap";
 
 const languageLabel = (code: string) => getLanguageLabel(code);
 
-const formatDate = (iso: string) => {
+const formatDate = (iso: string, timezone: string) => {
   if (!iso) return "—";
   try {
-    return format(fromBackendISO(iso), "EEE, MMM d, yyyy");
+    return format(fromBackendISO(iso, timezone).date, "EEE, MMM d, yyyy");
   } catch {
     return iso.slice(0, 10);
   }
 };
 
 const formatDateRange = (event: EventDTO): string => {
-  const start = formatDate(event.start_date);
+  const timezone = event.timezone?.trim() || DEFAULT_TIMEZONE;
+  const start = formatDate(event.start_date, timezone);
   if (event.is_one_day || event.start_date === event.end_date) return start;
-  return `${start} – ${formatDate(event.end_date)}`;
+  return `${start} – ${formatDate(event.end_date, timezone)}`;
 };
 
 const resolveHeroImage = (event: EventDTO): string | null => {

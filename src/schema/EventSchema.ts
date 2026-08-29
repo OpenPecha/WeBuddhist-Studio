@@ -1,6 +1,12 @@
 import { z } from "zod";
 import type { LanguageCode } from "@/lib/languageCodes";
-import { fromBackendISO, isPastDate } from "@/lib/utils";
+import { dateOnlyToDate, isPastDate } from "@/lib/utils";
+
+export const DEFAULT_TIMEZONE = "Asia/Kolkata";
+export const DEFAULT_START_TIME = "06:00";
+export const DEFAULT_END_TIME = "23:59";
+
+const TIME_HHMM_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export type { LanguageCode };
 
@@ -98,6 +104,9 @@ const baseEventSchema = z.object({
   is_recurring: z.boolean(),
   start_date: z.string().trim(),
   end_date: z.string().trim(),
+  start_time: z.string().regex(TIME_HHMM_REGEX).nullable().optional(),
+  end_time: z.string().regex(TIME_HHMM_REGEX).nullable().optional(),
+  timezone: z.string().trim().min(1),
   is_one_day: z.boolean(),
   recurrence: recurrenceSchema.nullable(),
   metadata: z.array(eventMetadataRowSchema).min(1, "Add at least one language"),
@@ -130,11 +139,19 @@ const commonValidation = (
         path: ["end_date"],
       });
     }
-    if (data.start_date && data.end_date && data.end_date < data.start_date) {
+    if (
+      data.start_date &&
+      data.end_date &&
+      (data.end_date < data.start_date ||
+        (data.end_date === data.start_date &&
+          (data.end_time || DEFAULT_END_TIME) <
+            (data.start_time || DEFAULT_START_TIME)))
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "End date must be on or after the start date",
-        path: ["end_date"],
+        message:
+          "End date and time must be on or after the start date and time",
+        path: ["end_time"],
       });
     }
   }
@@ -155,11 +172,11 @@ const commonValidation = (
 export const eventSchema = baseEventSchema.superRefine((data, ctx) => {
   commonValidation(data, ctx);
 
-  // Compare calendar dates in local time; parsing the backend's
-  // UTC-midnight string with new Date() shifts it to the previous
-  // local day in negative UTC-offset timezones.
+  // Compare calendar dates only (day granularity), matching the backend's
+  // own past-date validation, which also only checks the calendar day and
+  // not the exact wall-clock time.
   if (!data.is_recurring && data.start_date) {
-    if (isPastDate(fromBackendISO(data.start_date))) {
+    if (isPastDate(dateOnlyToDate(data.start_date))) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Start date cannot be in the past",
@@ -198,6 +215,9 @@ export const defaultEventFormValues = (): EventFormData => ({
   is_recurring: false,
   start_date: "",
   end_date: "",
+  start_time: null,
+  end_time: null,
+  timezone: DEFAULT_TIMEZONE,
   is_one_day: false,
   recurrence: null,
   metadata: [emptyMetadataRow("EN")],

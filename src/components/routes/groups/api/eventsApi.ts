@@ -13,10 +13,21 @@ import type {
   RecurrenceFormData,
 } from "@/schema/EventSchema";
 import {
+  DEFAULT_END_TIME,
+  DEFAULT_START_TIME,
+  DEFAULT_TIMEZONE,
+} from "@/schema/EventSchema";
+import {
   LANGUAGE_CODE_ORDER,
   normalizeLanguageCode,
 } from "@/lib/languageCodes";
 import { capitalizeFirstLetter } from "@/lib/textUtils";
+import {
+  dateOnlyToDate,
+  dateToDateOnly,
+  fromBackendISO,
+  toBackendISO,
+} from "@/lib/utils";
 
 export interface ImageUrlModel {
   thumbnail: string;
@@ -73,6 +84,7 @@ export interface EventDTO {
   location?: EventLocation;
   start_date: string;
   end_date: string;
+  timezone?: string | null;
   is_one_day: boolean;
   featured: boolean;
   is_recurring?: boolean;
@@ -112,6 +124,7 @@ export interface CreateEventRequest {
   group_id: string;
   start_date?: string;
   end_date?: string;
+  timezone?: string;
   metadata: EventMetadataInput[];
   links?: EventLinkInput[];
   image_url?: string;
@@ -127,6 +140,7 @@ export interface UpdateEventRequest {
   group_id?: string;
   start_date?: string;
   end_date?: string;
+  timezone?: string;
   metadata?: EventMetadataInput[];
   links?: EventLinkInput[];
   image_url?: string;
@@ -269,10 +283,22 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     };
   }
 
+  // Legacy events predating the timezone field have no stored zone; fall
+  // back to the CMS default so their dates/times still render sensibly.
+  const timezone = event.timezone?.trim() || DEFAULT_TIMEZONE;
+
+  const start = event.start_date
+    ? fromBackendISO(event.start_date, timezone)
+    : null;
+  const end = event.end_date ? fromBackendISO(event.end_date, timezone) : null;
+
   return {
     is_recurring: Boolean(event.is_recurring),
-    start_date: event.start_date ?? "",
-    end_date: event.end_date ?? "",
+    start_date: start ? dateToDateOnly(start.date) : "",
+    end_date: end ? dateToDateOnly(end.date) : "",
+    start_time: start?.hhmm ?? null,
+    end_time: end?.hhmm ?? null,
+    timezone,
     is_one_day: Boolean(event.is_one_day),
     recurrence,
     metadata:
@@ -321,6 +347,15 @@ function buildMetadataInput(rows: EventMetadataRow[]): EventMetadataInput[] {
   });
 }
 
+function composeBackendDate(
+  dateOnly: string,
+  hhmm: string | null | undefined,
+  fallbackHhmm: string,
+  timezone: string,
+): string {
+  return toBackendISO(dateOnlyToDate(dateOnly), hhmm || fallbackHhmm, timezone);
+}
+
 function buildRecurrenceInput(recurrence: RecurrenceFormData): RecurrenceInput {
   const calendarType = recurrence.calendar_type.trim();
   return {
@@ -344,8 +379,11 @@ export function buildCreateEventBody(
   const chantCollectionId = data.group_recitation_collection_id.trim();
   const locationId = data.location_id.trim();
 
+  const timezone = data.timezone.trim() || DEFAULT_TIMEZONE;
+
   const body: CreateEventRequest = {
     group_id: groupId,
+    timezone,
     metadata: buildMetadataInput(data.metadata),
     ...(data.links.length ? { links: buildLinksInput(data.links) } : {}),
     ...(imageUrl ? { image_url: imageUrl } : {}),
@@ -361,8 +399,18 @@ export function buildCreateEventBody(
   if (data.is_recurring && data.recurrence) {
     body.recurrence = buildRecurrenceInput(data.recurrence);
   } else {
-    body.start_date = data.start_date;
-    body.end_date = data.end_date;
+    body.start_date = composeBackendDate(
+      data.start_date,
+      data.start_time,
+      DEFAULT_START_TIME,
+      timezone,
+    );
+    body.end_date = composeBackendDate(
+      data.end_date,
+      data.end_time,
+      DEFAULT_END_TIME,
+      timezone,
+    );
   }
 
   return body;
@@ -451,9 +499,33 @@ export function buildUpdateEventBody(
 ): UpdateEventRequest {
   const body: UpdateEventRequest = {};
 
-  if (data.start_date !== original.start_date)
-    body.start_date = data.start_date;
-  if (data.end_date !== original.end_date) body.end_date = data.end_date;
+  const timezone = data.timezone.trim() || DEFAULT_TIMEZONE;
+  const originalTimezone = original.timezone.trim() || DEFAULT_TIMEZONE;
+  // Always send the timezone: the composed start/end instants below are only
+  // meaningful together with the zone that produced them.
+  body.timezone = timezone;
+
+  const dateInputsChanged =
+    data.start_date !== original.start_date ||
+    data.end_date !== original.end_date ||
+    data.start_time !== original.start_time ||
+    data.end_time !== original.end_time ||
+    timezone !== originalTimezone;
+
+  if (dateInputsChanged && !data.is_recurring) {
+    body.start_date = composeBackendDate(
+      data.start_date,
+      data.start_time,
+      DEFAULT_START_TIME,
+      timezone,
+    );
+    body.end_date = composeBackendDate(
+      data.end_date,
+      data.end_time,
+      DEFAULT_END_TIME,
+      timezone,
+    );
+  }
 
   if (!metadataEqual(data.metadata, original.metadata)) {
     body.metadata = buildMetadataInput(data.metadata);
@@ -490,8 +562,18 @@ export function buildUpdateEventBody(
     if (data.is_recurring && data.recurrence) {
       body.recurrence = buildRecurrenceInput(data.recurrence);
     } else {
-      body.start_date = data.start_date;
-      body.end_date = data.end_date;
+      body.start_date = composeBackendDate(
+        data.start_date,
+        data.start_time,
+        DEFAULT_START_TIME,
+        timezone,
+      );
+      body.end_date = composeBackendDate(
+        data.end_date,
+        data.end_time,
+        DEFAULT_END_TIME,
+        timezone,
+      );
     }
   } else if (data.is_recurring && data.recurrence && original.recurrence) {
     // Check if recurrence fields changed
