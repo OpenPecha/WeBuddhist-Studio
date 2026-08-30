@@ -6,6 +6,9 @@ import {
   deleteTask,
   type CreateDaysRequest,
 } from "../api/planApi";
+import { getApiErrorMessage } from "@/lib/apiErrors";
+
+export const PLAN_DAYS_OVERLAP_NEXT_PLAN_CODE = "PLAN_DAYS_OVERLAP_NEXT_PLAN";
 
 export const usePlanMutations = (plan_id: string | undefined) => {
   const queryClient = useQueryClient();
@@ -38,7 +41,7 @@ export const usePlanMutations = (plan_id: string | undefined) => {
     },
     onError: (error: any) => {
       toast.error("Failed to delete day(s)", {
-        description: error.response?.data?.detail || "Something went wrong",
+        description: getApiErrorMessage(error),
       });
     },
   });
@@ -46,8 +49,15 @@ export const usePlanMutations = (plan_id: string | undefined) => {
   const createNewDaysMutation = useMutation({
     mutationFn: (body?: CreateDaysRequest) => createNewDays(plan_id!, body),
     onError: (error: any) => {
+      // The overlap case is handled by the caller, which offers to shift the
+      // rest of the series forward instead of showing a dead-end error.
+      if (
+        error?.response?.data?.detail?.code === PLAN_DAYS_OVERLAP_NEXT_PLAN_CODE
+      ) {
+        return;
+      }
       toast.error("Failed to create days", {
-        description: error.response?.data?.detail || "Something went wrong",
+        description: getApiErrorMessage(error),
       });
     },
   });

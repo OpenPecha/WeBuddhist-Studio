@@ -20,8 +20,10 @@ import { ROUTES } from "@/routes/paths";
 import { isReviewer } from "@/lib/platformAccess";
 import { cn } from "@/lib/utils";
 import {
+  canChangeGroupStatus,
   canDeleteGroup,
   canManageGroupInvites,
+  canManageJoinRequests,
   getEffectiveGroupRole,
 } from "./lib/groupPermissions";
 import {
@@ -32,7 +34,10 @@ import {
   type AuthorGroupDetailDTO,
   type AuthorGroupMemberRole,
 } from "./api/groupsApi";
+import { fetchGroupJoinRequests } from "./api/groupJoinRequestsApi";
 import { GroupPageShell } from "./components/GroupPageShell";
+import GroupStatusBadge from "./components/GroupStatusBadge";
+import GroupPublishControl from "./components/GroupPublishControl";
 import type { UserInfo } from "@/hooks/useUserInfo";
 
 export type GroupOutletContext = {
@@ -42,6 +47,7 @@ export type GroupOutletContext = {
   userInfo: UserInfo | null | undefined;
   readOnlyPlatform: boolean;
   canManageTransfers: boolean;
+  canPublishGroup: boolean;
 };
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -72,6 +78,21 @@ const GroupLayout = () => {
     queryFn: () => fetchGroup(groupId!),
     enabled: Boolean(groupId),
     refetchOnWindowFocus: false,
+  });
+
+  const moderatesGroup =
+    !isReviewer(userInfo?.platform_role) &&
+    canManageJoinRequests(
+      getEffectiveGroupRole(group?.members ?? [], userInfo),
+    );
+
+  const { data: pendingJoinRequests } = useQuery({
+    queryKey: ["cms-group-join-requests-count", groupId],
+    // limit 1: only `total` is used, so there is no need to pull the rows.
+    queryFn: () =>
+      fetchGroupJoinRequests(groupId!, { status: "PENDING", limit: 1 }),
+    enabled: Boolean(groupId) && moderatesGroup,
+    refetchOnWindowFocus: true,
   });
 
   const deleteMutation = useMutation({
@@ -121,7 +142,11 @@ const GroupLayout = () => {
     canManageGroupInvites(myRole) || myRole === "OWNER";
   const readOnlyPlatform = isReviewer(userInfo?.platform_role);
   const showTransfersNav = !readOnlyPlatform;
+  const showJoinRequestsNav =
+    !readOnlyPlatform && canManageJoinRequests(myRole);
+  const pendingCount = pendingJoinRequests?.total ?? 0;
   const showDelete = !readOnlyPlatform && canDelete;
+  const canPublishGroup = !readOnlyPlatform && canChangeGroupStatus(myRole);
   const nameMatches =
     confirmName.trim().toLowerCase() === groupTitle.trim().toLowerCase();
   const isAboutSection =
@@ -151,6 +176,7 @@ const GroupLayout = () => {
     userInfo,
     readOnlyPlatform,
     canManageTransfers,
+    canPublishGroup,
   };
 
   return (
@@ -161,21 +187,27 @@ const GroupLayout = () => {
         title={groupTitle}
         avatarUrl={avatarUrl}
         subtitle={
-          <p className="mt-2 text-sm text-muted-foreground font-mono">
-            /{group.slug}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-sm text-muted-foreground font-mono">
+              /{group.slug}
+            </p>
+            <GroupStatusBadge status={group.status} />
+          </div>
         }
         headerActions={
-          showDelete ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <IoMdTrash className="w-4 h-4" /> Delete
-            </Button>
-          ) : undefined
+          <>
+            {canPublishGroup ? <GroupPublishControl group={group} /> : null}
+            {showDelete ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <IoMdTrash className="w-4 h-4" /> Delete
+              </Button>
+            ) : null}
+          </>
         }
         nav={
           <nav className="flex flex-wrap gap-1 px-4 sm:px-8 border-b border-dashed border-gray-300 dark:border-input">
@@ -206,6 +238,24 @@ const GroupLayout = () => {
             >
               Members
             </NavLink>
+            {showJoinRequestsNav ? (
+              <NavLink
+                to={ROUTES.groupJoinRequests(group.id)}
+                className={navLinkClass}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  Join requests
+                  {pendingCount > 0 ? (
+                    <span
+                      className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#A51C21] px-1 text-[10px] font-medium text-white"
+                      aria-label={`${pendingCount} pending`}
+                    >
+                      {pendingCount > 9 ? "9+" : pendingCount}
+                    </span>
+                  ) : null}
+                </span>
+              </NavLink>
+            ) : null}
             <NavLink to={ROUTES.groupEvents(group.id)} className={navLinkClass}>
               Events
             </NavLink>

@@ -73,6 +73,9 @@ const GroupEventFormPage = () => {
     setOneDay,
     setStartDate,
     setEndDate,
+    setStartTime,
+    setEndTime,
+    setTimezone,
     setIsRecurring,
     setRecurrence,
   } = useEventForm();
@@ -229,6 +232,9 @@ const GroupEventFormPage = () => {
             isNew={isNew}
             onStartChange={setStartDate}
             onEndChange={setEndDate}
+            onStartTimeChange={setStartTime}
+            onEndTimeChange={setEndTime}
+            onTimezoneChange={setTimezone}
             onOneDayChange={setOneDay}
             onIsRecurringChange={setIsRecurring}
             onRecurrenceChange={setRecurrence}

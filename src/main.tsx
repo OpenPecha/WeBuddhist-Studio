@@ -35,6 +35,7 @@ import Profile from "./components/routes/profile/Profile.tsx";
 import Tags from "./components/routes/tags/Tags.tsx";
 import TraditionsPage from "./components/routes/traditions/TraditionsPage.tsx";
 import VerseOfDay from "./components/routes/verse-of-day/VerseOfDay.tsx";
+import Poems from "./components/routes/poems/Poems.tsx";
 import Groups from "./components/routes/groups/Groups.tsx";
 import GroupLayout from "./components/routes/groups/GroupLayout.tsx";
 import GroupAboutPage from "./components/routes/groups/GroupAboutPage.tsx";
@@ -42,6 +43,7 @@ import GroupAboutEditPage from "./components/routes/groups/GroupAboutEditPage.ts
 import GroupContentPage from "./components/routes/groups/GroupContentPage.tsx";
 import GroupTransfersPage from "./components/routes/groups/GroupTransfersPage.tsx";
 import GroupMembersPage from "./components/routes/groups/GroupMembersPage.tsx";
+import GroupJoinRequestsPage from "./components/routes/groups/GroupJoinRequestsPage.tsx";
 import GroupEventsPage from "./components/routes/groups/GroupEventsPage.tsx";
 import GroupEventFormPage from "./components/routes/groups/GroupEventFormPage.tsx";
 import GroupEventDetailPage from "./components/routes/groups/GroupEventDetailPage.tsx";
@@ -53,6 +55,7 @@ import GroupPostFormPage from "./components/routes/groups/GroupPostFormPage.tsx"
 import GroupFormPage from "./components/routes/groups/GroupFormPage.tsx";
 import AdminAuthorsPage from "./components/routes/admin-authors/AdminAuthorsPage.tsx";
 import ChinaRestrictionsPage from "./components/routes/china-restrictions/ChinaRestrictionsPage.tsx";
+import ChatReportsPage from "./components/routes/chat-reports/ChatReportsPage.tsx";
 import AccumulatorPresetsPage from "./components/routes/accumulator-presets/AccumulatorPresetsPage.tsx";
 import TextAudioPage from "./components/routes/text-audio/TextAudioPage.tsx";
 import { UserbackProvider } from "./config/userback-context.tsx";
@@ -231,6 +234,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: ROUTES.poems,
+        element: (
+          <ProtectedRoute>
+            <Poems />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: ROUTES.accumulatorPresets,
         element: (
           <ProtectedRoute>
@@ -275,6 +286,7 @@ const router = createBrowserRouter([
           { path: "content", element: <GroupContentPage /> },
           { path: "transfers", element: <GroupTransfersPage /> },
           { path: "members", element: <GroupMembersPage /> },
+          { path: "join-requests", element: <GroupJoinRequestsPage /> },
           { path: "events", element: <GroupEventsPage /> },
           { path: "events/new", element: <GroupEventFormPage /> },
           { path: "events/:eventId", element: <GroupEventDetailPage /> },
@@ -304,6 +316,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ChinaRestrictionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.adminChatReports,
+        element: (
+          <ProtectedRoute>
+            <ChatReportsPage />
           </ProtectedRoute>
         ),
       },

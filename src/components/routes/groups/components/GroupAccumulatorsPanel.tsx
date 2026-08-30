@@ -11,7 +11,7 @@ import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { canChangeContentStatus } from "@/lib/contentPermissions";
 import { isReviewer, shouldShowCmsActionsColumn } from "@/lib/platformAccess";
-import { fromBackendISO, toBackendISO } from "@/lib/utils";
+import { fromBackendMidnightISO, toBackendMidnightISO } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/lib/textUtils";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import type { AuthorGroupMemberRole } from "../api/groupsApi";
@@ -80,7 +80,7 @@ function formStateFromAccumulator(
 function formatAccumulatorDate(value: string | null): string {
   if (!value) return "—";
   try {
-    return format(fromBackendISO(value), "MMM d, yyyy");
+    return format(fromBackendMidnightISO(value), "MMM d, yyyy");
   } catch {
     return value;
   }
@@ -478,14 +478,14 @@ const GroupAccumulatorsPanel = ({
                       mode="single"
                       selected={
                         form.start_date
-                          ? fromBackendISO(form.start_date)
+                          ? fromBackendMidnightISO(form.start_date)
                           : undefined
                       }
                       onSelect={(d) => {
                         setStartDateOpen(false);
                         setForm((prev) => ({
                           ...prev,
-                          start_date: d ? toBackendISO(d) : null,
+                          start_date: d ? toBackendMidnightISO(d) : null,
                         }));
                       }}
                     />
@@ -521,14 +521,14 @@ const GroupAccumulatorsPanel = ({
                       mode="single"
                       selected={
                         form.end_date
-                          ? fromBackendISO(form.end_date)
+                          ? fromBackendMidnightISO(form.end_date)
                           : undefined
                       }
                       onSelect={(d) => {
                         setEndDateOpen(false);
                         setForm((prev) => ({
                           ...prev,
-                          end_date: d ? toBackendISO(d) : null,
+                          end_date: d ? toBackendMidnightISO(d) : null,
                         }));
                       }}
                     />

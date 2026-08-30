@@ -20,12 +20,14 @@ export const ROUTES = {
   tags: "/tags",
   traditions: "/traditions",
   verseOfDay: "/verse-of-day",
+  poems: "/poems",
   groups: "/groups",
   groupNew: "/groups/new",
   group: (groupId: string) => `/groups/${groupId}`,
   groupContent: (groupId: string) => `/groups/${groupId}/content`,
   groupTransfers: (groupId: string) => `/groups/${groupId}/transfers`,
   groupMembers: (groupId: string) => `/groups/${groupId}/members`,
+  groupJoinRequests: (groupId: string) => `/groups/${groupId}/join-requests`,
   groupEvents: (groupId: string) => `/groups/${groupId}/events`,
   groupEventNew: (groupId: string) => `/groups/${groupId}/events/new`,
   groupEvent: (groupId: string, eventId: string) =>
@@ -47,6 +49,7 @@ export const ROUTES = {
   groupSeriesNew: (groupId: string) => `/groups/${groupId}/series/new`,
   adminAuthors: "/admin/authors",
   adminChinaRestrictions: "/admin/china-restrictions",
+  adminChatReports: "/admin/chat-reports",
   accumulatorPresets: "/accumulator-presets",
   textAudio: "/text-audio",
 } as const;

@@ -9,6 +9,7 @@ import {
   IoPulse,
   IoBook,
   IoBookOutline,
+  IoDocumentTextOutline,
   IoChevronBack,
   IoChevronForward,
 } from "react-icons/io5";
@@ -16,6 +17,7 @@ import {
   MdAudioFile,
   MdDashboard,
   MdAdminPanelSettings,
+  MdOutlineReportProblem,
   MdPublicOff,
 } from "react-icons/md";
 import { ROUTES } from "@/routes/paths";
@@ -81,6 +83,12 @@ const navItems = [
     path: ROUTES.verseOfDay,
     tooltip: "Verse of Day",
   },
+  {
+    icon: <IoDocumentTextOutline className="w-4 h-4" />,
+    label: "Poems",
+    path: ROUTES.poems,
+    tooltip: "Poems",
+  },
 ];
 
 const tooltipItems = [
@@ -113,6 +121,7 @@ const SECTION_PATHS: string[] = [
   ROUTES.groups,
   ROUTES.adminAuthors,
   ROUTES.adminChinaRestrictions,
+  ROUTES.adminChatReports,
 ];
 
 const isActivePath = (itemPath: string, currentPath: string) => {
@@ -157,6 +166,12 @@ const Navbar = () => {
             label: "China",
             path: ROUTES.adminChinaRestrictions,
             tooltip: "China content restrictions",
+          },
+          {
+            icon: <MdOutlineReportProblem className="w-4 h-4" />,
+            label: "Chat Reports",
+            path: ROUTES.adminChatReports,
+            tooltip: "Chat moderation reports",
           },
         ]
       : []),

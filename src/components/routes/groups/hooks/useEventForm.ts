@@ -28,8 +28,11 @@ export type UseEventFormReturn = {
   setImageUrl: (url: string) => void;
   setLocationId: (id: string) => void;
   setOneDay: (oneDay: boolean) => void;
-  setStartDate: (iso: string) => void;
-  setEndDate: (iso: string) => void;
+  setStartDate: (dateOnly: string) => void;
+  setEndDate: (dateOnly: string) => void;
+  setStartTime: (hhmm: string | null) => void;
+  setEndTime: (hhmm: string | null) => void;
+  setTimezone: (timezone: string) => void;
   setIsRecurring: (isRecurring: boolean) => void;
   setRecurrence: (recurrence: RecurrenceFormData | null) => void;
 };
@@ -121,13 +124,13 @@ export const useEventForm = (isNew: boolean = true): UseEventFormReturn => {
   );
 
   const setStartDate = useCallback(
-    (iso: string) => {
-      form.setValue("start_date", iso, {
+    (dateOnly: string) => {
+      form.setValue("start_date", dateOnly, {
         shouldDirty: true,
         shouldValidate: true,
       });
       if (form.getValues("is_one_day")) {
-        form.setValue("end_date", iso, {
+        form.setValue("end_date", dateOnly, {
           shouldDirty: true,
           shouldValidate: true,
         });
@@ -137,8 +140,38 @@ export const useEventForm = (isNew: boolean = true): UseEventFormReturn => {
   );
 
   const setEndDate = useCallback(
-    (iso: string) => {
-      form.setValue("end_date", iso, {
+    (dateOnly: string) => {
+      form.setValue("end_date", dateOnly, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [form],
+  );
+
+  const setStartTime = useCallback(
+    (hhmm: string | null) => {
+      form.setValue("start_time", hhmm, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [form],
+  );
+
+  const setEndTime = useCallback(
+    (hhmm: string | null) => {
+      form.setValue("end_time", hhmm, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [form],
+  );
+
+  const setTimezone = useCallback(
+    (timezone: string) => {
+      form.setValue("timezone", timezone, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -207,6 +240,9 @@ export const useEventForm = (isNew: boolean = true): UseEventFormReturn => {
     setOneDay,
     setStartDate,
     setEndDate,
+    setStartTime,
+    setEndTime,
+    setTimezone,
     setIsRecurring,
     setRecurrence,
   };
