@@ -29,7 +29,8 @@ export function useLanguages(options?: {
     gcTime: 60 * 60 * 1000,
   });
 
-  const languageOptions = query.data ?? (recitationOnly ? [] : getLanguageOptions());
+  const languageOptions =
+    query.data ?? (recitationOnly ? [] : getLanguageOptions());
 
   return {
     ...query,
