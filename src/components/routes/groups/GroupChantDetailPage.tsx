@@ -5,7 +5,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -128,7 +128,18 @@ const GroupChantDetailPage = () => {
     [],
   );
   const [recitationLanguage, setRecitationLanguage] = useState("EN");
-  const { languageOptions } = useLanguages();
+  const { languageOptions } = useLanguages({ recitationOnly: true });
+
+  // Default selection may not exist in the recitation-only set (e.g. no
+  // English chants); fall back to the first language that actually has some.
+  useEffect(() => {
+    if (
+      languageOptions.length > 0 &&
+      !languageOptions.some((lang) => lang.value === recitationLanguage)
+    ) {
+      setRecitationLanguage(languageOptions[0].value);
+    }
+  }, [languageOptions, recitationLanguage]);
 
   const recitationSearchFn = useCallback(
     (params: { search?: string; skip?: number; limit?: number }) =>
