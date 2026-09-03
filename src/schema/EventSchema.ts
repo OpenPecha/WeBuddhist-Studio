@@ -34,10 +34,9 @@ export const EVENT_FORMAT_OPTIONS = [
 
 export type EventFormat = (typeof EVENT_FORMAT_OPTIONS)[number]["value"];
 
-const eventFormatValues = EVENT_FORMAT_OPTIONS.map((option) => option.value) as [
-  EventFormat,
-  ...EventFormat[],
-];
+const eventFormatValues = EVENT_FORMAT_OPTIONS.map(
+  (option) => option.value,
+) as [EventFormat, ...EventFormat[]];
 
 export const eventMetadataRowSchema = z.object({
   language: z.string().trim().min(1, "Language is required"),
@@ -172,7 +171,8 @@ const commonValidation = (
     // Single-day occurrences: the same start/end time applies to every one,
     // so it must make sense as a same-day range like the one-time case does.
     if (
-      (data.end_time || DEFAULT_END_TIME) < (data.start_time || DEFAULT_START_TIME)
+      (data.end_time || DEFAULT_END_TIME) <
+      (data.start_time || DEFAULT_START_TIME)
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

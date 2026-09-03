@@ -14,7 +14,9 @@ const recurringForm = () => ({
   start_time: "09:30",
   end_time: "17:00",
   timezone: "UTC",
-  metadata: [{ language: "EN" as const, name: "Monthly Tsok", description: "" }],
+  metadata: [
+    { language: "EN" as const, name: "Monthly Tsok", description: "" },
+  ],
 });
 
 describe("buildCreateEventBody — recurring event time-of-day", () => {
