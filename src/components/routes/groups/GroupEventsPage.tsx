@@ -9,7 +9,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Pagination } from "@/components/ui/molecules/pagination/Pagination";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { fromBackendISO } from "@/lib/utils";
-import { DEFAULT_TIMEZONE } from "@/schema/EventSchema";
+import { DEFAULT_TIMEZONE, eventFormatLabel } from "@/schema/EventSchema";
 import { ROUTES } from "@/routes/paths";
 import { FeaturedStar } from "@/components/routes/dashboard/dashboardTableUi";
 import type { GroupOutletContext } from "./GroupLayout";
@@ -129,6 +129,7 @@ const GroupEventsPage = () => {
     }
     return events.map((event) => {
       const thumbnail = eventThumbnail(event);
+      const formatLabel = eventFormatLabel(event.event_format);
       return (
         <Pecha.TableRow key={event.id}>
           <Pecha.TableCell className="font-medium">
@@ -148,7 +149,16 @@ const GroupEventsPage = () => {
               <span className="min-w-0 truncate">{eventName(event)}</span>
             </Link>
           </Pecha.TableCell>
-          <Pecha.TableCell>{formatEventRange(event)}</Pecha.TableCell>
+          <Pecha.TableCell>
+            <span className="inline-flex flex-wrap items-center gap-1.5">
+              {formatEventRange(event)}
+              {formatLabel ? (
+                <Pecha.Badge variant="secondary" className="text-xs">
+                  {formatLabel}
+                </Pecha.Badge>
+              ) : null}
+            </span>
+          </Pecha.TableCell>
           <Pecha.TableCell>
             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
               <IoPeopleOutline className="h-4 w-4 shrink-0" />

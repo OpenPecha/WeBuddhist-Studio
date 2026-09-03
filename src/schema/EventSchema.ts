@@ -38,6 +38,14 @@ const eventFormatValues = EVENT_FORMAT_OPTIONS.map(
   (option) => option.value,
 ) as [EventFormat, ...EventFormat[]];
 
+export function eventFormatLabel(
+  value: string | null | undefined,
+): string | null {
+  return (
+    EVENT_FORMAT_OPTIONS.find((option) => option.value === value)?.label ?? null
+  );
+}
+
 export const eventMetadataRowSchema = z.object({
   language: z.string().trim().min(1, "Language is required"),
   name: z.string().trim().min(1, "Name is required"),
