@@ -26,6 +26,19 @@ export const RecurrenceDateSystem = {
 export type RecurrenceDateSystem =
   (typeof RecurrenceDateSystem)[keyof typeof RecurrenceDateSystem];
 
+export const EVENT_FORMAT_OPTIONS = [
+  { value: "offline", label: "In person" },
+  { value: "online", label: "Live" },
+  { value: "hybrid", label: "Hybrid" },
+] as const;
+
+export type EventFormat = (typeof EVENT_FORMAT_OPTIONS)[number]["value"];
+
+const eventFormatValues = EVENT_FORMAT_OPTIONS.map((option) => option.value) as [
+  EventFormat,
+  ...EventFormat[],
+];
+
 export const eventMetadataRowSchema = z.object({
   language: z.string().trim().min(1, "Language is required"),
   name: z.string().trim().min(1, "Name is required"),
@@ -117,6 +130,7 @@ const baseEventSchema = z.object({
   accumulator_id: z.string().trim(),
   group_recitation_collection_id: z.string().trim(),
   location_id: z.string().trim(),
+  event_format: z.enum(eventFormatValues).nullable(),
 });
 
 const commonValidation = (
@@ -240,4 +254,5 @@ export const defaultEventFormValues = (): EventFormData => ({
   accumulator_id: "",
   group_recitation_collection_id: "",
   location_id: "",
+  event_format: null,
 });

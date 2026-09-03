@@ -6,6 +6,7 @@ import { fetchChantCollection } from "@/components/routes/groups/api/chantsApi";
 import type { EventLocation } from "@/components/routes/groups/api/locationsApi";
 import type { FkOption } from "@/components/routes/groups/components/FkMultiSearchSelector";
 import type {
+  EventFormat,
   EventFormData,
   EventLinkRow,
   EventMetadataRow,
@@ -82,6 +83,7 @@ export interface EventDTO {
   group_recitation_collection_id?: string;
   location_id?: string;
   location?: EventLocation;
+  event_format?: EventFormat;
   start_date: string;
   end_date: string;
   timezone?: string | null;
@@ -133,6 +135,7 @@ export interface CreateEventRequest {
   accumulator_id?: string;
   group_recitation_collection_id?: string;
   location_id?: string;
+  event_format?: EventFormat;
   recurrence?: RecurrenceInput;
 }
 
@@ -149,6 +152,7 @@ export interface UpdateEventRequest {
   accumulator_id?: string;
   group_recitation_collection_id?: string | null;
   location_id?: string | null;
+  event_format?: EventFormat | null;
   recurrence?: RecurrenceInput;
 }
 
@@ -311,6 +315,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     group_recitation_collection_id:
       event.group_recitation_collection_id?.trim() ?? "",
     location_id: event.location_id?.trim() ?? "",
+    event_format: event.event_format ?? null,
   };
 }
 
@@ -409,6 +414,7 @@ export function buildCreateEventBody(
       ? { group_recitation_collection_id: chantCollectionId }
       : {}),
     ...(locationId ? { location_id: locationId } : {}),
+    ...(data.event_format ? { event_format: data.event_format } : {}),
   };
 
   if (data.is_recurring && data.recurrence) {
@@ -580,6 +586,10 @@ export function buildUpdateEventBody(
   const prevLocation = original.location_id.trim();
   if (nextLocation !== prevLocation) {
     body.location_id = nextLocation || null;
+  }
+
+  if (data.event_format !== original.event_format) {
+    body.event_format = data.event_format;
   }
 
   // Handle recurrence changes
