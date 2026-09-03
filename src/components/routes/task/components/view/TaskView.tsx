@@ -40,9 +40,13 @@ const fetchTaskDetails = async (task_id: string) => {
 const SubtaskContent = ({
   type,
   content,
+  segmentNumbers,
+  segmentRefs,
 }: {
   type: ContentType;
   content: string;
+  segmentNumbers?: number[] | null;
+  segmentRefs?: (string | null)[] | null;
 }) => {
   if (!content) return null;
 
@@ -56,7 +60,13 @@ const SubtaskContent = ({
     case "IMAGE":
       return <ImageContent content={content} />;
     case "SOURCE_REFERENCE":
-      return <SourceReferenceContent content={content} />;
+      return (
+        <SourceReferenceContent
+          content={content}
+          segmentNumbers={segmentNumbers}
+          segmentRefs={segmentRefs}
+        />
+      );
   }
 };
 
@@ -83,6 +93,7 @@ const SourceReferenceWithVersion = ({ subtask }: { subtask: any }) => {
       <SourceReferenceContent
         content={subtask.content}
         segmentNumbers={subtask.segment_numbers}
+        segmentRefs={subtask.segment_refs}
       />
       {preset && (
         <div className="relative mt-2 ml-4">

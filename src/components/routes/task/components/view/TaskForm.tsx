@@ -233,6 +233,7 @@ const TaskForm = ({
               pecha_segment_id: data.pecha_segment_id || null,
               segment_ids: data.segment_ids || null,
               segment_numbers: data.segment_numbers || null,
+              segment_refs: data.segment_refs || null,
               ...timestamps(data),
             };
           default:

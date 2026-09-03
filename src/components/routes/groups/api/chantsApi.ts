@@ -190,6 +190,7 @@ export interface RecitationsSearchResponse {
 
 export const searchRecitations = async (params: {
   search?: string;
+  language?: string;
   skip?: number;
   limit?: number;
 }): Promise<{
@@ -203,7 +204,7 @@ export const searchRecitations = async (params: {
     {
       params: {
         search: params.search,
-        language: "EN",
+        language: params.language ?? "EN",
         skip: params.skip ?? 0,
         limit: params.limit ?? 20,
       },

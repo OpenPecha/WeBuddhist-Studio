@@ -7,6 +7,7 @@ import {
   extractSpotifyId,
 } from "@/lib/utils";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
+import { Badge } from "@/components/ui/atoms/badge";
 type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
 
 export const ContentIcon = ({ type }: { type: ContentType }) => {
@@ -100,21 +101,31 @@ export const TextContent = ({ content }: { content: string }) => (
 export const SourceReferenceContent = ({
   content,
   segmentNumbers,
+  segmentRefs,
 }: {
   content: string;
   segmentNumbers?: number[] | null;
+  segmentRefs?: (string | null)[] | null;
 }) => {
   const segments = content.split("\n").filter(Boolean);
   return (
     <div className="space-y-3">
       {segments.map((text, index) => {
         const label = segmentNumbers?.[index] ?? index + 1;
+        const ref = segmentRefs?.[index];
         return (
           <div
             key={index}
             className="w-full min-h-12 bg-[#FAFAFA] dark:bg-sidebar-secondary whitespace-pre-wrap text-base p-3 border rounded-md border-dashed border-gray-300 dark:border-[#313132]"
           >
-            <span className="font-medium">{label}. </span>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className="font-medium">{label}.</span>
+              {ref && (
+                <Badge variant="outline" className="text-[10px] font-normal">
+                  {ref}
+                </Badge>
+              )}
+            </div>
             <span dangerouslySetInnerHTML={{ __html: text }} />
           </div>
         );

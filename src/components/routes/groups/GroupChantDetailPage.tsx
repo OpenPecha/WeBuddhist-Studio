@@ -5,7 +5,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -28,6 +28,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { Button } from "@/components/ui/atoms/button";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { ROUTES } from "@/routes/paths";
+import { useLanguages } from "@/hooks/useLanguages";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
 import {
@@ -125,6 +126,25 @@ const GroupChantDetailPage = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedRecitations, setSelectedRecitations] = useState<FkOption[]>(
     [],
+  );
+  const [recitationLanguage, setRecitationLanguage] = useState("EN");
+  const { languageOptions } = useLanguages({ recitationOnly: true });
+
+  // Default selection may not exist in the recitation-only set (e.g. no
+  // English chants); fall back to the first language that actually has some.
+  useEffect(() => {
+    if (
+      languageOptions.length > 0 &&
+      !languageOptions.some((lang) => lang.value === recitationLanguage)
+    ) {
+      setRecitationLanguage(languageOptions[0].value);
+    }
+  }, [languageOptions, recitationLanguage]);
+
+  const recitationSearchFn = useCallback(
+    (params: { search?: string; skip?: number; limit?: number }) =>
+      searchRecitations({ ...params, language: recitationLanguage }),
+    [recitationLanguage],
   );
 
   const { data, isLoading, isError, error } = useQuery({
@@ -289,11 +309,37 @@ const GroupChantDetailPage = () => {
         {isEditMode && (
           <div className="rounded-lg border border-blue-900 bg-blue-900/5 p-4 space-y-4">
             <h3 className="text-sm font-bold">Add Recitations</h3>
+            <div className="w-48 space-y-2">
+              <label
+                htmlFor="recitation-language"
+                className="text-sm font-medium"
+              >
+                Language
+              </label>
+              <Pecha.Select
+                value={recitationLanguage}
+                onValueChange={setRecitationLanguage}
+              >
+                <Pecha.SelectTrigger
+                  id="recitation-language"
+                  className="w-full bg-white dark:bg-[#181818]"
+                >
+                  <Pecha.SelectValue placeholder="Language" />
+                </Pecha.SelectTrigger>
+                <Pecha.SelectContent>
+                  {languageOptions.map((lang) => (
+                    <Pecha.SelectItem key={lang.value} value={lang.value}>
+                      {lang.label}
+                    </Pecha.SelectItem>
+                  ))}
+                </Pecha.SelectContent>
+              </Pecha.Select>
+            </div>
             <FkMultiSearchSelector
               value={selectedRecitations}
               onChange={setSelectedRecitations}
-              searchFn={searchRecitations}
-              queryKeyPrefix="recitation-search"
+              searchFn={recitationSearchFn}
+              queryKeyPrefix={`recitation-search-${recitationLanguage}`}
               searchPlaceholder="Search recitations..."
               emptyMessage="No recitations selected — use search to add."
               hideLabel
