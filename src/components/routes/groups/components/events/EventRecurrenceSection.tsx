@@ -169,7 +169,7 @@ const EventRecurrenceSection = ({
         ) : null}
 
         <div className="space-y-1">
-          <label className="text-sm font-medium">Day</label>
+          <label className="text-sm font-medium">Start date</label>
           <Pecha.Input
             type="number"
             min={1}

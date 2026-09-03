@@ -154,6 +154,18 @@ const commonValidation = (
         path: ["end_time"],
       });
     }
+  } else if (data.recurrence && data.recurrence.duration_days === 1) {
+    // Single-day occurrences: the same start/end time applies to every one,
+    // so it must make sense as a same-day range like the one-time case does.
+    if (
+      (data.end_time || DEFAULT_END_TIME) < (data.start_time || DEFAULT_START_TIME)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End time must be on or after the start time",
+        path: ["end_time"],
+      });
+    }
   }
 
   const seen = new Set<string>();
