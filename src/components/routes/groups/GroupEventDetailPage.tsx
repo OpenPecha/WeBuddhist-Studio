@@ -14,7 +14,7 @@ import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownPreview } from "@/components/ui/molecules/markdown-editor/MarkdownPreview";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { cn, fromBackendISO } from "@/lib/utils";
-import { DEFAULT_TIMEZONE } from "@/schema/EventSchema";
+import { DEFAULT_TIMEZONE, eventFormatLabel } from "@/schema/EventSchema";
 import { getLanguageLabel } from "@/components/api/languagesApi";
 import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
@@ -190,6 +190,8 @@ const GroupEventDetailPage = () => {
     .filter((link) => isSafeLinkUrl(link.url))
     .sort((a, b) => a.display_order - b.display_order);
 
+  const formatLabel = eventFormatLabel(data.event_format);
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
@@ -241,6 +243,11 @@ const GroupEventDetailPage = () => {
             {data.is_one_day ? (
               <Pecha.Badge variant="secondary" className="ml-1">
                 One-day event
+              </Pecha.Badge>
+            ) : null}
+            {formatLabel ? (
+              <Pecha.Badge variant="secondary" className="ml-1">
+                {formatLabel}
               </Pecha.Badge>
             ) : null}
           </div>

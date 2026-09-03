@@ -26,6 +26,26 @@ export const RecurrenceDateSystem = {
 export type RecurrenceDateSystem =
   (typeof RecurrenceDateSystem)[keyof typeof RecurrenceDateSystem];
 
+export const EVENT_FORMAT_OPTIONS = [
+  { value: "offline", label: "In person" },
+  { value: "online", label: "Live" },
+  { value: "hybrid", label: "Hybrid" },
+] as const;
+
+export type EventFormat = (typeof EVENT_FORMAT_OPTIONS)[number]["value"];
+
+const eventFormatValues = EVENT_FORMAT_OPTIONS.map(
+  (option) => option.value,
+) as [EventFormat, ...EventFormat[]];
+
+export function eventFormatLabel(
+  value: string | null | undefined,
+): string | null {
+  return (
+    EVENT_FORMAT_OPTIONS.find((option) => option.value === value)?.label ?? null
+  );
+}
+
 export const eventMetadataRowSchema = z.object({
   language: z.string().trim().min(1, "Language is required"),
   name: z.string().trim().min(1, "Name is required"),
@@ -117,6 +137,7 @@ const baseEventSchema = z.object({
   accumulator_id: z.string().trim(),
   group_recitation_collection_id: z.string().trim(),
   location_id: z.string().trim(),
+  event_format: z.enum(eventFormatValues).nullable(),
 });
 
 const commonValidation = (
@@ -151,6 +172,19 @@ const commonValidation = (
         code: z.ZodIssueCode.custom,
         message:
           "End date and time must be on or after the start date and time",
+        path: ["end_time"],
+      });
+    }
+  } else if (data.recurrence && data.recurrence.duration_days === 1) {
+    // Single-day occurrences: the same start/end time applies to every one,
+    // so it must make sense as a same-day range like the one-time case does.
+    if (
+      (data.end_time || DEFAULT_END_TIME) <
+      (data.start_time || DEFAULT_START_TIME)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End time must be on or after the start time",
         path: ["end_time"],
       });
     }
@@ -228,4 +262,5 @@ export const defaultEventFormValues = (): EventFormData => ({
   accumulator_id: "",
   group_recitation_collection_id: "",
   location_id: "",
+  event_format: null,
 });

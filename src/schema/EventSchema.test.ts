@@ -3,6 +3,7 @@ import {
   DEFAULT_TIMEZONE,
   defaultEventFormValues,
   emptyMetadataRow,
+  eventFormatLabel,
   eventSchema,
   eventEditSchema,
   type EventFormData,
@@ -23,6 +24,20 @@ function baseValidData(overrides: Partial<EventFormData> = {}): EventFormData {
     ...overrides,
   };
 }
+
+describe("eventFormatLabel", () => {
+  it("maps each backend value to its display label", () => {
+    expect(eventFormatLabel("offline")).toBe("In person");
+    expect(eventFormatLabel("online")).toBe("Live");
+    expect(eventFormatLabel("hybrid")).toBe("Hybrid");
+  });
+
+  it("returns null for an unset or unrecognized value", () => {
+    expect(eventFormatLabel(null)).toBeNull();
+    expect(eventFormatLabel(undefined)).toBeNull();
+    expect(eventFormatLabel("something-else")).toBeNull();
+  });
+});
 
 describe("defaultEventFormValues", () => {
   it("defaults start_time/end_time to null and timezone to Asia/Kolkata", () => {

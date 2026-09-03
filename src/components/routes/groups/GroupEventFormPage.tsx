@@ -28,6 +28,7 @@ import EventDateSection from "./components/events/EventDateSection";
 import EventLinksSection from "./components/events/EventLinksSection";
 import EventUrlLinksSection from "./components/events/EventUrlLinksSection";
 import EventImageField from "./components/events/EventImageField";
+import EventFormatField from "./components/events/EventFormatField";
 import LocationPicker from "./components/locations/LocationPicker";
 import type { EventLocation } from "./api/locationsApi";
 import type { EventFormData } from "@/schema/EventSchema";
@@ -250,16 +251,20 @@ const GroupEventFormPage = () => {
             onRemove={removeMetadataRow}
           />
 
-          <LocationPicker
-            groupId={groupId ?? ""}
-            value={locationValue}
-            readOnly={readOnly}
-            canCreate={canWrite}
-            onChange={(location) => {
-              setLocationValue(location);
-              setLocationId(location?.id ?? "");
-            }}
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <LocationPicker
+              groupId={groupId ?? ""}
+              value={locationValue}
+              readOnly={readOnly}
+              canCreate={canWrite}
+              onChange={(location) => {
+                setLocationValue(location);
+                setLocationId(location?.id ?? "");
+              }}
+            />
+
+            <EventFormatField form={form} readOnly={readOnly} />
+          </div>
 
           <EventLinksSection
             form={form}

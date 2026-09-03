@@ -6,6 +6,7 @@ import { fetchChantCollection } from "@/components/routes/groups/api/chantsApi";
 import type { EventLocation } from "@/components/routes/groups/api/locationsApi";
 import type { FkOption } from "@/components/routes/groups/components/FkMultiSearchSelector";
 import type {
+  EventFormat,
   EventFormData,
   EventLinkRow,
   EventMetadataRow,
@@ -82,6 +83,7 @@ export interface EventDTO {
   group_recitation_collection_id?: string;
   location_id?: string;
   location?: EventLocation;
+  event_format?: EventFormat;
   start_date: string;
   end_date: string;
   timezone?: string | null;
@@ -133,6 +135,7 @@ export interface CreateEventRequest {
   accumulator_id?: string;
   group_recitation_collection_id?: string;
   location_id?: string;
+  event_format?: EventFormat;
   recurrence?: RecurrenceInput;
 }
 
@@ -149,6 +152,7 @@ export interface UpdateEventRequest {
   accumulator_id?: string;
   group_recitation_collection_id?: string | null;
   location_id?: string | null;
+  event_format?: EventFormat | null;
   recurrence?: RecurrenceInput;
 }
 
@@ -311,6 +315,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     group_recitation_collection_id:
       event.group_recitation_collection_id?.trim() ?? "",
     location_id: event.location_id?.trim() ?? "",
+    event_format: event.event_format ?? null,
   };
 }
 
@@ -356,6 +361,21 @@ function composeBackendDate(
   return toBackendISO(dateOnlyToDate(dateOnly), hhmm || fallbackHhmm, timezone);
 }
 
+/**
+ * For a recurring event, the calendar date comes from the recurrence rule
+ * (day/month), not from a picker — only the time-of-day is meaningful here.
+ * The backend derives the actual occurrence dates and keeps just the time
+ * component off this value, so any anchor date works; "now" is used since
+ * there's nothing more meaningful to pick.
+ */
+function composeRecurrenceTimeAnchor(
+  hhmm: string | null | undefined,
+  fallbackHhmm: string,
+  timezone: string,
+): string {
+  return toBackendISO(new Date(), hhmm || fallbackHhmm, timezone);
+}
+
 function buildRecurrenceInput(recurrence: RecurrenceFormData): RecurrenceInput {
   const calendarType = recurrence.calendar_type.trim();
   return {
@@ -394,10 +414,21 @@ export function buildCreateEventBody(
       ? { group_recitation_collection_id: chantCollectionId }
       : {}),
     ...(locationId ? { location_id: locationId } : {}),
+    ...(data.event_format ? { event_format: data.event_format } : {}),
   };
 
   if (data.is_recurring && data.recurrence) {
     body.recurrence = buildRecurrenceInput(data.recurrence);
+    body.start_date = composeRecurrenceTimeAnchor(
+      data.start_time,
+      DEFAULT_START_TIME,
+      timezone,
+    );
+    body.end_date = composeRecurrenceTimeAnchor(
+      data.end_time,
+      DEFAULT_END_TIME,
+      timezone,
+    );
   } else {
     body.start_date = composeBackendDate(
       data.start_date,
@@ -557,10 +588,29 @@ export function buildUpdateEventBody(
     body.location_id = nextLocation || null;
   }
 
+  if (data.event_format !== original.event_format) {
+    body.event_format = data.event_format;
+  }
+
   // Handle recurrence changes
+  const recurrenceTimeChanged =
+    data.start_time !== original.start_time ||
+    data.end_time !== original.end_time ||
+    timezone !== originalTimezone;
+
   if (data.is_recurring !== original.is_recurring) {
     if (data.is_recurring && data.recurrence) {
       body.recurrence = buildRecurrenceInput(data.recurrence);
+      body.start_date = composeRecurrenceTimeAnchor(
+        data.start_time,
+        DEFAULT_START_TIME,
+        timezone,
+      );
+      body.end_date = composeRecurrenceTimeAnchor(
+        data.end_time,
+        DEFAULT_END_TIME,
+        timezone,
+      );
     } else {
       body.start_date = composeBackendDate(
         data.start_date,
@@ -576,16 +626,34 @@ export function buildUpdateEventBody(
       );
     }
   } else if (data.is_recurring && data.recurrence && original.recurrence) {
-    // Check if recurrence fields changed
-    if (
+    // Check if the recurrence rule itself changed
+    const recurrenceRuleChanged =
       data.recurrence.frequency !== original.recurrence.frequency ||
       data.recurrence.date_system !== original.recurrence.date_system ||
       data.recurrence.calendar_type !== original.recurrence.calendar_type ||
       data.recurrence.month !== original.recurrence.month ||
       data.recurrence.day !== original.recurrence.day ||
-      data.recurrence.duration_days !== original.recurrence.duration_days
-    ) {
+      data.recurrence.duration_days !== original.recurrence.duration_days;
+
+    if (recurrenceRuleChanged) {
       body.recurrence = buildRecurrenceInput(data.recurrence);
+    }
+
+    // The recurrence rule only pins the calendar day; the start/end time of
+    // day rides along on start_date/end_date, so send them whenever the
+    // time (or the zone it's interpreted in) changed, even if the rule
+    // itself did not.
+    if (recurrenceTimeChanged) {
+      body.start_date = composeRecurrenceTimeAnchor(
+        data.start_time,
+        DEFAULT_START_TIME,
+        timezone,
+      );
+      body.end_date = composeRecurrenceTimeAnchor(
+        data.end_time,
+        DEFAULT_END_TIME,
+        timezone,
+      );
     }
   }
 
