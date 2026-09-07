@@ -1,5 +1,9 @@
 import axiosInstance from "@/config/axios-config";
 
+/** `id` here is an edition id, not a text id: the title-search endpoint
+ * resolves each matching text to its first critical edition server-side
+ * before returning it, so this can be passed directly to edition-scoped
+ * endpoints (e.g. recordings) without a further text->edition lookup. */
 export interface TextSearchResult {
   id: string;
   title: string;

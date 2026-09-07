@@ -416,9 +416,7 @@ export function buildCreateEventBody(
     ...(planId ? { plan_id: planId } : {}),
     ...(seriesId ? { series_id: seriesId } : {}),
     ...(accumulatorId ? { accumulator_id: accumulatorId } : {}),
-    ...(groupAccumulatorId
-      ? { group_accumulator_id: groupAccumulatorId }
-      : {}),
+    ...(groupAccumulatorId ? { group_accumulator_id: groupAccumulatorId } : {}),
     ...(chantCollectionId
       ? { group_recitation_collection_id: chantCollectionId }
       : {}),
