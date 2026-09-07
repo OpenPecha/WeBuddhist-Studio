@@ -137,7 +137,7 @@ const baseEventSchema = z.object({
   accumulator_id: z.string().trim(),
   group_recitation_collection_id: z.string().trim(),
   location_id: z.string().trim(),
-  event_format: z.enum(eventFormatValues).nullable(),
+  event_format: z.enum(eventFormatValues),
 });
 
 const commonValidation = (
@@ -262,5 +262,5 @@ export const defaultEventFormValues = (): EventFormData => ({
   accumulator_id: "",
   group_recitation_collection_id: "",
   location_id: "",
-  event_format: null,
+  event_format: "hybrid",
 });

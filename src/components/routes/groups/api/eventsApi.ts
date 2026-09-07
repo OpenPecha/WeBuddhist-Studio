@@ -83,7 +83,7 @@ export interface EventDTO {
   group_recitation_collection_id?: string;
   location_id?: string;
   location?: EventLocation;
-  event_format?: EventFormat;
+  event_format: EventFormat;
   start_date: string;
   end_date: string;
   timezone?: string | null;
@@ -152,7 +152,7 @@ export interface UpdateEventRequest {
   accumulator_id?: string;
   group_recitation_collection_id?: string | null;
   location_id?: string | null;
-  event_format?: EventFormat | null;
+  event_format?: EventFormat;
   recurrence?: RecurrenceInput;
 }
 
@@ -315,7 +315,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     group_recitation_collection_id:
       event.group_recitation_collection_id?.trim() ?? "",
     location_id: event.location_id?.trim() ?? "",
-    event_format: event.event_format ?? null,
+    event_format: event.event_format,
   };
 }
 
@@ -414,7 +414,7 @@ export function buildCreateEventBody(
       ? { group_recitation_collection_id: chantCollectionId }
       : {}),
     ...(locationId ? { location_id: locationId } : {}),
-    ...(data.event_format ? { event_format: data.event_format } : {}),
+    event_format: data.event_format,
   };
 
   if (data.is_recurring && data.recurrence) {

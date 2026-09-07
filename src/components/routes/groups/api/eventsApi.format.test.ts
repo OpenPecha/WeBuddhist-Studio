@@ -20,17 +20,17 @@ const baseForm = () => ({
 });
 
 describe("buildCreateEventBody — event_format", () => {
-  it("includes event_format when one is picked", () => {
-    const body = buildCreateEventBody(
-      { ...baseForm(), event_format: "hybrid" },
-      "group-1",
-    );
+  it("defaults to hybrid when not changed by the user", () => {
+    const body = buildCreateEventBody(baseForm(), "group-1");
     expect(body.event_format).toBe("hybrid");
   });
 
-  it("omits event_format entirely when not specified", () => {
-    const body = buildCreateEventBody(baseForm(), "group-1");
-    expect("event_format" in body).toBe(false);
+  it("includes the picked value", () => {
+    const body = buildCreateEventBody(
+      { ...baseForm(), event_format: "online" },
+      "group-1",
+    );
+    expect(body.event_format).toBe("online");
   });
 });
 
@@ -49,15 +49,6 @@ describe("buildUpdateEventBody — event_format", () => {
     );
     expect(body.event_format).toBe("offline");
   });
-
-  it("sends null when cleared back to not specified", () => {
-    const original = { ...baseForm(), event_format: "hybrid" as const };
-    const body = buildUpdateEventBody(
-      { ...original, event_format: null },
-      original,
-    );
-    expect(body.event_format).toBeNull();
-  });
 });
 
 describe("mapEventToFormData — event_format", () => {
@@ -68,17 +59,18 @@ describe("mapEventToFormData — event_format", () => {
     end_date: "2026-01-01",
     is_one_day: true,
     featured: false,
+    event_format: "hybrid",
     metadata: [{ id: "m1", name: "Teaching", language: "EN" }],
     created_at: "2026-01-01",
     created_by: "u1",
   } satisfies EventDTO;
 
-  it("reads event_format when the event has one", () => {
+  it("reads event_format from the event", () => {
     const form = mapEventToFormData({ ...event, event_format: "online" });
     expect(form.event_format).toBe("online");
   });
 
-  it("falls back to null when the field is absent", () => {
-    expect(mapEventToFormData(event).event_format).toBeNull();
+  it("reads the default hybrid value", () => {
+    expect(mapEventToFormData(event).event_format).toBe("hybrid");
   });
 });

@@ -2,8 +2,6 @@ import type { UseFormReturn } from "react-hook-form";
 import { Pecha } from "@/components/ui/shadimport";
 import { EVENT_FORMAT_OPTIONS, type EventFormData } from "@/schema/EventSchema";
 
-const NONE_VALUE = "__none__";
-
 type EventFormatFieldProps = {
   form: UseFormReturn<EventFormData>;
   readOnly: boolean;
@@ -20,10 +18,8 @@ const EventFormatField = ({ form, readOnly }: EventFormatFieldProps) => {
             Format
           </Pecha.FormLabel>
           <Pecha.Select
-            value={field.value ?? NONE_VALUE}
-            onValueChange={(value) =>
-              field.onChange(value === NONE_VALUE ? null : value)
-            }
+            value={field.value}
+            onValueChange={field.onChange}
             disabled={readOnly}
           >
             <Pecha.FormControl>
@@ -32,9 +28,6 @@ const EventFormatField = ({ form, readOnly }: EventFormatFieldProps) => {
               </Pecha.SelectTrigger>
             </Pecha.FormControl>
             <Pecha.SelectContent>
-              <Pecha.SelectItem value={NONE_VALUE}>
-                Not specified
-              </Pecha.SelectItem>
               {EVENT_FORMAT_OPTIONS.map((option) => (
                 <Pecha.SelectItem key={option.value} value={option.value}>
                   {option.label}
