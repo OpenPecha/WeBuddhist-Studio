@@ -21,8 +21,12 @@ import { formatMs, getAudioDurationMs } from "@/lib/utils";
 import {
   deleteRecording,
   fetchEditionRecordings,
+  personLabel,
   renameRecording,
+  searchPersons,
   searchTexts,
+  type ContributorRole,
+  type Person,
   type Recording,
   type TextSearchResult,
   uploadRecording,
@@ -30,6 +34,14 @@ import {
 
 const recordingLabel = (recording: Recording) =>
   recording.title?.en ?? `Recording (${recording.format})`;
+
+const CONTRIBUTOR_ROLES: ContributorRole[] = [
+  "narrator",
+  "translator",
+  "author",
+  "reviser",
+  "scholar",
+];
 
 const TextAudioPage = () => {
   const queryClient = useQueryClient();
@@ -47,10 +59,25 @@ const TextAudioPage = () => {
     null,
   );
   const [editingName, setEditingName] = useState("");
+  const [contributorQuery, setContributorQuery] = useState("");
+  const [debouncedContributorQuery] = useDebounce(contributorQuery.trim(), 400);
+  const [isContributorOpen, setIsContributorOpen] = useState(false);
+  const [selectedContributor, setSelectedContributor] = useState<Person | null>(
+    null,
+  );
+  const [contributorRole, setContributorRole] =
+    useState<ContributorRole>("narrator");
 
   const textsQuery = useQuery({
     queryKey: ["text-audio-texts", debouncedSearch],
     queryFn: () => searchTexts(debouncedSearch),
+    retry: false,
+  });
+
+  const personsQuery = useQuery({
+    queryKey: ["text-audio-persons", debouncedContributorQuery],
+    queryFn: () => searchPersons(debouncedContributorQuery),
+    enabled: isContributorOpen,
     retry: false,
   });
 
@@ -76,9 +103,13 @@ const TextAudioPage = () => {
     mutationFn: async ({
       text,
       file,
+      contributor,
+      role,
     }: {
       text: TextSearchResult;
       file: File;
+      contributor: Person;
+      role: ContributorRole;
     }) => {
       // The browser can't decode every valid audio codec (e.g. ALAC m4a
       // from iOS/Mac Voice Memos), and the upload shouldn't be blocked by a
@@ -88,6 +119,12 @@ const TextAudioPage = () => {
         edition: text,
         file,
         durationMs,
+        contribution: {
+          type: "person",
+          id: contributor.id,
+          bdrc_id: contributor.bdrc_id,
+          role,
+        },
         onProgress: setUploadProgress,
       });
     },
@@ -279,8 +316,7 @@ const TextAudioPage = () => {
                               setEditingName(event.target.value)
                             }
                             onKeyDown={(event) => {
-                              if (event.key === "Enter")
-                                saveRename(recording);
+                              if (event.key === "Enter") saveRename(recording);
                               if (event.key === "Escape") cancelRename();
                             }}
                             className="h-8"
@@ -395,33 +431,127 @@ const TextAudioPage = () => {
                 ) : null}
 
                 {pendingFile ? (
-                  <div className="flex gap-2">
-                    <Pecha.Button
-                      type="button"
-                      className="bg-[#A51C21] hover:bg-[#A51C21]/90"
-                      disabled={isUploading}
-                      onClick={() =>
-                        uploadMutation.mutate({
-                          text: selectedText,
-                          file: pendingFile,
-                        })
-                      }
-                    >
-                      {isUploading ? (
-                        <FiLoader className="animate-spin" />
-                      ) : (
-                        <FiUpload />
-                      )}
-                      Upload audio
-                    </Pecha.Button>
-                    <Pecha.Button
-                      type="button"
-                      variant="outline"
-                      disabled={isUploading}
-                      onClick={() => setPendingFile(null)}
-                    >
-                      Cancel
-                    </Pecha.Button>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <div className="min-w-52 flex-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Contributor
+                        </label>
+                        <Pecha.Popover
+                          open={isContributorOpen}
+                          onOpenChange={setIsContributorOpen}
+                        >
+                          <Pecha.PopoverTrigger asChild>
+                            <Pecha.Button
+                              type="button"
+                              variant="outline"
+                              className="mt-1 w-full justify-start font-normal"
+                              disabled={isUploading}
+                            >
+                              {selectedContributor
+                                ? personLabel(selectedContributor)
+                                : "Search a person…"}
+                            </Pecha.Button>
+                          </Pecha.PopoverTrigger>
+                          <Pecha.PopoverContent
+                            className="w-[--radix-popover-trigger-width] p-0"
+                            align="start"
+                          >
+                            <Pecha.Command shouldFilter={false}>
+                              <Pecha.CommandInput
+                                placeholder="Search persons…"
+                                value={contributorQuery}
+                                onValueChange={setContributorQuery}
+                              />
+                              <Pecha.CommandList>
+                                {personsQuery.isFetching ? (
+                                  <p className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+                                    <FiLoader className="animate-spin" />{" "}
+                                    Loading…
+                                  </p>
+                                ) : (
+                                  <Pecha.CommandGroup>
+                                    {(personsQuery.data ?? []).map((person) => (
+                                      <Pecha.CommandItem
+                                        key={person.id}
+                                        value={person.id}
+                                        onSelect={() => {
+                                          setSelectedContributor(person);
+                                          setIsContributorOpen(false);
+                                        }}
+                                      >
+                                        {personLabel(person)}
+                                      </Pecha.CommandItem>
+                                    ))}
+                                  </Pecha.CommandGroup>
+                                )}
+                                {!personsQuery.isFetching &&
+                                  personsQuery.data?.length === 0 && (
+                                    <Pecha.CommandEmpty>
+                                      No persons found.
+                                    </Pecha.CommandEmpty>
+                                  )}
+                              </Pecha.CommandList>
+                            </Pecha.Command>
+                          </Pecha.PopoverContent>
+                        </Pecha.Popover>
+                      </div>
+                      <div className="w-40">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Role
+                        </label>
+                        <Pecha.Select
+                          value={contributorRole}
+                          onValueChange={(value) =>
+                            setContributorRole(value as ContributorRole)
+                          }
+                          disabled={isUploading}
+                        >
+                          <Pecha.SelectTrigger className="mt-1">
+                            <Pecha.SelectValue />
+                          </Pecha.SelectTrigger>
+                          <Pecha.SelectContent>
+                            {CONTRIBUTOR_ROLES.map((role) => (
+                              <Pecha.SelectItem key={role} value={role}>
+                                {role}
+                              </Pecha.SelectItem>
+                            ))}
+                          </Pecha.SelectContent>
+                        </Pecha.Select>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Pecha.Button
+                        type="button"
+                        className="bg-[#A51C21] hover:bg-[#A51C21]/90"
+                        disabled={isUploading || !selectedContributor}
+                        onClick={() =>
+                          selectedContributor &&
+                          uploadMutation.mutate({
+                            text: selectedText,
+                            file: pendingFile,
+                            contributor: selectedContributor,
+                            role: contributorRole,
+                          })
+                        }
+                      >
+                        {isUploading ? (
+                          <FiLoader className="animate-spin" />
+                        ) : (
+                          <FiUpload />
+                        )}
+                        Upload audio
+                      </Pecha.Button>
+                      <Pecha.Button
+                        type="button"
+                        variant="outline"
+                        disabled={isUploading}
+                        onClick={() => setPendingFile(null)}
+                      >
+                        Cancel
+                      </Pecha.Button>
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -440,9 +570,8 @@ const TextAudioPage = () => {
           <Pecha.AlertDialogHeader>
             <Pecha.AlertDialogTitle>Delete this audio?</Pecha.AlertDialogTitle>
             <Pecha.AlertDialogDescription>
-              “
-              {recordingToDelete ? recordingLabel(recordingToDelete) : ""}
-              ” will be permanently deleted.
+              “{recordingToDelete ? recordingLabel(recordingToDelete) : ""}”
+              will be permanently deleted.
             </Pecha.AlertDialogDescription>
           </Pecha.AlertDialogHeader>
           <Pecha.AlertDialogFooter>

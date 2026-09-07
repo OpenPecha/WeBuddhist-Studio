@@ -20,6 +20,17 @@ export interface RecordingContribution {
   name?: Record<string, string> | null;
 }
 
+export interface Person {
+  id: string;
+  bdrc_id?: string | null;
+  wiki?: string | null;
+  name: Record<string, string>;
+  alt_names?: Record<string, string>[] | null;
+}
+
+export const personLabel = (person: Person) =>
+  person.name?.en ?? Object.values(person.name)[0] ?? person.id;
+
 export interface Recording {
   id: string;
   edition_id: string;
@@ -51,6 +62,15 @@ export const searchTexts = async (title: string) => {
   return data;
 };
 
+/** Search persons by name, or list a default page when blank - same pattern
+ * as searchTexts, so the contributor picker has something to show upfront. */
+export const searchPersons = async (name: string) => {
+  const { data } = await axiosInstance.get<Person[]>("/api/v1/cms/persons", {
+    params: { name: name || undefined, limit: 20, offset: 0 },
+  });
+  return data;
+};
+
 export const fetchEditionRecordings = async (editionId: string) => {
   const { data } = await axiosInstance.get<Recording[]>(
     recordingsPath(editionId),
@@ -62,19 +82,18 @@ export const uploadRecording = async ({
   edition,
   file,
   durationMs,
+  contribution,
   onProgress,
 }: {
   edition: TextSearchResult;
   file: File;
   durationMs?: number;
+  contribution: RecordingContribution;
   onProgress: (progress: number) => void;
 }) => {
-  // Attribution isn't captured from the CMS user yet, so every upload is
-  // credited to an unspecified narrator; a contributor picker can fill this
-  // in - and existing recordings can always be corrected via PATCH - later.
   const metadata = {
     duration_ms: durationMs,
-    contributions: [{ type: "person", role: "narrator" }],
+    contributions: [contribution],
   };
   const body = new FormData();
   body.append("metadata", JSON.stringify(metadata));
