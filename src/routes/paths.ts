@@ -1,7 +1,6 @@
 export const ROUTES = {
   home: "/",
   login: "/login",
-  adminLogin: "/admin/login",
   signup: "/signup",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
@@ -56,7 +55,6 @@ export const ROUTES = {
 
 export const AUTH_ROUTE_PATHS: readonly string[] = [
   ROUTES.login,
-  ROUTES.adminLogin,
   ROUTES.signup,
   ROUTES.forgotPassword,
   ROUTES.resetPassword,
