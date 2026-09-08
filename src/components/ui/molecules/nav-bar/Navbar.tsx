@@ -32,7 +32,7 @@ import {
 } from "../../atoms/tooltip";
 import AuthAvatar from "@/components/ui/molecules/auth-avatar/AuthAvatar";
 import { useUserInfo } from "@/hooks/useUserInfo";
-import { canAccessAdminAuthors, isAdminLoginRole } from "@/lib/platformAccess";
+import { canAccessAdminAuthors, isStaffRole } from "@/lib/platformAccess";
 
 const navItems = [
   {
@@ -145,7 +145,7 @@ const Navbar = () => {
   const showAdminAuthors = canAccessAdminAuthors(userInfo?.platform_role);
   /** Plain CREATOR accounts only manage their author groups — no other CMS pages. */
   const isGroupsOnly =
-    !isUserInfoLoading && !isAdminLoginRole(userInfo?.platform_role);
+    !isUserInfoLoading && !isStaffRole(userInfo?.platform_role);
 
   const visibleNavItems = isGroupsOnly
     ? navItems.filter((item) => item.path === ROUTES.groups)
