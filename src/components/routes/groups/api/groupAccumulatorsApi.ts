@@ -53,7 +53,7 @@ export function resolveGroupAccumulatorImageUrl(
 
 export const fetchGroupAccumulators = async (
   groupId: string,
-  params?: { skip?: number; limit?: number },
+  params?: { skip?: number; limit?: number; search?: string },
 ): Promise<GroupAccumulatorsResponse> => {
   const { data } = await axiosInstance.get<GroupAccumulatorsResponse>(
     `/api/v1/cms/groups/${groupId}/accumulators`,
@@ -62,11 +62,34 @@ export const fetchGroupAccumulators = async (
       params: {
         skip: params?.skip ?? 0,
         limit: params?.limit ?? 100,
+        ...(params?.search?.trim() && { search: params.search.trim() }),
       },
     },
   );
   return data;
 };
+
+export const makeGroupAccumulatorSearchFn =
+  (groupId: string) =>
+  async (params: { search?: string; skip?: number; limit?: number }) => {
+    const skip = params.skip ?? 0;
+    const limit = params.limit ?? 20;
+    const data = await fetchGroupAccumulators(groupId, {
+      skip,
+      limit,
+      search: params.search,
+    });
+    return {
+      items: data.accumulators.map((accumulator) => ({
+        id: accumulator.id,
+        title: accumulator.title?.trim() || "Untitled accumulator",
+        image_url: resolveGroupAccumulatorImageUrl(accumulator) ?? undefined,
+      })),
+      skip: data.skip,
+      limit: data.limit,
+      total: data.total,
+    };
+  };
 
 export const createGroupAccumulator = async (
   groupId: string,

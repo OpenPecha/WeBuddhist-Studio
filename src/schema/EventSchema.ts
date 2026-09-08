@@ -135,6 +135,7 @@ const baseEventSchema = z.object({
   plan_id: z.string().trim(),
   series_id: z.string().trim(),
   accumulator_id: z.string().trim(),
+  group_accumulator_id: z.string().trim(),
   group_recitation_collection_id: z.string().trim(),
   location_id: z.string().trim(),
   event_format: z.enum(eventFormatValues),
@@ -260,7 +261,8 @@ export const defaultEventFormValues = (): EventFormData => ({
   plan_id: "",
   series_id: "",
   accumulator_id: "",
+  group_accumulator_id: "",
   group_recitation_collection_id: "",
   location_id: "",
-  event_format: "hybrid",
+  event_format: "offline",
 });

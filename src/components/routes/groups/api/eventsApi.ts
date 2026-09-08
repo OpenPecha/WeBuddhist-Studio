@@ -2,6 +2,7 @@ import axiosInstance from "@/config/axios-config";
 import { uploadImageToS3 } from "@/components/routes/task/api/taskApi";
 import { makeLinkedContentSearchFn } from "@/components/routes/groups/api/groupPickerApi";
 import { searchAccumulatorPresets } from "@/components/routes/groups/api/accumulatorPresetSearchApi";
+import { makeGroupAccumulatorSearchFn } from "@/components/routes/groups/api/groupAccumulatorsApi";
 import { fetchChantCollection } from "@/components/routes/groups/api/chantsApi";
 import type { EventLocation } from "@/components/routes/groups/api/locationsApi";
 import type { FkOption } from "@/components/routes/groups/components/FkMultiSearchSelector";
@@ -80,6 +81,7 @@ export interface EventDTO {
   plan_id?: string;
   series_id?: string;
   accumulator_id?: string;
+  group_accumulator_id?: string;
   group_recitation_collection_id?: string;
   location_id?: string;
   location?: EventLocation;
@@ -133,6 +135,7 @@ export interface CreateEventRequest {
   plan_id?: string;
   series_id?: string;
   accumulator_id?: string;
+  group_accumulator_id?: string;
   group_recitation_collection_id?: string;
   location_id?: string;
   event_format?: EventFormat;
@@ -147,9 +150,10 @@ export interface UpdateEventRequest {
   metadata?: EventMetadataInput[];
   links?: EventLinkInput[];
   image_url?: string;
-  plan_id?: string;
-  series_id?: string;
-  accumulator_id?: string;
+  plan_id?: string | null;
+  series_id?: string | null;
+  accumulator_id?: string | null;
+  group_accumulator_id?: string | null;
   group_recitation_collection_id?: string | null;
   location_id?: string | null;
   event_format?: EventFormat;
@@ -312,6 +316,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     plan_id: event.plan_id?.trim() ?? "",
     series_id: event.series_id?.trim() ?? "",
     accumulator_id: event.accumulator_id?.trim() ?? "",
+    group_accumulator_id: event.group_accumulator_id?.trim() ?? "",
     group_recitation_collection_id:
       event.group_recitation_collection_id?.trim() ?? "",
     location_id: event.location_id?.trim() ?? "",
@@ -396,6 +401,7 @@ export function buildCreateEventBody(
   const planId = data.plan_id.trim();
   const seriesId = data.series_id.trim();
   const accumulatorId = data.accumulator_id.trim();
+  const groupAccumulatorId = data.group_accumulator_id.trim();
   const chantCollectionId = data.group_recitation_collection_id.trim();
   const locationId = data.location_id.trim();
 
@@ -410,6 +416,7 @@ export function buildCreateEventBody(
     ...(planId ? { plan_id: planId } : {}),
     ...(seriesId ? { series_id: seriesId } : {}),
     ...(accumulatorId ? { accumulator_id: accumulatorId } : {}),
+    ...(groupAccumulatorId ? { group_accumulator_id: groupAccumulatorId } : {}),
     ...(chantCollectionId
       ? { group_recitation_collection_id: chantCollectionId }
       : {}),
@@ -498,6 +505,17 @@ export function resolveLinkedAccumulator(id: string): Promise<FkOption> {
   return resolveLinkOption(id, "Linked accumulator", searchAccumulatorPresets);
 }
 
+export function resolveLinkedGroupAccumulator(
+  groupId: string,
+  id: string,
+): Promise<FkOption> {
+  return resolveLinkOption(
+    id,
+    "Linked group accumulator",
+    makeGroupAccumulatorSearchFn(groupId),
+  );
+}
+
 export async function resolveLinkedChantCollection(
   groupId: string,
   id: string,
@@ -566,14 +584,23 @@ export function buildUpdateEventBody(
     body.links = buildLinksInput(data.links);
   }
 
-  const scalarKeys: (keyof Pick<
+  const nextImageUrl = data.image_url.trim();
+  const prevImageUrl = original.image_url.trim();
+  if (nextImageUrl !== prevImageUrl) {
+    body.image_url = nextImageUrl;
+  }
+
+  // These are unlink-able FK fields: an empty value means "clear the link"
+  // and must be sent as `null`, not `""` — the backend interprets an empty
+  // string as an invalid UUID rather than an unlink instruction.
+  const nullableFkKeys: (keyof Pick<
     EventFormData,
-    "image_url" | "plan_id" | "series_id" | "accumulator_id"
-  >)[] = ["image_url", "plan_id", "series_id", "accumulator_id"];
-  for (const key of scalarKeys) {
+    "plan_id" | "series_id" | "accumulator_id" | "group_accumulator_id"
+  >)[] = ["plan_id", "series_id", "accumulator_id", "group_accumulator_id"];
+  for (const key of nullableFkKeys) {
     const next = data[key].trim();
     const prev = original[key].trim();
-    if (next !== prev) body[key] = next;
+    if (next !== prev) body[key] = next || null;
   }
 
   const nextChant = data.group_recitation_collection_id.trim();

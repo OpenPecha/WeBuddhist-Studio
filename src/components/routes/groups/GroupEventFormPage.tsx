@@ -16,6 +16,7 @@ import {
   fetchCmsEvent,
   mapEventToFormData,
   resolveLinkedAccumulator,
+  resolveLinkedGroupAccumulator,
   resolveLinkedChantCollection,
   resolveLinkedContent,
   updateCmsEvent,
@@ -88,6 +89,8 @@ const GroupEventFormPage = () => {
   const [accumulatorValue, setAccumulatorValue] = useState<FkOption | null>(
     null,
   );
+  const [groupAccumulatorValue, setGroupAccumulatorValue] =
+    useState<FkOption | null>(null);
   const [chantValue, setChantValue] = useState<FkOption | null>(null);
   const [locationValue, setLocationValue] = useState<EventLocation | null>(
     null,
@@ -134,6 +137,14 @@ const GroupEventFormPage = () => {
       );
     } else {
       setAccumulatorValue(null);
+    }
+    if (formData.group_accumulator_id && groupId) {
+      resolveLinkedGroupAccumulator(
+        groupId,
+        formData.group_accumulator_id,
+      ).then(setGroupAccumulatorValue);
+    } else {
+      setGroupAccumulatorValue(null);
     }
     if (formData.group_recitation_collection_id && groupId) {
       resolveLinkedChantCollection(
@@ -272,9 +283,11 @@ const GroupEventFormPage = () => {
             readOnly={readOnly}
             contentValue={contentValue}
             accumulatorValue={accumulatorValue}
+            groupAccumulatorValue={groupAccumulatorValue}
             chantValue={chantValue}
             onContentChange={setContentValue}
             onAccumulatorChange={setAccumulatorValue}
+            onGroupAccumulatorChange={setGroupAccumulatorValue}
             onChantChange={setChantValue}
           />
 
