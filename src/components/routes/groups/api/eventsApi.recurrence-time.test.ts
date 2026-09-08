@@ -39,6 +39,27 @@ describe("buildCreateEventBody — recurring event time-of-day", () => {
   });
 });
 
+describe("buildCreateEventBody — weekly recurrence", () => {
+  it("sends the day_of_week rule for a weekly recurring event", () => {
+    const form = {
+      ...recurringForm(),
+      recurrence: {
+        ...emptyRecurrence(),
+        frequency: "WEEKLY" as const,
+        day: null,
+        day_of_week: 4,
+      },
+    };
+
+    const body = buildCreateEventBody(form, "group-1");
+
+    expect(body.recurrence).toMatchObject({
+      frequency: "WEEKLY",
+      day_of_week: 4,
+    });
+  });
+});
+
 describe("buildUpdateEventBody — recurring event time-of-day", () => {
   it("sends the new times when only start_time/end_time change while staying recurring", () => {
     const original = recurringForm();
