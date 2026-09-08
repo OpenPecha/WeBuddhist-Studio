@@ -13,6 +13,7 @@ export type { LanguageCode };
 export const RecurrenceFrequency = {
   YEARLY: "YEARLY",
   MONTHLY: "MONTHLY",
+  WEEKLY: "WEEKLY",
 } as const;
 
 export type RecurrenceFrequency =
@@ -74,16 +75,54 @@ export const eventLinkRowSchema = z.object({
 
 export type EventLinkRow = z.infer<typeof eventLinkRowSchema>;
 
+export const DAYS_OF_WEEK = [
+  { value: 0, label: "Monday" },
+  { value: 1, label: "Tuesday" },
+  { value: 2, label: "Wednesday" },
+  { value: 3, label: "Thursday" },
+  { value: 4, label: "Friday" },
+  { value: 5, label: "Saturday" },
+  { value: 6, label: "Sunday" },
+] as const;
+
 export const recurrenceSchema = z
   .object({
-    frequency: z.enum(["YEARLY", "MONTHLY"]),
+    frequency: z.enum(["YEARLY", "MONTHLY", "WEEKLY"]),
     date_system: z.enum(["GREGORIAN", "TIBETAN_LUNAR"]),
     calendar_type: z.string().trim().max(10),
     month: z.number().int().min(1).max(12).nullable(),
-    day: z.number().int().min(1).max(31),
+    day: z.number().int().min(1).max(31).nullable(),
+    day_of_week: z.number().int().min(0).max(6).nullable(),
     duration_days: z.number().int().min(1),
   })
   .superRefine((data, ctx) => {
+    if (data.frequency === "WEEKLY") {
+      if (data.day_of_week === null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Day of week is required for weekly recurrence",
+          path: ["day_of_week"],
+        });
+      }
+      if (data.date_system !== "GREGORIAN") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Weekly recurrence only supports the Gregorian calendar",
+          path: ["date_system"],
+        });
+      }
+      return;
+    }
+
+    if (data.day === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Day is required",
+        path: ["day"],
+      });
+      return;
+    }
+
     if (data.date_system === "TIBETAN_LUNAR") {
       if (!data.calendar_type || data.calendar_type.trim() === "") {
         ctx.addIssue({
@@ -242,6 +281,7 @@ export const emptyRecurrence = (): RecurrenceFormData => ({
   calendar_type: "",
   month: 1,
   day: 1,
+  day_of_week: null,
   duration_days: 1,
 });
 

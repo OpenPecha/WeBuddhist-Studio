@@ -61,7 +61,8 @@ export interface RecurrenceDTO {
   date_system: string;
   calendar_type?: string;
   month?: number;
-  day: number;
+  day?: number;
+  day_of_week?: number;
   duration_days: number;
 }
 
@@ -70,7 +71,8 @@ export interface RecurrenceInput {
   date_system: string;
   calendar_type?: string;
   month?: number | null;
-  day: number;
+  day?: number | null;
+  day_of_week?: number | null;
   duration_days: number;
 }
 
@@ -276,13 +278,14 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
   let recurrence: RecurrenceFormData | null = null;
   if (event.recurrence) {
     recurrence = {
-      frequency: event.recurrence.frequency as "YEARLY" | "MONTHLY",
+      frequency: event.recurrence.frequency as "YEARLY" | "MONTHLY" | "WEEKLY",
       date_system: event.recurrence.date_system as
         | "GREGORIAN"
         | "TIBETAN_LUNAR",
       calendar_type: event.recurrence.calendar_type?.trim() ?? "",
       month: event.recurrence.month ?? null,
-      day: event.recurrence.day,
+      day: event.recurrence.day ?? null,
+      day_of_week: event.recurrence.day_of_week ?? null,
       duration_days: event.recurrence.duration_days,
     };
   }
@@ -384,6 +387,7 @@ function buildRecurrenceInput(recurrence: RecurrenceFormData): RecurrenceInput {
     ...(calendarType ? { calendar_type: calendarType } : {}),
     month: recurrence.month,
     day: recurrence.day,
+    day_of_week: recurrence.day_of_week,
     duration_days: recurrence.duration_days,
   };
 }
@@ -633,6 +637,7 @@ export function buildUpdateEventBody(
       data.recurrence.calendar_type !== original.recurrence.calendar_type ||
       data.recurrence.month !== original.recurrence.month ||
       data.recurrence.day !== original.recurrence.day ||
+      data.recurrence.day_of_week !== original.recurrence.day_of_week ||
       data.recurrence.duration_days !== original.recurrence.duration_days;
 
     if (recurrenceRuleChanged) {
