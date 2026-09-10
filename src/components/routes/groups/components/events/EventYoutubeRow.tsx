@@ -5,9 +5,8 @@ import { Pecha } from "@/components/ui/shadimport";
 import { SortableItem } from "@/components/ui/atoms/sortable";
 import { useLanguages } from "@/hooks/useLanguages";
 import type { EventFormData } from "@/schema/EventSchema";
-import { EVENT_LINK_TYPES } from "../../lib/eventLinkTypes";
 
-type EventUrlLinkRowProps = {
+type EventYoutubeRowProps = {
   form: UseFormReturn<EventFormData>;
   id: string;
   index: number;
@@ -16,14 +15,14 @@ type EventUrlLinkRowProps = {
   onRemove: (index: number) => void;
 };
 
-const EventUrlLinkRow = ({
+const EventYoutubeRow = ({
   form,
   id,
   index,
   readOnly,
   canReorder,
   onRemove,
-}: EventUrlLinkRowProps) => {
+}: EventYoutubeRowProps) => {
   const { languageOptions } = useLanguages();
 
   const renderRow = ({ listeners }: { listeners: Record<string, unknown> }) => (
@@ -33,7 +32,7 @@ const EventUrlLinkRow = ({
           {!readOnly ? (
             <button
               type="button"
-              aria-label="Reorder link"
+              aria-label="Reorder YouTube link"
               disabled={!canReorder}
               className="mt-8 shrink-0 cursor-grab touch-none rounded p-1 text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
               {...listeners}
@@ -44,36 +43,7 @@ const EventUrlLinkRow = ({
 
           <Pecha.FormField
             control={form.control}
-            name={`links.${index}.type`}
-            render={({ field: typeField }) => (
-              <Pecha.FormItem className="w-48">
-                <Pecha.FormLabel>Type</Pecha.FormLabel>
-                <Pecha.Select
-                  value={typeField.value}
-                  onValueChange={typeField.onChange}
-                  disabled={readOnly}
-                >
-                  <Pecha.FormControl>
-                    <Pecha.SelectTrigger className="w-full bg-white dark:bg-[#181818]">
-                      <Pecha.SelectValue placeholder="Select a type" />
-                    </Pecha.SelectTrigger>
-                  </Pecha.FormControl>
-                  <Pecha.SelectContent>
-                    {EVENT_LINK_TYPES.map((option) => (
-                      <Pecha.SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </Pecha.SelectItem>
-                    ))}
-                  </Pecha.SelectContent>
-                </Pecha.Select>
-                <Pecha.FormMessage />
-              </Pecha.FormItem>
-            )}
-          />
-
-          <Pecha.FormField
-            control={form.control}
-            name={`links.${index}.language`}
+            name={`youtube.${index}.language`}
             render={({ field: langField }) => (
               <Pecha.FormItem className="w-40">
                 <Pecha.FormLabel>Language</Pecha.FormLabel>
@@ -104,7 +74,7 @@ const EventUrlLinkRow = ({
         {!readOnly ? (
           <button
             type="button"
-            aria-label="Remove link"
+            aria-label="Remove YouTube link"
             onClick={() => onRemove(index)}
             className="mt-8 text-muted-foreground hover:text-destructive"
           >
@@ -115,16 +85,16 @@ const EventUrlLinkRow = ({
 
       <Pecha.FormField
         control={form.control}
-        name={`links.${index}.url`}
+        name={`youtube.${index}.url`}
         render={({ field: urlField }) => (
           <Pecha.FormItem>
-            <Pecha.FormLabel>URL</Pecha.FormLabel>
+            <Pecha.FormLabel>YouTube URL</Pecha.FormLabel>
             <Pecha.FormControl>
               <Pecha.Input
                 {...urlField}
                 type="url"
                 inputMode="url"
-                placeholder="https://example.com"
+                placeholder="https://www.youtube.com/watch?v=..."
                 disabled={readOnly}
                 className="bg-white dark:bg-[#181818]"
               />
@@ -136,7 +106,7 @@ const EventUrlLinkRow = ({
 
       <Pecha.FormField
         control={form.control}
-        name={`links.${index}.label`}
+        name={`youtube.${index}.label`}
         render={({ field: labelField }) => (
           <Pecha.FormItem>
             <Pecha.FormLabel>Label (optional)</Pecha.FormLabel>
@@ -166,4 +136,4 @@ const EventUrlLinkRow = ({
   );
 };
 
-export default EventUrlLinkRow;
+export default EventYoutubeRow;
