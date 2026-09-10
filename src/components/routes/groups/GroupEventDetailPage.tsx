@@ -67,7 +67,7 @@ const resolveHeroImage = (event: EventDTO): string | null => {
 };
 
 const pickDefault = (rows: EventMetadataDTO[]): EventMetadataDTO | undefined =>
-  rows.find((r) => (r.language ?? "").toUpperCase() === "EN") ?? rows[0];
+  rows.find((r) => (r.language ?? "EN").toUpperCase() === "EN") ?? rows[0];
 
 /**
  * Filters links/youtube items to the active language tab, falling back to EN
@@ -83,7 +83,7 @@ function pickLangFiltered<T extends { language: string }>(
   if (!activeLang) return rows;
   const matched = rows.filter((r) => r.language === activeLang);
   if (matched.length > 0) return matched;
-  return rows.filter((r) => (r.language ?? "").toUpperCase() === "EN");
+  return rows.filter((r) => (r.language ?? "EN").toUpperCase() === "EN");
 }
 
 function getYoutubeVideoId(url: string): string | null {
