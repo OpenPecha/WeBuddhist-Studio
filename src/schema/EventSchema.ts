@@ -80,7 +80,11 @@ function isYoutubeUrl(url: string): boolean {
   try {
     const hostname = new URL(url).hostname.toLowerCase();
     const host = hostname.startsWith("www.") ? hostname.slice(4) : hostname;
-    return host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtu.be";
+    return (
+      host === "youtube.com" ||
+      host.endsWith(".youtube.com") ||
+      host === "youtu.be"
+    );
   } catch {
     return false;
   }

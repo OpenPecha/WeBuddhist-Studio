@@ -15,7 +15,10 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/config/auth-context";
 import { useTranslate } from "@tolgee/react";
 import { createPasswordHash } from "@/lib/utils";
-import { AUTHOR_NOT_ACTIVE_DETAIL, isAuthorNotActiveDetail } from "@/lib/platformAccess";
+import {
+  AUTHOR_NOT_ACTIVE_DETAIL,
+  isAuthorNotActiveDetail,
+} from "@/lib/platformAccess";
 import { getApiErrorDetail, isTransientApiError } from "@/lib/apiErrors";
 import { ROUTES } from "@/routes/paths";
 import { useStudioAuth0 } from "@/config/studio-auth0";

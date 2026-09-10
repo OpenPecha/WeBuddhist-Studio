@@ -24,12 +24,24 @@ describe("buildCreateEventBody — links/youtube", () => {
     const body = buildCreateEventBody(
       {
         ...baseForm(),
-        links: [{ type: "web", url: "https://example.com", label: "", language: "BO" }],
+        links: [
+          {
+            type: "web",
+            url: "https://example.com",
+            label: "",
+            language: "BO",
+          },
+        ],
       },
       "group-1",
     );
     expect(body.links).toEqual([
-      { type: "web", url: "https://example.com", display_order: 1, language: "BO" },
+      {
+        type: "web",
+        url: "https://example.com",
+        display_order: 1,
+        language: "BO",
+      },
     ]);
   });
 
@@ -59,7 +71,9 @@ describe("buildUpdateEventBody — links/youtube", () => {
   it("omits links when unchanged", () => {
     const original = {
       ...baseForm(),
-      links: [{ type: "web", url: "https://example.com", label: "", language: "EN" }],
+      links: [
+        { type: "web", url: "https://example.com", label: "", language: "EN" },
+      ],
     };
     const body = buildUpdateEventBody({ ...original }, original);
     expect("links" in body).toBe(false);
@@ -68,7 +82,9 @@ describe("buildUpdateEventBody — links/youtube", () => {
   it("sends links again when only the language changes", () => {
     const original = {
       ...baseForm(),
-      links: [{ type: "web", url: "https://example.com", label: "", language: "EN" }],
+      links: [
+        { type: "web", url: "https://example.com", label: "", language: "EN" },
+      ],
     };
     const changed = {
       ...original,
@@ -112,10 +128,21 @@ describe("mapEventToFormData — links/youtube", () => {
     const form = mapEventToFormData({
       ...event,
       links: [
-        { id: "l1", type: "web", url: "https://example.com", language: "BO", display_order: 1 },
+        {
+          id: "l1",
+          type: "web",
+          url: "https://example.com",
+          language: "BO",
+          display_order: 1,
+        },
       ],
       youtube: [
-        { id: "y1", url: "https://youtu.be/dQw4w9WgXcQ", language: "ZH", display_order: 1 },
+        {
+          id: "y1",
+          url: "https://youtu.be/dQw4w9WgXcQ",
+          language: "ZH",
+          display_order: 1,
+        },
       ],
     });
     expect(form.links[0].language).toBe("BO");
@@ -126,7 +153,13 @@ describe("mapEventToFormData — links/youtube", () => {
     const form = mapEventToFormData({
       ...event,
       links: [
-        { id: "l1", type: "web", url: "https://example.com", language: "", display_order: 1 },
+        {
+          id: "l1",
+          type: "web",
+          url: "https://example.com",
+          language: "",
+          display_order: 1,
+        },
       ],
     });
     expect(form.links).toHaveLength(1);

@@ -477,7 +477,9 @@ export function buildCreateEventBody(
     timezone,
     metadata: buildMetadataInput(data.metadata),
     ...(data.links.length ? { links: buildLinksInput(data.links) } : {}),
-    ...(data.youtube.length ? { youtube: buildYoutubeInput(data.youtube) } : {}),
+    ...(data.youtube.length
+      ? { youtube: buildYoutubeInput(data.youtube) }
+      : {}),
     ...(imageUrl ? { image_url: imageUrl } : {}),
     ...(planId ? { plan_id: planId } : {}),
     ...(seriesId ? { series_id: seriesId } : {}),
