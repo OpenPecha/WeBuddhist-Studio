@@ -83,7 +83,7 @@ function pickLangFiltered<T extends { language: string }>(
   if (!activeLang) return rows;
   const matched = rows.filter((r) => r.language === activeLang);
   if (matched.length > 0) return matched;
-  return rows.filter((r) => r.language.toUpperCase() === "EN");
+  return rows.filter((r) => (r.language ?? "").toUpperCase() === "EN");
 }
 
 function getYoutubeVideoId(url: string): string | null {
@@ -98,7 +98,11 @@ function getYoutubeVideoId(url: string): string | null {
         return parsed.searchParams.get("v");
       }
       const segments = parsed.pathname.split("/").filter(Boolean);
-      if (segments[0] === "embed" || segments[0] === "shorts") {
+      if (
+        segments[0] === "embed" ||
+        segments[0] === "shorts" ||
+        segments[0] === "live"
+      ) {
         return segments[1] ?? null;
       }
     }
