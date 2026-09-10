@@ -67,7 +67,7 @@ const resolveHeroImage = (event: EventDTO): string | null => {
 };
 
 const pickDefault = (rows: EventMetadataDTO[]): EventMetadataDTO | undefined =>
-  rows.find((r) => r.language.toUpperCase() === "EN") ?? rows[0];
+  rows.find((r) => (r.language ?? "").toUpperCase() === "EN") ?? rows[0];
 
 /**
  * Filters links/youtube items to the active language tab, falling back to EN
@@ -349,7 +349,7 @@ const GroupEventDetailPage = () => {
                   : "border-input text-muted-foreground hover:text-foreground",
               )}
             >
-              {languageLabel(row.language)}
+              {languageLabel(row.language ?? "EN")}
             </button>
           ))}
         </div>
