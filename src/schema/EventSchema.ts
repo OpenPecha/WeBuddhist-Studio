@@ -228,6 +228,7 @@ const baseEventSchema = z.object({
   group_recitation_collection_id: z.string().trim(),
   location_id: z.string().trim(),
   event_format: z.enum(eventFormatValues),
+  chat_enabled: z.boolean(),
 });
 
 const commonValidation = (
@@ -363,4 +364,5 @@ export const defaultEventFormValues = (): EventFormData => ({
   group_recitation_collection_id: "",
   location_id: "",
   event_format: "offline",
+  chat_enabled: true,
 });

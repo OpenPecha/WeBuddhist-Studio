@@ -300,6 +300,18 @@ const GroupEventDetailPage = () => {
                 {formatLabel}
               </Pecha.Badge>
             ) : null}
+            {/* An event's chat room is created on first use, so "on, unused"
+                and "on, in use" are different states worth telling apart. */}
+            <Pecha.Badge
+              variant={data.chat_enabled === false ? "outline" : "secondary"}
+              className="ml-1"
+            >
+              {data.chat_enabled === false
+                ? "Chat off"
+                : data.chat_room_id
+                  ? "Chat active"
+                  : "Chat on"}
+            </Pecha.Badge>
           </div>
 
           {urlLinks.length > 0 ? (
