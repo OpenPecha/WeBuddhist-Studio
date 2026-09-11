@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { MdLocationOn } from "react-icons/md";
 import {
@@ -13,8 +12,9 @@ import {
 import { Pecha } from "@/components/ui/shadimport";
 import { MarkdownPreview } from "@/components/ui/molecules/markdown-editor/MarkdownPreview";
 import { getApiErrorMessage } from "@/lib/apiErrors";
-import { cn, fromBackendISO } from "@/lib/utils";
-import { DEFAULT_TIMEZONE, eventFormatLabel } from "@/schema/EventSchema";
+import { cn } from "@/lib/utils";
+import { eventFormatLabel, eventRecurrenceLabel } from "@/schema/EventSchema";
+import { formatEventScheduleRange } from "./lib/eventSchedule";
 import { getLanguageLabel } from "@/components/api/languagesApi";
 import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
@@ -39,22 +39,6 @@ import { formatCoordinates, hasCoordinates } from "./api/locationsApi";
 import LocationMap from "./components/locations/LocationMap";
 
 const languageLabel = (code: string) => getLanguageLabel(code);
-
-const formatDate = (iso: string, timezone: string) => {
-  if (!iso) return "—";
-  try {
-    return format(fromBackendISO(iso, timezone).date, "EEE, MMM d, yyyy");
-  } catch {
-    return iso.slice(0, 10);
-  }
-};
-
-const formatDateRange = (event: EventDTO): string => {
-  const timezone = event.timezone?.trim() || DEFAULT_TIMEZONE;
-  const start = formatDate(event.start_date, timezone);
-  if (event.is_one_day || event.start_date === event.end_date) return start;
-  return `${start} – ${formatDate(event.end_date, timezone)}`;
-};
 
 const resolveHeroImage = (event: EventDTO): string | null => {
   const image = event.image as ImageUrlModel | undefined;
@@ -243,6 +227,7 @@ const GroupEventDetailPage = () => {
   ).sort((a, b) => a.display_order - b.display_order);
 
   const formatLabel = eventFormatLabel(data.event_format);
+  const schedule = formatEventScheduleRange(data);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -289,14 +274,27 @@ const GroupEventDetailPage = () => {
         )}
 
         <div className="space-y-3 px-5 py-4">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <IoCalendarClearOutline className="h-4 w-4" />
-            <span className="text-foreground">{formatDateRange(data)}</span>
-            {data.is_one_day ? (
-              <Pecha.Badge variant="secondary" className="ml-1">
-                One-day event
-              </Pecha.Badge>
-            ) : null}
+          <div className="flex flex-wrap items-start gap-2 text-sm text-muted-foreground">
+            <IoCalendarClearOutline className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex flex-col gap-0.5 text-foreground">
+              <span>
+                <span className="text-muted-foreground">Start </span>
+                {schedule.start}
+              </span>
+              <span>
+                <span className="text-muted-foreground">End </span>
+                {schedule.end}
+              </span>
+            </div>
+            <Pecha.Badge
+              variant={data.is_recurring ? "default" : "secondary"}
+              className="ml-1"
+            >
+              {eventRecurrenceLabel(
+                data.is_recurring,
+                data.recurrence?.frequency,
+              )}
+            </Pecha.Badge>
             {formatLabel ? (
               <Pecha.Badge variant="secondary" className="ml-1">
                 {formatLabel}

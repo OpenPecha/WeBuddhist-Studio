@@ -47,6 +47,23 @@ export function eventFormatLabel(
   );
 }
 
+export function eventRecurrenceLabel(
+  isRecurring?: boolean,
+  frequency?: string | null,
+): string {
+  if (!isRecurring) return "One-time";
+  switch (frequency) {
+    case RecurrenceFrequency.WEEKLY:
+      return "Weekly";
+    case RecurrenceFrequency.MONTHLY:
+      return "Monthly";
+    case RecurrenceFrequency.YEARLY:
+      return "Yearly";
+    default:
+      return "Recurring";
+  }
+}
+
 export const eventMetadataRowSchema = z.object({
   language: z.string().trim().min(1, "Language is required"),
   name: z.string().trim().min(1, "Name is required"),

@@ -103,4 +103,23 @@ describe("buildUpdateEventBody — recurring event time-of-day", () => {
     expect(body.start_date).toBeUndefined();
     expect(body.end_date).toBeUndefined();
   });
+
+  it("sends recurrence: null and the chosen dates when converting to one-time", () => {
+    const original = recurringForm();
+    const updated = {
+      ...original,
+      is_recurring: false,
+      recurrence: null,
+      start_date: "2026-10-01",
+      end_date: "2026-10-01",
+      start_time: "09:30",
+      end_time: "17:00",
+    };
+
+    const body = buildUpdateEventBody(updated, original);
+
+    expect(body.recurrence).toBeNull();
+    expect(body.start_date).toMatch(/T09:30:00/);
+    expect(body.end_date).toMatch(/T17:00:00/);
+  });
 });

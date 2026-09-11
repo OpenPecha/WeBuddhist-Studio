@@ -180,7 +180,7 @@ export interface UpdateEventRequest {
   group_recitation_collection_id?: string | null;
   location_id?: string | null;
   event_format?: EventFormat;
-  recurrence?: RecurrenceInput;
+  recurrence?: RecurrenceInput | null;
 }
 
 export interface EventListFilters {
@@ -711,6 +711,10 @@ export function buildUpdateEventBody(
         timezone,
       );
     } else {
+      // Explicit null tells the backend to drop the recurrence rule; sending
+      // only dates would leave is_recurring=true and the list would still
+      // expand the next occurrence (which then disagrees with the detail page).
+      body.recurrence = null;
       body.start_date = composeBackendDate(
         data.start_date,
         data.start_time,
