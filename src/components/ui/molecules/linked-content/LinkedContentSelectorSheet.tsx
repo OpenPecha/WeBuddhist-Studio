@@ -59,9 +59,7 @@ export const LinkedContentSelectorSheet = ({
         groupId: groupId!,
         skip: (page - 1) * PAGE_SIZE,
         limit: PAGE_SIZE,
-        ...(serverSearch && debouncedSearch
-          ? { search: debouncedSearch }
-          : {}),
+        ...(serverSearch && debouncedSearch ? { search: debouncedSearch } : {}),
       }),
     enabled: isOpen && !!type && !!groupId,
     refetchOnWindowFocus: false,
@@ -105,7 +103,8 @@ export const LinkedContentSelectorSheet = ({
     if (isError) {
       return (
         <p className="text-sm text-red-500 py-8 text-center">
-          {(error as Error)?.message || `Failed to load ${label.toLowerCase()}s`}
+          {(error as Error)?.message ||
+            `Failed to load ${label.toLowerCase()}s`}
         </p>
       );
     }

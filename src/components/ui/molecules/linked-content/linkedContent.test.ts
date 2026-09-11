@@ -105,7 +105,9 @@ describe("fetchLinkedContent", () => {
 
   it("falls back to a placeholder title for an untitled accumulation", async () => {
     vi.mocked(fetchGroupAccumulators).mockResolvedValueOnce({
-      accumulators: [{ id: "a1", title: null, target_count: null, image: null }],
+      accumulators: [
+        { id: "a1", title: null, target_count: null, image: null },
+      ],
       total: 1,
       skip: 0,
       limit: 10,

@@ -565,7 +565,9 @@ describe("TaskForm Component", () => {
 
   it("passes the plan's group to the content type selector", async () => {
     renderWithProviders(<TaskForm selectedDay={1} onCancel={mockOnCancel} />);
-    expect(screen.getByTestId("selector-group-id")).toHaveTextContent("group-1");
+    expect(screen.getByTestId("selector-group-id")).toHaveTextContent(
+      "group-1",
+    );
   });
 
   it("adds a linked subtask with the picked reference", async () => {

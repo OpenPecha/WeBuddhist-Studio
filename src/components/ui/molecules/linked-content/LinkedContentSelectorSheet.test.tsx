@@ -10,7 +10,9 @@ vi.mock("./linkedContent", async (orig) => {
   return { ...actual, fetchLinkedContent: vi.fn() };
 });
 
-const renderSheet = (props: Partial<React.ComponentProps<typeof LinkedContentSelectorSheet>> = {}) => {
+const renderSheet = (
+  props: Partial<React.ComponentProps<typeof LinkedContentSelectorSheet>> = {},
+) => {
   const onSelect = vi.fn();
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },

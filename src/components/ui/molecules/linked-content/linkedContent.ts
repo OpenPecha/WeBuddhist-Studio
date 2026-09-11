@@ -3,7 +3,10 @@ import {
   resolveGroupAccumulatorImageUrl,
 } from "@/components/routes/groups/api/groupAccumulatorsApi";
 import { fetchChantCollections } from "@/components/routes/groups/api/chantsApi";
-import { eventName, fetchCmsEvents } from "@/components/routes/groups/api/eventsApi";
+import {
+  eventName,
+  fetchCmsEvents,
+} from "@/components/routes/groups/api/eventsApi";
 import { fetchGroupPosts } from "@/components/routes/groups/api/groupPostsApi";
 
 /**
@@ -159,7 +162,8 @@ const FETCHERS: Record<
         // Posts have no title; the caption stands in for one.
         title: firstLine(post.caption) || UNTITLED.POST,
         subtitle: formatDateRange(post.published_at),
-        imageUrl: post.media?.[0]?.thumbnail_url || post.media?.[0]?.url || null,
+        imageUrl:
+          post.media?.[0]?.thumbnail_url || post.media?.[0]?.url || null,
       })),
     };
   },

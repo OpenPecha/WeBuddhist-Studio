@@ -144,9 +144,7 @@ export const ContentTypeSelector = ({
               >
                 {icon}
                 <span className="sr-only">
-                  {isLinkedContentType(key)
-                    ? LINKED_CONTENT_LABELS[key]
-                    : key}
+                  {isLinkedContentType(key) ? LINKED_CONTENT_LABELS[key] : key}
                 </span>
               </Pecha.Button>
             ))}

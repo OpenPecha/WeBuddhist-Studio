@@ -639,9 +639,8 @@ export const SubTaskCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center bg-[#F7F7F7] border dark:bg-sidebar-secondary  px-2 py-1 text-sm rounded-md border-dashed gap-2">
           <ContentIcon type={subTask.content_type} />
-          {LINKED_CONTENT_LABELS[
-            subTask.content_type as LinkedContentType
-          ] ?? subTask.content_type}
+          {LINKED_CONTENT_LABELS[subTask.content_type as LinkedContentType] ??
+            subTask.content_type}
         </div>
         <Pecha.Button
           variant="outline"
