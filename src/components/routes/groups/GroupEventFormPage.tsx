@@ -31,6 +31,7 @@ import EventUrlLinksSection from "./components/events/EventUrlLinksSection";
 import EventYoutubeSection from "./components/events/EventYoutubeSection";
 import EventImageField from "./components/events/EventImageField";
 import EventFormatField from "./components/events/EventFormatField";
+import EventChatField from "./components/events/EventChatField";
 import LocationPicker from "./components/locations/LocationPicker";
 import type { EventLocation } from "./api/locationsApi";
 import type { EventFormData } from "@/schema/EventSchema";
@@ -280,6 +281,8 @@ const GroupEventFormPage = () => {
             />
 
             <EventFormatField form={form} readOnly={readOnly} />
+
+            <EventChatField form={form} readOnly={readOnly} />
           </div>
 
           <EventLinksSection

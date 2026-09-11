@@ -6,6 +6,7 @@ import {
   emptyMetadataRow,
   emptyYoutubeRow,
   eventFormatLabel,
+  eventRecurrenceLabel,
   eventLinkRowSchema,
   eventYoutubeRowSchema,
   eventSchema,
@@ -40,6 +41,24 @@ describe("eventFormatLabel", () => {
     expect(eventFormatLabel(null)).toBeNull();
     expect(eventFormatLabel(undefined)).toBeNull();
     expect(eventFormatLabel("something-else")).toBeNull();
+  });
+});
+
+describe("eventRecurrenceLabel", () => {
+  it("labels a one-time event", () => {
+    expect(eventRecurrenceLabel(false)).toBe("One-time");
+    expect(eventRecurrenceLabel(undefined)).toBe("One-time");
+  });
+
+  it("labels known recurrence frequencies", () => {
+    expect(eventRecurrenceLabel(true, "WEEKLY")).toBe("Weekly");
+    expect(eventRecurrenceLabel(true, "MONTHLY")).toBe("Monthly");
+    expect(eventRecurrenceLabel(true, "YEARLY")).toBe("Yearly");
+  });
+
+  it("falls back to Recurring when frequency is missing", () => {
+    expect(eventRecurrenceLabel(true)).toBe("Recurring");
+    expect(eventRecurrenceLabel(true, "DAILY")).toBe("Recurring");
   });
 });
 

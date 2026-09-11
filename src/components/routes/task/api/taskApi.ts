@@ -51,6 +51,8 @@ export interface SubTaskPayload {
   pecha_segment_id?: string | null;
   segment_ids?: string[] | null;
   segment_numbers?: number[] | null;
+  /** Set for linked content types (GROUP_ACCUMULATION, GROUP_COLLECTION, EVENT, POST). */
+  reference_id?: string | null;
   start_ms?: number | null;
   end_ms?: number | null;
 }

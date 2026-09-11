@@ -14,7 +14,13 @@ import {
   AudioContent,
   ContentIcon,
   SourceReferenceContent,
+  LinkedContent,
 } from "../content-sub/ContentComponents";
+import {
+  LINKED_CONTENT_LABELS,
+  type LinkedContentType,
+  type SubTaskReference,
+} from "../linked-content/linkedContent";
 import { getAudioDurationMs, getYouTubeDuration, formatMs } from "@/lib/utils";
 import { AudioTrimmer } from "@/components/ui/molecules/audio-trimmer/AudioTrimmer";
 import {
@@ -74,12 +80,22 @@ interface SourceSubTask extends SubTaskTimestamps {
   segment_numbers?: number[] | null;
   segment_refs?: (string | null)[] | null;
 }
+export interface LinkedSubTask extends SubTaskTimestamps {
+  id?: string | null;
+  content_type: LinkedContentType;
+  content: string;
+  display_order?: number;
+  reference_id?: string | null;
+  reference?: SubTaskReference | null;
+}
+
 export type SubTask =
   | VideoSubTask
   | TextSubTask
   | AudioSubTask
   | ImageSubTask
-  | SourceSubTask;
+  | SourceSubTask
+  | LinkedSubTask;
 
 interface SubTaskCardProps {
   subTask: SubTask;
@@ -601,6 +617,17 @@ export const SubTaskCard = ({
         );
       case "SOURCE_REFERENCE":
         return <SourceSubtask subTask={subTask} />;
+      case "GROUP_ACCUMULATION":
+      case "GROUP_COLLECTION":
+      case "EVENT":
+      case "POST":
+        return (
+          <LinkedContent
+            type={subTask.content_type}
+            reference={subTask.reference}
+            referenceId={subTask.reference_id}
+          />
+        );
     }
   };
 
@@ -612,7 +639,8 @@ export const SubTaskCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center bg-[#F7F7F7] border dark:bg-sidebar-secondary  px-2 py-1 text-sm rounded-md border-dashed gap-2">
           <ContentIcon type={subTask.content_type} />
-          {subTask.content_type}
+          {LINKED_CONTENT_LABELS[subTask.content_type as LinkedContentType] ??
+            subTask.content_type}
         </div>
         <Pecha.Button
           variant="outline"

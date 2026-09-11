@@ -98,6 +98,8 @@ export interface EventDTO {
   location_id?: string;
   location?: EventLocation;
   event_format: EventFormat;
+  chat_enabled?: boolean;
+  chat_room_id?: string | null;
   start_date: string;
   end_date: string;
   timezone?: string | null;
@@ -161,6 +163,7 @@ export interface CreateEventRequest {
   group_recitation_collection_id?: string;
   location_id?: string;
   event_format?: EventFormat;
+  chat_enabled?: boolean;
   recurrence?: RecurrenceInput;
 }
 
@@ -180,7 +183,8 @@ export interface UpdateEventRequest {
   group_recitation_collection_id?: string | null;
   location_id?: string | null;
   event_format?: EventFormat;
-  recurrence?: RecurrenceInput;
+  chat_enabled?: boolean;
+  recurrence?: RecurrenceInput | null;
 }
 
 export interface EventListFilters {
@@ -361,6 +365,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
       event.group_recitation_collection_id?.trim() ?? "",
     location_id: event.location_id?.trim() ?? "",
     event_format: event.event_format,
+    chat_enabled: event.chat_enabled ?? true,
   };
 }
 
@@ -490,6 +495,7 @@ export function buildCreateEventBody(
       : {}),
     ...(locationId ? { location_id: locationId } : {}),
     event_format: data.event_format,
+    chat_enabled: data.chat_enabled,
   };
 
   if (data.is_recurring && data.recurrence) {
@@ -691,6 +697,10 @@ export function buildUpdateEventBody(
     body.event_format = data.event_format;
   }
 
+  if (data.chat_enabled !== original.chat_enabled) {
+    body.chat_enabled = data.chat_enabled;
+  }
+
   // Handle recurrence changes
   const recurrenceTimeChanged =
     data.start_time !== original.start_time ||
@@ -711,6 +721,10 @@ export function buildUpdateEventBody(
         timezone,
       );
     } else {
+      // Explicit null tells the backend to drop the recurrence rule; sending
+      // only dates would leave is_recurring=true and the list would still
+      // expand the next occurrence (which then disagrees with the detail page).
+      body.recurrence = null;
       body.start_date = composeBackendDate(
         data.start_date,
         data.start_time,
