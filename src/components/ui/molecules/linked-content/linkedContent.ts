@@ -154,7 +154,9 @@ const FETCHERS: Record<
   },
 
   POST: async ({ groupId, skip, limit }) => {
-    const data = await fetchGroupPosts(groupId, skip, limit);
+    // Only published posts are referenceable; the backend rejects hidden ones,
+    // so listing them here would just offer a choice that cannot be saved.
+    const data = await fetchGroupPosts(groupId, skip, limit, "PUBLISHED");
     return {
       total: data.total,
       items: data.posts.map((post) => ({

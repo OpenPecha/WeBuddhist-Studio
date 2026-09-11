@@ -15,6 +15,8 @@ import {
   updateSubTasks,
   fetchTaskDetails,
   updateTaskTitle,
+  type SubTaskPayload,
+  type SubTaskUpdatePayload,
 } from "../../api/taskApi";
 import { ContentTypeSelector } from "@/components/ui/molecules/content-sub/ContentTypeSelector";
 import {
@@ -25,10 +27,12 @@ import {
   SubTaskCard,
   type SubTask,
 } from "@/components/ui/molecules/subtask-card/SubTaskCard";
-import { isLinkedSubTask } from "@/components/ui/molecules/subtask-card/subtaskLinks";
+import {
+  buildSubTaskPayload,
+  buildSubTaskUpdatePayload,
+} from "@/components/ui/molecules/subtask-card/subtaskPayload";
 import DaySelector from "@/components/ui/molecules/day-selector/DaySelector";
 import {
-  buildSubTaskTimestampFields,
   mapApiSubtaskTimestamps,
   validateSubTaskTimestamps,
 } from "@/components/ui/molecules/subtask-card/subtaskTimestamps";
@@ -88,23 +92,8 @@ const TaskForm = ({
       const taskResponse = await createTask(taskData);
 
       if (subTasksData.length > 0) {
-        const subTasksPayload = subTasksData.map((subTask, index) => ({
-          content: subTask.content,
-          content_type: subTask.content_type,
-          display_order: index + 1,
-          ...(subTask.content_type === "VIDEO" &&
-            subTask.duration && { duration: subTask.duration }),
-          ...(subTask.content_type === "SOURCE_REFERENCE" && {
-            source_text_id: subTask.source_text_id || null,
-            pecha_segment_id: subTask.pecha_segment_id || null,
-            segment_ids: subTask.segment_ids || null,
-            segment_numbers: subTask.segment_numbers || null,
-          }),
-          ...(isLinkedSubTask(subTask) && {
-            reference_id: subTask.reference_id || null,
-          }),
-          ...buildSubTaskTimestampFields(subTask, false),
-        }));
+        const subTasksPayload: SubTaskPayload[] =
+          subTasksData.map(buildSubTaskPayload);
         await createSubTasks(taskResponse.id, subTasksPayload);
       }
       return taskResponse;
@@ -125,24 +114,9 @@ const TaskForm = ({
 
   const updateTaskMutation = useMutation({
     mutationFn: async () => {
-      const subTasksPayload = subTasks.map((subTask, index) => ({
-        id: subTask.id || null,
-        content: subTask.content,
-        content_type: subTask.content_type,
-        display_order: index + 1,
-        ...(subTask.content_type === "VIDEO" &&
-          subTask.duration && { duration: subTask.duration }),
-        ...(subTask.content_type === "SOURCE_REFERENCE" && {
-          source_text_id: subTask.source_text_id || null,
-          pecha_segment_id: subTask.pecha_segment_id || null,
-          segment_ids: subTask.segment_ids || null,
-          segment_numbers: subTask.segment_numbers || null,
-        }),
-        ...(isLinkedSubTask(subTask) && {
-          reference_id: subTask.reference_id || null,
-        }),
-        ...buildSubTaskTimestampFields(subTask, true),
-      }));
+      const subTasksPayload: SubTaskUpdatePayload[] = subTasks.map(
+        buildSubTaskUpdatePayload,
+      );
       await updateSubTasks(editingTask.id, subTasksPayload);
     },
     onSuccess: () => {

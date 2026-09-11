@@ -194,6 +194,8 @@ describe("fetchLinkedContent", () => {
 
     const page = await fetchLinkedContent("POST", PAGE);
 
+    // Hidden posts are not referenceable, so the picker must ask for published only.
+    expect(fetchGroupPosts).toHaveBeenCalledWith(GROUP_ID, 0, 10, "PUBLISHED");
     expect(page.items[0].title).toBe("A post caption");
     expect(page.items[0].imageUrl).toBe("thumb");
     expect(page.items[1].title).toBe("Untitled post");
