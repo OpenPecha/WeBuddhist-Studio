@@ -1,6 +1,8 @@
 import { IoMdVideocam } from "react-icons/io";
 import { IoMusicalNotesSharp, IoTextOutline } from "react-icons/io5";
 import { MdOutlineImage } from "react-icons/md";
+import { LuCalendarDays, LuLayers, LuNewspaper } from "react-icons/lu";
+import { GiPrayerBeads } from "react-icons/gi";
 import {
   getYouTubeVideoId,
   getYouTubeShortsId,
@@ -8,7 +10,19 @@ import {
 } from "@/lib/utils";
 import pechaIcon from "@/assets/icon/pecha_icon.png";
 import { Badge } from "@/components/ui/atoms/badge";
-type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
+import {
+  LINKED_CONTENT_LABELS,
+  type LinkedContentType,
+  type SubTaskReference,
+} from "@/components/ui/molecules/linked-content/linkedContent";
+
+type ContentType =
+  | "TEXT"
+  | "IMAGE"
+  | "AUDIO"
+  | "VIDEO"
+  | "SOURCE_REFERENCE"
+  | LinkedContentType;
 
 export const ContentIcon = ({ type }: { type: ContentType }) => {
   switch (type) {
@@ -22,6 +36,14 @@ export const ContentIcon = ({ type }: { type: ContentType }) => {
       return <MdOutlineImage className="w-4 h-4 text-gray-600" />;
     case "SOURCE_REFERENCE":
       return <img src={pechaIcon} alt="Pecha Icon" className="w-4 h-4" />;
+    case "GROUP_ACCUMULATION":
+      return <GiPrayerBeads className="w-4 h-4 text-gray-600" />;
+    case "GROUP_COLLECTION":
+      return <LuLayers className="w-4 h-4 text-gray-600" />;
+    case "EVENT":
+      return <LuCalendarDays className="w-4 h-4 text-gray-600" />;
+    case "POST":
+      return <LuNewspaper className="w-4 h-4 text-gray-600" />;
     default:
       return null;
   }
@@ -130,6 +152,64 @@ export const SourceReferenceContent = ({
           </div>
         );
       })}
+    </div>
+  );
+};
+
+/**
+ * Preview for a subtask that links to other content. `reference` is resolved
+ * live by the backend, so it is absent when the target has been deleted.
+ */
+export const LinkedContent = ({
+  type,
+  reference,
+  referenceId,
+}: {
+  type: LinkedContentType;
+  reference?: SubTaskReference | null;
+  referenceId?: string | null;
+}) => {
+  if (!reference) {
+    return (
+      <div className="mt-2 rounded-md border border-dashed border-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3">
+        <p className="text-sm font-medium">
+          {referenceId
+            ? `This ${LINKED_CONTENT_LABELS[type].toLowerCase()} is no longer available`
+            : `No ${LINKED_CONTENT_LABELS[type].toLowerCase()} linked yet`}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {referenceId
+            ? "It may have been deleted. Remove this subtask or link another one."
+            : "Pick one from this plan's group."}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex items-center gap-3 rounded-md border bg-[#FAFAFA] dark:bg-sidebar-secondary p-3">
+      {reference.image_url ? (
+        <img
+          src={reference.image_url}
+          alt=""
+          className="w-14 h-14 rounded-md object-cover border shrink-0"
+        />
+      ) : (
+        <div className="w-14 h-14 rounded-md border border-dashed shrink-0" />
+      )}
+      <div className="min-w-0 flex-1">
+        <Badge variant="outline" className="text-[10px] font-normal mb-1">
+          {LINKED_CONTENT_LABELS[type]}
+        </Badge>
+        <p className="font-medium truncate">
+          {reference.title || LINKED_CONTENT_LABELS[type]}
+        </p>
+        {reference.subtitle && (
+          <p className="text-sm text-muted-foreground truncate">
+            {reference.subtitle}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

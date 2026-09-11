@@ -18,9 +18,14 @@ import {
 } from "../../api/taskApi";
 import { ContentTypeSelector } from "@/components/ui/molecules/content-sub/ContentTypeSelector";
 import {
+  isLinkedContentType,
+  type LinkedContentOption,
+} from "@/components/ui/molecules/linked-content/linkedContent";
+import {
   SubTaskCard,
   type SubTask,
 } from "@/components/ui/molecules/subtask-card/SubTaskCard";
+import { isLinkedSubTask } from "@/components/ui/molecules/subtask-card/subtaskLinks";
 import DaySelector from "@/components/ui/molecules/day-selector/DaySelector";
 import {
   buildSubTaskTimestampFields,
@@ -95,6 +100,9 @@ const TaskForm = ({
             segment_ids: subTask.segment_ids || null,
             segment_numbers: subTask.segment_numbers || null,
           }),
+          ...(isLinkedSubTask(subTask) && {
+            reference_id: subTask.reference_id || null,
+          }),
           ...buildSubTaskTimestampFields(subTask, false),
         }));
         await createSubTasks(taskResponse.id, subTasksPayload);
@@ -129,6 +137,9 @@ const TaskForm = ({
           pecha_segment_id: subTask.pecha_segment_id || null,
           segment_ids: subTask.segment_ids || null,
           segment_numbers: subTask.segment_numbers || null,
+        }),
+        ...(isLinkedSubTask(subTask) && {
+          reference_id: subTask.reference_id || null,
         }),
         ...buildSubTaskTimestampFields(subTask, true),
       }));
@@ -237,6 +248,16 @@ const TaskForm = ({
               ...timestamps(data),
             };
           default:
+            if (isLinkedContentType(data.content_type)) {
+              return {
+                id: data.id,
+                content_type: data.content_type,
+                content: data.content ?? "",
+                reference_id: data.reference_id ?? null,
+                reference: data.reference ?? null,
+                ...timestamps(data),
+              };
+            }
             return {
               id: data.id,
               content_type: "TEXT" as const,
@@ -257,8 +278,33 @@ const TaskForm = ({
     segment_numbers?: number[];
   }
 
-  const handleAddSubTask = (content_type: any, sourceData?: SourceData) => {
+  const handleAddSubTask = (
+    content_type: any,
+    sourceData?: SourceData,
+    linkedContent?: LinkedContentOption,
+  ) => {
     let newSubTask: SubTask;
+
+    if (isLinkedContentType(content_type)) {
+      if (!linkedContent) return;
+      setSubTasks([
+        ...subTasks,
+        {
+          id: null,
+          content_type,
+          content: "",
+          reference_id: linkedContent.id,
+          reference: {
+            id: linkedContent.id,
+            content_type,
+            title: linkedContent.title,
+            subtitle: linkedContent.subtitle,
+            image_url: linkedContent.imageUrl,
+          },
+        },
+      ]);
+      return;
+    }
 
     switch (content_type) {
       case "VIDEO":
@@ -451,7 +497,10 @@ const TaskForm = ({
                 </div>
               )}
               {isEditable && (
-                <ContentTypeSelector onSelectType={handleAddSubTask} />
+                <ContentTypeSelector
+                  onSelectType={handleAddSubTask}
+                  groupId={currentPlan?.group_id}
+                />
               )}
 
               <div className="p-4 flex gap-3">

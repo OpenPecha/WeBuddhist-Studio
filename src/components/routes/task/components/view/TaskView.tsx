@@ -12,7 +12,13 @@ import {
   ImageContent,
   TextContent,
   SourceReferenceContent,
+  LinkedContent,
 } from "../../../../ui/molecules/content-sub/ContentComponents";
+import {
+  LINKED_CONTENT_LABELS,
+  isLinkedContentType,
+  type LinkedContentType,
+} from "@/components/ui/molecules/linked-content/linkedContent";
 import { SortableList, SortableItem } from "@/components/ui/atoms/sortable";
 import { PiDotsSixVertical } from "react-icons/pi";
 import { useSubtaskReorder } from "../../hooks/useSubtaskReorder";
@@ -20,7 +26,13 @@ import { FaPen } from "react-icons/fa";
 import { formatMs } from "@/lib/utils";
 import { AudioSegmentPlayer } from "@/components/ui/molecules/audio-segment-player/AudioSegmentPlayer";
 
-type ContentType = "TEXT" | "IMAGE" | "AUDIO" | "VIDEO" | "SOURCE_REFERENCE";
+type ContentType =
+  | "TEXT"
+  | "IMAGE"
+  | "AUDIO"
+  | "VIDEO"
+  | "SOURCE_REFERENCE"
+  | LinkedContentType;
 
 interface TaskViewProps {
   taskId: string;
@@ -42,12 +54,27 @@ const SubtaskContent = ({
   content,
   segmentNumbers,
   segmentRefs,
+  reference,
+  referenceId,
 }: {
   type: ContentType;
   content: string;
   segmentNumbers?: number[] | null;
   segmentRefs?: (string | null)[] | null;
+  reference?: any;
+  referenceId?: string | null;
 }) => {
+  // Linked subtasks carry no inline content - the reference is the content.
+  if (isLinkedContentType(type)) {
+    return (
+      <LinkedContent
+        type={type}
+        reference={reference}
+        referenceId={referenceId}
+      />
+    );
+  }
+
   if (!content) return null;
 
   switch (type) {
@@ -148,7 +175,10 @@ const SubtaskCard = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center border w-fit bg-[#F7F7F7] dark:bg-sidebar-secondary px-2 py-1 text-sm rounded-md border-dashed gap-2">
-              <ContentIcon type={subtask.content_type} /> {subtask.content_type}
+              <ContentIcon type={subtask.content_type} />{" "}
+              {LINKED_CONTENT_LABELS[
+                subtask.content_type as LinkedContentType
+              ] ?? subtask.content_type}
             </div>
             {subtask.content_type === "SOURCE_REFERENCE" &&
               !preset &&
@@ -176,6 +206,8 @@ const SubtaskCard = ({
           <SubtaskContent
             type={subtask.content_type}
             content={subtask.content}
+            reference={subtask.reference}
+            referenceId={subtask.reference_id}
           />
         )}
         {subtask.audio_url ? (
