@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  formatEventSchedule,
-  formatEventScheduleRange,
-} from "./eventSchedule";
+import { formatEventSchedule, formatEventScheduleRange } from "./eventSchedule";
 
 describe("formatEventScheduleRange", () => {
   it("returns labeled start and end date-times", () => {
