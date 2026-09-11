@@ -71,9 +71,41 @@ export const eventLinkRowSchema = z.object({
       "URL must start with http:// or https://",
     ),
   label: z.string().trim().max(255, "Label must be at most 255 characters"),
+  language: z.string().trim().min(1, "Language is required"),
 });
 
 export type EventLinkRow = z.infer<typeof eventLinkRowSchema>;
+
+function isYoutubeUrl(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    const host = hostname.startsWith("www.") ? hostname.slice(4) : hostname;
+    return (
+      host === "youtube.com" ||
+      host.endsWith(".youtube.com") ||
+      host === "youtu.be"
+    );
+  } catch {
+    return false;
+  }
+}
+
+export const eventYoutubeRowSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .min(1, "URL is required")
+    .max(2000, "URL must be at most 2000 characters")
+    .refine(
+      (value) => /^https?:\/\/.+/i.test(value),
+      "URL must start with http:// or https://",
+    )
+    .refine(isYoutubeUrl, "URL must be a youtube.com or youtu.be link"),
+  label: z.string().trim().max(255, "Label must be at most 255 characters"),
+  language: z.string().trim().min(1, "Language is required"),
+});
+
+export type EventYoutubeRow = z.infer<typeof eventYoutubeRowSchema>;
 
 export const DAYS_OF_WEEK = [
   { value: 0, label: "Monday" },
@@ -170,6 +202,7 @@ const baseEventSchema = z.object({
   recurrence: recurrenceSchema.nullable(),
   metadata: z.array(eventMetadataRowSchema).min(1, "Add at least one language"),
   links: z.array(eventLinkRowSchema),
+  youtube: z.array(eventYoutubeRowSchema),
   image_url: z.string().trim(),
   plan_id: z.string().trim(),
   series_id: z.string().trim(),
@@ -270,10 +303,17 @@ export const emptyMetadataRow = (language: LanguageCode): EventMetadataRow => ({
   description: "",
 });
 
-export const emptyLinkRow = (): EventLinkRow => ({
+export const emptyLinkRow = (language: LanguageCode): EventLinkRow => ({
   type: "",
   url: "",
   label: "",
+  language,
+});
+
+export const emptyYoutubeRow = (language: LanguageCode): EventYoutubeRow => ({
+  url: "",
+  label: "",
+  language,
 });
 
 export const emptyRecurrence = (): RecurrenceFormData => ({
@@ -297,6 +337,7 @@ export const defaultEventFormValues = (): EventFormData => ({
   recurrence: null,
   metadata: [emptyMetadataRow("EN")],
   links: [],
+  youtube: [],
   image_url: "",
   plan_id: "",
   series_id: "",

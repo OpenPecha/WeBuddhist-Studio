@@ -28,6 +28,7 @@ import EventMetadataRows from "./components/events/EventMetadataRows";
 import EventDateSection from "./components/events/EventDateSection";
 import EventLinksSection from "./components/events/EventLinksSection";
 import EventUrlLinksSection from "./components/events/EventUrlLinksSection";
+import EventYoutubeSection from "./components/events/EventYoutubeSection";
 import EventImageField from "./components/events/EventImageField";
 import EventFormatField from "./components/events/EventFormatField";
 import LocationPicker from "./components/locations/LocationPicker";
@@ -63,6 +64,7 @@ const GroupEventFormPage = () => {
     form,
     metadataRows,
     linkRows,
+    youtubeRows,
     usedLanguages,
     availableLanguages,
     addMetadataRow,
@@ -70,6 +72,9 @@ const GroupEventFormPage = () => {
     addLinkRow,
     removeLinkRow,
     moveLinkRow,
+    addYoutubeRow,
+    removeYoutubeRow,
+    moveYoutubeRow,
     setImageUrl,
     setLocationId,
     setOneDay,
@@ -289,6 +294,15 @@ const GroupEventFormPage = () => {
             onAccumulatorChange={setAccumulatorValue}
             onGroupAccumulatorChange={setGroupAccumulatorValue}
             onChantChange={setChantValue}
+          />
+
+          <EventYoutubeSection
+            form={form}
+            fields={youtubeRows.fields}
+            readOnly={readOnly}
+            onAdd={addYoutubeRow}
+            onRemove={removeYoutubeRow}
+            onMove={moveYoutubeRow}
           />
 
           <EventUrlLinksSection

@@ -20,6 +20,7 @@ import { ROUTES } from "@/routes/paths";
 import type { GroupOutletContext } from "./GroupLayout";
 import { canWriteEvents } from "./lib/eventPermissions";
 import {
+  EVENT_YOUTUBE_ICON,
   eventLinkIcon,
   eventLinkTypeLabel,
   isSafeLinkUrl,
@@ -66,7 +67,53 @@ const resolveHeroImage = (event: EventDTO): string | null => {
 };
 
 const pickDefault = (rows: EventMetadataDTO[]): EventMetadataDTO | undefined =>
-  rows.find((r) => r.language.toUpperCase() === "EN") ?? rows[0];
+  rows.find((r) => (r.language?.trim() || "EN").toUpperCase() === "EN") ??
+  rows[0];
+
+/**
+ * Filters links/youtube items to the active language tab, falling back to EN
+ * when nothing matches - mirrors the metadata tab's own EN-fallback so the
+ * two sections don't disagree about what "no content for this tab" means.
+ * Unlike metadata (one row per language), this never collapses to a single
+ * item - many links/videos can share a language.
+ */
+function pickLangFiltered<T extends { language: string }>(
+  rows: T[],
+  activeLang: string | null,
+): T[] {
+  if (!activeLang) return rows;
+  const matched = rows.filter((r) => r.language === activeLang);
+  if (matched.length > 0) return matched;
+  return rows.filter(
+    (r) => (r.language?.trim() || "EN").toUpperCase() === "EN",
+  );
+}
+
+function getYoutubeVideoId(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    if (host === "youtu.be") {
+      return parsed.pathname.split("/").filter(Boolean)[0] ?? null;
+    }
+    if (host === "youtube.com" || host.endsWith(".youtube.com")) {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v");
+      }
+      const segments = parsed.pathname.split("/").filter(Boolean);
+      if (
+        segments[0] === "embed" ||
+        segments[0] === "shorts" ||
+        segments[0] === "live"
+      ) {
+        return segments[1] ?? null;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 const GroupEventDetailPage = () => {
   const { groupId, eventId } = useParams<{
@@ -186,9 +233,14 @@ const GroupEventDetailPage = () => {
     },
   ].filter((link) => Boolean(link.id));
 
-  const urlLinks = [...(data.links ?? [])]
+  const urlLinks = pickLangFiltered([...(data.links ?? [])], activeLang)
     .filter((link) => isSafeLinkUrl(link.url))
     .sort((a, b) => a.display_order - b.display_order);
+
+  const youtubeLinks = pickLangFiltered(
+    [...(data.youtube ?? [])].filter((item) => isSafeLinkUrl(item.url)),
+    activeLang,
+  ).sort((a, b) => a.display_order - b.display_order);
 
   const formatLabel = eventFormatLabel(data.event_format);
 
@@ -300,9 +352,53 @@ const GroupEventDetailPage = () => {
                   : "border-input text-muted-foreground hover:text-foreground",
               )}
             >
-              {languageLabel(row.language)}
+              {languageLabel(row.language ?? "EN")}
             </button>
           ))}
+        </div>
+      ) : null}
+
+      {youtubeLinks.length > 0 ? (
+        <div className="space-y-4">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Videos
+          </h2>
+          {youtubeLinks.map((item) => {
+            const videoId = getYoutubeVideoId(item.url);
+            const label = item.label?.trim();
+            if (!videoId) {
+              return (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-[#A51C21] hover:text-[#A51C21]"
+                >
+                  <EVENT_YOUTUBE_ICON className="h-4 w-4 shrink-0" />
+                  <span className="max-w-[16rem] truncate">
+                    {label || "YouTube video"}
+                  </span>
+                </a>
+              );
+            }
+            return (
+              <div key={item.id} className="space-y-1.5">
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-black">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    title={label || "YouTube video"}
+                    className="absolute inset-0 h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                {label ? (
+                  <p className="text-sm text-muted-foreground">{label}</p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       ) : null}
 

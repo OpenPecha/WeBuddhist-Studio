@@ -11,6 +11,7 @@ import type {
   EventFormData,
   EventLinkRow,
   EventMetadataRow,
+  EventYoutubeRow,
   LanguageCode,
   RecurrenceFormData,
 } from "@/schema/EventSchema";
@@ -54,6 +55,15 @@ export interface EventLinkDTO {
   type: string;
   url: string;
   label?: string;
+  language: string;
+  display_order: number;
+}
+
+export interface EventYoutubeDTO {
+  id: string;
+  url: string;
+  label?: string;
+  language: string;
   display_order: number;
 }
 
@@ -98,6 +108,7 @@ export interface EventDTO {
   occurrence_date?: string;
   metadata: EventMetadataResponse;
   links?: EventLinkDTO[];
+  youtube?: EventYoutubeDTO[];
   image?: ImageUrlModel;
   image_url?: string;
   participant_count?: number;
@@ -123,6 +134,14 @@ export interface EventLinkInput {
   type: string;
   url: string;
   label?: string;
+  language: LanguageCode;
+  display_order: number;
+}
+
+export interface EventYoutubeInput {
+  url: string;
+  label?: string;
+  language: LanguageCode;
   display_order: number;
 }
 
@@ -133,6 +152,7 @@ export interface CreateEventRequest {
   timezone?: string;
   metadata: EventMetadataInput[];
   links?: EventLinkInput[];
+  youtube?: EventYoutubeInput[];
   image_url?: string;
   plan_id?: string;
   series_id?: string;
@@ -151,6 +171,7 @@ export interface UpdateEventRequest {
   timezone?: string;
   metadata?: EventMetadataInput[];
   links?: EventLinkInput[];
+  youtube?: EventYoutubeInput[];
   image_url?: string;
   plan_id?: string | null;
   series_id?: string | null;
@@ -276,6 +297,21 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
         type: link.type?.trim() ?? "",
         url: link.url?.trim() ?? "",
         label: link.label?.trim() ?? "",
+        // Unlike metadata rows, an unparseable language here defaults to EN
+        // rather than dropping the row - links aren't the source of truth
+        // for which languages the event supports, so silently deleting a
+        // user's link would be worse than mislabeling its language.
+        language: normalizeLanguageCode(link.language ?? "") ?? "EN",
+      }),
+    );
+
+  const youtube = [...(event.youtube ?? [])]
+    .sort((a, b) => a.display_order - b.display_order)
+    .map(
+      (item): EventYoutubeRow => ({
+        url: item.url?.trim() ?? "",
+        label: item.label?.trim() ?? "",
+        language: normalizeLanguageCode(item.language ?? "") ?? "EN",
       }),
     );
 
@@ -315,6 +351,7 @@ export function mapEventToFormData(event: EventDTO): EventFormData {
     metadata:
       rows.length > 0 ? rows : [{ language: "EN", name: "", description: "" }],
     links,
+    youtube,
     image_url: event.image_url?.trim() ?? "",
     plan_id: event.plan_id?.trim() ?? "",
     series_id: event.series_id?.trim() ?? "",
@@ -333,6 +370,7 @@ function buildLinksInput(rows: EventLinkRow[]): EventLinkInput[] {
     return {
       type: row.type.trim(),
       url: row.url.trim(),
+      language: row.language,
       display_order: index + 1,
       ...(label ? { label } : {}),
     };
@@ -345,6 +383,29 @@ function linksEqual(a: EventLinkRow[], b: EventLinkRow[]): boolean {
     if (a[i].type.trim() !== b[i].type.trim()) return false;
     if (a[i].url.trim() !== b[i].url.trim()) return false;
     if (a[i].label.trim() !== b[i].label.trim()) return false;
+    if (a[i].language !== b[i].language) return false;
+  }
+  return true;
+}
+
+function buildYoutubeInput(rows: EventYoutubeRow[]): EventYoutubeInput[] {
+  return rows.map((row, index) => {
+    const label = row.label.trim();
+    return {
+      url: row.url.trim(),
+      language: row.language,
+      display_order: index + 1,
+      ...(label ? { label } : {}),
+    };
+  });
+}
+
+function youtubeEqual(a: EventYoutubeRow[], b: EventYoutubeRow[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].url.trim() !== b[i].url.trim()) return false;
+    if (a[i].label.trim() !== b[i].label.trim()) return false;
+    if (a[i].language !== b[i].language) return false;
   }
   return true;
 }
@@ -416,6 +477,9 @@ export function buildCreateEventBody(
     timezone,
     metadata: buildMetadataInput(data.metadata),
     ...(data.links.length ? { links: buildLinksInput(data.links) } : {}),
+    ...(data.youtube.length
+      ? { youtube: buildYoutubeInput(data.youtube) }
+      : {}),
     ...(imageUrl ? { image_url: imageUrl } : {}),
     ...(planId ? { plan_id: planId } : {}),
     ...(seriesId ? { series_id: seriesId } : {}),
@@ -586,6 +650,10 @@ export function buildUpdateEventBody(
 
   if (!linksEqual(data.links, original.links)) {
     body.links = buildLinksInput(data.links);
+  }
+
+  if (!youtubeEqual(data.youtube, original.youtube)) {
+    body.youtube = buildYoutubeInput(data.youtube);
   }
 
   const nextImageUrl = data.image_url.trim();
